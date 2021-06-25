@@ -17,25 +17,26 @@ namespace Vortex
         switch (level)
         {
             case LogLevel::Trace:
-                SetConsoleTextAttribute(hConsole, 11);
+                SetConsoleTextAttribute(hConsole, 0x02);
                 break;
             case LogLevel::Info:
-                SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+                SetConsoleTextAttribute(hConsole, 0x09);
                 break;
             case LogLevel::Warn:
-                SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
+                SetConsoleTextAttribute(hConsole, 0x06);
                 break;
             case LogLevel::Error:
-                SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+                SetConsoleTextAttribute(hConsole, 0x04);
                 break;
             case LogLevel::Fatal:
-                SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_RED);
+                SetConsoleTextAttribute(hConsole,  0x40);
                 break;
         }
 
         WriteConsoleA(hConsole, formattedString.data(), formattedString.size(), nullptr, nullptr);
+        SetConsoleTextAttribute(hConsole, 0x07);
+
         WriteConsoleA(hConsole, "\r\n", 2, nullptr, nullptr);
 
-        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 }

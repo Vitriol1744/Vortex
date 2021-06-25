@@ -51,17 +51,17 @@ namespace Vortex
 }
 
 #ifdef DEBUG
-    #define VT_CORE_LOG_TRACE(fmt, ...) Logger::CoreLog(LogLevel::Trace, fmt, __VA_ARGS__);
-    #define VT_CORE_LOG_INFO(fmt, ...) Logger::CoreLog(LogLevel::Info, fmt, __VA_ARGS__);
-    #define VT_CORE_LOG_WARN(fmt, ...) Logger::CoreLog(LogLevel::Warn, fmt, __VA_ARGS__);
-    #define VT_CORE_LOG_ERROR(fmt, ...) Logger::CoreLog(LogLevel::Error, fmt, __VA_ARGS__);
-    #define VT_CORE_LOG_FATAL(fmt, ...) Logger::CoreLog(LogLevel::Fatal, fmt, __VA_ARGS__);
+    #define VT_CORE_LOG_TRACE(fmt, ...) Logger::CoreLog(LogLevel::Trace, fmt, __VA_ARGS__)
+    #define VT_CORE_LOG_INFO(fmt, ...) Logger::CoreLog(LogLevel::Info, fmt, __VA_ARGS__)
+    #define VT_CORE_LOG_WARN(fmt, ...) Logger::CoreLog(LogLevel::Warn, fmt, __VA_ARGS__)
+    #define VT_CORE_LOG_ERROR(fmt, ...) Logger::CoreLog(LogLevel::Error, fmt, __VA_ARGS__)
+    #define VT_CORE_LOG_FATAL(fmt, ...) Logger::CoreLog(LogLevel::Fatal, fmt, __VA_ARGS__)
 
-    #define VT_LOG_TRACE(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Trace, fmt, __VA_ARGS__);
-    #define VT_LOG_INFO(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Info, fmt, __VA_ARGS__);
-    #define VT_LOG_WARN(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Warn, fmt, __VA_ARGS__);
-    #define VT_LOG_ERROR(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Error, fmt, __VA_ARGS__);
-    #define VT_LOG_FATAL(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Fatal, fmt, __VA_ARGS__);
+    #define VT_LOG_TRACE(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Trace, fmt, __VA_ARGS__)
+    #define VT_LOG_INFO(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Info, fmt, __VA_ARGS__)
+    #define VT_LOG_WARN(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Warn, fmt, __VA_ARGS__)
+    #define VT_LOG_ERROR(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Error, fmt, __VA_ARGS__)
+    #define VT_LOG_FATAL(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Fatal, fmt, __VA_ARGS__)
 #else
     #define VT_CORE_LOG_TRACE(fmt, ...)
     #define VT_CORE_LOG_INFO(fmt, ...)
