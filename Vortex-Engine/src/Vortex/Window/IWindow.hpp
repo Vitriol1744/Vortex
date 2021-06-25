@@ -20,6 +20,7 @@ namespace Vortex
             virtual ~IWindow() = default;
 
             virtual void Update() = 0;
+            virtual void SwapBuffers() = 0;
 
             virtual bool IsOpen() const = 0;
 

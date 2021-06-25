@@ -6,6 +6,8 @@
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32Window.hpp"
 
+#include "Graphics/OpenGL46/GL46Context.hpp"
+
 namespace
 {
     const wchar_t* windowClassName = L"Window Class";
@@ -19,7 +21,6 @@ namespace Vortex
 
     WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title)
     {
-        std::cout << "Window is being Created!\n";
         if (!windowsCount) Initialize();
         hWnd = CreateWindowExW
         (
@@ -28,8 +29,16 @@ namespace Vortex
         );
         windows[hWnd] = this;
 
+        context = CreateScope<GL46Context>();
+        context->Initialize(hWnd);
+
         ShowWindow(hWnd, SW_SHOW);
         UpdateWindow(hWnd);
+    }
+
+    void WindowImpl::SwapBuffers()
+    {
+        context->SwapBuffers();
     }
 
     WindowImpl::~WindowImpl()
@@ -91,16 +100,10 @@ namespace Vortex
 
     LRESULT WINAPI WindowImpl::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-        //std::cout << "Window Callback!\n";
         switch (msg)
         {
             case WM_CLOSE:
-                std::cout << "Window Closed!\n";
                 isOpen = false;
-                if (this->isOpen != windows[hWnd]->isOpen)
-                {
-                    std::cout << "ERROR\n";
-                }
                 PostQuitMessage(0);
                 break;
         }

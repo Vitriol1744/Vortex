@@ -12,6 +12,8 @@
 
 #include <map>
 
+#include "Graphics/IGraphicsContext.hpp"
+
 namespace Vortex
 {
     class VT_API WindowImpl : public IWindow
@@ -21,8 +23,9 @@ namespace Vortex
             ~WindowImpl() override;
 
             void Update() override;
+            void SwapBuffers() override;
 
-            [[maybe_unused]] [[nodiscard]] inline bool IsOpen() const override { return isOpen; }
+            inline bool IsOpen() const override { return isOpen; }
 
             void SetTitle(std::wstring_view title) override;
             void ActivateContext() override;
@@ -33,6 +36,7 @@ namespace Vortex
 
             bool isOpen = true;
             HWND hWnd;
+            Scope<IGraphicsContext> context;
 
             static void Initialize();
             static void Shutdown();
