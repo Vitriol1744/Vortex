@@ -14,6 +14,6 @@ namespace Vortex
             virtual ~IGraphicsContext() = default;
 
             virtual void Initialize(void* windowHandle) = 0;
-            virtual void SwapBuffers() = 0;
+            virtual void Present() = 0;
     };
 }
