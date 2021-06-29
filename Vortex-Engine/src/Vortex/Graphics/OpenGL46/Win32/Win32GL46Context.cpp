@@ -1,14 +1,23 @@
 //
-// Created by Vitriol1744 on 24.06.2021.
+// Created by Vitriol1744 on 29.06.2021.
 //
-#include "GL46Context.hpp"
+#include "Core/Macros.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
+#include "Win32GL46Context.hpp"
 namespace Vortex
 {
-    #pragma region win32
-    #ifdef VT_PLATFORM_WINDOWS
+    GL46Context::~GL46Context()
+    {
+        wglMakeCurrent(nullptr, nullptr);
+        wglDeleteContext(renderingContext);
+        ReleaseDC(window, deviceContext);
+    }
+
     void GL46Context::Initialize(void* windowHandle)
     {
+        window = static_cast<HWND>(windowHandle);
+
         HINSTANCE hInstance = GetModuleHandleW(nullptr);
         const wchar_t* fakeWindowClass = L"Fake Window Class";
 
@@ -29,8 +38,8 @@ namespace Vortex
 
         HWND fakeWindow = CreateWindowExW
         (
-            0, fakeWindowClass, L"Fake Window", WS_OVERLAPPEDWINDOW,
-            0, 0, 100, 100, nullptr, nullptr, hInstance, nullptr
+                0, fakeWindowClass, L"Fake Window", WS_OVERLAPPEDWINDOW,
+                0, 0, 100, 100, nullptr, nullptr, hInstance, nullptr
         );
 
         HDC fakeDC = GetDC(fakeWindow);
@@ -65,39 +74,17 @@ namespace Vortex
 
         const int32 pixelFormatAttributes[] =
         {
-            WGL_DRAW_TO_WINDOW_ARB,
-            GL_TRUE,
-
-            WGL_SUPPORT_OPENGL_ARB,
-            GL_TRUE,
-
-            WGL_DOUBLE_BUFFER_ARB,
-            GL_TRUE,
-
-            WGL_PIXEL_TYPE_ARB,
-            WGL_TYPE_RGBA_ARB,
-
-            WGL_ACCELERATION_ARB,
-            WGL_FULL_ACCELERATION_ARB,
-
-            WGL_COLOR_BITS_ARB,
-            32,
-
-            WGL_ALPHA_BITS_ARB,
-            8,
-
-            WGL_DEPTH_BITS_ARB,
-            24,
-
-            WGL_STENCIL_BITS_ARB,
-            8,
-
-            WGL_SAMPLE_BUFFERS_ARB,
-            GL_TRUE,
-
-            WGL_SAMPLES_ARB,
-            4,
-
+            WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+            WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+            WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+            WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+            WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+            WGL_COLOR_BITS_ARB, 32,
+            WGL_ALPHA_BITS_ARB, 8,
+            WGL_DEPTH_BITS_ARB, 24,
+            WGL_STENCIL_BITS_ARB, 8,
+            WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+            WGL_SAMPLES_ARB, 4,
             0
         };
 
@@ -115,14 +102,14 @@ namespace Vortex
             WGL_CONTEXT_MAJOR_VERSION_ARB,
             4,
             WGL_CONTEXT_MINOR_VERSION_ARB,
-            6,
+            5,
             WGL_CONTEXT_PROFILE_MASK_ARB,
             WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0
         };
 
-        renderingContext = wglCreateContextAttribsARB(deviceContext, 0, contextAttributes);
-        VT_CORE_ASSERT(renderingContext != 0);
+        renderingContext = wglCreateContextAttribsARB(deviceContext, nullptr, contextAttributes);
+        VT_CORE_ASSERT(renderingContext != nullptr);
 
         wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(fakeRC);
@@ -136,10 +123,9 @@ namespace Vortex
         VT_CORE_ASSERT(Vortex::LoadGLFunctions() == true);
     }
 
-    void GL46Context::SwapBuffers()
+    void GL46Context::Present()
     {
         ::SwapBuffers(deviceContext);
     }
-    #endif
-    #pragma endregion
 }
+#endif

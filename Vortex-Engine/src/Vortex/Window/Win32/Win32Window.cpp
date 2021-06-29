@@ -4,9 +4,12 @@
 #include "Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
+#define _UNICODE
 #include "Win32Window.hpp"
 
 #include "Graphics/OpenGL46/GL46Context.hpp"
+
+#include "Graphics/IRendererAPI.hpp"
 
 namespace
 {
@@ -17,7 +20,6 @@ namespace
 namespace Vortex
 {
     unsigned int WindowImpl::windowsCount = 0;
-    std::map<HWND, WindowImpl*> WindowImpl::windows{};
 
     WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title)
     {
@@ -27,22 +29,34 @@ namespace Vortex
             0, windowClassName, title.data(), WS_OVERLAPPEDWINDOW,
             0, 0, width, height, nullptr, nullptr, hInstance, nullptr
         );
-        windows[hWnd] = this;
+        (*GetWindowsMap())[hWnd] = this;
 
-        context = CreateScope<GL46Context>();
+        VT_CORE_LOG_TRACE("Window Created!");
+
+        IRendererAPI::Initialize();
+        switch (Vortex::IRendererAPI::Get()->GetGraphicsAPI())
+        {
+            case GraphicsAPI::OpenGL46:
+                context = CreateScope<GL46Context>();
+                break;
+            case GraphicsAPI::None:
+
+            default:
+                VT_CORE_LOG_FATAL("Graphics API Not Supported!");
+                break;
+        }
+
         context->Initialize(hWnd);
+        VT_CORE_LOG_TRACE("Graphics Context Created!");
 
         ShowWindow(hWnd, SW_SHOW);
         UpdateWindow(hWnd);
     }
 
-    void WindowImpl::SwapBuffers()
-    {
-        context->SwapBuffers();
-    }
-
     WindowImpl::~WindowImpl()
     {
+        GetWindowsMap()->erase(hWnd);
+        DestroyWindow(hWnd);
         windowsCount--;
         if (!windowsCount) Shutdown();
     }
@@ -55,6 +69,11 @@ namespace Vortex
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+    }
+
+    void WindowImpl::Present()
+    {
+        context->Present();
     }
 
     void WindowImpl::SetTitle(std::wstring_view title)
@@ -90,24 +109,29 @@ namespace Vortex
 
     void WindowImpl::Shutdown()
     {
-        if (!UnregisterClassW(windowClassName, hInstance));
+        if (!windowsCount) return;
+        UnregisterClassW(windowClassName, hInstance);
     }
 
     LRESULT WINAPI WindowImpl::HandleGlobalEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-        return windows[hWnd]->HandleEvents(hWnd, msg, wParam, lParam);
+        return (*GetWindowsMap())[hWnd]->HandleEvents(hWnd, msg, wParam, lParam);
     }
 
-    LRESULT WINAPI WindowImpl::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    LRESULT WINAPI WindowImpl::HandleEvents(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         switch (msg)
         {
             case WM_CLOSE:
+            case WM_DESTROY:
                 isOpen = false;
                 PostQuitMessage(0);
                 break;
+
+            default:
+                break;
         }
-        return DefWindowProc(hWnd, msg, wParam, lParam);
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
     }
 }
 #endif

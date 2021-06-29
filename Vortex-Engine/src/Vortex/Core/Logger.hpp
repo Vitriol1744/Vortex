@@ -6,11 +6,8 @@
 #include "Export.hpp"
 #include "Macros.hpp"
 
-#include <Windows.h>
-
-#include <xstring>
-#include <format>
-#include <iostream>
+#include <string>
+#include "fmt/format.h"
 
 namespace Vortex
 {
@@ -31,13 +28,13 @@ namespace Vortex
             template<typename... Args>
             inline static void Log(LogLevel level, std::string_view format, Args... args)
             {
-                instance->LogImpl(level, pattern + std::format(format, std::forward<Args&>(args)...));
+                instance->LogImpl(level, pattern + fmt::format(format, std::forward<Args&>(args)...));
             }
 
             template<typename... Args>
             inline static void CoreLog(LogLevel level, std::string_view format, Args... args)
             {
-                instance->LogImpl(level, corePattern + std::format(format, std::forward<Args&>(args)...));
+                instance->LogImpl(level, corePattern + fmt::format(format, std::forward<Args&>(args)...));
             }
 
         protected:

@@ -3,9 +3,11 @@
 //
 #include "IWindow.hpp"
 
-#ifdef _WIN32
-#include "Win32/Win32Window.hpp"
-#undef CreateWindow
+#ifdef VT_PLATFORM_WINDOWS
+    #include "Win32/Win32Window.hpp"
+    #undef CreateWindow
+#elif defined(VT_PLATFORM_LINUX)
+    #include "Posix/PosixWindow.hpp"
 #endif
 
 namespace Vortex

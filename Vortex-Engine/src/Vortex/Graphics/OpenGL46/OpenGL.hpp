@@ -1,34 +1,25 @@
 //
-// Created by Vitriol1744 on 26.06.2021.
+// Created by Vitriol1744 on 27.06.2021.
 //
 #pragma once
 
-#include "Core/Macros.hpp"
+#include "glad/glad.h"
 
-#pragma region win32
 #ifdef VT_PLATFORM_WINDOWS
-#include "gl/GL.h"
+#include <Windows.h>
+#include "Gl/Gl.h"
 #include "GL/wglext.h"
+#elif defined(VT_PLATFORM_LINUX)
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#endif
+
 namespace Vortex
 {
-    static void* GetFunctionPointer(const char *name)
-    {
-        void *p = (void *)wglGetProcAddress(name);
-        if(p == 0 || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) || (p == (void*)-1) )
-        {
-            HMODULE module = LoadLibraryA("opengl32.dll");
-            p = (void *)GetProcAddress(module, name);
-        }
-
-        return p;
-    }
-
     static bool LoadGLFunctions()
     {
-
-
-        return true;
+        return gladLoadGL();
     }
 }
-#endif
-#pragma endregion

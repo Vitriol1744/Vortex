@@ -5,8 +5,8 @@
 
 #ifdef VT_PLATFORM_WINDOWS
     #include "Win32/Win32Logger.hpp"
-#else
-    #error Platform Not Supported!
+#elif defined(VT_PLATFORM_LINUX)
+    #include "Posix/PosixLogger.hpp"
 #endif
 
 namespace Vortex

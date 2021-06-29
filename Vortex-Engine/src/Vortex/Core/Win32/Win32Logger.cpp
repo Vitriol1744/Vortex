@@ -3,6 +3,8 @@
 //
 #include "Win32Logger.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
+#include <windows.h>
 namespace Vortex
 {
     void LoggerImpl::InitializeImpl()
@@ -37,6 +39,6 @@ namespace Vortex
         SetConsoleTextAttribute(hConsole, 0x07);
 
         WriteConsoleA(hConsole, "\r\n", 2, nullptr, nullptr);
-
     }
 }
+#endif

@@ -23,16 +23,15 @@ namespace Vortex
             ~WindowImpl() override;
 
             void Update() override;
-            void SwapBuffers() override;
+            void Present() override;
 
             inline bool IsOpen() const override { return isOpen; }
 
             void SetTitle(std::wstring_view title) override;
             void ActivateContext() override;
 
-        public:
+        private:
             static uint32 windowsCount;
-            static std::map<HWND, WindowImpl*> windows;
 
             bool isOpen = true;
             HWND hWnd;
@@ -40,6 +39,13 @@ namespace Vortex
 
             static void Initialize();
             static void Shutdown();
+
+            inline static std::map<HWND, WindowImpl*>* GetWindowsMap()
+            {
+                static auto windowsMap = new std::map<HWND, WindowImpl*>();
+
+                return windowsMap;
+            }
 
             static LRESULT WINAPI HandleGlobalEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
             LRESULT WINAPI HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
