@@ -3,11 +3,12 @@
 //
 #pragma once
 
-#include "Export.hpp"
-#include "Macros.hpp"
-#include "Assertions.hpp"
-#include "Types.hpp"
-#include "Singleton.hpp"
-#include "Logger.hpp"
+#include "Core/Export.hpp"
+#include "Core/Macros.hpp"
+#include "Core/Assertions.hpp"
+#include "Core/Types.hpp"
+#include "Core/Singleton.hpp"
+#include "Core/Logger.hpp"
+#include "Core/Math/Math.hpp"
 
-#include <cassert>
+#define VT_NODISCARD [[nodiscard]]
