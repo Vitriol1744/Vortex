@@ -5,3 +5,5 @@
 
 #include "Vortex/Core/Application.hpp"
 #include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/WindowManager.hpp"
+#include "Vortex/Graphics/IRendererAPI.hpp"

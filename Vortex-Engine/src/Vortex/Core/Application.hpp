@@ -8,7 +8,7 @@
 
 namespace Vortex
 {
-    class VT_API Application
+    class VT_API Application : Singleton<Application>
     {
         public:
             Application();
@@ -16,10 +16,15 @@ namespace Vortex
 
             void Run();
 
-        private:
-            bool running = true;
+            virtual void Update() { }
+            virtual void Render() { }
 
-            Ref<IWindow> window;
+        protected:
+            bool running = true;
+            int32 framerateLimit = 0;
+
+        private:
+            int32 frames = 0;
     };
 
     extern Application* CreateApplication();
