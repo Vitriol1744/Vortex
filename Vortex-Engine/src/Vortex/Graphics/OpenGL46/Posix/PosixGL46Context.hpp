@@ -5,7 +5,7 @@
 
 #include "Core/Core.hpp"
 #include "Graphics/IGraphicsContext.hpp"
-#include "OpenGL.hpp"
+#include "Graphics/OpenGL46/OpenGL.hpp"
 
 namespace Vortex
 {
@@ -19,7 +19,9 @@ namespace Vortex
         void Present() override;
 
         private:
-
+            Display* display;
+            Window window;
+            GLXContext context;
     };
 }
 

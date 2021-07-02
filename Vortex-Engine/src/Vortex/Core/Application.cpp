@@ -1,10 +1,13 @@
 //
 // Created by Vitriol1744 on 22.06.2021.
 //
+#include "vtpch.hpp"
 #include "Application.hpp"
 
 #include "Graphics/OpenGL46/OpenGL.hpp"
 #include "Core/Time.hpp"
+
+#include <iostream>
 
 namespace Vortex
 {
@@ -32,11 +35,8 @@ namespace Vortex
 
             Update();
             Render();
-
-            if (framerateLimit)
-            {
+            if (framerateLimit > 0)
                 while ((Time::GetTimeInSeconds() - previousFrame) < (1.0f / (double)framerateLimit));
-            }
             frames++;
         }
     }

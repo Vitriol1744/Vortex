@@ -19,10 +19,11 @@ namespace Vortex
         Error,
         Fatal
     };
-
     class VT_API Logger
     {
         public:
+            virtual ~Logger() = default;
+
             static void Initialize();
 
             template<typename... Args>
@@ -47,7 +48,7 @@ namespace Vortex
     };
 }
 
-#ifdef DEBUG
+#ifdef VT_DEBUG
     #define VT_CORE_LOG_TRACE(fmt, ...) Logger::CoreLog(LogLevel::Trace, fmt, __VA_ARGS__)
     #define VT_CORE_LOG_INFO(fmt, ...) Logger::CoreLog(LogLevel::Info, fmt, __VA_ARGS__)
     #define VT_CORE_LOG_WARN(fmt, ...) Logger::CoreLog(LogLevel::Warn, fmt, __VA_ARGS__)

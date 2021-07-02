@@ -1,6 +1,7 @@
 //
 // Created by Vitriol1744 on 28.06.2021.
 //
+#include "vtpch.hpp"
 #include "Core/Time.hpp"
 #include "Core/Macros.hpp"
 

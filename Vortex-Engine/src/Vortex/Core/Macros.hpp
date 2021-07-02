@@ -10,3 +10,9 @@
 #else
     #error Platform Not Supported!
 #endif
+
+#ifdef DEBUG
+    #define VT_DEBUG
+#else
+    #define VT_RELEASE
+#endif

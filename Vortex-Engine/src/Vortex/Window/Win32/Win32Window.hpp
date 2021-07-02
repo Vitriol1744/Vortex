@@ -51,4 +51,3 @@ namespace Vortex
             LRESULT WINAPI HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     };
 }
-

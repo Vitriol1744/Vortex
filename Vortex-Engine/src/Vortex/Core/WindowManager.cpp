@@ -1,6 +1,7 @@
 //
 // Created by Vitriol1744 on 23.06.2021.
 //
+#include "vtpch.hpp"
 #include "WindowManager.hpp"
 
 namespace Vortex

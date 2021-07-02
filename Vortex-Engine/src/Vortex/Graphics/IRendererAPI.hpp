@@ -5,6 +5,8 @@
 
 #include "Core/Core.hpp"
 
+#undef None
+
 namespace Vortex
 {
     enum class GraphicsAPI

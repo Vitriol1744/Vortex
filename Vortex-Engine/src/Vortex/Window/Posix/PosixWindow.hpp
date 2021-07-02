@@ -6,14 +6,18 @@
 
 #include "Window/IWindow.hpp"
 #include "Core/Core.hpp"
+#include "Graphics/IGraphicsContext.hpp"
 
 #include <string>
+#include <X11/Xlib.h>
 
 namespace Vortex
 {
     class VT_API WindowImpl : public IWindow
     {
         public:
+            friend class GL46Context;
+
             WindowImpl(int32 width, int32 height, std::wstring_view title);
             ~WindowImpl() override;
 
@@ -26,8 +30,15 @@ namespace Vortex
             void ActivateContext() override;
 
         private:
+            static uint32 windowsCount;
+            static Display* display;
+
             bool isOpen = false;
-            Display* display;
+            Window window;
+            Scope<IGraphicsContext> context;
+
+            static void Initialize();
+            static void Shutdown();
     };
 }
 

@@ -1,6 +1,7 @@
 //
 // Created by Vitriol1744 on 27.06.2021.
 //
+#include "vtpch.hpp"
 #include "GL46VertexBuffer.hpp"
 
 #include "OpenGL.hpp"

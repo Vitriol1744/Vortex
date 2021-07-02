@@ -1,6 +1,8 @@
 //
 // Created by Vitriol1744 on 22.06.2021.
 //
+
+#include "vtpch.hpp"
 #include "Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
@@ -31,7 +33,7 @@ namespace Vortex
         );
         (*GetWindowsMap())[hWnd] = this;
 
-        VT_CORE_LOG_TRACE("Window Created!");
+        //VT_CORE_LOG_TRACE("Window Created!");
 
         IRendererAPI::Initialize();
         switch (Vortex::IRendererAPI::Get()->GetGraphicsAPI())
