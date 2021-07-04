@@ -2,18 +2,19 @@
 // Created by Vitriol1744 on 24.06.2021.
 //
 #include "vtpch.hpp"
-#include "Win32Logger.hpp"
+#include "Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
+#include "Win32Logger.hpp"
 #include <windows.h>
 namespace Vortex
 {
-    void LoggerImpl::InitializeImpl()
+    void Logger::Initialize()
     {
 
     }
 
-    void LoggerImpl::LogImpl(LogLevel level, std::string_view formattedString)
+    void LoggerImpl::Log(LogLevel level, std::string_view formattedString)
     {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 

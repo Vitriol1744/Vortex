@@ -19,58 +19,21 @@ namespace Vortex
         Error,
         Fatal
     };
+    
     class VT_API Logger
     {
         public:
+            Logger() = default;
+            explicit Logger(std::string_view name) { }
             virtual ~Logger() = default;
-
-            static void Initialize();
-
-            template<typename... Args>
-            inline static void Log(LogLevel level, std::string_view format, Args... args)
-            {
-                instance->LogImpl(level, pattern + fmt::format(format, std::forward<Args&>(args)...));
-            }
-
-            template<typename... Args>
-            inline static void CoreLog(LogLevel level, std::string_view format, Args... args)
-            {
-                instance->LogImpl(level, corePattern + fmt::format(format, std::forward<Args&>(args)...));
-            }
-
+            
+            static void Initialize(); //NOTE: Has to be implemented by derived class
+            virtual void Log(LogLevel level, std::string_view formattedString) = 0;
+            
+            void SetName(std::string_view name) { this->name = std::string("[") + std::string(name) + "]: "; }
+            
         protected:
-            static Logger* instance;
-            static std::string pattern;
-            static std::string corePattern;
-
-            virtual void InitializeImpl() = 0;
-            virtual void LogImpl(LogLevel level, std::string_view formattedString) = 0;
+            std::string name;
     };
 }
-
-#ifdef VT_DEBUG
-    #define VT_CORE_LOG_TRACE(fmt, ...) Logger::CoreLog(LogLevel::Trace, fmt, __VA_ARGS__)
-    #define VT_CORE_LOG_INFO(fmt, ...) Logger::CoreLog(LogLevel::Info, fmt, __VA_ARGS__)
-    #define VT_CORE_LOG_WARN(fmt, ...) Logger::CoreLog(LogLevel::Warn, fmt, __VA_ARGS__)
-    #define VT_CORE_LOG_ERROR(fmt, ...) Logger::CoreLog(LogLevel::Error, fmt, __VA_ARGS__)
-    #define VT_CORE_LOG_FATAL(fmt, ...) Logger::CoreLog(LogLevel::Fatal, fmt, __VA_ARGS__)
-
-    #define VT_LOG_TRACE(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Trace, fmt, __VA_ARGS__)
-    #define VT_LOG_INFO(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Info, fmt, __VA_ARGS__)
-    #define VT_LOG_WARN(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Warn, fmt, __VA_ARGS__)
-    #define VT_LOG_ERROR(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Error, fmt, __VA_ARGS__)
-    #define VT_LOG_FATAL(fmt, ...) Vortex::Logger::Log(Vortex::LogLevel::Fatal, fmt, __VA_ARGS__)
-#else
-    #define VT_CORE_LOG_TRACE(fmt, ...)
-    #define VT_CORE_LOG_INFO(fmt, ...)
-    #define VT_CORE_LOG_WARN(fmt, ...)
-    #define VT_CORE_LOG_ERROR(fmt, ...)
-    #define VT_CORE_LOG_FATAL(fmt, ...)
-
-    #define VT_LOG_TRACE(fmt, ...)
-    #define VT_LOG_INFO(fmt, ...)
-    #define VT_LOG_WARN(fmt, ...)
-    #define VT_LOG_ERROR(fmt, ...)
-    #define VT_LOG_FATAL(fmt, ...)
-#endif
 

@@ -9,9 +9,12 @@ namespace Vortex
 {
     class VT_API LoggerImpl : public Logger
     {
-        protected:
-            void InitializeImpl() override;
-            void LogImpl(LogLevel level, std::string_view formattedString) override;
+        public:
+            inline explicit LoggerImpl(std::string_view name) { this->name = name; }
+        
+            ~LoggerImpl() override = default;
+        
+            void Log(LogLevel level, std::string_view formattedString) override;
     };
 }
 
