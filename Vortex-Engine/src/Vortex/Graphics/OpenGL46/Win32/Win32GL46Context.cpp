@@ -8,69 +8,13 @@
 #include "Win32GL46Context.hpp"
 namespace Vortex
 {
-    GL46Context::~GL46Context()
+    bool GL46Context::initialized = false;
+    
+    GL46Context::GL46Context(void* windowHandle)
+        : windowHandle(static_cast<HWND>(windowHandle))
     {
-        wglMakeCurrent(nullptr, nullptr);
-        wglDeleteContext(renderingContext);
-        ReleaseDC(window, deviceContext);
-    }
-
-    void GL46Context::Initialize(void* windowHandle)
-    {
-        window = static_cast<HWND>(windowHandle);
-
-        HINSTANCE hInstance = GetModuleHandleW(nullptr);
-        const wchar_t* fakeWindowClass = L"Fake Window Class";
-
-        WNDCLASSEXW wcex{};
-        wcex.cbSize = sizeof(wcex);
-        wcex.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
-        wcex.lpfnWndProc = DefWindowProc;
-        wcex.cbClsExtra = 0;
-        wcex.cbWndExtra = 0;
-        wcex.hCursor = LoadCursor(hInstance, IDC_ARROW);
-        wcex.hIcon = nullptr;
-        wcex.hbrBackground = nullptr;
-        wcex.hInstance = hInstance;
-        wcex.lpszMenuName = nullptr;
-        wcex.lpszClassName = fakeWindowClass;
-
-        RegisterClassExW(&wcex);
-
-        HWND fakeWindow = CreateWindowExW
-        (
-                0, fakeWindowClass, L"Fake Window", WS_OVERLAPPEDWINDOW,
-                0, 0, 100, 100, nullptr, nullptr, hInstance, nullptr
-        );
-
-        HDC fakeDC = GetDC(fakeWindow);
-
-        PIXELFORMATDESCRIPTOR fakePFD;
-        memset(&fakePFD, 0, sizeof(fakePFD));
-        fakePFD.nSize = sizeof(fakePFD);
-        fakePFD.nVersion = 1;
-        fakePFD.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-        fakePFD.iPixelType = PFD_TYPE_RGBA;
-        fakePFD.cColorBits = 32;
-        fakePFD.cAlphaBits = 8;
-        fakePFD.cDepthBits = 24;
-
-        const int32 fakePFDID = ChoosePixelFormat(fakeDC, &fakePFD);
-        VT_CORE_ASSERT(fakePFDID != 0);
-        VT_CORE_ASSERT(SetPixelFormat(fakeDC, fakePFDID, &fakePFD) != 0);
-
-        HGLRC fakeRC = wglCreateContext(fakeDC);
-        VT_CORE_ASSERT(fakeRC != nullptr);
-        VT_CORE_ASSERT(wglMakeCurrent(fakeDC, fakeRC) != 0);
-
-        PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
-        wglChoosePixelFormatARB = reinterpret_cast<PFNWGLCHOOSEPIXELFORMATARBPROC>(wglGetProcAddress("wglChoosePixelFormatARB"));
-        VT_CORE_ASSERT(wglChoosePixelFormatARB != nullptr);
-
-        PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
-        wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(wglGetProcAddress("wglCreateContextAttribsARB"));
-        VT_CORE_ASSERT(wglCreateContextAttribsARB != nullptr);
-
+        Initialize();
+        
         deviceContext = GetDC(reinterpret_cast<HWND>(windowHandle));
 
         const int32 pixelFormatAttributes[] =
@@ -111,17 +55,82 @@ namespace Vortex
 
         renderingContext = wglCreateContextAttribsARB(deviceContext, nullptr, contextAttributes);
         VT_CORE_ASSERT(renderingContext != nullptr);
+        
+        VT_CORE_ASSERT(wglMakeCurrent(deviceContext, renderingContext) != 0);}
+    }
+    
+    GL46Context::~GL46Context()
+    {
+        wglMakeCurrent(nullptr, nullptr);
+        wglDeleteContext(renderingContext);
+        ReleaseDC(window, deviceContext);
+    }
 
+    void GL46Context::Initialize()
+    {
+        if (initialized) return;
+        
+        HINSTANCE hInstance = GetModuleHandleW(nullptr);
+        const wchar_t* fakeWindowClass = L"Fake Window Class";
+
+        WNDCLASSEXW wcex{};
+        wcex.cbSize = sizeof(wcex);
+        wcex.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
+        wcex.lpfnWndProc = DefWindowProc;
+        wcex.cbClsExtra = 0;
+        wcex.cbWndExtra = 0;
+        wcex.hCursor = LoadCursor(hInstance, IDC_ARROW);
+        wcex.hIcon = nullptr;
+        wcex.hbrBackground = nullptr;
+        wcex.hInstance = hInstance;
+        wcex.lpszMenuName = nullptr;
+        wcex.lpszClassName = fakeWindowClass;
+
+        RegisterClassExW(&wcex);
+
+        HWND fakeWindow = CreateWindowExW
+        (
+            0, fakeWindowClass, L"Fake Window", WS_OVERLAPPEDWINDOW,
+            0, 0, 100, 100, nullptr, nullptr, hInstance, nullptr
+        );
+
+        HDC fakeDC = GetDC(fakeWindow);
+
+        PIXELFORMATDESCRIPTOR fakePFD;
+        memset(&fakePFD, 0, sizeof(fakePFD));
+        fakePFD.nSize = sizeof(fakePFD);
+        fakePFD.nVersion = 1;
+        fakePFD.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        fakePFD.iPixelType = PFD_TYPE_RGBA;
+        fakePFD.cColorBits = 32;
+        fakePFD.cAlphaBits = 8;
+        fakePFD.cDepthBits = 24;
+
+        const int32 fakePFDID = ChoosePixelFormat(fakeDC, &fakePFD);
+        VT_CORE_ASSERT(fakePFDID != 0);
+        VT_CORE_ASSERT(SetPixelFormat(fakeDC, fakePFDID, &fakePFD) != 0);
+
+        HGLRC fakeRC = wglCreateContext(fakeDC);
+        VT_CORE_ASSERT(fakeRC != nullptr);
+        VT_CORE_ASSERT(wglMakeCurrent(fakeDC, fakeRC) != 0);
+
+        PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+        wglChoosePixelFormatARB = reinterpret_cast<PFNWGLCHOOSEPIXELFORMATARBPROC>(wglGetProcAddress("wglChoosePixelFormatARB"));
+        VT_CORE_ASSERT(wglChoosePixelFormatARB != nullptr);
+
+        PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+        wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(wglGetProcAddress("wglCreateContextAttribsARB"));
+        VT_CORE_ASSERT(wglCreateContextAttribsARB != nullptr);
+    
         wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(fakeRC);
         ReleaseDC(fakeWindow, fakeDC);
         DestroyWindow(fakeWindow);
-
-        VT_CORE_ASSERT(wglMakeCurrent(deviceContext, renderingContext) != 0);
-
         UnregisterClassW(fakeWindowClass, hInstance);
-
+        
         VT_CORE_ASSERT(Vortex::LoadGLFunctions() == true);
+        
+        initialized = true;
     }
 
     void GL46Context::Present()

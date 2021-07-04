@@ -10,10 +10,9 @@ namespace Vortex
     class VT_API IGraphicsContext
     {
         public:
-            IGraphicsContext() = default;
+            explicit IGraphicsContext(void* windowHandle) { };
             virtual ~IGraphicsContext() = default;
-
-            virtual void Initialize(void* windowHandle) = 0;
+            
             virtual void Present() = 0;
     };
 }
