@@ -16,13 +16,13 @@ namespace Vortex
     class VT_API WindowImpl : public IWindow
     {
         public:
-            friend class GL46Context;
-
             WindowImpl(int32 width, int32 height, std::wstring_view title);
             ~WindowImpl() override;
 
             void Update() override;
             void Present() override;
+            
+            inline static Display* GetDisplay() { return display; }
 
             VT_NODISCARD inline bool IsOpen() const override { return isOpen; }
 
@@ -33,7 +33,7 @@ namespace Vortex
             static uint32 windowsCount;
             static Display* display;
 
-            bool isOpen = false;
+            bool isOpen = true;
             Window window;
             Scope<IGraphicsContext> context;
 
