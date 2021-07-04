@@ -23,18 +23,18 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES})
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Graphics/IndexBuffer.cpp src/Vortex/Graphics/IndexBuffer.hpp src/Vortex/Graphics/OpenGL46/GL46IndexBuffer.cpp src/Vortex/Graphics/OpenGL46/GL46IndexBuffer.hpp src/Vortex/Core/LoggingManager.cpp src/Vortex/Core/LoggingManager.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 #target_precompile_headers (${PROJECT_NAME} PUBLIC "src/Vortex/vtpch.hpp")
 
-if (_WIN32)
-add_custom_command(
-TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${CMAKE_BINARY_DIR}/Vortex-Engine/Vortex-Engine.dll ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
-elseif (UNIX)
-add_custom_command(
-TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/libVortex-Engine.so ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
-endif ()
+#if (_WIN32)
+#add_custom_command(
+#TARGET ${PROJECT_NAME} POST_BUILD
+#COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${CMAKE_BINARY_DIR}/Vortex-Engine/Vortex-Engine.dll ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
+#elseif (UNIX)
+#add_custom_command(
+#TARGET ${PROJECT_NAME} POST_BUILD
+#COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/libVortex-Engine.so ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
+#endif ()

@@ -21,7 +21,7 @@ namespace Vortex
 
         protected:
             bool running = true;
-            int32 framerateLimit = 144; // 0 means that framerate limit is disabled.
+            int32 framerateLimit = 0; // 0 means that framerate limit is disabled.
 
         private:
             int32 frames = 0;

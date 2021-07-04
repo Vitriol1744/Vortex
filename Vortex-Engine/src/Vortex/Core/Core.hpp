@@ -8,7 +8,7 @@
 #include "Core/Assertions.hpp"
 #include "Core/Types.hpp"
 #include "Core/Singleton.hpp"
-#include "Core/Logger.hpp"
+#include "Core/LoggingManager.hpp"
 #include "Core/Math/Math.hpp"
 
 #define VT_NODISCARD [[nodiscard]]

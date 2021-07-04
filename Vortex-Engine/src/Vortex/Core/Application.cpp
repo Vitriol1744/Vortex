@@ -6,21 +6,21 @@
 
 #include "Graphics/OpenGL46/OpenGL.hpp"
 #include "Core/Time.hpp"
-
 #include <iostream>
 
 namespace Vortex
 {
     Application::Application()
     {
-        Logger::Initialize(); // <- This Function has to be called first!
-        Time::Get();
+        LoggingManager::Get(); // Initialize Logger!
+        Time::Get(); // Initialize Time!
     }
 
     void Application::Run()
     {
         double previousFrame = Time::GetTimeInSeconds();
         double fpsTimer = previousFrame;
+        std::cout << std::endl;
         while (running)
         {
             if (Time::GetTimeInSeconds() - fpsTimer >= 1.0f)
@@ -35,6 +35,7 @@ namespace Vortex
 
             Update();
             Render();
+            
             if (framerateLimit > 0)
                 while ((Time::GetTimeInSeconds() - previousFrame) < (1.0f / (double)framerateLimit));
             frames++;

@@ -10,6 +10,7 @@ namespace Vortex
     class Singleton
     {
         public:
+        
             // Gets instance of an object
             static T* Get()
             {
@@ -17,7 +18,7 @@ namespace Vortex
 
                 return &instance;
             }
-
+    
         protected:
             Singleton() = default;
             ~Singleton() = default;
