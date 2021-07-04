@@ -9,13 +9,13 @@
 
 namespace Vortex
 {
-    class VT_API GL46Context : public IGraphicsContext
+    class VT_API GL46Context final : public IGraphicsContext
     {
         public:
-        GL46Context() = default;
+        explicit GL46Context(void *windowHandle);
+        
         ~GL46Context() override;
 
-        void Initialize(void* windowHandle) override;
         void Present() override;
 
         private:
