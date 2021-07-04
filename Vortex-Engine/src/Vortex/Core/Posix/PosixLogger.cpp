@@ -4,42 +4,53 @@
 #include "vtpch.hpp"
 #include "Core/Macros.hpp"
 
+#include <iostream>
+
 #ifdef VT_PLATFORM_LINUX
 #include "PosixLogger.hpp"
+#include "unistd.h"
+
 namespace Vortex
 {
-    void LoggerImpl::InitializeImpl()
+    void Logger::Initialize()
     {
-
+        //TODO: Initialize Logger
     }
-
-    void LoggerImpl::LogImpl(LogLevel level, std::string_view formattedString)
+    
+    void LoggerImpl::Log(LogLevel level, std::string_view formattedString)
     {
-        //HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
+        // Don't print null terminator character
+        ::write(STDOUT_FILENO, "\u001b[0m", sizeof("\u001b[0m") - 1);
         switch (level)
         {
             case LogLevel::Trace:
-                //SetConsoleTextAttribute(hConsole, 0x02);
+                ::write(STDOUT_FILENO, "\u001b[32m", sizeof("\u001b[32m") - 1);
                 break;
             case LogLevel::Info:
-                //SetConsoleTextAttribute(hConsole, 0x09);
+                ::write(STDOUT_FILENO, "\u001b[36m", sizeof("\u001b[36m") - 1);
                 break;
             case LogLevel::Warn:
-                //SetConsoleTextAttribute(hConsole, 0x06);
+                ::write(STDOUT_FILENO, "\u001b[33m", sizeof("\u001b[33m") - 1);
                 break;
             case LogLevel::Error:
-                //SetConsoleTextAttribute(hConsole, 0x04);
+                ::write(STDOUT_FILENO, "\u001b[31m", sizeof("\u001b[31m") - 1);
                 break;
             case LogLevel::Fatal:
-                //SetConsoleTextAttribute(hConsole,  0x40);
+                ::write(STDOUT_FILENO, "\u001b[37m\u001b[41m", sizeof("\u001b[37m\u001b[41m") - 1);
+                break;
+                
+            default:
+                ::write(STDOUT_FILENO, "\u001b[37m", sizeof("\u001b[37m") - 1);
+                ::write(STDOUT_FILENO, "\u001b[40m", sizeof("\u001b[40") - 1);
                 break;
         }
-
-        //WriteConsoleA(hConsole, formattedString.data(), formattedString.size(), nullptr, nullptr);
-        //SetConsoleTextAttribute(hConsole, 0x07);
-
-        //WriteConsoleA(hConsole, "\r\n", 2, nullptr, nullptr);
+        
+        ::write(STDOUT_FILENO, name.c_str(), name.size());
+        ::write(STDOUT_FILENO, formattedString.data(), formattedString.size());
+        
+        // Change color before printing new line character
+        ::write(STDOUT_FILENO, "\u001b[0m", sizeof("\u001b[0m") - 1);
+        ::write(STDOUT_FILENO, "\n", 1);
     }
 }
 #endif
