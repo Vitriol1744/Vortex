@@ -23,7 +23,7 @@ namespace Vortex
 {
     unsigned int WindowImpl::windowsCount = 0;
 
-    WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title)
+    WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share)
     {
         if (!windowsCount) Initialize();
         hWnd = CreateWindowExW
@@ -33,23 +33,22 @@ namespace Vortex
         );
         (*GetWindowsMap())[hWnd] = this;
 
-        //VT_CORE_LOG_TRACE("Window Created!");
+        VT_CORE_LOG_TRACE("Window Created!");
 
-        IRendererAPI::Initialize();
-        switch (Vortex::IRendererAPI::Get()->GetGraphicsAPI())
+        Graphics::IRendererAPI::Initialize();
+        switch (Graphics::IRendererAPI::Get()->GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
-                context = CreateScope<GL46Context>();
+            case Graphics::GraphicsAPI::OpenGL46:
+            {
+                context = CreateScope<Graphics::GL46Context>(reinterpret_cast<void*>(&window));
                 break;
-            case GraphicsAPI::None:
+            }
+            case Graphics::GraphicsAPI::None:
 
             default:
                 VT_CORE_LOG_FATAL("Graphics API Not Supported!");
                 break;
         }
-
-        context->Initialize(hWnd);
-        VT_CORE_LOG_TRACE("Graphics Context Created!");
 
         ShowWindow(hWnd, SW_SHOW);
         UpdateWindow(hWnd);

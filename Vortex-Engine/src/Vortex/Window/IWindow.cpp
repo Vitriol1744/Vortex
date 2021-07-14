@@ -8,13 +8,13 @@
     #include "Win32/Win32Window.hpp"
     #undef CreateWindow
 #elif defined(VT_PLATFORM_LINUX)
-    #include "Posix/PosixWindow.hpp"
+    #include "Posix/X11Window.hpp"
 #endif
 
 namespace Vortex
 {
-    Ref<IWindow> IWindow::CreateWindow(int width, int height, std::wstring_view title)
+    Ref<IWindow> IWindow::CreateWindow(int width, int height, std::wstring_view title, Ref<IWindow> share)
     {
-        return CreateRef<WindowImpl>(width, height, title);
+        return CreateRef<WindowImpl>(width, height, title, share);
     }
 }

@@ -19,7 +19,7 @@ namespace Vortex
     class VT_API WindowImpl : public IWindow
     {
         public:
-            WindowImpl(int32 width, int32 height, std::wstring_view title);
+            WindowImpl(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share = nullptr);
             ~WindowImpl() override;
 
             void Update() override;
@@ -35,14 +35,14 @@ namespace Vortex
 
             bool isOpen = true;
             HWND hWnd;
-            Scope<IGraphicsContext> context;
+            Scope<Graphics::IGraphicsContext> context;
 
             static void Initialize();
             static void Shutdown();
 
-            inline static std::map<HWND, WindowImpl*>* GetWindowsMap()
+            inline static std::unordered_map<HWND, WindowImpl*>* GetWindowsMap()
             {
-                static auto windowsMap = new std::map<HWND, WindowImpl*>();
+                static auto windowsMap = new std::unordered_map<HWND, WindowImpl*>();
 
                 return windowsMap;
             }
