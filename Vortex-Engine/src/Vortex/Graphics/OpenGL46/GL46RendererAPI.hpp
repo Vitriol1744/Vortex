@@ -6,14 +6,17 @@
 #include "Core/Core.hpp"
 
 #include "Graphics/IRendererAPI.hpp"
+#include "Graphics/OpenGL46/OpenGL.hpp"
 
-namespace Vortex
+namespace Vortex::Graphics
 {
-    class GL46RendererAPI : public IRendererAPI
+    class GL46RendererAPI final : public IRendererAPI
     {
         public:
-            void SetClearColor(Vec4 color) override;
-            void Clear() override;
+            GLvoid SetClearColor(Math::Vec4 color) noexcept override;
+            GLvoid Clear() noexcept override;
+
+            GLvoid DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount) override;
     };
 }
 

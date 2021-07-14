@@ -4,17 +4,21 @@
 #include "vtpch.hpp"
 #include "GL46RendererAPI.hpp"
 
-#include "OpenGL.hpp"
-
-namespace Vortex
+namespace Vortex::Graphics
 {
-    void GL46RendererAPI::SetClearColor(Vec4 color)
+    GLvoid GL46RendererAPI::SetClearColor(Math::Vec4 color) noexcept
     {
         glClearColor(color.r, color.g, color.b, color.a);
     }
 
-    void GL46RendererAPI::Clear()
+    GLvoid GL46RendererAPI::Clear() noexcept
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+
+    GLvoid GL46RendererAPI::DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount)
+    {
+         mesh->Bind();
+         glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr);
     }
 }
