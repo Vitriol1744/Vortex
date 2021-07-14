@@ -4,9 +4,12 @@
 #include "vtpch.hpp"
 #include "Application.hpp"
 
-#include "Graphics/OpenGL46/OpenGL.hpp"
 #include "Core/Time.hpp"
-#include <iostream>
+
+using namespace Vortex::Graphics;
+using namespace Vortex;
+
+#undef None
 
 namespace Vortex
 {
@@ -20,7 +23,7 @@ namespace Vortex
     {
         double previousFrame = Time::GetTimeInSeconds();
         double fpsTimer = previousFrame;
-        std::cout << std::endl;
+
         while (running)
         {
             if (Time::GetTimeInSeconds() - fpsTimer >= 1.0f)
@@ -39,6 +42,8 @@ namespace Vortex
             if (framerateLimit > 0)
                 while ((Time::GetTimeInSeconds() - previousFrame) < (1.0f / (double)framerateLimit));
             frames++;
+
+            EventSystem::Get()->Update();
         }
     }
 }

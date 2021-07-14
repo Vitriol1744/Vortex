@@ -18,26 +18,28 @@
 #endif
 
 #ifdef VT_ENABLE_ASSERTIONS
-    #define VT_CORE_ASSERT(expr) \
+    #define VT_CORE_ASSERT(expr) VT_CORE_ASSERT_MSG(expr, #expr)
+    #define VT_CORE_ASSERT_MSG(expr, msg) \
         if (expr) { } \
         else \
         { \
-            VT_CORE_LOG_FATAL("Assertion Failed: {0}, In File: {1}, At Line: {2}", #expr, __FILE__, __LINE__); \
+            VT_CORE_LOG_FATAL("Assertion Failed: {0}, In File: {1}, At Line: {2}", msg, __FILE__, __LINE__); \
             VT_DEBUG_BREAK;\
         }
-    #define VT_ASSERT(expr)\
+    #define VT_ASSERT(expr) VT_ASSERT_MSG(expr, #expr)
+    #define VT_ASSERT_MSG(expr, msg)\
         if (expr) { }\
         else \
         { \
-            VT_LOG_FATAL("Assertion Failed: {0}, In File: {1}, At Line: {2}", #expr, __FILE__, __LINE__);\
+            VT_LOG_FATAL("Assertion Failed: {0}, In File: {1}, At Line: {2}", msg, __FILE__, __LINE__);\
             VT_DEBUG_BREAK;\
         }
     #ifdef DEBUG
-#define VT_CORE_SLOW_ASSERT(expr) VT_CORE_ASSERT(expr)
+        #define VT_CORE_SLOW_ASSERT(expr) VT_CORE_ASSERT(expr)
         #define VT_SLOW_ASSERT(expr) VT_ASSERT(expr)
     #endif
 #else
-#define VT_CORE_ASSERT(expr, msg) expr
+    #define VT_CORE_ASSERT(expr, msg) expr
     #define VT_ASSERT(expr, msg) expr
     #define VT_CORE_SLOW_ASSERT(expr, msg) VT_CORE_ASSERT(expr, msg)
     #define VT_SLOW_ASSERT(expr, msg) VT_ASSERT(expr, msg)
