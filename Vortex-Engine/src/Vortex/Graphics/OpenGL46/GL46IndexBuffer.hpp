@@ -3,20 +3,26 @@
 //
 #pragma once
 
-#include "Graphics/IndexBuffer.hpp"
+#include "Core/Core.hpp"
 
-namespace Vortex
+#include "Graphics/IIndexBuffer.hpp"
+#include "Graphics/OpenGL46/OpenGL.hpp"
+
+namespace Vortex::Graphics
 {
-    class GL46IndexBuffer : public IndexBuffer
+    class VT_API GL46IndexBuffer final : public IIndexBuffer
     {
         public:
-            GL46IndexBuffer(uint32* indices, uint32 size);
+            GL46IndexBuffer() noexcept;
+            GL46IndexBuffer(GLuint* indices, GLuint size);
             ~GL46IndexBuffer() noexcept override;
-            
-            void Bind() const override;
-            void Unbind() const override;
-            
+
+            GLvoid Bind() const noexcept override;
+            GLvoid Unbind() const noexcept override;
+
+            GLvoid SetData(GLuint* indices, GLuint size) const override;
+
         private:
-            uint32 id{};
+            GLuint id = 0;
     };
 }

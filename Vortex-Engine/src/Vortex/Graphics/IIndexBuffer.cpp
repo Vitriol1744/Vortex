@@ -1,16 +1,18 @@
 //
 // Created by vitriol1744 on 03.07.2021.
 //
-#include "IndexBuffer.hpp"
+#include "IIndexBuffer.hpp"
 
 #include "Graphics/IRendererAPI.hpp"
 #include "Graphics/OpenGL46/GL46IndexBuffer.hpp"
 
-namespace Vortex
+#undef None
+
+namespace Vortex::Graphics
 {
-    Ref<IndexBuffer> IndexBuffer::Create(uint32* indices, uint32 size)
+    Ref<IIndexBuffer> IIndexBuffer::Create(uint32* indices, uint32 size)
     {
-        Ref<IndexBuffer> result = nullptr;
+        Ref<IIndexBuffer> result = nullptr;
         switch (IRendererAPI::GetGraphicsAPI())
         {
             case GraphicsAPI::OpenGL46:

@@ -3,11 +3,14 @@
 //
 #include "GL46IndexBuffer.hpp"
 
-#include "Graphics/OpenGL46/OpenGL.hpp"
-
-namespace Vortex
+namespace Vortex::Graphics
 {
-    GL46IndexBuffer::GL46IndexBuffer(uint32 *indices, uint32 size)
+    GL46IndexBuffer::GL46IndexBuffer() noexcept
+    {
+        glCreateBuffers(1, &id);
+    }
+
+    GL46IndexBuffer::GL46IndexBuffer(GLuint* indices, GLuint size)
     {
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
@@ -18,14 +21,20 @@ namespace Vortex
     {
         glDeleteBuffers(1, &id);
     }
-    
-    void GL46IndexBuffer::Bind() const
+
+    GLvoid GL46IndexBuffer::Bind() const noexcept
     {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
-    
-    void GL46IndexBuffer::Unbind() const
+
+    GLvoid GL46IndexBuffer::Unbind() const noexcept
     {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    GLvoid GL46IndexBuffer::SetData(GLuint* indices, GLuint size) const
+    {
+        Bind();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_DYNAMIC_DRAW);
     }
 }
