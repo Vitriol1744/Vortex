@@ -6,25 +6,69 @@
 #include "Core/Export.hpp"
 #include "Core/Types.hpp"
 
-namespace Vortex
+namespace Vortex::Math
 {
-    struct VT_API Vector4f
+    template<typename T>
+    struct VT_API Vector4
     {
-        inline Vector4f(float32 x, float32 y, float32 z, float32 w) : x(x), y(y), z(z), w(w) { }
+        Vector4() = default;
+        inline Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { }
 
         union
         {
-            float32 v[4];
+            T v[4];
             struct
             {
-                float32 x, y, z, w;
+                T x, y, z, w;
             };
             struct
             {
-                float32 r, g, b, a;
+                T r, g, b, a;
             };
         };
     };
 
-    using Vec4 = Vector4f;
+    template<typename T>
+    struct VT_API Vector3
+    {
+        Vector3() = default;
+        inline Vector3(T x, T y, T z) : x(x), y(y), z(z) { }
+
+        union
+        {
+            T v[3];
+            struct
+            {
+                T x, y, z;
+            };
+            struct
+            {
+                T r, g, b;
+            };
+        };
+    };
+
+    template<typename T>
+    struct VT_API Vector2
+    {
+        Vector2() = default;
+        inline Vector2(T x, T y) : x(x), y(y) { }
+
+        union
+        {
+            T v[2];
+            struct
+            {
+                T x, y;
+            };
+            struct
+            {
+                T r, g;
+            };
+        };
+    };
+
+    using Vec4 = Vector4<float32>;
+    using Vec3 = Vector3<float32>;
+    using Vec2 = Vector2<float32>;
 }
