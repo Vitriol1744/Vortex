@@ -5,20 +5,24 @@
 
 #include "Core/Core.hpp"
 
-#include "Graphics/VertexBuffer.hpp"
+#include "Graphics/IVertexBuffer.hpp"
+#include "Graphics/OpenGL46/OpenGL.hpp"
 
-namespace Vortex
+namespace Vortex::Graphics
 {
-    class VT_API GL46VertexBuffer : public VertexBuffer
+    class VT_API GL46VertexBuffer final : public IVertexBuffer
     {
         public:
-            GL46VertexBuffer(float* vertices, uint32 size);
-            ~GL46VertexBuffer() override;
+            GL46VertexBuffer() noexcept = default;
+            GL46VertexBuffer(GLfloat* vertices, GLuint size);
+            ~GL46VertexBuffer() noexcept override;
 
-            void Bind() override;
-            void Unbind() override;
+            GLvoid Bind() const noexcept override;
+            GLvoid Unbind() const noexcept override;
+
+            virtual GLvoid SetData(GLuint* vertices, GLuint size) const override;
 
         private:
-            uint32 id;
+            GLuint id = 0;
     };
 }
