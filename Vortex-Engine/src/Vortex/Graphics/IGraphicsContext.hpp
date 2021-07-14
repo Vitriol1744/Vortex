@@ -5,14 +5,15 @@
 
 #include "Core/Core.hpp"
 
-namespace Vortex
+namespace Vortex::Graphics
 {
-    class VT_API IGraphicsContext
+    struct VT_API IGraphicsContext
     {
-        public:
-            explicit IGraphicsContext(void* windowHandle) { };
-            virtual ~IGraphicsContext() = default;
-            
-            virtual void Present() = 0;
+        explicit IGraphicsContext(void* windowHandle) noexcept { };
+        virtual ~IGraphicsContext() = default;
+
+        virtual void Present() = 0;
+
+        virtual void Activate() = 0;
     };
 }
