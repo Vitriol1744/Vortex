@@ -5,9 +5,11 @@
 
 #include "Core/Core.hpp"
 
+#include "Graphics/IMesh.hpp"
+
 #undef None
 
-namespace Vortex
+namespace Vortex::Graphics
 {
     enum class GraphicsAPI
     {
@@ -18,17 +20,18 @@ namespace Vortex
     class VT_API IRendererAPI
     {
         public:
-            friend class WindowImpl;
+            virtual ~IRendererAPI() = default;
 
             static Scope<IRendererAPI>& Get();
 
             IRendererAPI() = default;
             VT_NODISCARD inline static GraphicsAPI GetGraphicsAPI() { return api; }
 
-            virtual void SetClearColor(Vec4 color) = 0;
+            virtual void SetClearColor(Math::Vec4 color) = 0;
             virtual void Clear() = 0;
 
-        private:
+            virtual void DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount) = 0;
+
             static GraphicsAPI api;
 
             static void Initialize();

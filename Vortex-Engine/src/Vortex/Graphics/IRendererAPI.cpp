@@ -6,7 +6,9 @@
 
 #include "Graphics/OpenGL46/GL46RendererAPI.hpp"
 
-namespace Vortex
+#undef None
+
+namespace Vortex::Graphics
 {
     GraphicsAPI IRendererAPI::api = GraphicsAPI::None;
 
