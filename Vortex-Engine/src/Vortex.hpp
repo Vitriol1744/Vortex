@@ -6,4 +6,7 @@
 #include "Vortex/Core/Application.hpp"
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/WindowManager.hpp"
-#include "Vortex/Graphics/IRendererAPI.hpp"
+#include "Vortex/Graphics/Graphics.hpp"
+
+namespace VTMath        = Vortex::Math;
+namespace VTGraphics    = Vortex::Graphics;
