@@ -10,7 +10,7 @@ namespace Vortex
 {
     Time::Time()
     {
-        VT_CORE_LOG_INFO("Time Class Initialized!");
+        VT_CORE_LOG_INFO("Time Initialized!");
     }
 
     float64 Time::GetTimeInSeconds()
