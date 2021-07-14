@@ -5,6 +5,8 @@ project (Vortex-Engine)
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
+#TODO: Download FMT
+
 add_subdirectory (vendor/fmt)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -23,7 +25,7 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Graphics/IndexBuffer.cpp src/Vortex/Graphics/IndexBuffer.hpp src/Vortex/Graphics/OpenGL46/GL46IndexBuffer.cpp src/Vortex/Graphics/OpenGL46/GL46IndexBuffer.hpp src/Vortex/Core/LoggingManager.cpp src/Vortex/Core/LoggingManager.hpp)
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Matrix.cpp src/Vortex/Core/Math/MathCommon.hpp src/Vortex/Core/Math/MathCommon.cpp src/Vortex/Core/IEvent.hpp src/Vortex/Core/EventSystem.cpp src/Vortex/Core/EventSystem.hpp src/Vortex/Events/Events.hpp src/Vortex/Input/KeyCode.hpp src/Vortex/Input/MouseCode.hpp src/Vortex/Graphics/VertexBufferLayout.hpp src/Vortex/Graphics/IMesh.cpp src/Vortex/Graphics/IMesh.hpp src/Vortex/Graphics/OpenGL46/GL46Mesh.cpp src/Vortex/Graphics/OpenGL46/GL46Mesh.hpp src/Vortex/Graphics/OpenGL46/OpenGL.cpp src/Vortex/Graphics/Graphics.hpp src/Vortex/Graphics/IShader.cpp src/Vortex/Graphics/IShader.hpp src/Vortex/Graphics/OpenGL46/GL46Shader.cpp src/Vortex/Graphics/OpenGL46/GL46Shader.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
@@ -38,3 +40,7 @@ target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 #TARGET ${PROJECT_NAME} POST_BUILD
 #COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/libVortex-Engine.so ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
 #endif ()
+
+add_custom_command(
+TARGET ${PROJECT_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/XSandbox/assets)
