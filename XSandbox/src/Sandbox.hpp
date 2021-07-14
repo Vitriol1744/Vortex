@@ -5,6 +5,8 @@
 
 #include "Vortex.hpp"
 
+using namespace Vortex;
+
 class Sandbox : public Vortex::Application
 {
     public:
@@ -13,12 +15,21 @@ class Sandbox : public Vortex::Application
         void Update() override;
         void Render() override;
 
-    private:
-        uint32_t vao{};
-        uint32_t vbo{};
-        uint32_t ibo{};
+        void OnMouseMove(Math::Vec2);
 
-        Vortex::Ref<Vortex::IWindow> window;
+    private:
+        Ref<VTGraphics::IMesh> mesh;
+        Ref<VTGraphics::IVertexBuffer> vertexBuffer;
+        Ref<VTGraphics::IIndexBuffer> indexBuffer;
+
+        Ref<VTGraphics::IShader> shader;
+
+        Ref<IWindow> window;
+
+        Math::Mat4 model;
+        Math::Mat4 projection;
+
+        float y{}, y2 = 1;
 };
 
 
