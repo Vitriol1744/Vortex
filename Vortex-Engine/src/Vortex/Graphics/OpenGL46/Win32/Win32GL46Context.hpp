@@ -7,23 +7,22 @@
 #include "Graphics/IGraphicsContext.hpp"
 #include "Graphics/OpenGL46/OpenGL.hpp"
 
-namespace Vortex
+namespace Vortex::Graphics
 {
-    class VT_API GL46Context final : public IGraphicsContext
+    struct VT_API GL46Context final : public IGraphicsContext
     {
-        public:
-            explicit GL46Context(void* windowHandle) { }
-            ~GL46Context() override;
-            
-            void Present() override;
+        explicit GL46Context(void* windowHandle) { }
+        ~GL46Context() override;
 
-        private:
-            static bool initialized;
-            
-            HWND window{};
-            HDC deviceContext{};
-            HGLRC renderingContext{};
+        void Present() override;
+        void Activate() override;
+
+        static bool initialized;
+
+        HWND window{};
+        HDC deviceContext{};
+        HGLRC renderingContext{};
         
-            void Initialize();
+        void Initialize();
     };
 }

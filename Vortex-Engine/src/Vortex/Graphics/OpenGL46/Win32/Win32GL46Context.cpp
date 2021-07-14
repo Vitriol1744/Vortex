@@ -6,7 +6,7 @@
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32GL46Context.hpp"
-namespace Vortex
+namespace Vortex::Graphics
 {
     bool GL46Context::initialized = false;
     
@@ -136,6 +136,11 @@ namespace Vortex
     void GL46Context::Present()
     {
         ::SwapBuffers(deviceContext);
+    }
+
+    void GL46Context::Activate()
+    {
+        wglMakeCurrent(deviceContext, renderingContext);
     }
 }
 #endif
