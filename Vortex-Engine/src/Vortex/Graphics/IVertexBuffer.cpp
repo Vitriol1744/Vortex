@@ -1,17 +1,18 @@
 //
 // Created by Vitriol1744 on 27.06.2021.
 //
-#include "vtpch.hpp"
-#include "VertexBuffer.hpp"
+#include "IVertexBuffer.hpp"
 
 #include "Graphics/IRendererAPI.hpp"
 #include "Graphics/OpenGL46/GL46VertexBuffer.hpp"
 
-namespace Vortex
+#undef None
+
+namespace Vortex::Graphics
 {
-    Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32 size)
+    Ref<IVertexBuffer> IVertexBuffer::Create(float* vertices, uint32 size)
     {
-        Ref<VertexBuffer> result;
+        Ref<IVertexBuffer> result;
         switch (IRendererAPI::GetGraphicsAPI())
         {
             case GraphicsAPI::OpenGL46:
