@@ -14,7 +14,7 @@ namespace Vortex
 {
     void Logger::Initialize()
     {
-        //TODO: Initialize Logger
+
     }
     
     void LoggerImpl::Log(LogLevel level, std::string_view formattedString)
