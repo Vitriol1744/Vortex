@@ -61,9 +61,9 @@ namespace Vortex::Math
         friend Vector4<T>& operator+(Vector4<T>& left, const T& right) noexcept;
         friend Vector4<T>& operator-(Vector4<T>& left, const Vector4<T>& right) noexcept;
         friend Vector4<T>& operator-(Vector4<T>& left, const T& right) noexcept;
+        friend Vector4<T>& operator*(Vector4<T>& left, const Mat4& right) noexcept;
         friend Vector4<T>& operator*(Vector4<T>& left, const Vector4<T>& right) noexcept;
         friend Vector4<T>& operator*(Vector4<T>& left, const T& right) noexcept;
-        friend Vector4<T>& operator*(Vector4<T>& left, const Mat4& right) noexcept;
         friend Vector4<T>& operator/(Vector4<T>& left, const Vector4<T>& right) noexcept;
         friend Vector4<T>& operator/(Vector4<T>& left, const T& right) noexcept;
         friend Vector4<T>& operator%(Vector4<T>& left, const Vector4<T>& right) noexcept;
@@ -112,22 +112,22 @@ namespace Vortex::Math
             return *this;
         }
 
-        inline Vector4<T>& operator*=(Vector4<T>& right) noexcept
-        {
-            x *= right.x;
-            y *= right.y;
-            z *= right.z;
-            w *= right.w;
-
-            return *this;
-        }
-
         inline Vector4<T>& operator*=(Matrix4x4f& right) noexcept
         {
             x = x * right[0 + 0 * 4] + y * right[1 + 0 * 4] + z * right[2 + 0 * 4] + w * right[3 + 0 * 4];
             y = x * right[0 + 1 * 4] + y * right[1 + 1 * 4] + z * right[2 + 1 * 4] + w * right[3 + 1 * 4];
             z = x * right[0 + 2 * 4] + y * right[1 + 2 * 4] + z * right[2 + 2 * 4] + w * right[3 + 2 * 4];
             w = x * right[0 + 3 * 4] + y * right[1 + 3 * 4] + z * right[2 + 3 * 4] + w * right[3 + 3 * 4];
+
+            return *this;
+        }
+
+        inline Vector4<T>& operator*=(Vector4<T>& right) noexcept
+        {
+            x *= right.x;
+            y *= right.y;
+            z *= right.z;
+            w *= right.w;
 
             return *this;
         }
@@ -244,6 +244,12 @@ namespace Vortex::Math
         return left;
     }
     template<typename T>
+    Vector4<T>& operator*(Vector4<T>& left, const Mat4& right) noexcept
+    {
+        left *= right;
+        return left;
+    }
+    template<typename T>
     Vector4<T>& operator*(Vector4<T>& left, const Vector4<T>& right) noexcept
     {
         left *= right;
@@ -251,12 +257,6 @@ namespace Vortex::Math
     }
     template<typename T>
     Vector4<T>& operator*(Vector4<T>& left, const T& right) noexcept
-    {
-        left *= right;
-        return left;
-    }
-    template<typename T>
-    Vector4<T>& operator*(Vector4<T>& left, const Mat4& right) noexcept
     {
         left *= right;
         return left;
