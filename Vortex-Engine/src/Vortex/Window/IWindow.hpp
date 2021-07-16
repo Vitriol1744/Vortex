@@ -4,12 +4,12 @@
 #pragma once
 
 #include "Core/Core.hpp"
-
 #include "Core/IEvent.hpp"
+
 #include "Input/KeyCode.hpp"
 #include "Input/MouseCode.hpp"
 
-#include <Graphics/IGraphicsContext.hpp>
+#include "Graphics/IGraphicsContext.hpp"
 
 #include <string>
 
@@ -24,7 +24,7 @@ namespace Vortex
         Math::Vec2 position;
     };
 
-    class VT_API IWindow
+    class VT_API IWindow : public NonCopyable<IWindow>
     {
         public:
             friend class WindowManager;

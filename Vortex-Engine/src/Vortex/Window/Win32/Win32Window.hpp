@@ -5,14 +5,14 @@
 
 #include "Window/IWindow.hpp"
 
+#include "Graphics/IGraphicsContext.hpp"
+
 #define UNICODE
 #define WIN32_LEAN_AND_MEAN
 #define WIN32_EXTRA_LEAN
 #include <Windows.h>
 
 #include <map>
-
-#include "Graphics/IGraphicsContext.hpp"
 
 namespace Vortex
 {

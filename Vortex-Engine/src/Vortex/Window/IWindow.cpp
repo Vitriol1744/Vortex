@@ -8,7 +8,7 @@
     #include "Win32/Win32Window.hpp"
     #undef CreateWindow
 #elif defined(VT_PLATFORM_LINUX)
-    #include "Posix/X11Window.hpp"
+    #include "Window/Posix/X11Window.hpp"
 #endif
 
 namespace Vortex
