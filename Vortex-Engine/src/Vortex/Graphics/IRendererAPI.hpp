@@ -30,7 +30,7 @@ namespace Vortex::Graphics
             virtual void SetClearColor(Math::Vec4 color) = 0;
             virtual void Clear() = 0;
 
-            virtual void DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount) = 0;
+            virtual void DrawIndexed(const Ref<IMesh> mesh, uint32_t indicesCount) = 0;
 
             static GraphicsAPI api;
 

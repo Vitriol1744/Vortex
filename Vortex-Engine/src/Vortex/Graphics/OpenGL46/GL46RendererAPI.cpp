@@ -16,7 +16,7 @@ namespace Vortex::Graphics
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    GLvoid GL46RendererAPI::DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount)
+    GLvoid GL46RendererAPI::DrawIndexed(const Ref<IMesh> mesh, uint32_t indicesCount)
     {
          mesh->Bind();
          glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr);

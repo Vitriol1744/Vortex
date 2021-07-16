@@ -16,7 +16,7 @@ namespace Vortex::Graphics
             GLvoid SetClearColor(Math::Vec4 color) noexcept override;
             GLvoid Clear() noexcept override;
 
-            GLvoid DrawIndexed(const Ref<IMesh>& mesh, uint32_t indicesCount) override;
+            GLvoid DrawIndexed(const Ref<IMesh> mesh, uint32_t indicesCount) override;
     };
 }
 
