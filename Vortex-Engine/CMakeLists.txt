@@ -25,7 +25,7 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Matrix.cpp src/Vortex/Core/Math/MathCommon.hpp src/Vortex/Core/Math/MathCommon.cpp src/Vortex/Core/IEvent.hpp src/Vortex/Core/EventSystem.cpp src/Vortex/Core/EventSystem.hpp src/Vortex/Events/Events.hpp src/Vortex/Input/KeyCode.hpp src/Vortex/Input/MouseCode.hpp src/Vortex/Graphics/VertexBufferLayout.hpp src/Vortex/Graphics/IMesh.cpp src/Vortex/Graphics/IMesh.hpp src/Vortex/Graphics/OpenGL46/GL46Mesh.cpp src/Vortex/Graphics/OpenGL46/GL46Mesh.hpp src/Vortex/Graphics/OpenGL46/OpenGL.cpp src/Vortex/Graphics/Graphics.hpp src/Vortex/Graphics/IShader.cpp src/Vortex/Graphics/IShader.hpp src/Vortex/Graphics/OpenGL46/GL46Shader.cpp src/Vortex/Graphics/OpenGL46/GL46Shader.hpp)
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Vector4.hpp src/Vortex/Core/Math/Vector3.hpp src/Vortex/Core/Math/Vector2.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
@@ -43,4 +43,4 @@ target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 
 add_custom_command(
 TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/XSandbox/assets)
+COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}/assets)
