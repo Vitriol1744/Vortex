@@ -8,9 +8,9 @@
 
 namespace Vortex::Math
 {
-    Matrix4x4f::Matrix4x4f(float diagonal)
+    Matrix4x4f::Matrix4x4f(float32 diagonal) noexcept
     {
-        memset(data, 0, 4 * 4 * sizeof(float));
+        memset(data, 0, 4 * 4 * sizeof(float32));
 
         data[0 + 0 * 4] = diagonal;
         data[1 + 1 * 4] = diagonal;
@@ -18,7 +18,7 @@ namespace Vortex::Math
         data[3 + 3 * 4] = diagonal;
     }
 
-    Matrix4x4f Matrix4x4f::Translate(Math::Vec3 translation)
+    Matrix4x4f Matrix4x4f::Translate(Vec3 translation) noexcept
     {
         Matrix4x4f result(1.0f);
 
@@ -29,7 +29,27 @@ namespace Vortex::Math
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Orthographic(float left, float right, float top, float bottom, float near, float far)
+    Matrix4x4f Matrix4x4f::Scale(Vec3 scale) noexcept
+    {
+        Matrix4x4f result(1.0f);
+
+        result.data[0 + 0 * 4] = scale.x;
+        result.data[1 + 1 * 4] = scale.y;
+        result.data[2 + 2 * 4] = scale.z;
+
+        return result;
+    }
+
+    Matrix4x4f Matrix4x4f::Rotate(float32 angle, Vec3 rotation) noexcept
+    {
+        Matrix4x4f result(1.0f);
+
+        //TODO: Rotate matrix before returning!
+
+        return result;
+    }
+
+    Matrix4x4f Matrix4x4f::Orthographic(float32 left, float32 right, float32 top, float32 bottom, float32 near, float32 far) noexcept
     {
         Mat4 result(1.0f);
 
@@ -44,11 +64,11 @@ namespace Vortex::Math
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Perspective(float fov, float aspectRatio, float near, float far)
+    Matrix4x4f Matrix4x4f::Perspective(float32 fov, float32 aspectRatio, float32 near, float32 far) noexcept
     {
         Matrix4x4f result(1.0f);
 
-        float q = 1.0f / (float)Tan(ToRadians(0.5f * fov));
+        float32 q = 1.0f / (float32)Tan(ToRadians(0.5f * fov));
 
         result.data[0 + 0 * 4] = q/aspectRatio;
         result.data[1 + 1 * 4] = q;
