@@ -20,6 +20,7 @@ namespace Vortex::Graphics
             virtual void Reload(std::string_view vertexPath, std::string_view pixelPath, bool precompiled) noexcept = 0;
             virtual void Load(std::string_view vertexPath, std::string_view pixelPath, bool precompiled) noexcept = 0;
 
+            virtual void SetUniform1f(std::string_view name, float32 value) const noexcept = 0;
             virtual void SetUniform2f(std::string_view name, Math::Vec2 vec) const noexcept = 0;
             virtual void SetUniform3f(std::string_view name, Math::Vec3 vec) const noexcept = 0;
             virtual void SetUniform4f(std::string_view name, Math::Vec4 vec) const noexcept = 0;

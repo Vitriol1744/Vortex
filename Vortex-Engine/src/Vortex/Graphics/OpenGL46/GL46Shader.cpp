@@ -101,6 +101,12 @@ namespace Vortex::Graphics
         glUseProgram(id);
     }
 
+    GLvoid GL46Shader::SetUniform1f(std::string_view name, GLfloat value) const noexcept
+    {
+        GLint location = glGetUniformLocation(id, name.data());
+        glUniform1f(location, value);
+    }
+
     GLvoid GL46Shader::SetUniform2f(std::string_view name, Math::Vec2 vec) const noexcept
     {
         GLint location = glGetUniformLocation(id, name.data());

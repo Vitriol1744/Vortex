@@ -24,6 +24,7 @@ namespace Vortex::Graphics
             GLvoid Reload(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept override;
             GLvoid Load(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept override;
 
+            GLvoid SetUniform1f(std::string_view name, float32 value) const noexcept override;
             GLvoid SetUniform2f(std::string_view name, Math::Vec2 vec) const noexcept override;
             GLvoid SetUniform3f(std::string_view name, Math::Vec3 vec) const noexcept override;
             GLvoid SetUniform4f(std::string_view name, Math::Vec4 vec) const noexcept override;
