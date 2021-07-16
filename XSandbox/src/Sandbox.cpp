@@ -13,9 +13,12 @@
 
 void Sandbox::OnMouseMove(Math::Vec2 pos)
 {
-    pos.x = pos.x * 16 / 960.0f;
-    pos.y = 9.0f - pos.y * 9.0f / 540.0f;
-    shader->SetUniform2f("lightPos", Math::Vec2(pos.x + 1.0, -pos.y + 7.0));
+    float32 x = 0, y = 0;
+
+    x = pos.x / 960.0f * 2.0f - 1.0f + 1;
+    y = pos.y / 960.0f * 2.0f - 1.0f;
+    shader->SetUniform2f("uMouse", Math::Vec2(x, y));
+    shader->SetUniform1f("uTime", Time::GetTimeInSeconds());
     VT_LOG_TRACE("MousePos: x: {}, y: {}", pos.x, pos.y);
 }
 
@@ -31,10 +34,15 @@ Sandbox::Sandbox()
 
     float32 vertices[]
     {
-         0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-         0.0f,  3.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-         8.0f,  3.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-         8.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+          0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+          0.0f,  3.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+          8.0f,  3.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+          8.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+
+         -2.0f,  -2.0f, 0.0f, 0.5f, 0.0f, 0.0f,
+         -2.0f,   2.0f, 0.0f, 0.0f, 0.7f, 0.0f,
+          6.0f,   2.0f, 0.0f, 0.0f, 0.0f, 0.2f,
+          6.0f,  -2.0f, 0.0f, 0.0f, 0.9f, 0.0f,
     };
 
     projection = Math::Mat4::Orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
@@ -43,7 +51,10 @@ Sandbox::Sandbox()
     uint32 indices[]
     {
         0, 1, 2,
-        2, 3, 0
+        2, 3, 0,
+
+        4, 5, 6,
+        6, 7, 4,
     };
 
     mesh = VTGraphics::IMesh::Create();
@@ -60,8 +71,8 @@ Sandbox::Sandbox()
     shader = VTGraphics::IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
     shader->Bind();
 
-    shader->SetUniform2f("lightPos", Math::Vec2(4.5f, 1.5f));
-    shader->SetUniform4f("uColor", Math::Vec4(0.2f, 0.3f, 0.8f, 1.0f));
+    shader->SetUniform1f("uTime", Time::GetTimeInSeconds());
+    shader->SetUniform2f("uMouse", Math::Vec2(4.5f, 1.5f));
     shader->SetMat4f("uProjection", projection);
     shader->SetMat4f("uModel", Math::Mat4::Translate(Math::Vec3(4, 3, 0)));
 }
@@ -88,7 +99,7 @@ void Sandbox::Render()
     mesh->Bind();
     vertexBuffer->Bind();
     indexBuffer->Bind();
-    VTGraphics::IRendererAPI::Get()->DrawIndexed(mesh, 6);
+    VTGraphics::IRendererAPI::Get()->DrawIndexed(mesh, 6*2);
 
     window->Present();
 }
