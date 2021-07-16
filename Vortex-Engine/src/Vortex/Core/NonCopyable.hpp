@@ -3,13 +3,16 @@
 //
 #pragma once
 
-template<class T>
-class NonCopyable
+namespace Vortex
 {
-    protected:
-        NonCopyable() {}
+    template<class T>
+    class NonCopyable
+    {
+        protected:
+            NonCopyable() {}
 
-    private:
-        NonCopyable(const NonCopyable& x) = delete;
-        T& operator=(const T& x) = delete;
-};
+        private:
+            NonCopyable(const NonCopyable& x) = delete;
+            T& operator=(const T& x) = delete;
+    };
+}
