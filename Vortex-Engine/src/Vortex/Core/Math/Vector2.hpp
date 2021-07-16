@@ -6,6 +6,8 @@
 #include "Core/Export.hpp"
 #include "Core/Types.hpp"
 
+#include <ostream>
+
 namespace Vortex::Math
 {
     template<typename T>
@@ -45,6 +47,7 @@ namespace Vortex::Math
         friend Vector2<T>& operator/(Vector2<T>& left, const T& right) noexcept;
         friend Vector2<T>& operator%(Vector2<T>& left, const Vector2<T>& right) noexcept;
         friend Vector2<T>& operator%(Vector2<T>& left, const T& right) noexcept;
+        friend std::ostream& operator<<(std::ostream& os, const Vector2<T> right) noexcept;
 
         auto operator<=>(const Vector2<T>& right) const = default;
 
@@ -220,6 +223,14 @@ namespace Vortex::Math
     {
         left %= right;
         return left;
+    }
+    template<typename T>
+    std::ostream& operator<<(std::ostream& os, Vector2<T>& right) noexcept
+    {
+        os << "x: " << right.x << " y: " << right.y;
+        os << '\n';
+
+        return os;
     }
 
 
