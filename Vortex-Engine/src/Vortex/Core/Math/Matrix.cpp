@@ -2,7 +2,9 @@
 // Created by vitriol1744 on 07.07.2021.
 //
 #include "Matrix.hpp"
+
 #include "MathCommon.hpp"
+#include "Core/Math/Vector.hpp"
 
 #include <cstring>
 
@@ -18,7 +20,7 @@ namespace Vortex::Math
         data[3 + 3 * 4] = diagonal;
     }
 
-    Matrix4x4f Matrix4x4f::Translate(Vec3 translation) noexcept
+    Matrix4x4f Matrix4x4f::Translate(Vector3<float32> translation) noexcept
     {
         Matrix4x4f result(1.0f);
 
@@ -29,7 +31,7 @@ namespace Vortex::Math
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Scale(Vec3 scale) noexcept
+    Matrix4x4f Matrix4x4f::Scale(Vector3<float32> scale) noexcept
     {
         Matrix4x4f result(1.0f);
 
@@ -40,7 +42,7 @@ namespace Vortex::Math
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Rotate(float32 angle, Vec3 rotation) noexcept
+    Matrix4x4f Matrix4x4f::Rotate(float32 angle, Vector3<float32> rotation) noexcept
     {
         Matrix4x4f result(1.0f);
 

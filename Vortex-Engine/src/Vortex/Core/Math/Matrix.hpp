@@ -3,10 +3,14 @@
 //
 #pragma once
 
-#include "Core/Math/Vector.hpp"
+//#include "Vector.hpp"
 
 namespace Vortex::Math
 {
+    template<typename T>
+    struct Vector4;
+    template<typename T>
+    struct Vector3;
     struct Matrix4x4f
     {
         inline Matrix4x4f() noexcept = default;
@@ -16,12 +20,14 @@ namespace Vortex::Math
         {
             float32 data[4 * 4];
             float32 elements[4][4];
-            Vector4<float32> vec[4];
+            //Vector4<float32> vec[4];
         };
 
-        static Matrix4x4f Translate(Math::Vec3 translation) noexcept;
-        static Matrix4x4f Scale(Math::Vec3 scale) noexcept;
-        static Matrix4x4f Rotate(float32 angle, Math::Vec3 rotation) noexcept;
+        inline float32 operator[](int index) const noexcept { return data[index]; }
+
+        static Matrix4x4f Translate(Math::Vector3<float32> translation) noexcept;
+        static Matrix4x4f Scale(Math::Vector3<float32> scale) noexcept;
+        static Matrix4x4f Rotate(float32 angle, Math::Vector3<float32> rotation) noexcept;
 
         static Matrix4x4f Orthographic(float32 left, float32 right, float32 top, float32 bottom, float32 near, float32 far) noexcept;
         static Matrix4x4f Perspective(float32 fov, float32 aspectRatio, float32 near, float32 far) noexcept;
