@@ -29,6 +29,7 @@ namespace Vortex::Graphics
     PFNGLSHADERBINARYPROC               glShaderBinary              = nullptr;
     PFNGLSHADERSOURCEPROC               glShaderSource              = nullptr;
     PFNGLSPECIALIZESHADERPROC           glSpecializeShader          = nullptr;
+    PFNGLUNIFORM1FPROC                  glUniform1f                 = nullptr;
     PFNGLUNIFORM2FPROC                  glUniform2f                 = nullptr;
     PFNGLUNIFORM3FPROC                  glUniform3f                 = nullptr;
     PFNGLUNIFORM4FPROC                  glUniform4f                 = nullptr;
@@ -99,6 +100,7 @@ namespace Vortex::Graphics
         glShaderBinary              = (PFNGLSHADERBINARYPROC)               GetProcAddress(ubyte("glShaderBinary"               ));
         glShaderSource              = (PFNGLSHADERSOURCEPROC)               GetProcAddress(ubyte("glShaderSource"               ));
         glSpecializeShader          = (PFNGLSPECIALIZESHADERPROC)           GetProcAddress(ubyte("glSpecializeShader"           ));
+        glUniform1f                 = (PFNGLUNIFORM1FPROC)                  GetProcAddress(ubyte("glUniform1f"                  ));
         glUniform2f                 = (PFNGLUNIFORM2FPROC)                  GetProcAddress(ubyte("glUniform2f"                  ));
         glUniform3f                 = (PFNGLUNIFORM3FPROC)                  GetProcAddress(ubyte("glUniform3f"                  ));
         glUniform4f                 = (PFNGLUNIFORM4FPROC)                  GetProcAddress(ubyte("glUniform4f"                  ));

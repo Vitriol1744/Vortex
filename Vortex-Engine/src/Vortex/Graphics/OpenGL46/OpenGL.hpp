@@ -103,6 +103,9 @@ namespace Vortex::Graphics
     using PFNGLSPECIALIZESHADERPROC = GLvoid(*)(GLuint shader, const GLchar* entryPoint, GLuint numSpecializationConstants, const GLuint* constantIndex, const GLuint* pConstantValue);
     extern PFNGLSPECIALIZESHADERPROC glSpecializeShader;
 
+    using PFNGLUNIFORM1FPROC = GLvoid(*)(GLint location, GLfloat v0);
+    extern PFNGLUNIFORM1FPROC glUniform1f;
+
     using PFNGLUNIFORM2FPROC = GLvoid(*)(GLint location, GLfloat v0, GLfloat v1);
     extern PFNGLUNIFORM2FPROC glUniform2f;
 
