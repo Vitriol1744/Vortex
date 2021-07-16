@@ -6,9 +6,10 @@
 #include "Core/Export.hpp"
 #include "Core/Macros.hpp"
 #include "Core/Assertions.hpp"
+#include "Core/LoggingManager.hpp"
 #include "Core/Types.hpp"
 #include "Core/Singleton.hpp"
-#include "Core/LoggingManager.hpp"
+#include "Core/NonCopyable.hpp"
 #include "Core/Math/Math.hpp"
 
 #define VT_NODISCARD [[nodiscard]]
