@@ -25,10 +25,16 @@ namespace Vortex
             void Update() override;
             void Present() override;
 
-            inline bool IsOpen() const override { return isOpen; }
+            virtual inline Scope<Graphics::IGraphicsContext>& GetGraphicsContext() override { return context; }
 
-            void SetTitle(std::wstring_view title) override;
-            void ActivateContext() override;
+            VT_NODISCARD virtual inline bool IsOpen() const override { return isOpen; }
+            VT_NODISCARD virtual inline bool IsKeyPressed(Input::KeyCode keycode) const noexcept override { return keys[static_cast<uint32>(keycode)]; }
+            VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
+
+            virtual void HideCursor() const noexcept override;
+            virtual void SetTitle(std::string_view title) const noexcept override;
+            virtual void SetTitle(std::wstring_view title) override;
+            virtual void ActivateContext() override;
 
         private:
             static uint32 windowsCount;
@@ -36,6 +42,9 @@ namespace Vortex
             bool isOpen = true;
             HWND hWnd;
             Scope<Graphics::IGraphicsContext> context;
+
+            bool keys[static_cast<uint32>(Input::KeyCode::KeysCount)];
+            bool buttons[static_cast<uint32>(Input::MouseCode::ButtonsCount)];
 
             static void Initialize();
             static void Shutdown();

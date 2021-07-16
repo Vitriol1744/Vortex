@@ -77,6 +77,16 @@ namespace Vortex
         context->Present();
     }
 
+    void WindowImpl::HideCursor() const noexcept
+    {
+
+    }
+
+    void WindowImpl::SetTitle(std::string_view title)
+    {
+        SetWindowTextA(hWnd, title.data());
+    }
+
     void WindowImpl::SetTitle(std::wstring_view title)
     {
         SetWindowTextW(hWnd, title.data());
