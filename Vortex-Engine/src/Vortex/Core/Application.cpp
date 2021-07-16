@@ -6,7 +6,6 @@
 
 #include "Core/Time.hpp"
 
-using namespace Vortex::Graphics;
 using namespace Vortex;
 
 #undef None

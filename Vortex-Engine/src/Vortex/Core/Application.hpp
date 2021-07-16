@@ -4,7 +4,8 @@
 #pragma once
 
 #include "Core.hpp"
-#include "WindowManager.hpp"
+
+#include "Core/EventSystem.hpp"
 
 namespace Vortex
 {
