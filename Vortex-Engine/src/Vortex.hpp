@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Vortex/Core/Application.hpp"
-#include "Vortex/Core/Core.hpp"
-#include "Vortex/Core/WindowManager.hpp"
-#include "Vortex/Graphics/Graphics.hpp"
+#include "Core/Application.hpp"
+#include "Core/Core.hpp"
+#include "Window/WindowManager.hpp"
+#include "Graphics/Graphics.hpp"
 
 namespace VTMath        = Vortex::Math;
 namespace VTGraphics    = Vortex::Graphics;
