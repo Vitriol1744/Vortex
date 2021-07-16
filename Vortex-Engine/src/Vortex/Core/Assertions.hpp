@@ -3,18 +3,27 @@
 //
 #pragma once
 
-#include "Logger.hpp"
+#include "Core/Macros.hpp"
+#include "Core/Logger.hpp"
 
-#ifdef _MSC_VER
-    #define VT_DEBUG_BREAK __debugbreak()
-#elif defined(__arm__)
-#define VT_DEBUG_BREAK __breakpoint(42)
-#elif defined(__x86_64__)
-    #define VT_DEBUG_BREAK asm("int $03")
-#elif defined(__thumb__	)
-    #define VT_DEBUG_BREAK asm(".inst 0xde01")
-#elif defined(__aarch64__)
-    #define VT_DEBUG_BREAK asm(".inst 0xd4200000")
+#ifdef VT_PLATFORM_WINDOWS
+    #include <debugapi.h>
+    #define VT_DEBUG_BREAK DebugBreak();
+#elif defined(VT_PLATFORM_LINUX)
+    #include <signal.h>
+    #define VT_DEBUG_BREAK raise(SIGINT)
+#else
+    #ifdef _MSC_VER
+        #define VT_DEBUG_BREAK __debugbreak()
+    #elif defined(__arm__)
+    #define VT_DEBUG_BREAK __breakpoint(42)
+    #elif defined(__x86_64__)
+        #define VT_DEBUG_BREAK asm("int $03")
+    #elif defined(__thumb__	)
+        #define VT_DEBUG_BREAK asm(".inst 0xde01")
+    #elif defined(__aarch64__)
+        #define VT_DEBUG_BREAK asm(".inst 0xd4200000")
+    #endif
 #endif
 
 #ifdef VT_ENABLE_ASSERTIONS
@@ -37,6 +46,9 @@
     #ifdef DEBUG
         #define VT_CORE_SLOW_ASSERT(expr) VT_CORE_ASSERT(expr)
         #define VT_SLOW_ASSERT(expr) VT_ASSERT(expr)
+    #else
+        #define VT_CORE_SLOW_ASSERT(expr)
+        #define VT_SLOW_ASSERT(expr)
     #endif
 #else
     #define VT_CORE_ASSERT(expr, msg) expr
