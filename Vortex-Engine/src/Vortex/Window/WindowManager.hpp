@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Core.hpp"
+#include "Core/Core.hpp"
 
 #include "Window/IWindow.hpp"
 
