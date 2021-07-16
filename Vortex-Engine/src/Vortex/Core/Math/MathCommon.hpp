@@ -3,11 +3,13 @@
 //
 #pragma once
 
+#include "Core/Types.hpp"
+
 namespace Vortex::Math
 {
-    constexpr const double pi = 3.14159265359;
+    constexpr const float64 PI = 3.14159265359;
 
-    double Tan(double number);
+    double Tan(float64 number);
 
-    double ToRadians(double degrees);
+    double ToRadians(float64 degrees);
 }

@@ -7,13 +7,13 @@
 
 namespace Vortex::Math
 {
-    double Tan(double number)
+    double Tan(float64 number)
     {
         return tan(number);
     }
 
-    double ToRadians(double degrees)
+    double ToRadians(float64 degrees)
     {
-        return (degrees * (pi / 180));
+        return (degrees * (PI / 180));
     }
 }
