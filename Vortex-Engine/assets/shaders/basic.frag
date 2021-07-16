@@ -2,8 +2,8 @@
 
 out vec4 color;
 
-uniform vec4 uColor;
-uniform vec2 lightPos;
+uniform float uTime;
+uniform vec2 uMouse;
 
 in data
 {
@@ -13,6 +13,6 @@ in data
 
 void main()
 {
-    float intensity = 1.0 / length(fragmentIN.pos.xy - lightPos);
-    color = fragmentIN.col * intensity;
+      vec3 light = vec3(1.0f, 1.0f, 1.0f) * 0.4;
+      color = vec4(fragmentIN.col.xyz * light, 1.0f);
 }

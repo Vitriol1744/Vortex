@@ -17,6 +17,6 @@ void main()
 {
     gl_Position = uProjection * uView * uModel * vec4(pos, 1.0f);
 
-    vertexOut.pos = uModel * vec4(pos, 1.0f);
+    vertexOut.pos = uView * uModel * vec4( 1.0f);
     vertexOut.col = vec4(color, 1.0f);
 }
