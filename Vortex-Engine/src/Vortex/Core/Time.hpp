@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Core/Core.hpp"
+#include "Core/Timestep.hpp"
 
 namespace Vortex
 {
@@ -13,17 +14,18 @@ namespace Vortex
             friend class Application;
 
             Time();
-            static float64 GetTimeInSeconds();
+            static Timestep GetTime();
+            static void Sleep(Timestep timestep);
 
-            VT_NODISCARD inline float64 GetDeltaTime() const { return deltaTime; }
-            VT_NODISCARD inline int32 GetFPSCounter() const { return fpsCounter; }
+            VT_NODISCARD inline static float64 DeltaTime() { return deltaTime; }
+            VT_NODISCARD inline static int32 FPSCounter() { return fpsCounter; }
 
         private:
-            float64 deltaTime = 0.0f;
-            int32 fpsCounter = 0;
+            static float64 deltaTime;
+            static uint32 fpsCounter;
 
-            inline void SetDeltaTime(float64 deltaTime) { this->deltaTime = deltaTime; }
-            inline void SetFPSCounter(int32 fpsCounter) { this->fpsCounter = fpsCounter; }
+            inline static void SetDeltaTime(float64 deltaTime) { Time::deltaTime = deltaTime; }
+            inline static void SetFPSCounter(int32 fpsCounter) { Time::fpsCounter = fpsCounter; }
     };
 }
 
