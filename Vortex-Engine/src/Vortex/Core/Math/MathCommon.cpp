@@ -7,13 +7,28 @@
 
 namespace Vortex::Math
 {
-    double Tan(float64 number)
+    float64 Sin(float64 number)
     {
-        return tan(number);
+        return sinf(number);
     }
 
-    double ToRadians(float64 degrees)
+    float64 Cos(float64 number)
+    {
+        return cosf(number);
+    }
+
+    float64 Tan(float64 number)
+    {
+        return tanf(number);
+    }
+
+    float64 ToRadians(float64 degrees)
     {
         return (degrees * (PI / 180));
+    }
+
+    float64 Sqrt(float64 number)
+    {
+        return sqrt(number);
     }
 }

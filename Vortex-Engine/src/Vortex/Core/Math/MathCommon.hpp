@@ -9,7 +9,11 @@ namespace Vortex::Math
 {
     constexpr const float64 PI = 3.14159265359;
 
-    double Tan(float64 number);
+    float64 Sin(float64 number);
+    float64 Cos(float64 number);
+    float64 Tan(float64 number);
+    float64 Sqrt(float64 number);
 
-    double ToRadians(float64 degrees);
+
+    float64 ToRadians(float64 degrees);
 }
