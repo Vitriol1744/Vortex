@@ -3,5 +3,6 @@
 //
 #pragma once
 
-#include "Core/Math/Matrix.hpp"
 #include "Core/Math/MathCommon.hpp"
+#include "Core/Math/Vector.hpp"
+#include "Core/Math/Matrix.hpp"
