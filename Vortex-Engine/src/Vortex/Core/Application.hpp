@@ -5,8 +5,6 @@
 
 #include "Core.hpp"
 
-#include "Core/EventSystem.hpp"
-
 namespace Vortex
 {
     class VT_API Application : Singleton<Application>
