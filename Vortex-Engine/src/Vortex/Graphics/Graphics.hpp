@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include "IRendererAPI.hpp"
-#include "Graphics/IMesh.hpp"
-#include "Graphics/IVertexBuffer.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
+#include "Vortex/Graphics/API/IVertexBuffer.hpp"
 #include "Graphics/VertexBufferLayout.hpp"
-#include "Graphics/IIndexBuffer.hpp"
-#include "Graphics/IShader.hpp"
+#include "Vortex/Graphics/API/IIndexBuffer.hpp"
+#include "Vortex/Graphics/API/IShader.hpp"

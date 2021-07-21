@@ -9,9 +9,8 @@
 #define _UNICODE
 #include "Win32Window.hpp"
 
-#include "Graphics/OpenGL46/GL46Context.hpp"
-
-#include "Graphics/IRendererAPI.hpp"
+#include "Graphics/API/OpenGL46/GL46Context.hpp"
+#include "Graphics/API/IRendererAPI.hpp"
 
 namespace
 {

@@ -4,8 +4,8 @@
 #include "vtpch.hpp"
 #include "Core/Macros.hpp"
 
-#include "Graphics/OpenGL46/GL46Context.hpp"
-#include "Graphics/IRendererAPI.hpp"
+#include "Graphics/API/OpenGL46/GL46Context.hpp"
+#include "Graphics/API/IRendererAPI.hpp"
 
 #include <cstdio>
 
@@ -158,7 +158,7 @@ namespace Vortex
         (*GetWindowsMap())[window] = this;
 
         Graphics::IRendererAPI::Initialize();
-        switch (Graphics::IRendererAPI::Get()->GetGraphicsAPI())
+        switch (Graphics::IRendererAPI::GetGraphicsAPI())
         {
             case Graphics::GraphicsAPI::OpenGL46:
             {

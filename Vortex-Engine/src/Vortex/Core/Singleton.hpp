@@ -12,7 +12,7 @@ namespace Vortex
         public:
         
             // Gets instance of an object
-            static T* Get()
+            static T* Instance()
             {
                 static T instance;
 

@@ -6,7 +6,7 @@
 
 #include "Window/IWindow.hpp"
 #include "Core/Core.hpp"
-#include "Graphics/IGraphicsContext.hpp"
+#include "Graphics/API/IGraphicsContext.hpp"
 
 #include <string>
 #include <unordered_map>

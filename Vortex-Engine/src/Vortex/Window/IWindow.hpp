@@ -9,7 +9,7 @@
 #include "Input/KeyCode.hpp"
 #include "Input/MouseCode.hpp"
 
-#include "Graphics/IGraphicsContext.hpp"
+#include "Graphics/API/IGraphicsContext.hpp"
 
 #include <string>
 
@@ -42,12 +42,15 @@ namespace Vortex
             VT_NODISCARD virtual bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept = 0;
 
             virtual void HideCursor() const noexcept = 0;
+            //virtual void SetFullscreen(bool fullscreen) const = 0;
+            //virtual void SetIcon(std::string_view path) const = 0;
             virtual void SetTitle(std::string_view title) const noexcept = 0;
             virtual void SetTitle(std::wstring_view title) const noexcept = 0;
+            //virtual void SetVisible(bool visible = true) const = 0;
 
             VT_NODISCARD static Ref<IWindow> CreateWindow(int width, int height, std::wstring_view title, Ref<IWindow> share = nullptr);
 
-            // Window Specific Events
+            // Window Events
             // Vortex::KeyPressedEventData data
             Event<KeyPressedEventData> keyPressedEvent;
             // Vortex::Input::KeyCode keycode, Vortex::Math::Vec2 mousePosition

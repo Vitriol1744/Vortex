@@ -5,7 +5,7 @@
 
 #include "Window/IWindow.hpp"
 
-#include "Graphics/IGraphicsContext.hpp"
+#include "Graphics/API/IGraphicsContext.hpp"
 
 #define UNICODE
 #define WIN32_LEAN_AND_MEAN
