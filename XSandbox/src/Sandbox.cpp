@@ -5,76 +5,99 @@
 
 #include "Vortex/Core/EntryPoint.hpp"
 #include "Vortex/Core/Time.hpp"
-#include "Vortex/Graphics/IVertexBuffer.hpp"
-#include "Vortex/Graphics/IIndexBuffer.hpp"
-#include "Vortex/Graphics/IMesh.hpp"
+#include "Vortex/Graphics/API/IVertexBuffer.hpp"
+#include "Vortex/Graphics/API/IIndexBuffer.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
 
 #include <iostream>
 
 void Sandbox::OnMouseMove(Math::Vec2 pos)
 {
-    float32 x = 0, y = 0;
 
-    x = pos.x / 960.0f * 2.0f - 1.0f + 1;
-    y = pos.y / 960.0f * 2.0f - 1.0f;
-    shader->SetUniform2f("uMouse", Math::Vec2(x, y));
-    shader->SetUniform1f("uTime", Time::GetTimeInSeconds());
-    VT_LOG_TRACE("MousePos: x: {}, y: {}", pos.x, pos.y);
 }
+
+struct Vertex
+{
+    Math::Vec3 position;
+    Math::Vec4 color;
+    Math::Vec2 texCoords;
+    float32 textureIndex;
+};
 
 Sandbox::Sandbox()
 {
     VT_LOG_TRACE("Hello, World!");
 
-    window = Vortex::WindowManager::Get()->NewWindow(960, 540, L"Vortex");
+    window = Vortex::WindowManager::Instance()->NewWindow(width, height, L"Vortex");
+
+    VTGraphics::Renderer2D::Initialize();
 
     window->HideCursor();
 
     window->mouseMovedEvent.AddListener("Sandbox::OnMouseMove", std::bind(&Sandbox::OnMouseMove, this, std::placeholders::_1));
 
+    framerateLimit = 60;
+
     float32 vertices[]
     {
-          0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-          0.0f,  3.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-          8.0f,  3.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-          8.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 
-         -2.0f,  -2.0f, 0.0f, 0.5f, 0.0f, 0.0f,
-         -2.0f,   2.0f, 0.0f, 0.0f, 0.7f, 0.0f,
-          6.0f,   2.0f, 0.0f, 0.0f, 0.0f, 0.2f,
-          6.0f,  -2.0f, 0.0f, 0.0f, 0.9f, 0.0f,
+        -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+
+        -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
     };
 
     projection = Math::Mat4::Orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
-    model = Math::Mat4::Translate(Math::Vec3(4, 3, 0));
+
 
     uint32 indices[]
     {
-        0, 1, 2,
-        2, 3, 0,
-
-        4, 5, 6,
-        6, 7, 4,
+        0, 1, 2, 3, 4, 5, 6,
+        7, 8, 9, 10, 11, 12,
+        13, 14, 15, 16, 17, 18,
+        19, 20, 21, 22, 23, 24,
+        25, 26, 27, 28, 29, 30,
+        31, 32, 33, 34, 35, 36,
     };
 
-    mesh = VTGraphics::IMesh::Create();
-    VTGraphics::VertexBufferLayout layout;
-    layout.AddElement(VTGraphics::ShaderDataType::Float3);
-    layout.AddElement(VTGraphics::ShaderDataType::Float3);
-    mesh->Bind();
-
-    vertexBuffer = VTGraphics::IVertexBuffer::Create(vertices, sizeof(vertices));
-    vertexBuffer->SetLayout(layout);
-    indexBuffer = VTGraphics::IIndexBuffer::Create(indices, sizeof(indices));
-    mesh->AddVertexBuffer(vertexBuffer);
-    mesh->SetIndexBuffer(indexBuffer);
-    shader = VTGraphics::IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
-    shader->Bind();
-
-    shader->SetUniform1f("uTime", Time::GetTimeInSeconds());
-    shader->SetUniform2f("uMouse", Math::Vec2(4.5f, 1.5f));
-    shader->SetMat4f("uProjection", projection);
-    shader->SetMat4f("uModel", Math::Mat4::Translate(Math::Vec3(4, 3, 0)));
+    shader1 = VTGraphics::IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
+    shader1->Bind();
 }
 
 void Sandbox::Update()
@@ -82,24 +105,40 @@ void Sandbox::Update()
     running = window->IsOpen();
     window->Update();
 
-    window->SetTitle(L"FPS: " + std::to_wstring(Vortex::Time::Get()->GetFPSCounter()));
+    if (window->IsKeyPressed(Input::KeyCode::W))
+    {
+        sprite.Move(0, 1 * Time::DeltaTime());
+    }
+    if(window->IsKeyPressed(Input::KeyCode::S))
+    {
+        sprite.Move(0, -1 * Time::DeltaTime());
+    }
+    if(window->IsKeyPressed(Input::KeyCode::A))
+    {
+        sprite.Move(-1 * Time::DeltaTime(), 0);
+    }
+    if(window->IsKeyPressed(Input::KeyCode::D))
+    {
+        sprite.Move(1 * Time::DeltaTime(), 0);
+    }
+
+    window->SetTitle("FPS: " + std::to_string(Time::FPSCounter()));
 }
 
 void Sandbox::Render()
 {
-    y += 0.01;
-    y2 -= 0.01;
+    shader1->Bind();
+    VTGraphics::IRendererAPI::SetClearColor(Math::Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    VTGraphics::IRendererAPI::Clear();
 
-    if (y > 1) y = 0;
-    if (y2 < 0) y2 = 1;
-    Vortex::WindowManager::Get()->Bind(window);
-    VTGraphics::IRendererAPI::Get()->SetClearColor(VTMath::Vec4(0.0f, y, 1.0f, 1.0f));
-    VTGraphics::IRendererAPI::Get()->Clear();
+    VTGraphics::Renderer2D::DrawSprite(sprite);
 
-    mesh->Bind();
-    vertexBuffer->Bind();
-    indexBuffer->Bind();
-    VTGraphics::IRendererAPI::Get()->DrawIndexed(mesh, 6*2);
+    VTGraphics::Renderer2D::Submit();
+
+    view = Math::Mat4(1.0f) * Math::Mat4::LookAt(Math::Vec3(0.0f, 0.0f, 3.0f), Math::Vec3(0.0f, 0.0f, -1.0f), Math::Vec3(0.0f, 1.0f, 1.0f));
+    projection = Math::Mat4::Perspective(45.0f, (float32)width / (float32)height, 0.1f, 100.0f);
+    shader1->SetUniformMat4f("uView", view);
+    shader1->SetUniformMat4f("uProjection", projection);
 
     window->Present();
 }
