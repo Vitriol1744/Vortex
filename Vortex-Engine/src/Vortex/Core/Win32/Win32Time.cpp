@@ -21,11 +21,16 @@ namespace Vortex
         QueryPerformanceFrequency(&frequency);
     }
 
-    float64 Time::GetTimeInSeconds()
+    Timestep Time::GetTimeInSeconds()
     {
         QueryPerformanceCounter(&counter);
 
-        return (double)counter.QuadPart / (double)frequency.QuadPart;
+        return Timestep((double)counter.QuadPart / (double)frequency.QuadPart);
+    }
+
+    void Time::Sleep(Timestep timestep)
+    {
+        Sleep(timestep.Milliseconds());
     }
 }
 #endif
