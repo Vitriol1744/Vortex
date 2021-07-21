@@ -43,8 +43,14 @@ namespace Vortex::Graphics
     using PFNGLBINDVERTEXARRAYPROC = GLvoid(*)(GLuint array);
     extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
 
-    using PFNGLBUFFERDATAPROC = GLvoid(*)(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
+    using PFNGLBUFFERDATAPROC = GLvoid(*)(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
     extern PFNGLBUFFERDATAPROC glBufferData;
+
+    using PFNGLBUFFERSUBDATAPROC = GLvoid(*)(GLenum target, GLintptr offset, const GLsizeiptr size, const GLvoid* data);
+    extern PFNGLBUFFERSUBDATAPROC glBufferSubData;
+
+    using PFNGLCOPYBUFFERSUBDATAPROC = GLvoid(*)(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
+    extern PFNGLCOPYBUFFERSUBDATAPROC glCopyBufferSubData;
 
     using PFNGLCREATEBUFFERSPROC = GLvoid(*)(GLsizei n, GLuint* buffers);
     extern PFNGLCREATEBUFFERSPROC glCreateBuffers;
@@ -60,6 +66,12 @@ namespace Vortex::Graphics
 
     using PFNGLCOMPILESHADERPROC = GLvoid(*)(GLuint shader);
     extern PFNGLCOMPILESHADERPROC glCompileShader;
+
+    using PFNGLDEBUGMESSAGECALLBACKPROC = GLvoid(*)(GLDEBUGPROC callback, GLvoid* userParam);
+    extern PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback;
+
+    using PFNGLDEBUGMESSAGECONTROLPROC = GLvoid(*)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled);
+    extern PFNGLDEBUGMESSAGECONTROLPROC glDebugMessageControl;
 
     using PFNGLDELETEBUFFERSPROC = GLvoid(*)(GLsizei n, const GLuint* buffers);
     extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
@@ -135,9 +147,9 @@ namespace Vortex::Graphics
     #pragma endregion
 
     #ifdef VT_PLATFORM_WINDOWS
-    void* GetProcAddress(const char* name);
+    void* GetProcAddress(const GLbyte* name);
     #elif defined(VT_PLATFORM_LINUX)
-    void* GetProcAddress(const unsigned char* name);
+    void* GetProcAddress(const GLubyte* name);
     #endif
 
     bool LoadGLFunctions();

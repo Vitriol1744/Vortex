@@ -6,6 +6,7 @@
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32GL46Context.hpp"
+
 namespace Vortex::Graphics
 {
     bool GL46Context::initialized = false;

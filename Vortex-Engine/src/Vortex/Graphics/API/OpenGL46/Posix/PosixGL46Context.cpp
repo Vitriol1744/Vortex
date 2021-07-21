@@ -1,25 +1,28 @@
 //
 // Created by Vitriol1744 on 29.06.2021.
 //
-#include "vtpch.hpp"
 #include "Core/Macros.hpp"
-#include <iostream>
 
 #ifdef VT_PLATFORM_LINUX
 #include "Window/Posix/X11Window.hpp"
 #include "PosixGL46Context.hpp"
+#include "Graphics/API/OpenGL46/GL46RendererAPI.hpp"
 
-using glXCreateContextAttribsARBProc = GLXContext(*)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+using glXCreateContextAttribsARBProc = GLXContext(*)(Display*, GLXFBConfig, GLXContext, GLint, const GLint*);
+
+PFNGLXSWAPINTERVALMESAPROC SwapInterval = nullptr;
 
 namespace Vortex::Graphics
 {
-    GL46Context::GL46Context(void* windowHandle, IGraphicsContext* share) : IGraphicsContext(windowHandle)
+    GLboolean GL46Context::initialized = false;
+
+    GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share) : IGraphicsContext(windowHandle)
     {
         XInitThreads();
         display = WindowImpl::GetDisplay();
         window = *(reinterpret_cast<Window*>(windowHandle));
     
-        static int visualAttributes[] =
+        static GLint visualAttributes[] =
         {
             GLX_RENDER_TYPE, GLX_RGBA_BIT,
             GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
@@ -27,7 +30,7 @@ namespace Vortex::Graphics
             GLX_RED_SIZE, 1,
             GLX_GREEN_SIZE, 1,
             GLX_BLUE_SIZE, 1,
-            None
+            0L
         };
     
         int framebufferConfigsCount = 0;
@@ -43,21 +46,19 @@ namespace Vortex::Graphics
             GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
             GLX_CONTEXT_MINOR_VERSION_ARB, 6,
             GLX_CONTEXT_PROFILE_MASK_ARB,  GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
-            None
+            0L
         };
 
         GLXContext sharedContext = nullptr;
         sharedContext = share ? dynamic_cast<GL46Context*>(share)->context : nullptr;
-        VT_CORE_LOG_WARN("WARN!");
 
-        if (framebufferConfig != nullptr)
-            context = glXCreateContextAttribsARB(display, framebufferConfig[0], sharedContext, true, contextAttributes);
+        if (framebufferConfig != nullptr) context = glXCreateContextAttribsARB(display, framebufferConfig[0], sharedContext, true, contextAttributes);
     
         VT_CORE_ASSERT(context != nullptr);
 
         glXMakeCurrent(display, window, context);
     
-        int major = 0, minor = 0;
+        GLint major = 0, minor = 0;
         glGetIntegerv(GL_MAJOR_VERSION, &major);
         glGetIntegerv(GL_MINOR_VERSION, &minor);
     
@@ -66,7 +67,15 @@ namespace Vortex::Graphics
         VT_CORE_LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
         VT_CORE_LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
 
-        if (!LoadGLFunctions()) VT_CORE_LOG_ERROR("Failed to Load GL Functions!");
+        if (!initialized)
+        {
+            if (!LoadGLFunctions()) VT_CORE_LOG_ERROR("Failed to Load OpenGL Functions!");
+            SwapInterval = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress(reinterpret_cast<const unsigned char*>("glXSwapIntervalMESA"));
+            GL46RendererAPI::Initialize();
+        }
+        initialized = true;
+
+        SwapInterval(0); //TODO: Toggleable vsync
     }
     
     GL46Context::~GL46Context() noexcept

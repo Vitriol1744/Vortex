@@ -10,11 +10,15 @@ namespace Vortex::Graphics
     PFNGLBINDBUFFERPROC                 glBindBuffer                = nullptr;
     PFNGLBINDVERTEXARRAYPROC            glBindVertexArray           = nullptr;
     PFNGLBUFFERDATAPROC                 glBufferData                = nullptr;
+    PFNGLBUFFERSUBDATAPROC              glBufferSubData             = nullptr;
+    PFNGLCOPYBUFFERSUBDATAPROC          glCopyBufferSubData         = nullptr;
     PFNGLCREATEBUFFERSPROC              glCreateBuffers             = nullptr;
     PFNGLCREATEPROGRAMPROC              glCreateProgram             = nullptr;
     PFNGLCREATESHADERPROC               glCreateShader              = nullptr;
     PFNGLCREATEVERTEXARRAYSPROC         glCreateVertexArrays        = nullptr;
     PFNGLCOMPILESHADERPROC              glCompileShader             = nullptr;
+    PFNGLDEBUGMESSAGECALLBACKPROC       glDebugMessageCallback      = nullptr;
+    PFNGLDEBUGMESSAGECONTROLPROC        glDebugMessageControl       = nullptr;
     PFNGLDELETEBUFFERSPROC              glDeleteBuffers             = nullptr;
     PFNGLDELETEPROGRAMPROC              glDeleteProgram             = nullptr;
     PFNGLDELETESHADERPROC               glDeleteShader              = nullptr;
@@ -44,7 +48,7 @@ namespace Vortex::Graphics
 
     #ifdef VT_PLATFORM_WINDOWS
     #define ubyte(name)
-    void* GetProcAddress(const char* name)
+    void* GetProcAddress(const GLbyte* name)
     {
         void* p = (void*)wglGetProcAddress(name);
         if(p == 0 || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) || (p == (void*)-1))
@@ -57,8 +61,8 @@ namespace Vortex::Graphics
         return p;
     }
     #elif defined(VT_PLATFORM_LINUX)
-    #define ubyte(name) reinterpret_cast<const unsigned char *>(name)
-    void* GetProcAddress(const unsigned char* name)
+    #define ubyte(name) reinterpret_cast<const GLubyte*>(name)
+    void* GetProcAddress(const GLubyte* name)
     {
         void* p = (void*)glXGetProcAddress(name);
         if(p == nullptr || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) || (p == (void*)-1))
@@ -81,11 +85,15 @@ namespace Vortex::Graphics
         glBindBuffer                = (PFNGLBINDBUFFERPROC)                 GetProcAddress(ubyte("glBindBuffer"                 ));
         glBindVertexArray           = (PFNGLBINDVERTEXARRAYPROC)            GetProcAddress(ubyte("glBindVertexArray"            ));
         glBufferData                = (PFNGLBUFFERDATAPROC)                 GetProcAddress(ubyte("glBufferData"                 ));
+        glBufferSubData             = (PFNGLBUFFERSUBDATAPROC)              GetProcAddress(ubyte("glSubBufferData"              ));
+        glCopyBufferSubData         = (PFNGLCOPYBUFFERSUBDATAPROC)          GetProcAddress(ubyte("glCopyBufferSubData"          ));
         glCreateBuffers             = (PFNGLCREATEBUFFERSPROC)              GetProcAddress(ubyte("glCreateBuffers"              ));
         glCreateProgram             = (PFNGLCREATEPROGRAMPROC)              GetProcAddress(ubyte("glCreateProgram"              ));
         glCreateShader              = (PFNGLCREATESHADERPROC)               GetProcAddress(ubyte("glCreateShader"               ));
         glCreateVertexArrays        = (PFNGLCREATEVERTEXARRAYSPROC)         GetProcAddress(ubyte("glCreateVertexArrays"         ));
         glCompileShader             = (PFNGLCOMPILESHADERPROC)              GetProcAddress(ubyte("glCompileShader"              ));
+        glDebugMessageCallback      = (PFNGLDEBUGMESSAGECALLBACKPROC)       GetProcAddress(ubyte("glDebugMessageCallback"       ));
+        glDebugMessageControl       = (PFNGLDEBUGMESSAGECONTROLPROC)        GetProcAddress(ubyte("glDebugMessageControl"        ));
         glDeleteBuffers             = (PFNGLDELETEBUFFERSPROC)              GetProcAddress(ubyte("glDeleteBuffers"              ));
         glDeleteProgram             = (PFNGLDELETEPROGRAMPROC)              GetProcAddress(ubyte("glDeleteProgram"              ));
         glDeleteShader              = (PFNGLDELETESHADERPROC)               GetProcAddress(ubyte("glDeleteShaders"              ));
@@ -111,7 +119,7 @@ namespace Vortex::Graphics
         glVertexAttribIPointer      = (PFNGLVERTEXATTRIBIPOINTERPROC)       GetProcAddress(ubyte("glVertexAttribIPointer"       ));
         glVertexAttribPointer       = (PFNGLVERTEXATTRIBPOINTERPROC)        GetProcAddress(ubyte("glVertexAttribPointer"        ));
 
-        VT_CORE_LOG_TRACE("GL Functions Loaded!\n");
+        VT_CORE_LOG_TRACE("OpenGL Successfully Functions Loaded!\n");
         return initialized;
     }
 }

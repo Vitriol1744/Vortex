@@ -8,7 +8,7 @@
 
 namespace Vortex::Graphics
 {
-    GL46Shader::GL46Shader(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept
+    GL46Shader::GL46Shader(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled)
     {
         Load(vertexPath, fragmentPath, precompiled);
     }
@@ -34,7 +34,7 @@ namespace Vortex::Graphics
         Load(vertexPath, fragmentPath, precompiled);
     }
 
-    GLvoid GL46Shader::Load(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept
+    GLvoid GL46Shader::Load(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled)
     {
         if (id) VT_CORE_LOG_WARN("If Shader was already loaded Reload should be invoked instead! Otherwise VRAM leaks may occur!");
         id = glCreateProgram();
@@ -125,7 +125,7 @@ namespace Vortex::Graphics
         glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
     }
 
-    GLvoid GL46Shader::SetMat4f(std::string_view name, Math::Mat4 mat) const noexcept
+    GLvoid GL46Shader::SetUniformMat4f(std::string_view name, Math::Mat4 mat) const noexcept
     {
         GLint location = glGetUniformLocation(id, name.data());
         glUniformMatrix4fv(location, 1, GL_TRUE, mat.data);
@@ -136,7 +136,7 @@ namespace Vortex::Graphics
         GLuint shader = glCreateShader(shaderType);
 
         const GLchar* src = source.data();
-        VT_CORE_LOG_INFO("\n{} Shader Source: {}", shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment", src);
+
         glShaderSource(shader, 1, &src, nullptr);
         glCompileShader(shader);
 

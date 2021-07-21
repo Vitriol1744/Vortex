@@ -5,19 +5,19 @@
 
 #include "Core/Core.hpp"
 
-#include "Graphics/IMesh.hpp"
-#include "Graphics/OpenGL46/OpenGL.hpp"
+#include "Graphics/API/IVertexArray.hpp"
+#include "OpenGL.hpp"
 
 #include <vector>
 
 namespace Vortex::Graphics
 {
-    class VT_API GL46Mesh final : public IMesh
+    class VT_API GL46VertexArray final : public IVertexArray
     {
         public:
-            GL46Mesh() noexcept;
+            GL46VertexArray() noexcept;
 
-            GLvoid Bind() noexcept override;
+            GLvoid Bind() override;
             GLvoid Unbind() noexcept override;
 
             GLvoid AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer) override;

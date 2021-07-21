@@ -1,8 +1,8 @@
 //
 // Created by vitriol1744 on 11.07.2021.
 //
-#include "GL46Mesh.hpp"
-#include "Graphics/OpenGL46/OpenGL.hpp"
+#include "GL46VertexArray.hpp"
+#include "OpenGL.hpp"
 
 #undef Bool
 
@@ -34,23 +34,23 @@ namespace Vortex::Graphics
         }
     }
 
-    GL46Mesh::GL46Mesh() noexcept
+    GL46VertexArray::GL46VertexArray() noexcept
     {
         glCreateVertexArrays(1, &id);
         glBindVertexArray(id);
     }
 
-    GLvoid GL46Mesh::Bind() noexcept
+    GLvoid GL46VertexArray::Bind()
     {
         glBindVertexArray(id);
     }
 
-    GLvoid GL46Mesh::Unbind() noexcept
+    GLvoid GL46VertexArray::Unbind() noexcept
     {
         glBindVertexArray(0);
     }
 
-    GLvoid GL46Mesh::AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer)
+    GLvoid GL46VertexArray::AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer)
     {
         Bind();
         vertexBuffer->Bind();
@@ -98,7 +98,7 @@ namespace Vortex::Graphics
         }
     }
 
-    GLvoid GL46Mesh::SetIndexBuffer(Ref<IIndexBuffer> indexBuffer)
+    GLvoid GL46VertexArray::SetIndexBuffer(Ref<IIndexBuffer> indexBuffer)
     {
         Bind();
         indexBuffer->Bind();

@@ -6,5 +6,5 @@
 #ifdef VT_PLATFORM_WINDOWS
     #include "Win32/Win32GL46Context.hpp"
 #elif defined(VT_PLATFORM_LINUX)
-    #include "Posix/PosixGL46Context.hpp"
+    #include "Graphics/API/OpenGL46/Posix/PosixGL46Context.hpp"
 #endif

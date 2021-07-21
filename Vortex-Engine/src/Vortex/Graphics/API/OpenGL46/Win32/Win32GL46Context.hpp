@@ -4,8 +4,8 @@
 #pragma once
 
 #include "Core/Core.hpp"
-#include "Graphics/IGraphicsContext.hpp"
-#include "Graphics/OpenGL46/OpenGL.hpp"
+#include "Graphics/API/IGraphicsContext.hpp"
+#include "Graphics/API/OpenGL46/OpenGL.hpp"
 
 namespace Vortex::Graphics
 {

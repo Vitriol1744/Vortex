@@ -5,15 +5,15 @@
 
 #include "Core/Core.hpp"
 
-#include "Graphics/IVertexBuffer.hpp"
-#include "Graphics/IIndexBuffer.hpp"
+#include "IVertexBuffer.hpp"
+#include "IIndexBuffer.hpp"
 
 namespace Vortex::Graphics
 {
-    class VT_API IMesh
+    class VT_API IVertexArray
     {
         public:
-            virtual ~IMesh() = default;
+            virtual ~IVertexArray() = default;
 
             virtual void Bind() = 0;
             virtual void Unbind() = 0;
@@ -21,6 +21,6 @@ namespace Vortex::Graphics
             virtual void AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer) = 0;
             virtual void SetIndexBuffer(Ref<IIndexBuffer> indexBuffer) = 0;
 
-            static Ref<IMesh> Create();
+            static Ref<IVertexArray> Create();
     };
 }

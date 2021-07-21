@@ -22,9 +22,11 @@ namespace Vortex::Graphics
             virtual void Bind() const noexcept = 0;
             virtual void Unbind() const noexcept = 0;
 
-            virtual void SetData(uint32* vertices, uint32 size) const = 0;
+            virtual void SetData(void* vertices, uint32 size) const = 0;
 
-            static Ref<IVertexBuffer> Create(float* vertices, uint32 size);
+            static Ref<IVertexBuffer> Create();
+            static Ref<IVertexBuffer> Create(uint32 size);
+            static Ref<IVertexBuffer> Create(void* vertices, uint32 size);
 
         private:
             VertexBufferLayout layout;

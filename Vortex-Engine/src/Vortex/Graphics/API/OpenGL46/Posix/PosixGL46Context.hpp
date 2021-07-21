@@ -4,14 +4,14 @@
 #pragma once
 
 #include "Core/Core.hpp"
-#include "Graphics/IGraphicsContext.hpp"
-#include "Graphics/OpenGL46/OpenGL.hpp"
+#include "Graphics/API/IGraphicsContext.hpp"
+#include "Graphics/API/OpenGL46/OpenGL.hpp"
 
 namespace Vortex::Graphics
 {
     struct VT_API GL46Context final : public IGraphicsContext
     {
-        explicit GL46Context(void* windowHandle, IGraphicsContext* share);
+        explicit GL46Context(GLvoid* windowHandle, IGraphicsContext* share);
         
         ~GL46Context() noexcept override;
 
@@ -21,6 +21,7 @@ namespace Vortex::Graphics
         Display* display;
         Window window;
         GLXContext context;
+        static GLboolean initialized;
     };
 }
 

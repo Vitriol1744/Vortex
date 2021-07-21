@@ -5,9 +5,12 @@
 
 namespace Vortex::Graphics
 {
-    GL46IndexBuffer::GL46IndexBuffer() noexcept
+    GL46IndexBuffer::GL46IndexBuffer() noexcept : GL46IndexBuffer(0) { }
+    GL46IndexBuffer::GL46IndexBuffer(GLuint size) noexcept
     {
         glCreateBuffers(1, &id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
     }
 
     GL46IndexBuffer::GL46IndexBuffer(GLuint* indices, GLuint size)
@@ -15,6 +18,8 @@ namespace Vortex::Graphics
         glCreateBuffers(1, &id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+
+        count = size / sizeof(GLuint);
     }
     
     GL46IndexBuffer::~GL46IndexBuffer() noexcept
@@ -32,9 +37,10 @@ namespace Vortex::Graphics
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    GLvoid GL46IndexBuffer::SetData(GLuint* indices, GLuint size) const
+    GLvoid GL46IndexBuffer::Data(GLuint* indices, GLuint size)
     {
         Bind();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_DYNAMIC_DRAW);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, indices);
+        count = size / sizeof(GLuint);
     }
 }
