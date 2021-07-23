@@ -19,7 +19,7 @@ namespace Vortex::Graphics
     GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share) : IGraphicsContext(windowHandle)
     {
         XInitThreads();
-        display = WindowImpl::GetDisplay();
+        display = WindowImpl::Display();
         window = *(reinterpret_cast<Window*>(windowHandle));
     
         static GLint visualAttributes[] =
