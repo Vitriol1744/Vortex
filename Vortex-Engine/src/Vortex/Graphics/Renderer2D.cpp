@@ -6,6 +6,8 @@
 #include "Graphics/API/IVertexArray.hpp"
 #include "Graphics/API/IRendererAPI.hpp"
 
+using namespace Vortex::Math;
+
 namespace Vortex::Graphics
 {
     namespace
@@ -18,7 +20,7 @@ namespace Vortex::Graphics
             float32 textureIndex;
         };
 
-        constexpr uint32 maxSpritesCount    = 100000;
+        constexpr uint32 maxSpritesCount    = 1000;
         constexpr uint32 maxVerticesCount   = maxSpritesCount * 4;
         constexpr uint32 maxIndicesCount    = maxSpritesCount * 6;
 
@@ -97,7 +99,7 @@ namespace Vortex::Graphics
 
         for (int32 i = 0; i < 4; i++)
         {
-            current->position = (defaultPositions[i] * sprite.model).xyz;
+            current->position = (defaultPositions[i] * sprite.transform).xyz;
             current->color = sprite.color;
             current->texCoords = Math::Vec2(0.0f, 0.0f);
             current->textureIndex = 0;
@@ -106,7 +108,30 @@ namespace Vortex::Graphics
 
         indicesCount += 6;
     }
-
+    
+    void Renderer2D::DrawQuad(const Vec2& position, const Vec2& size, const Vec4& color)
+    {
+        //Mat4 transform = Mat4::Translate(Mat4(1.0f), Vec3(position.x, position.y, 0.0f)) * Mat4::Scale(Mat4(1.0f), { size.x, size.y, 1.0f });
+        //Mat4 transform = Mat4::Scale(Mat4(1.0f), Vec3(size.x ,size.y, 1.0f));
+        //Mat4 transform(1.0f);
+        
+        if (indicesCount >= maxIndicesCount)
+        {
+            Submit();
+        }
+    
+        for (int32 i = 0; i < 4; i++)
+        {
+            current->position = (defaultPositions[i]).xyz;
+            current->color = color;
+            current->texCoords = Math::Vec2(0.0f, 0.0f);
+            current->textureIndex = 0;
+            current++;
+        }
+    
+        indicesCount += 6;
+    }
+    
     void Renderer2D::Submit()
     {
         mesh->Bind();

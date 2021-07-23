@@ -17,9 +17,10 @@ namespace Vortex::Graphics
         public:
             static void Initialize();
             static void Shutdown();
-
+            
             static void DrawSprite(Sprite sprite);
-
+            static void DrawQuad(const Math::Vec2& position, const Math::Vec2& size, const Math::Vec4& color);
+            
             static void Submit();
     };
 }
