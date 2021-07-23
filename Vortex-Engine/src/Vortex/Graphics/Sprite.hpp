@@ -15,8 +15,11 @@ namespace Vortex::Graphics
             void Move(Math::Vec2 offset);
             void Move(float32 x, float32 y);
             void Restart();
+            
+            inline void SetTransform(Math::Mat4& transform) { this->transform = transform; }
+            inline void SetColor(const Math::Vec4& color) { this->color = color; }
 
-            Math::Mat4 model;
+            Math::Mat4 transform;
             Math::Vec4 color;
     };
 }
