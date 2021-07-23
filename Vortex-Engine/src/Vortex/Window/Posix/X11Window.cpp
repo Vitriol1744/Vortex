@@ -11,16 +11,16 @@
 
 #ifdef VT_PLATFORM_LINUX
 #include "X11Window.hpp"
-
-#include "X11/keysym.h"
-
-#include "Core/EventSystem.hpp"
+#include <X11/keysym.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/Xatom.h>
 
 namespace Vortex
 {
     using namespace Input;
     using namespace Graphics;
-
+    using namespace Math;
+    
     namespace
     {
         #pragma clang diagnostic push
@@ -137,21 +137,24 @@ namespace Vortex
                     return KeyCode::Unknown;
             }
         }
-#pragma clang diagnostic pop
+        #pragma clang diagnostic pop
     }
 
     uint32      WindowImpl::windowsCount    = 0;
     Display*    WindowImpl::display         = nullptr;
     XIM         WindowImpl::inputMethod     = nullptr;
+    Cursor      WindowImpl::blankCursor     = 0;
 
     WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share)
     {
+        data.position.x = 0;
+        data.position.y = 0;
         if (windowsCount == 0) Initialize();
 
         window = XCreateSimpleWindow
         (
             display, DefaultRootWindow(display),
-            10, 10, 800, 600, 0, BlackPixel(display, DefaultScreen(display)),
+            data.position.x, data.position.y, 800, 600, 0, BlackPixel(display, DefaultScreen(display)),
             BlackPixel(display, DefaultScreen(display))
         );
         windowsCount++;
@@ -162,7 +165,7 @@ namespace Vortex
         {
             case Graphics::GraphicsAPI::OpenGL46:
             {
-                context = CreateScope<Graphics::GL46Context>(reinterpret_cast<void*>(&window), share ? share->GetGraphicsContext().get() : nullptr);
+                data.graphicsContext = new Graphics::GL46Context(reinterpret_cast<void*>(&window), share ? share->GetGraphicsContext() : nullptr);
                 break;
             }
             case Graphics::GraphicsAPI::None:
@@ -177,11 +180,21 @@ namespace Vortex
         XSelectInput
         (
             display, window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
-            DestroyNotify
+            StructureNotifyMask
         );
         XMapWindow(display, window);
-    }
 
+        if (windowsCount == 1)
+        {
+            // Create Blank Cursor
+            char data[1] = {0};
+            Pixmap blankCursorPixMap = XCreateBitmapFromData(display, DefaultRootWindow(display), data, 1, 1);
+            XColor blankCursorColor;
+            blankCursor = XCreatePixmapCursor(display, blankCursorPixMap, blankCursorPixMap, &blankCursorColor, &blankCursorColor, 0, 0);
+
+            XFreePixmap(display, blankCursorPixMap);
+        }
+    }
     WindowImpl::~WindowImpl()
     {
         XDestroyIC(inputContext);
@@ -200,42 +213,56 @@ namespace Vortex
             HandleEvent(event);
         }
     }
-
     void WindowImpl::Present()
     {
-        context->Present();
+        data.graphicsContext->Present();
     }
 
+    void WindowImpl::ShowCursor() const noexcept
+    {
+        XDefineCursor(display, window, 0L);
+    }
     void WindowImpl::HideCursor() const noexcept
     {
-        static char data[1] = {0};
-        Cursor cursor;
-        Pixmap blank;
-        XColor dummy;
-
-        blank = XCreateBitmapFromData(display, DefaultRootWindow(display), data, 1, 1);
-
-        cursor = XCreatePixmapCursor(display, blank, blank, &dummy, &dummy, 0, 0);
-        XFreePixmap(display, blank);
-
-        XDefineCursor(display, window, cursor);
+        XDefineCursor(display, window, blankCursor);
     }
-
+    void WindowImpl::SetFullscreen(bool fullscreen) const noexcept
+    {
+        if (fullscreen)
+        {
+            //TODO: Handle fullscreen
+        }
+        else
+        {
+        
+        }
+    }
+    void WindowImpl::SetIcon(std::string_view path) const noexcept
+    {
+        //TODO: Set Icon
+    }
     void WindowImpl::SetTitle(std::string_view title) const noexcept
     {
         XStoreName(display, window, title.data());
     }
-
     void WindowImpl::SetTitle(std::wstring_view title) const noexcept
     {
         //TODO: wide strings support
-        std::string title_(title.begin(), title.end());
-        XStoreName(display, window, title_.data());
+        SetTitle(std::string(title.begin(), title.end()));
+    }
+    void WindowImpl::SetPosition(uint32 x, uint32 y) const
+    {
+        XMoveWindow(display, window, x, y);
+        //TODO:data.position = Vec2u(x, y);
+    }
+    void WindowImpl::SetVisible(bool visible) const noexcept
+    {
+        //TODO: Implement This:
     }
 
     void WindowImpl::ActivateContext() const
     {
-        context->Activate();
+        data.graphicsContext->Activate();
     }
 
     void WindowImpl::Initialize()
@@ -245,7 +272,6 @@ namespace Vortex
 
         inputMethod = XOpenIM(display, nullptr, nullptr, nullptr);
     }
-
     void WindowImpl::Shutdown()
     {
         XCloseDisplay(display);
@@ -370,12 +396,14 @@ namespace Vortex
 
                 (*GetWindowsMap())[event.xbutton.window]->mouseButtonReleasedEvent(button, {(float)event.xbutton.x, (float)event.xbutton.y});
                 (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(button)] = false;
-
+                
                 break;
             }
-            case DestroyNotify:
-                (*GetWindowsMap())[event.xkey.window]->isOpen = false;
+            case ClientMessage:
+            {
+                
                 break;
+            }
             case MotionNotify:
                 (*GetWindowsMap())[event.xbutton.window]->mouseMovedEvent({(float)event.xmotion.x_root, (float)event.xmotion.y_root});
                 break;
