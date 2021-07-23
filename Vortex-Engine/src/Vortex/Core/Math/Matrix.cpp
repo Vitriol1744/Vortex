@@ -4,7 +4,7 @@
 #include "Matrix.hpp"
 
 #include "MathCommon.hpp"
-#include "Core/Math/Vector.hpp"
+#include "Core/Math/Vec4.hpp"
 
 #include <cstring>
 
@@ -37,32 +37,33 @@ namespace Vortex::Math
         return *this;
     }
 
-    Matrix4x4f Matrix4x4f::Translate(Vector3<float32> translation) noexcept
+    Matrix4x4f Matrix4x4f::Translate(const Matrix4x4f& matrix, const Vector3<float32>& translation) noexcept
     {
-        Matrix4x4f result(1.0f);
-
-        result.data[3 + 0 * 4] = translation.x;
-        result.data[3 + 1 * 4] = translation.y;
-        result.data[3 + 2 * 4] = translation.z;
+        Matrix4x4f result = matrix;
+        
+        result.data[3 + 0 * 4] += translation.x;
+        result.data[3 + 1 * 4] += translation.y;
+        result.data[3 + 2 * 4] += translation.z;
 
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Scale(Vector3<float32> scale) noexcept
+    Matrix4x4f Matrix4x4f::Scale(const Matrix4x4f& matrix, const Vector3<float32>& scale) noexcept
     {
-        Matrix4x4f result(1.0f);
-
-        result.data[0 + 0 * 4] = scale.x;
-        result.data[1 + 1 * 4] = scale.y;
-        result.data[2 + 2 * 4] = scale.z;
+        Matrix4x4f result = matrix;
+        
+        result.data[0 + 0 * 4] *= scale.x;
+        result.data[1 + 1 * 4] *= scale.y;
+        result.data[2 + 2 * 4] *= scale.z;
 
         return result;
     }
 
-    Matrix4x4f Matrix4x4f::Rotate(float32 angle, Vector3<float32> rotation) noexcept
+    Matrix4x4f Matrix4x4f::Rotate(const Matrix4x4f& matrix, float32 angle, const Vector3<float32>& rotation) noexcept
     {
+        //TODO: Refactor this
         Matrix4x4f result(1.0f);
-
+        
         float32 radians = ToRadians(angle);
         float32 cos = Cos(radians);
         float32 sin = Sin(radians);
@@ -106,7 +107,7 @@ namespace Vortex::Math
         }
         result.data[3 + 3 * 4] =  1.0f;
 
-        return result;
+        return result * matrix;
     }
 
     Matrix4x4f Matrix4x4f::Orthographic(float32 left, float32 right, float32 top, float32 bottom, float32 near, float32 far) noexcept
@@ -158,7 +159,7 @@ namespace Vortex::Math
         result.data[2 + 1 * 4] = -f.y;
         result.data[2 + 2 * 4] = -f.z;
 
-        return result * Translate(Vector3<float32>(-camera.x, -camera.y, -camera.z));
+        return Translate(result, Vector3<float32>(-camera.x, -camera.y, -camera.z));
     }
 
     Matrix4x4f operator*(Matrix4x4f left, const Matrix4x4f& right)

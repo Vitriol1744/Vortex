@@ -245,6 +245,8 @@ namespace Vortex::Math
     }
 
 
-    using Vec2 = Vector2<float32>;
+    using Vec2  = Vector2<float32>;
     using Vec2f = Vector2<float32>;
+    using Vec2u = Vector2<uint32>;
+    using Vec2i = Vector2<int32>;
 }
