@@ -26,7 +26,7 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Vector4.hpp src/Vortex/Core/Math/Vector3.hpp src/Vortex/Core/Math/Vector2.hpp src/Vortex/Graphics/Renderer2D.cpp src/Vortex/Graphics/Renderer2D.hpp src/Vortex/Graphics/Sprite.cpp src/Vortex/Graphics/Sprite.hpp src/Vortex/Utility/TextureLoader.cpp src/Vortex/Utility/TextureLoader.hpp src/Vortex/Core/Timestep.hpp src/Vortex/Utility/Timer.hpp src/Vortex/Core/MemoryManager.cpp src/Vortex/Core/MemoryManager.hpp)
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Vector4.hpp src/Vortex/Core/Math/Vector3.hpp src/Vortex/Core/Math/Vector2.hpp src/Vortex/Graphics/Renderer2D.cpp src/Vortex/Graphics/Renderer2D.hpp src/Vortex/Graphics/Sprite.cpp src/Vortex/Graphics/Sprite.hpp src/Vortex/Utility/TextureLoader.cpp src/Vortex/Utility/TextureLoader.hpp src/Vortex/Core/Timestep.hpp src/Vortex/Utility/Timer.hpp src/Vortex/Core/MemoryManager.cpp src/Vortex/Core/MemoryManager.hpp src/Vortex/Core/Math/Vec4.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
