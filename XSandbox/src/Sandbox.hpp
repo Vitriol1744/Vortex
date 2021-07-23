@@ -24,7 +24,7 @@ class Sandbox : public Vortex::Application
     private:
         const int32 width  = 800;
         const int32 height = 600;
-
+        int spritesCount = 1000;
         Ref<VTGraphics::IVertexArray> mesh1;
         Ref<VTGraphics::IVertexArray> mesh2;
         Ref<VTGraphics::IVertexBuffer> vertexBuffer;
