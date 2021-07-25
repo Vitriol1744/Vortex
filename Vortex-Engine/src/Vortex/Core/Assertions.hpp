@@ -7,7 +7,7 @@
 #include "Core/Logger.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-    #include <debugapi.h>
+    #include <Windows.h>
     #define VT_DEBUG_BREAK DebugBreak();
 #elif defined(VT_PLATFORM_LINUX)
     #include <signal.h>

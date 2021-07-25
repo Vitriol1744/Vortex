@@ -12,7 +12,6 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DDEBUG)
 endif()
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 add_definitions(-DVT_ENABLE_ASSERTIONS)
 
 add_executable (XSandbox ${SOURCES})

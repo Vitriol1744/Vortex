@@ -9,8 +9,6 @@
 
 namespace Vortex::Graphics
 {
-    bool GL46Context::initialized = false;
-
     GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share) : window(static_cast<HWND>(windowHandle))
     {
         HINSTANCE hInstance = GetModuleHandleW(nullptr);

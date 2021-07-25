@@ -17,12 +17,8 @@ namespace Vortex::Graphics
         void Present() override;
         void Activate() override;
 
-        static bool initialized;
-
         HWND window = 0;
         HDC deviceContext{};
         HGLRC renderingContext{};
-
-        void Initialize();
     };
 }

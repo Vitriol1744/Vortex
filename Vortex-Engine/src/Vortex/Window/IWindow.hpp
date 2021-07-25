@@ -46,12 +46,12 @@ namespace Vortex
             virtual void ShowCursor() const noexcept = 0;
             virtual void HideCursor() const noexcept = 0;
             virtual void SetFullscreen(bool fullscreen) const = 0;
-            virtual void SetIcon(std::string_view path) const = 0;
+            virtual void SetIcon(std::string_view path, int32 width, int32 height) const = 0;
             virtual void SetTitle(std::string_view title) const noexcept = 0;
             virtual void SetTitle(std::wstring_view title) const noexcept = 0;
             virtual void SetPosition(Math::Vec2u position) const { SetPosition(position.x, position.y); }
             virtual void SetPosition(uint32 x, uint32 y) const = 0;
-            virtual void SetVisible(bool visible = true) const = 0;
+            virtual void SetVisible(bool visible) const = 0;
 
             VT_NODISCARD static Ref<IWindow> CreateWindow(int width, int height, std::wstring_view title, Ref<IWindow> share = nullptr);
 

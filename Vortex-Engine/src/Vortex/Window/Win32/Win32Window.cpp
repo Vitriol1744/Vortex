@@ -6,7 +6,7 @@
 #include "Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-#define _UNICODE
+//#define _UNICODE
 #include "Win32Window.hpp"
 
 #include "Graphics/API/OpenGL46/GL46Context.hpp"
@@ -20,29 +20,35 @@ namespace
 
 namespace Vortex
 {
+    using namespace Vortex::Math;
+    using namespace Vortex::Graphics;
     unsigned int WindowImpl::windowsCount = 0;
 
     WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share)
     {
+        data.width = width;
+        data.height = height;
+        data.title = title;
+        data.position = Vec2u(0, 0);
         if (!windowsCount) Initialize();
         hWnd = CreateWindowExW
         (
-            0, windowClassName, title.data(), WS_OVERLAPPEDWINDOW,
-            0, 0, width, height, nullptr, nullptr, hInstance, nullptr
+            0, windowClassName, data.title.data(), WS_OVERLAPPEDWINDOW,
+            data.position.x, data.position.y, data.width, data.height, nullptr, nullptr, hInstance, nullptr
         );
         (*GetWindowsMap())[hWnd] = this;
 
         VT_CORE_LOG_TRACE("Window Created!");
 
-        Graphics::IRendererAPI::Initialize();
-        switch (Graphics::IRendererAPI::GetGraphicsAPI())
+        IRendererAPI::Initialize();
+        switch (IRendererAPI::GetGraphicsAPI())
         {
-            case Graphics::GraphicsAPI::OpenGL46:
+            case GraphicsAPI::OpenGL46:
             {
-                context = new Graphics::GL46Context(reinterpret_cast<void*>(hWnd), share ? share->GetGraphicsContext() : nullptr);
+                data.graphicsContext = new GL46Context(reinterpret_cast<void*>(hWnd), share ? share->GetGraphicsContext() : nullptr);
                 break;
             }
-            case Graphics::GraphicsAPI::None:
+            case GraphicsAPI::None:
 
             default:
                 VT_CORE_LOG_FATAL("Graphics API Not Supported!");
@@ -73,17 +79,17 @@ namespace Vortex
 
     void WindowImpl::Present()
     {
-        context->Present();
+        data.graphicsContext->Present();
     }
 
     void WindowImpl::ShowCursor() const noexcept
     {
-
+        ::ShowCursor(true);
     }
 
     void WindowImpl::HideCursor() const noexcept
     {
-
+        ::ShowCursor(false);
     }
 
     void WindowImpl::SetFullscreen(bool fullscreen) const
@@ -91,9 +97,13 @@ namespace Vortex
 
     }
 
-    void WindowImpl::SetIcon(std::string_view path) const
+    void WindowImpl::SetIcon(std::string_view path, int32 width, int32 height) const
     {
+        const std::wstring& name = std::wstring(path.begin(), path.end());
+        auto icon = (LONG_PTR)LoadImageW(nullptr, name.c_str(), IMAGE_ICON, width, height, LR_LOADFROMFILE);
 
+        SetClassLongPtrW(hWnd, GCLP_HICON, icon);
+        SetClassLongPtrW(hWnd, GCLP_HICONSM, icon);
     }
 
     void WindowImpl::SetTitle(std::string_view title) const noexcept
@@ -113,12 +123,12 @@ namespace Vortex
 
     void WindowImpl::SetVisible(bool visible) const
     {
-
+        visible ? ShowWindow(hWnd, SW_SHOW) : ShowWindow(hWnd, SW_HIDE);
     }
 
     void WindowImpl::ActivateContext() const
     {
-
+        data.graphicsContext->Activate();
     }
 
     void WindowImpl::Initialize()
@@ -159,8 +169,11 @@ namespace Vortex
         {
             case WM_CLOSE:
             case WM_DESTROY:
-                isOpen = false;
+                data.isOpen = false;
                 PostQuitMessage(0);
+                break;
+            case WM_KEYUP:
+            case WM_KEYDOWN:
                 break;
 
             default:

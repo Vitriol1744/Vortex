@@ -19,7 +19,7 @@ endif()
 add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
-set (WIN32_EXECUTABLE TRUE)
+#set (WIN32_EXECUTABLE TRUE)
 set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "fmt")
 set (LIBS "OpenGL::GL" "fmt")
 file (GLOB_RECURSE SOURCES "src/*/*.cpp")
@@ -28,7 +28,7 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Graphics/API/OpenGL46/glad.c)
+add_library (${PROJECT_NAME} STATIC ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})

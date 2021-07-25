@@ -27,8 +27,11 @@
 namespace Vortex::Graphics
 {
     #pragma region glTypes
+    using GLboolean     = bool;
+    using GLbyte        = signed char;
     using GLchar        = char;
     using GLenum        = uint32;
+    using GLfloat       = float;
     using GLint         = int32;
     using GLintptr      = khronos_intptr_t;
     using GLsizei       = int32;

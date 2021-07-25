@@ -29,17 +29,17 @@ namespace Vortex
 }
 
 #if defined(VT_DEBUG)
-#define VT_CORE_LOG_TRACE(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Trace, fmt::format(__VA_ARGS__))
-#define VT_CORE_LOG_INFO(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Info, fmt::format(__VA_ARGS__))
-#define VT_CORE_LOG_WARN(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Warn, fmt::format(__VA_ARGS__))
-#define VT_CORE_LOG_ERROR(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Error, fmt::format(__VA_ARGS__))
-#define VT_CORE_LOG_FATAL(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Fatal, fmt::format(__VA_ARGS__))
-
-#define VT_LOG_TRACE(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Trace, fmt::format(__VA_ARGS__))
-#define VT_LOG_INFO(...)   Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Info, fmt::format(__VA_ARGS__))
-#define VT_LOG_WARN(...)   Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Warn, fmt::format(__VA_ARGS__))
-#define VT_LOG_ERROR(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Error, fmt::format(__VA_ARGS__))
-#define VT_LOG_FATAL(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Fatal, fmt::format(__VA_ARGS__))
+    #define VT_CORE_LOG_TRACE(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Trace, fmt::format(__VA_ARGS__))
+    #define VT_CORE_LOG_INFO(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Info, fmt::format(__VA_ARGS__))
+    #define VT_CORE_LOG_WARN(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Warn, fmt::format(__VA_ARGS__))
+    #define VT_CORE_LOG_ERROR(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Error, fmt::format(__VA_ARGS__))
+    #define VT_CORE_LOG_FATAL(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Fatal, fmt::format(__VA_ARGS__))
+    
+    #define VT_LOG_TRACE(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Trace, fmt::format(__VA_ARGS__))
+    #define VT_LOG_INFO(...)   Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Info, fmt::format(__VA_ARGS__))
+    #define VT_LOG_WARN(...)   Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Warn, fmt::format(__VA_ARGS__))
+    #define VT_LOG_ERROR(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Error, fmt::format(__VA_ARGS__))
+    #define VT_LOG_FATAL(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Fatal, fmt::format(__VA_ARGS__))
 #elif defined(VT_RELEASE)
     #define VT_CORE_LOG_TRACE(fmt, ...)
     #define VT_CORE_LOG_INFO(fmt, ...)
