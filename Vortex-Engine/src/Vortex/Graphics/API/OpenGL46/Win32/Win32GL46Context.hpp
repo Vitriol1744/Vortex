@@ -11,7 +11,7 @@ namespace Vortex::Graphics
 {
     struct VT_API GL46Context final : public IGraphicsContext
     {
-        explicit GL46Context(void* windowHandle) { }
+        explicit GL46Context(void* windowHandle, IGraphicsContext* share);
         ~GL46Context() override;
 
         void Present() override;
@@ -19,10 +19,10 @@ namespace Vortex::Graphics
 
         static bool initialized;
 
-        HWND window{};
+        HWND window = 0;
         HDC deviceContext{};
         HGLRC renderingContext{};
-        
+
         void Initialize();
     };
 }

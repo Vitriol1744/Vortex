@@ -25,23 +25,31 @@ namespace Vortex
             void Update() override;
             void Present() override;
 
-            virtual inline Scope<Graphics::IGraphicsContext>& GetGraphicsContext() override { return context; }
+            virtual inline Graphics::IGraphicsContext* GetGraphicsContext() override { return context; }
 
-            VT_NODISCARD virtual inline bool IsOpen() const override { return isOpen; }
             VT_NODISCARD virtual inline bool IsKeyPressed(Input::KeyCode keycode) const noexcept override { return keys[static_cast<uint32>(keycode)]; }
             VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
 
+            VT_NODISCARD virtual inline bool IsOpen() const noexcept override { return isOpen; }
+            VT_NODISCARD virtual inline Math::Vec2u Position() const noexcept { return Math::Vec2u(0, 0); }
+            //TODO: Position^^^
+            virtual void ShowCursor() const noexcept override;
             virtual void HideCursor() const noexcept override;
+            virtual void SetFullscreen(bool fullscreen) const;
+            virtual void SetIcon(std::string_view path) const;
             virtual void SetTitle(std::string_view title) const noexcept override;
-            virtual void SetTitle(std::wstring_view title) override;
-            virtual void ActivateContext() override;
+            virtual void SetTitle(std::wstring_view title) const noexcept override;
+            virtual void SetPosition(uint32 x, uint32 y) const;
+            virtual void SetVisible(bool visible = true) const;
+            
+            virtual void ActivateContext() const override;
 
         private:
             static uint32 windowsCount;
 
             bool isOpen = true;
             HWND hWnd;
-            Scope<Graphics::IGraphicsContext> context;
+            Graphics::IGraphicsContext* context;
 
             bool keys[static_cast<uint32>(Input::KeyCode::KeysCount)];
             bool buttons[static_cast<uint32>(Input::MouseCode::ButtonsCount)];

@@ -35,11 +35,11 @@ namespace Vortex
         VT_CORE_LOG_TRACE("Window Created!");
 
         Graphics::IRendererAPI::Initialize();
-        switch (Graphics::IRendererAPI::Get()->GetGraphicsAPI())
+        switch (Graphics::IRendererAPI::GetGraphicsAPI())
         {
             case Graphics::GraphicsAPI::OpenGL46:
             {
-                context = CreateScope<Graphics::GL46Context>(reinterpret_cast<void*>(&window));
+                context = new Graphics::GL46Context(reinterpret_cast<void*>(hWnd), share ? share->GetGraphicsContext() : nullptr);
                 break;
             }
             case Graphics::GraphicsAPI::None:
@@ -76,22 +76,47 @@ namespace Vortex
         context->Present();
     }
 
+    void WindowImpl::ShowCursor() const noexcept
+    {
+
+    }
+
     void WindowImpl::HideCursor() const noexcept
     {
 
     }
 
-    void WindowImpl::SetTitle(std::string_view title)
+    void WindowImpl::SetFullscreen(bool fullscreen) const
+    {
+
+    }
+
+    void WindowImpl::SetIcon(std::string_view path) const
+    {
+
+    }
+
+    void WindowImpl::SetTitle(std::string_view title) const noexcept
     {
         SetWindowTextA(hWnd, title.data());
     }
 
-    void WindowImpl::SetTitle(std::wstring_view title)
+    void WindowImpl::SetTitle(std::wstring_view title) const noexcept
     {
         SetWindowTextW(hWnd, title.data());
     }
 
-    void WindowImpl::ActivateContext()
+    void WindowImpl::SetPosition(uint32 x, uint32 y) const
+    {
+
+    }
+
+    void WindowImpl::SetVisible(bool visible) const
+    {
+
+    }
+
+    void WindowImpl::ActivateContext() const
     {
 
     }

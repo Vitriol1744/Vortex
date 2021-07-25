@@ -10,6 +10,8 @@
 
 #include "Core/Logger.hpp"
 
+#include "fmt/format.h"
+
 namespace Vortex
 {
     class VT_API LoggingManager : public Singleton<LoggingManager>

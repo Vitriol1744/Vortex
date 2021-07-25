@@ -37,18 +37,18 @@ namespace Vortex::Utility
     
     Ref<Pixel[]> TextureLoader::LoadTexture(std::string_view path)
     {
-        return LoadPNG(path);
+        return nullptr;//LoadPNG(path);
     }
 
     Ref<Pixel[]> TextureLoader::LoadBMP(std::string_view path)
     {
-        std::ifstream ifs(path.data(), std::ios::binary);
+        /*std::ifstream ifs(path.data(), std::ios::binary);
         if (!ifs) VT_CORE_LOG_WARN("Failed to Open BMP file at \"{}\"", path);
         
         Ref<Pixel[]> pixels;
         
-        BMPHeader bmpHeader;
-        DIBHeader dibHeader;
+        BMPHeader bmpHeader{};
+        DIBHeader dibHeader{};
         
         ifs.read((char*)&bmpHeader, sizeof(bmpHeader));
         ifs.read((char*)&dibHeader, sizeof(dibHeader));
@@ -69,8 +69,9 @@ namespace Vortex::Utility
             pixels[i]     = pixels[i + 2];
             pixels[i + 2] = temp;
         }
-        
+
         return pixels;
+         */ return nullptr;
     }
 
     Ref<Pixel[]> TextureLoader::LoadPNG(std::string_view path)

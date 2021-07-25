@@ -2,3 +2,5 @@
 /cmake-build-release/
 /.idea/
 /build/
+/.vs/
+/out/

@@ -82,8 +82,6 @@ namespace Vortex::Math
         template<typename T2>
         friend std::ostream& operator<<(std::ostream& os, const Vector4<T2>& right) noexcept;
 
-        auto operator<=>(const Vector4<T>& right) const = default;
-
         inline Vector4<T>& operator+=(Vector4<T>& right) noexcept
         {
             x += right.x;

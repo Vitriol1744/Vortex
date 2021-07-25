@@ -21,7 +21,7 @@ namespace Vortex
         QueryPerformanceFrequency(&frequency);
     }
 
-    Timestep Time::GetTimeInSeconds()
+    Timestep Time::GetTime()
     {
         QueryPerformanceCounter(&counter);
 
@@ -30,7 +30,7 @@ namespace Vortex
 
     void Time::Sleep(Timestep timestep)
     {
-        Sleep(timestep.Milliseconds());
+        ::Sleep((unsigned long)timestep.Milliseconds());
     }
 }
 #endif

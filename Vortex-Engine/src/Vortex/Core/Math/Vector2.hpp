@@ -58,9 +58,7 @@ namespace Vortex::Math
         template<typename T2>
         friend Vector2<T2>& operator%(Vector2<T2> left, const T2& right);
         template<typename T2>
-        friend std::ostream& operator<<(std::ostream& os, const Vector2<T2> right) noexcept;
-
-        auto operator<=>(const Vector2<T>& right) const = default;
+        friend std::ostream& operator<<(std::ostream& os, const Vector2<T2>& right) noexcept;
 
         inline Vector2<T>& operator+=(Vector2<T>& right) noexcept
         {
@@ -235,8 +233,9 @@ namespace Vortex::Math
         left %= right;
         return left;
     }
+
     template<typename T>
-    std::ostream& operator<<(std::ostream& os, Vector2<T>& right) noexcept
+    std::ostream& operator<<(std::ostream& os, const Vector2<T>& right) noexcept
     {
         os << "x: " << right.x << " y: " << right.y;
         os << '\n';

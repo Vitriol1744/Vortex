@@ -34,7 +34,7 @@ namespace Vortex
         {
             if (Time::GetTime().Seconds() - fpsTimer >= 1.0f)
             {
-                Time::SetFPSCounter(frames);;
+                Time::SetFPSCounter(frames);
                 frames = 0;
                 fpsTimer = Time::GetTime().Seconds();
             }

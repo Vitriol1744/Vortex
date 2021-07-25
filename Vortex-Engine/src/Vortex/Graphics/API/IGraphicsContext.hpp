@@ -9,6 +9,7 @@ namespace Vortex::Graphics
 {
     struct VT_API IGraphicsContext
     {
+        IGraphicsContext() = default;
         explicit IGraphicsContext(void* windowHandle) noexcept { };
         virtual ~IGraphicsContext() = default;
 

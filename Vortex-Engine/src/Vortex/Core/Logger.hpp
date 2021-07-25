@@ -7,7 +7,6 @@
 #include "Macros.hpp"
 
 #include <string>
-#include "fmt/format.h"
 
 namespace Vortex
 {

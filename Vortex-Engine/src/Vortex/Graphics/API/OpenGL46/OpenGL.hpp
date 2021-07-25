@@ -6,31 +6,59 @@
 #include "Core/Core.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-#include <Windows.h>
-#include "Gl/Gl.h"
-#include "GL/wglext.h"
+    #include <Windows.h>
+    #include "Gl/Gl.h"
+    #include "GL/wglext.h"
 #elif defined(VT_PLATFORM_LINUX)
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <GL/glx.h>
+    #include <X11/Xlib.h>
+    #include <X11/Xutil.h>
+    #include <GL/glx.h>
 #endif
 
 #include <KHR/khrplatform.h>
 
+#undef APIENTRY
+#ifdef VT_PLATFORM_WINDOWS
+    #define APIENTRY __stdcall
+#else
+    #define APIENTRY
+#endif
+
 namespace Vortex::Graphics
 {
     #pragma region glTypes
+    using GLchar        = char;
     using GLenum        = uint32;
     using GLint         = int32;
+    using GLintptr      = khronos_intptr_t;
     using GLsizei       = int32;
     using GLsizeiptr    = khronos_ssize_t;
     using GLuint        = uint32;
     using GLvoid        = void;
+
+    using GLDEBUGPROC = void (APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
     #pragma endregion
 
     #pragma region glMacros
-    #define GL_ARRAY_BUFFER 0x8892
-    #define GL_STATIC_DRAW 0x88E4
+    #define GL_VERTEX_ARRAY                 0x8074
+    #define GL_DEBUG_OUTPUT_SYNCHRONOUS     0x8242
+    #define GL_DEBUG_SEVERITY_NOTIFICATION  0x826B
+    #define GL_ARRAY_BUFFER                 0x8892
+    #define GL_ELEMENT_ARRAY_BUFFER         0x8893
+    #define GL_STATIC_DRAW                  0x88E4
+    #define GL_DYNAMIC_DRAW                 0x88E8
+    #define GL_FRAGMENT_SHADER              0x8B30
+    #define GL_VERTEX_SHADER                0x8B31
+    #define GL_BOOL                         0x8B56
+    #define GL_COMPILE_STATUS               0x8B81
+    #define GL_LINK_STATUS                  0x8B82
+    #define GL_INFO_LOG_LENGTH              0x8B84
+    #define GL_COPY_READ_BUFFER             0x8F36
+    #define GL_COPY_WRITE_BUFFER            0x8F37
+    #define GL_DEBUG_SEVERITY_HIGH          0x9146
+    #define GL_DEBUG_SEVERITY_MEDIUM        0x9147
+    #define GL_DEBUG_SEVERITY_LOW           0x9148
+    #define GL_DEBUG_OUTPUT                 0x92E0
     #pragma endregion
 
     #pragma region glFunctions

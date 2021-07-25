@@ -12,7 +12,6 @@ namespace Vortex::Graphics
     struct VT_API GL46Context final : public IGraphicsContext
     {
         explicit GL46Context(GLvoid* windowHandle, IGraphicsContext* share);
-        
         ~GL46Context() noexcept override;
 
         void Present() noexcept override;

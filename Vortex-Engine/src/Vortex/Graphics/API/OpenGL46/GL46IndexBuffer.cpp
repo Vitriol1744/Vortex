@@ -3,6 +3,8 @@
 //
 #include "GL46IndexBuffer.hpp"
 
+#include "Graphics/API/OpenGL46/OpenGL.hpp"
+
 namespace Vortex::Graphics
 {
     GL46IndexBuffer::GL46IndexBuffer() noexcept : GL46IndexBuffer(0) { }

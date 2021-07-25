@@ -6,6 +6,8 @@
 
 #include "Graphics/API/OpenGL46/OpenGL.hpp"
 
+#undef CreateWindow
+
 namespace Vortex
 {
     uint32 count = 0;

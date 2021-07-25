@@ -1,11 +1,14 @@
 # Vortex-Engine
 
-cmake_minimum_required (VERSION 3.16)
+cmake_minimum_required (VERSION 3.10)
 project (Vortex-Engine)
 
 find_package (OpenGL REQUIRED COMPONENTS OpenGL)
 
 #TODO: Download FMT
+
+set (CMAKE_CXX_STANDARD 20)
+set (CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory (vendor/fmt)
 
@@ -15,7 +18,6 @@ endif()
 
 add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
-add_compile_options (-MP)
 
 set (WIN32_EXECUTABLE TRUE)
 set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "fmt")
@@ -26,7 +28,7 @@ if (UNIX)
 set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Core/Math/Vector4.hpp src/Vortex/Core/Math/Vector3.hpp src/Vortex/Core/Math/Vector2.hpp src/Vortex/Graphics/Renderer2D.cpp src/Vortex/Graphics/Renderer2D.hpp src/Vortex/Graphics/Sprite.cpp src/Vortex/Graphics/Sprite.hpp src/Vortex/Utility/TextureLoader.cpp src/Vortex/Utility/TextureLoader.hpp src/Vortex/Core/Timestep.hpp src/Vortex/Utility/Timer.hpp src/Vortex/Core/MemoryManager.cpp src/Vortex/Core/MemoryManager.hpp src/Vortex/Core/Math/Vec4.hpp)
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Graphics/API/OpenGL46/glad.c)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
@@ -42,6 +44,6 @@ target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 #COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/libVortex-Engine.so ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
 #endif ()
 
-add_custom_command(
-TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}/assets)
+#add_custom_command(
+#TARGET ${PROJECT_NAME} POST_BUILD
+#COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}/assets)
