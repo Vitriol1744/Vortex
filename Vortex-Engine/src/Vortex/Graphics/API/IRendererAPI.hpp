@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "IVertexArray.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
 
 #undef None
 

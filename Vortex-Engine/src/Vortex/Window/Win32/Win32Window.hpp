@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
-#include "Window/IWindow.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Window/IWindow.hpp"
 
-#include "Graphics/API/IGraphicsContext.hpp"
+#include "Vortex/Graphics/API/IGraphicsContext.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Window/IWindow.hpp"
+#include "Vortex/Window/IWindow.hpp"
 
 #include <utility>
 #include <vector>

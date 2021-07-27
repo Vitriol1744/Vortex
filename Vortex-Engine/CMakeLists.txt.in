@@ -1,0 +1,15 @@
+make_minimum_required(VERSION 2.8.2)
+
+project(fmt-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(googletest
+  GIT_REPOSITORY    https://github.com/fmtlib/fmt.git
+  GIT_TAG           master
+  SOURCE_DIR        "${CMAKE_CURRENT_SOURCE_DIR}/vendor"
+  BINARY_DIR        ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)

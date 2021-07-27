@@ -5,10 +5,10 @@
 #include "IWindow.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-    #include "Win32/Win32Window.hpp"
+    #include "Vortex/Window/Win32/Win32Window.hpp"
     #undef CreateWindow
 #elif defined(VT_PLATFORM_LINUX)
-    #include "Window/Posix/X11Window.hpp"
+    #include "Vortex/Window/Posix/X11Window.hpp"
 #endif
 
 namespace Vortex

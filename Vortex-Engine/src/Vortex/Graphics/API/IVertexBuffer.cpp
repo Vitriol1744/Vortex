@@ -3,8 +3,8 @@
 //
 #include "IVertexBuffer.hpp"
 
-#include "IRendererAPI.hpp"
-#include "Graphics/API/OpenGL46/GL46VertexBuffer.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46VertexBuffer.hpp"
 
 #undef None
 

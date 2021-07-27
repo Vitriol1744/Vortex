@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Export.hpp"
-#include "Macros.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Macros.hpp"
 
 #include <string>
 

@@ -3,8 +3,8 @@
 //
 #include "Renderer2D.hpp"
 
-#include "Graphics/API/IVertexArray.hpp"
-#include "Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
 
 using namespace Vortex::Math;
 

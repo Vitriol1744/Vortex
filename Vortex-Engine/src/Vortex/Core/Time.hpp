@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
-#include "Core/Timestep.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/Timestep.hpp"
 
 namespace Vortex
 {

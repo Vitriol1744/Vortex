@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Graphics/Sprite.hpp"
-#include "Graphics/API/IVertexArray.hpp"
+#include "Vortex/Graphics/Sprite.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
 
 #include <queue>
 

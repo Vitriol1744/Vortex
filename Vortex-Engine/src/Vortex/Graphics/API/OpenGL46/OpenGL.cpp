@@ -5,56 +5,58 @@
 
 namespace Vortex::Graphics
 {
-    #pragma region glFunctions
-    PFNGLATTACHSHADERPROC               glAttachShader              = nullptr;
-    PFNGLBINDBUFFERPROC                 glBindBuffer                = nullptr;
-    PFNGLBINDVERTEXARRAYPROC            glBindVertexArray           = nullptr;
-    PFNGLBUFFERDATAPROC                 glBufferData                = nullptr;
-    PFNGLBUFFERSUBDATAPROC              glBufferSubData             = nullptr;
-    PFNGLCOPYBUFFERSUBDATAPROC          glCopyBufferSubData         = nullptr;
-    PFNGLCREATEBUFFERSPROC              glCreateBuffers             = nullptr;
-    PFNGLCREATEPROGRAMPROC              glCreateProgram             = nullptr;
-    PFNGLCREATESHADERPROC               glCreateShader              = nullptr;
-    PFNGLCREATEVERTEXARRAYSPROC         glCreateVertexArrays        = nullptr;
-    PFNGLCOMPILESHADERPROC              glCompileShader             = nullptr;
-    PFNGLDEBUGMESSAGECALLBACKPROC       glDebugMessageCallback      = nullptr;
-    PFNGLDEBUGMESSAGECONTROLPROC        glDebugMessageControl       = nullptr;
-    PFNGLDELETEBUFFERSPROC              glDeleteBuffers             = nullptr;
-    PFNGLDELETEPROGRAMPROC              glDeleteProgram             = nullptr;
-    PFNGLDELETESHADERPROC               glDeleteShader              = nullptr;
-    PFNGLDETACHSHADERPROC               glDetachShader              = nullptr;
-    PFNGLENABLEVERTEXATTRIBARRAYPROC    glEnableVertexAttribArray   = nullptr;
-    PFNGLGETPROGRAMINFOLOGPROC          glGetProgramInfoLog         = nullptr;
-    PFNGLGETPROGRAMIVPROC               glGetProgramiv              = nullptr;
-    PFNGLGETSHADERINFOLOG               glGetShaderInfoLog          = nullptr;
-    PFNGLGETSHADERIVPROC                glGetShaderiv               = nullptr;
-    PFNGLGETUNIFORMLOCATIONPROC         glGetUniformLocation        = nullptr;
-    PFNGLLINKPROGRAMPROC                glLinkProgram               = nullptr;
-    PFNGLSHADERBINARYPROC               glShaderBinary              = nullptr;
-    PFNGLSHADERSOURCEPROC               glShaderSource              = nullptr;
-    PFNGLSPECIALIZESHADERPROC           glSpecializeShader          = nullptr;
-    PFNGLUNIFORM1FPROC                  glUniform1f                 = nullptr;
-    PFNGLUNIFORM2FPROC                  glUniform2f                 = nullptr;
-    PFNGLUNIFORM3FPROC                  glUniform3f                 = nullptr;
-    PFNGLUNIFORM4FPROC                  glUniform4f                 = nullptr;
-    PFNGLUNIFORMMATRIX4FVPROC           glUniformMatrix4fv          = nullptr;
-    PFNGLUSEPROGRAMPROC                 glUseProgram                = nullptr;
-    PFNGLVALIDATEPROGRAMPROC            glValidateProgram           = nullptr;
-    PFNGLVERTEXATTRIBDIVISORPROC        glVertexAttribDivisor       = nullptr;
-    PFNGLVERTEXATTRIBIPOINTERPROC       glVertexAttribIPointer      = nullptr;
-    PFNGLVERTEXATTRIBPOINTERPROC        glVertexAttribPointer       = nullptr;
+    #pragma region initializing opengl functions
+    #define VT_GL_INIT_FUNC(name) PFNGL##name##PROC gl##name = nullptr
+    VT_GL_INIT_FUNC(AttachShader);
+    VT_GL_INIT_FUNC(BindBuffer);
+    VT_GL_INIT_FUNC(BindTexture);
+    VT_GL_INIT_FUNC(BindVertexArray);
+    VT_GL_INIT_FUNC(BufferData);
+    VT_GL_INIT_FUNC(BufferSubData);
+    VT_GL_INIT_FUNC(CopyBufferSubData);
+    VT_GL_INIT_FUNC(CreateBuffers);
+    VT_GL_INIT_FUNC(CreateProgram);
+    VT_GL_INIT_FUNC(CreateShader);
+    VT_GL_INIT_FUNC(CreateVertexArrays);
+    VT_GL_INIT_FUNC(CompileShader);
+    VT_GL_INIT_FUNC(DebugMessageCallback);
+    VT_GL_INIT_FUNC(DebugMessageControl);
+    VT_GL_INIT_FUNC(DeleteBuffers);
+    VT_GL_INIT_FUNC(DeleteProgram);
+    VT_GL_INIT_FUNC(DeleteShader);
+    VT_GL_INIT_FUNC(DetachShader);
+    VT_GL_INIT_FUNC(EnableVertexAttribArray);
+    VT_GL_INIT_FUNC(GetProgramInfoLog);
+    VT_GL_INIT_FUNC(GetProgramiv);
+    VT_GL_INIT_FUNC(GetShaderInfoLog);
+    VT_GL_INIT_FUNC(GetShaderiv);
+    VT_GL_INIT_FUNC(GetUniformLocation);
+    VT_GL_INIT_FUNC(LinkProgram);
+    VT_GL_INIT_FUNC(ShaderBinary);
+    VT_GL_INIT_FUNC(ShaderSource);
+    VT_GL_INIT_FUNC(SpecializeShader);
+    VT_GL_INIT_FUNC(Uniform1f);
+    VT_GL_INIT_FUNC(Uniform2f);
+    VT_GL_INIT_FUNC(Uniform3f);
+    VT_GL_INIT_FUNC(Uniform4f);
+    VT_GL_INIT_FUNC(UniformMatrix4fv);
+    VT_GL_INIT_FUNC(UseProgram);
+    VT_GL_INIT_FUNC(ValidateProgram);
+    VT_GL_INIT_FUNC(VertexAttribDivisor);
+    VT_GL_INIT_FUNC(VertexAttribIPointer);
+    VT_GL_INIT_FUNC(VertexAttribPointer);
     #pragma endregion
-    static bool initialized = false;
+    static GLboolean initialized = false;
 
     #ifdef VT_PLATFORM_WINDOWS
-    #define ubyte(name) name
-    void* GetProcAddress(const char* name)
+    #define ubyte(name) #name
+    GLvoid* GetProcAddress(const char* name)
     {
-        auto* ptr = (GLvoid*)wglGetProcAddress(name);
+        GLvoid* ptr = (GLvoid*)wglGetProcAddress(name);
         if(ptr == nullptr || (ptr == (GLvoid*)0x1) || (ptr == (GLvoid*)0x2) || (ptr == (GLvoid*)0x3) || (ptr == (GLvoid*)-1))
         {
             HMODULE module = LoadLibraryA("opengl32.dll");
-            ptr = (void *)GetProcAddress(module, name);
+            ptr = (GLvoid*)GetProcAddress(module, name);
         }
 
         if (!ptr)
@@ -66,63 +68,65 @@ namespace Vortex::Graphics
         return ptr;
     }
     #elif defined(VT_PLATFORM_LINUX)
-    #define ubyte(name) reinterpret_cast<const GLubyte*>(name)
-    void* GetProcAddress(const GLubyte* name)
+    #define ubyte(name) reinterpret_cast<const GLubyte*>(#name)
+    GLvoid* GetProcAddress(const GLubyte* name)
     {
-        void* p = (void*)glXGetProcAddress(name);
-        if(p == nullptr || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) || (p == (void*)-1))
+        GLvoid* ptr = (GLvoid*)glXGetProcAddress(name);
+        if(ptr == nullptr || (ptr == (GLvoid*)0x1) || (ptr == (GLvoid*)0x2) || (ptr == (GLvoid*)0x3) || (ptr == (GLvoid*)-1))
         {
             initialized = false;
         }
 
-        return p;
+        return ptr;
     }
     #endif
 
-    uint32 vao;
-
-    bool LoadGLFunctions()
+    GLboolean LoadOpenGLFunctions()
     {
         if (initialized) return true;
         initialized = true;
 
-        glAttachShader              = (PFNGLATTACHSHADERPROC)               GetProcAddress(ubyte("glAttachShader"               ));
-        glBindBuffer                = (PFNGLBINDBUFFERPROC)                 GetProcAddress(ubyte("glBindBuffer"                 ));
-        glBindVertexArray           = (PFNGLBINDVERTEXARRAYPROC)            GetProcAddress(ubyte("glBindVertexArray"            ));
-        glBufferData                = (PFNGLBUFFERDATAPROC)                 GetProcAddress(ubyte("glBufferData"                 ));
-        glBufferSubData             = (PFNGLBUFFERSUBDATAPROC)              GetProcAddress(ubyte("glBufferSubData"              ));
-        glCopyBufferSubData         = (PFNGLCOPYBUFFERSUBDATAPROC)          GetProcAddress(ubyte("glCopyBufferSubData"          ));
-        glCreateBuffers             = (PFNGLCREATEBUFFERSPROC)              GetProcAddress(ubyte("glCreateBuffers"              ));
-        glCreateProgram             = (PFNGLCREATEPROGRAMPROC)              GetProcAddress(ubyte("glCreateProgram"              ));
-        glCreateShader              = (PFNGLCREATESHADERPROC)               GetProcAddress(ubyte("glCreateShader"               ));
-        glCreateVertexArrays        = (PFNGLCREATEVERTEXARRAYSPROC)         GetProcAddress(ubyte("glCreateVertexArrays"         ));
-        glCompileShader             = (PFNGLCOMPILESHADERPROC)              GetProcAddress(ubyte("glCompileShader"              ));
-        glDebugMessageCallback      = (PFNGLDEBUGMESSAGECALLBACKPROC)       GetProcAddress(ubyte("glDebugMessageCallback"       ));
-        glDebugMessageControl       = (PFNGLDEBUGMESSAGECONTROLPROC)        GetProcAddress(ubyte("glDebugMessageControl"        ));
-        glDeleteBuffers             = (PFNGLDELETEBUFFERSPROC)              GetProcAddress(ubyte("glDeleteBuffers"              ));
-        glDeleteProgram             = (PFNGLDELETEPROGRAMPROC)              GetProcAddress(ubyte("glDeleteProgram"              ));
-        glDeleteShader              = (PFNGLDELETESHADERPROC)               GetProcAddress(ubyte("glDeleteShader"               ));
-        glDetachShader              = (PFNGLDETACHSHADERPROC)               GetProcAddress(ubyte("glDetachShader"               ));
-        glEnableVertexAttribArray   = (PFNGLENABLEVERTEXATTRIBARRAYPROC)    GetProcAddress(ubyte("glEnableVertexAttribArray"    ));
-        glGetProgramInfoLog         = (PFNGLGETPROGRAMINFOLOGPROC)          GetProcAddress(ubyte("glGetProgramInfoLog"          ));
-        glGetProgramiv              = (PFNGLGETPROGRAMIVPROC)               GetProcAddress(ubyte("glGetProgramiv"               ));
-        glGetShaderInfoLog          = (PFNGLGETSHADERINFOLOG)               GetProcAddress(ubyte("glGetShaderInfoLog"           ));
-        glGetShaderiv               = (PFNGLGETSHADERIVPROC)                GetProcAddress(ubyte("glGetShaderiv"                ));
-        glGetUniformLocation        = (PFNGLGETUNIFORMLOCATIONPROC)         GetProcAddress(ubyte("glGetUniformLocation"         ));
-        glLinkProgram               = (PFNGLLINKPROGRAMPROC)                GetProcAddress(ubyte("glLinkProgram"                ));
-        glShaderBinary              = (PFNGLSHADERBINARYPROC)               GetProcAddress(ubyte("glShaderBinary"               ));
-        glShaderSource              = (PFNGLSHADERSOURCEPROC)               GetProcAddress(ubyte("glShaderSource"               ));
-        glSpecializeShader          = (PFNGLSPECIALIZESHADERPROC)           GetProcAddress(ubyte("glSpecializeShader"           ));
-        glUniform1f                 = (PFNGLUNIFORM1FPROC)                  GetProcAddress(ubyte("glUniform1f"                  ));
-        glUniform2f                 = (PFNGLUNIFORM2FPROC)                  GetProcAddress(ubyte("glUniform2f"                  ));
-        glUniform3f                 = (PFNGLUNIFORM3FPROC)                  GetProcAddress(ubyte("glUniform3f"                  ));
-        glUniform4f                 = (PFNGLUNIFORM4FPROC)                  GetProcAddress(ubyte("glUniform4f"                  ));
-        glUniformMatrix4fv          = (PFNGLUNIFORMMATRIX4FVPROC)           GetProcAddress(ubyte("glUniformMatrix4fv"           ));
-        glUseProgram                = (PFNGLUSEPROGRAMPROC)                 GetProcAddress(ubyte("glUseProgram"                 ));
-        glValidateProgram           = (PFNGLVALIDATEPROGRAMPROC)            GetProcAddress(ubyte("glValidateProgram"            ));
-        glVertexAttribDivisor       = (PFNGLVERTEXATTRIBDIVISORPROC)        GetProcAddress(ubyte("glVertexAttribDivisor"        ));
-        glVertexAttribIPointer      = (PFNGLVERTEXATTRIBIPOINTERPROC)       GetProcAddress(ubyte("glVertexAttribIPointer"       ));
-        glVertexAttribPointer       = (PFNGLVERTEXATTRIBPOINTERPROC)        GetProcAddress(ubyte("glVertexAttribPointer"        ));
+        #pragma region loading opengl functions
+        #define VT_GL_LOAD(name) gl##name = (PFNGL##name##PROC) GetProcAddress(ubyte(gl##name))
+        VT_GL_LOAD(AttachShader);
+        VT_GL_LOAD(BindBuffer);
+        VT_GL_LOAD(BindTexture);
+        VT_GL_LOAD(BindVertexArray);
+        VT_GL_LOAD(BufferData);
+        VT_GL_LOAD(BufferSubData);
+        VT_GL_LOAD(CopyBufferSubData);
+        VT_GL_LOAD(CreateBuffers);
+        VT_GL_LOAD(CreateProgram);
+        VT_GL_LOAD(CreateShader);
+        VT_GL_LOAD(CreateVertexArrays);
+        VT_GL_LOAD(CompileShader);
+        VT_GL_LOAD(DebugMessageCallback);
+        VT_GL_LOAD(DebugMessageControl);
+        VT_GL_LOAD(DeleteBuffers);
+        VT_GL_LOAD(DeleteProgram);
+        VT_GL_LOAD(DeleteShader);
+        VT_GL_LOAD(DetachShader);
+        VT_GL_LOAD(EnableVertexAttribArray);
+        VT_GL_LOAD(GetProgramInfoLog);
+        VT_GL_LOAD(GetProgramiv);
+        VT_GL_LOAD(GetShaderInfoLog);
+        VT_GL_LOAD(GetShaderiv);
+        VT_GL_LOAD(GetUniformLocation);
+        VT_GL_LOAD(LinkProgram);
+        VT_GL_LOAD(ShaderBinary);
+        VT_GL_LOAD(ShaderSource);
+        VT_GL_LOAD(SpecializeShader);
+        VT_GL_LOAD(Uniform1f);
+        VT_GL_LOAD(Uniform2f);
+        VT_GL_LOAD(Uniform3f);
+        VT_GL_LOAD(Uniform4f);
+        VT_GL_LOAD(UniformMatrix4fv);
+        VT_GL_LOAD(UseProgram);
+        VT_GL_LOAD(ValidateProgram);
+        VT_GL_LOAD(VertexAttribDivisor);
+        VT_GL_LOAD(VertexAttribIPointer);
+        VT_GL_LOAD(VertexAttribPointer);
+        #pragma endregion
 
         if (initialized) VT_CORE_LOG_TRACE("OpenGL Functions Successfully Loaded!\n");
         return initialized;

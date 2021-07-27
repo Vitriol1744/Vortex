@@ -2,10 +2,10 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Core/Macros.hpp"
+#include "Vortex/Core/Macros.hpp"
 
-#include "Graphics/API/OpenGL46/GL46Context.hpp"
-#include "Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
 
 #include <cstdio>
 
@@ -237,7 +237,7 @@ namespace Vortex
         
         }
     }
-    void WindowImpl::SetIcon(std::string_view path) const noexcept
+    void WindowImpl::SetIcon(std::string_view path, int32 width, int32 height) const noexcept
     {
         //TODO: Set Icon
     }

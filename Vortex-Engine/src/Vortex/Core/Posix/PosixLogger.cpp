@@ -2,13 +2,11 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Core/Macros.hpp"
-
-#include <iostream>
+#include "Vortex/Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_LINUX
 #include "PosixLogger.hpp"
-#include "unistd.h"
+#include <unistd.h>
 
 namespace Vortex
 {
@@ -19,7 +17,7 @@ namespace Vortex
     
     void LoggerImpl::Log(LogLevel level, std::string_view formattedString)
     {
-        // Don't print null terminator character
+        // Subtract 1 from size because, we don't want to print null terminator character.
         ::write(STDOUT_FILENO, "\u001b[0m", sizeof("\u001b[0m") - 1);
         switch (level)
         {

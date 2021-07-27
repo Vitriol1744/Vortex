@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Core/Macros.hpp"
-#include "Core/Logger.hpp"
+#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/Logger.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>

@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
 namespace Vortex::Graphics
 {

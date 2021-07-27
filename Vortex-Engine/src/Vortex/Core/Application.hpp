@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
 namespace Vortex
 {

@@ -3,12 +3,12 @@
 //
 #pragma once
 
-#include "Core/Export.hpp"
-#include "Core/Singleton.hpp"
-#include "Core/Types.hpp"
-#include "Core/Macros.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Singleton.hpp"
+#include "Vortex/Core/Types.hpp"
+#include "Vortex/Core/Macros.hpp"
 
-#include "Core/Logger.hpp"
+#include "Vortex/Core/Logger.hpp"
 
 #include "fmt/format.h"
 

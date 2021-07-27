@@ -3,13 +3,13 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
-#include "Core/IEvent.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/IEvent.hpp"
 
-#include "Input/KeyCode.hpp"
-#include "Input/MouseCode.hpp"
+#include "Vortex/Input/KeyCode.hpp"
+#include "Vortex/Input/MouseCode.hpp"
 
-#include "Graphics/API/IGraphicsContext.hpp"
+#include "Vortex/Graphics/API/IGraphicsContext.hpp"
 
 #include <string>
 

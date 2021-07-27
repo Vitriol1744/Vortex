@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Core/Types.hpp"
-#include "Core/Math/Vector4.hpp"
+#include "Vortex/Core/Types.hpp"
+#include "Vortex/Core/Math/Vector4.hpp"
 
 namespace Vortex::Math
 {

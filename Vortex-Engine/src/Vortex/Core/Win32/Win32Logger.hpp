@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Core/Logger.hpp"
+#include "Vortex/Core/Logger.hpp"
 
 namespace Vortex
 {

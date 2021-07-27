@@ -3,6 +3,6 @@
 //
 #pragma once
 
-#include "Core/Math/Vector2.hpp"
-#include "Core/Math/Vector3.hpp"
-#include "Core/Math/Vec4.hpp"
+#include "Vortex/Core/Math/Vector2.hpp"
+#include "Vortex/Core/Math/Vector3.hpp"
+#include "Vortex/Core/Math/Vec4.hpp"

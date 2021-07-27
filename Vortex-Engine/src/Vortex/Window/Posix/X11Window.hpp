@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include "Window/IWindow.hpp"
-#include "Core/Core.hpp"
-#include "Graphics/API/IGraphicsContext.hpp"
+#include "Vortex/Window/IWindow.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Graphics/API/IGraphicsContext.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -44,7 +44,7 @@ namespace Vortex
             virtual void ShowCursor() const noexcept override;
             virtual void HideCursor() const noexcept override;
             virtual void SetFullscreen(bool fullscreen) const noexcept override;
-            virtual void SetIcon(std::string_view path) const noexcept override;
+            virtual void SetIcon(std::string_view path, int32 width, int32 height) const noexcept override;
             virtual void SetTitle(std::string_view title) const noexcept override;
             virtual void SetTitle(std::wstring_view title) const noexcept override;
             virtual void SetPosition(uint32 x, uint32 y) const override;

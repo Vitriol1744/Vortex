@@ -3,14 +3,14 @@
 //
 
 #include "vtpch.hpp"
-#include "Core/Macros.hpp"
+#include "Vortex/Core/Macros.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 //#define _UNICODE
 #include "Win32Window.hpp"
 
-#include "Graphics/API/OpenGL46/GL46Context.hpp"
-#include "Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
 
 namespace
 {

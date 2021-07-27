@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Core/Types.hpp"
+#include "Vortex/Core/Types.hpp"
 
 namespace Vortex::Math
 {

@@ -3,11 +3,11 @@
 //
 #include "Application.hpp"
 
-#include "Core/Time.hpp"
-#include "Core/EventSystem.hpp"
+#include "Vortex/Core/Time.hpp"
+#include "Vortex/Core/EventSystem.hpp"
 
 //TODO: Remove later!
-#include "Graphics/API/OpenGL46/OpenGL.hpp"
+#include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 
 using namespace Vortex;
 

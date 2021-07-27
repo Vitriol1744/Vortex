@@ -5,9 +5,9 @@
 
 #include <utility>
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Graphics/VertexBufferLayout.hpp"
+#include "Vortex/Graphics/VertexBufferLayout.hpp"
 
 namespace Vortex::Graphics
 {

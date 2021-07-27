@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "IVertexBuffer.hpp"
-#include "IIndexBuffer.hpp"
+#include "Vortex/Graphics/API/IVertexBuffer.hpp"
+#include "Vortex/Graphics/API/IIndexBuffer.hpp"
 
 namespace Vortex::Graphics
 {

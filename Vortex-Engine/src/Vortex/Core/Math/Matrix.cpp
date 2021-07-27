@@ -4,7 +4,7 @@
 #include "Matrix.hpp"
 
 #include "MathCommon.hpp"
-#include "Core/Math/Vec4.hpp"
+#include "Vortex/Core/Math/Vec4.hpp"
 
 #include <cstring>
 

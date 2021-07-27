@@ -3,8 +3,8 @@
 //
 #include "IShader.hpp"
 
-#include "IRendererAPI.hpp"
-#include "Graphics/API/OpenGL46/GL46Shader.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46Shader.hpp"
 
 #undef None
 
@@ -16,10 +16,10 @@ namespace Vortex::Graphics
         switch (IRendererAPI::GetGraphicsAPI())
         {
             case GraphicsAPI::OpenGL46:
-                return CreateRef<GL46Shader>(vertexPath, pixelPath, precompiled);
+                result = CreateRef<GL46Shader>(vertexPath, pixelPath, precompiled);
                 break;
-
             case GraphicsAPI::None:
+
             default:
                 result = nullptr;
                 break;

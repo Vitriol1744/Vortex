@@ -3,7 +3,6 @@
 //
 #pragma once
 
-
 namespace Vortex
 {
     template<class T>

@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Core/Time.hpp"
-#include "Core/Timestep.hpp"
+#include "Vortex/Core/Time.hpp"
+#include "Vortex/Core/Timestep.hpp"
 
 namespace Vortex::Utility
 {

@@ -4,7 +4,7 @@
 #include "vtpch.hpp"
 #include "WindowManager.hpp"
 
-#include "Graphics/API/OpenGL46/OpenGL.hpp"
+#include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 
 #undef CreateWindow
 

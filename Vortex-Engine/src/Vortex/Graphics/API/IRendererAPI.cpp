@@ -4,7 +4,7 @@
 #include "vtpch.hpp"
 #include "IRendererAPI.hpp"
 
-#include "Graphics/API/OpenGL46/GL46RendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46RendererAPI.hpp"
 
 #undef None
 

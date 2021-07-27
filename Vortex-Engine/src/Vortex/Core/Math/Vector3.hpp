@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include "Core/Export.hpp"
-#include "Core/Types.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Types.hpp"
 
-#include "Core/Math/MathCommon.hpp"
-#include "Core/Math/Vector2.hpp"
+#include "Vortex/Core/Math/MathCommon.hpp"
+#include "Vortex/Core/Math/Vector2.hpp"
 
 #include <ostream>
 

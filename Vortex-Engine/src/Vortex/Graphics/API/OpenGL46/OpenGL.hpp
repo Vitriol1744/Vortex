@@ -39,7 +39,7 @@ namespace Vortex::Graphics
     using GLuint        = uint32;
     using GLvoid        = void;
 
-    using GLDEBUGPROC = void (APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+    using GLDEBUGPROC = GLvoid(APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam);
     #pragma endregion
 
     #pragma region glMacros
@@ -65,123 +65,54 @@ namespace Vortex::Graphics
     #pragma endregion
 
     #pragma region glFunctions
-    using PFNGLATTACHSHADERPROC = GLvoid(*)(GLuint program, GLuint shader);
-    extern PFNGLATTACHSHADERPROC glAttachShader;
-
-    using PFNGLBINDBUFFERPROC = GLvoid(*)(GLenum target, GLuint buffer);
-    extern PFNGLBINDBUFFERPROC glBindBuffer;
-
-    using PFNGLBINDVERTEXARRAYPROC = GLvoid(*)(GLuint array);
-    extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
-
-    using PFNGLBUFFERDATAPROC = GLvoid(*)(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
-    extern PFNGLBUFFERDATAPROC glBufferData;
-
-    using PFNGLBUFFERSUBDATAPROC = GLvoid(*)(GLenum target, GLintptr offset, const GLsizeiptr size, const GLvoid* data);
-    extern PFNGLBUFFERSUBDATAPROC glBufferSubData;
-
-    using PFNGLCOPYBUFFERSUBDATAPROC = GLvoid(*)(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
-    extern PFNGLCOPYBUFFERSUBDATAPROC glCopyBufferSubData;
-
-    using PFNGLCREATEBUFFERSPROC = GLvoid(*)(GLsizei n, GLuint* buffers);
-    extern PFNGLCREATEBUFFERSPROC glCreateBuffers;
-
-    using PFNGLCREATEPROGRAMPROC = GLuint(*)();
-    extern PFNGLCREATEPROGRAMPROC glCreateProgram;
-
-    using PFNGLCREATESHADERPROC = GLuint(*)(GLenum shaderType);
-    extern PFNGLCREATESHADERPROC glCreateShader;
-
-    using PFNGLCREATEVERTEXARRAYSPROC = GLvoid(*)(GLsizei n, GLuint* arrays);
-    extern PFNGLCREATEVERTEXARRAYSPROC glCreateVertexArrays;
-
-    using PFNGLCOMPILESHADERPROC = GLvoid(*)(GLuint shader);
-    extern PFNGLCOMPILESHADERPROC glCompileShader;
-
-    using PFNGLDEBUGMESSAGECALLBACKPROC = GLvoid(*)(GLDEBUGPROC callback, GLvoid* userParam);
-    extern PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback;
-
-    using PFNGLDEBUGMESSAGECONTROLPROC = GLvoid(*)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled);
-    extern PFNGLDEBUGMESSAGECONTROLPROC glDebugMessageControl;
-
-    using PFNGLDELETEBUFFERSPROC = GLvoid(*)(GLsizei n, const GLuint* buffers);
-    extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-
-    using PFNGLDELETEPROGRAMPROC = GLvoid(*)(GLuint program);
-    extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
-
-    using PFNGLDELETESHADERPROC = GLvoid(*)(GLuint shader);
-    extern PFNGLDELETESHADERPROC glDeleteShader;
-
-    using PFNGLDETACHSHADERPROC = GLvoid(*)(GLuint program, GLuint shader);
-    extern PFNGLDETACHSHADERPROC glDetachShader;
-
-    using PFNGLENABLEVERTEXATTRIBARRAYPROC = GLvoid(*)(GLuint index);
-    extern PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-
-    using PFNGLGETPROGRAMINFOLOGPROC = GLvoid(*)(GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
-    extern PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
-
-    using PFNGLGETPROGRAMIVPROC = GLvoid(*)(GLuint program, GLenum pname, GLint* params);
-    extern PFNGLGETPROGRAMIVPROC glGetProgramiv;
-
-    using PFNGLGETSHADERINFOLOG = GLvoid(*)(GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
-    extern PFNGLGETSHADERINFOLOG glGetShaderInfoLog;
-
-    using PFNGLGETSHADERIVPROC = GLvoid(*)(GLuint shader, GLenum pname, GLint* params);
-    extern PFNGLGETSHADERIVPROC glGetShaderiv;
-
-    using PFNGLGETUNIFORMLOCATIONPROC = GLint(*)(GLuint program, const GLchar* name);
-    extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
-
-    using PFNGLLINKPROGRAMPROC = GLvoid(*)(GLuint program);
-    extern PFNGLLINKPROGRAMPROC glLinkProgram;
-
-    using PFNGLSHADERBINARYPROC = GLvoid(*)(GLsizei count, const GLuint* shaders, GLenum binaryFormat, const GLvoid* binary, GLsizei length);
-    extern PFNGLSHADERBINARYPROC glShaderBinary;
-
-    using PFNGLSHADERSOURCEPROC = GLvoid(*)(GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
-    extern PFNGLSHADERSOURCEPROC glShaderSource;
-
-    using PFNGLSPECIALIZESHADERPROC = GLvoid(*)(GLuint shader, const GLchar* entryPoint, GLuint numSpecializationConstants, const GLuint* constantIndex, const GLuint* pConstantValue);
-    extern PFNGLSPECIALIZESHADERPROC glSpecializeShader;
-
-    using PFNGLUNIFORM1FPROC = GLvoid(*)(GLint location, GLfloat v0);
-    extern PFNGLUNIFORM1FPROC glUniform1f;
-
-    using PFNGLUNIFORM2FPROC = GLvoid(*)(GLint location, GLfloat v0, GLfloat v1);
-    extern PFNGLUNIFORM2FPROC glUniform2f;
-
-    using PFNGLUNIFORM3FPROC = GLvoid(*)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-    extern PFNGLUNIFORM3FPROC glUniform3f;
-
-    using PFNGLUNIFORM4FPROC = GLvoid(*)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-    extern PFNGLUNIFORM4FPROC glUniform4f;
-
-    using PFNGLUNIFORMMATRIX4FVPROC = GLvoid(*)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
-    extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-
-    using PFNGLUSEPROGRAMPROC = GLvoid(*)(GLuint program);
-    extern PFNGLUSEPROGRAMPROC glUseProgram;
-
-    using PFNGLVALIDATEPROGRAMPROC = GLvoid(*)(GLuint program);
-    extern PFNGLVALIDATEPROGRAMPROC glValidateProgram;
-
-    using PFNGLVERTEXATTRIBDIVISORPROC = GLvoid(*)(GLuint index, GLuint divisor);
-    extern PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisor;
-
-    using PFNGLVERTEXATTRIBIPOINTERPROC = GLvoid(*)(GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer);
-    extern PFNGLVERTEXATTRIBIPOINTERPROC glVertexAttribIPointer;
-
-    using PFNGLVERTEXATTRIBPOINTERPROC = GLvoid(*)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
-    extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+    #define VT_DECLARE_GL_FUNC(name, return_type, ...) \
+        using PFNGL##name##PROC = return_type(*)(__VA_ARGS__); \
+        extern PFNGL##name##PROC gl##name
+    VT_DECLARE_GL_FUNC(AttachShader, GLvoid, GLuint program, GLuint shader);
+    VT_DECLARE_GL_FUNC(BindBuffer, GLvoid, GLenum target, GLuint buffer);
+    VT_DECLARE_GL_FUNC(BindTexture, GLvoid, GLenum target, GLuint texture);
+    VT_DECLARE_GL_FUNC(BindVertexArray, GLvoid, GLuint array);
+    VT_DECLARE_GL_FUNC(BufferData, GLvoid, GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
+    VT_DECLARE_GL_FUNC(BufferSubData, GLvoid, GLenum target, GLintptr offset, const GLsizeiptr size, const GLvoid* data);
+    VT_DECLARE_GL_FUNC(CopyBufferSubData, GLvoid, GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
+    VT_DECLARE_GL_FUNC(CreateBuffers, GLvoid, GLsizei n, GLuint* buffers);
+    VT_DECLARE_GL_FUNC(CreateProgram, GLuint);
+    VT_DECLARE_GL_FUNC(CreateShader, GLuint, GLenum shaderType);
+    VT_DECLARE_GL_FUNC(CreateVertexArrays, GLvoid, GLsizei n, GLuint* arrays);
+    VT_DECLARE_GL_FUNC(CompileShader, GLvoid, GLuint shader);
+    VT_DECLARE_GL_FUNC(DebugMessageCallback, GLvoid, GLDEBUGPROC callback, GLvoid* userParam);
+    VT_DECLARE_GL_FUNC(DebugMessageControl, GLvoid, GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, GLboolean enabled);
+    VT_DECLARE_GL_FUNC(DeleteBuffers, GLvoid, GLsizei n, const GLuint* buffers);
+    VT_DECLARE_GL_FUNC(DeleteProgram, GLvoid, GLuint program);
+    VT_DECLARE_GL_FUNC(DeleteShader, GLvoid, GLuint shader);
+    VT_DECLARE_GL_FUNC(DetachShader, GLvoid, GLuint program, GLuint shader);
+    VT_DECLARE_GL_FUNC(EnableVertexAttribArray, GLvoid, GLuint index);
+    VT_DECLARE_GL_FUNC(GetProgramInfoLog, GLvoid, GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
+    VT_DECLARE_GL_FUNC(GetProgramiv, GLvoid, GLuint program, GLenum pname, GLint* params);
+    VT_DECLARE_GL_FUNC(GetShaderInfoLog, GLvoid, GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
+    VT_DECLARE_GL_FUNC(GetShaderiv, GLvoid, GLuint shader, GLenum pname, GLint* params);
+    VT_DECLARE_GL_FUNC(GetUniformLocation, GLint, GLuint program, const GLchar* name);
+    VT_DECLARE_GL_FUNC(LinkProgram, GLvoid, GLuint program);
+    VT_DECLARE_GL_FUNC(ShaderBinary, GLvoid, GLsizei count, const GLuint* shaders, GLenum binaryFormat, const GLvoid* binary, GLsizei length);
+    VT_DECLARE_GL_FUNC(ShaderSource, GLvoid, GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
+    VT_DECLARE_GL_FUNC(SpecializeShader, GLvoid, GLuint shader, const GLchar* entryPoint, GLuint numSpecializationConstants, const GLuint* constantIndex, const GLuint* pConstantValue);
+    VT_DECLARE_GL_FUNC(Uniform1f, GLvoid, GLint location, GLfloat v0);
+    VT_DECLARE_GL_FUNC(Uniform2f, GLvoid, GLint location, GLfloat v0, GLfloat v1);
+    VT_DECLARE_GL_FUNC(Uniform3f, GLvoid, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+    VT_DECLARE_GL_FUNC(Uniform4f, GLvoid, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+    VT_DECLARE_GL_FUNC(UniformMatrix4fv, GLvoid, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+    VT_DECLARE_GL_FUNC(UseProgram, GLvoid, GLuint program);
+    VT_DECLARE_GL_FUNC(ValidateProgram, GLvoid, GLuint program);
+    VT_DECLARE_GL_FUNC(VertexAttribDivisor, GLvoid, GLuint index, GLuint divisor);
+    VT_DECLARE_GL_FUNC(VertexAttribIPointer, GLvoid, GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer);
+    VT_DECLARE_GL_FUNC(VertexAttribPointer, GLvoid, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
     #pragma endregion
 
     #ifdef VT_PLATFORM_WINDOWS
-    void* GetProcAddress(const GLbyte* name);
+    GLvoid* GetProcAddress(const GLbyte* name);
     #elif defined(VT_PLATFORM_LINUX)
-    void* GetProcAddress(const GLubyte* name);
+    GLvoid* GetProcAddress(const GLubyte* name);
     #endif
 
-    bool LoadGLFunctions();
+    GLboolean LoadOpenGLFunctions();
 }

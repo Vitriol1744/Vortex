@@ -3,13 +3,13 @@
 //
 #pragma once
 
-#include "Core/Export.hpp"
-#include "Core/Macros.hpp"
-#include "Core/Assertions.hpp"
-#include "Core/LoggingManager.hpp"
-#include "Core/Types.hpp"
-#include "Core/Singleton.hpp"
-#include "Core/NonCopyable.hpp"
-#include "Core/Math/Math.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/Assertions.hpp"
+#include "Vortex/Core/LoggingManager.hpp"
+#include "Vortex/Core/Types.hpp"
+#include "Vortex/Core/Singleton.hpp"
+#include "Vortex/Core/NonCopyable.hpp"
+#include "Vortex/Core/Math/Math.hpp"
 
 #define VT_NODISCARD [[nodiscard]]

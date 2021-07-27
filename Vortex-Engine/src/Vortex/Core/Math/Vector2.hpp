@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Core/Export.hpp"
-#include "Core/Types.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Types.hpp"
 
 #include <ostream>
 

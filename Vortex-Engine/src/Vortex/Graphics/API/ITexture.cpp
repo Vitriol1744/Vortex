@@ -1,31 +1,28 @@
 //
-// Created by vitriol1744 on 11.07.2021.
+// Created by vitriol1744 on 7/26/21.
 //
-#include "IVertexArray.hpp"
+#include "ITexture.hpp"
 
+#include "Vortex/Graphics/API/OpenGL46/GL46Texture.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
-#include "Vortex/Graphics/API/OpenGL46/GL46VertexArray.hpp"
-
-#undef None
 
 namespace Vortex::Graphics
 {
-    Ref<IVertexArray> IVertexArray::Create()
+    Ref<ITexture> ITexture::Create()
     {
-        Ref<IVertexArray> result = nullptr;
+        Ref<ITexture> result;
         switch (IRendererAPI::GetGraphicsAPI())
         {
             case GraphicsAPI::OpenGL46:
-                result = CreateRef<GL46VertexArray>();
+                result = CreateRef<GL46Texture>();
                 break;
-
             case GraphicsAPI::None:
+
             default:
                 result = nullptr;
                 break;
         }
 
-        VT_CORE_ASSERT(result != nullptr);
         return result;
     }
 }

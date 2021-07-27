@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Macros.hpp"
+#include "Vortex/Core/Macros.hpp"
 
 #define VT_STATIC_LIBRARY
 #ifndef VT_STATIC_LIBRARY

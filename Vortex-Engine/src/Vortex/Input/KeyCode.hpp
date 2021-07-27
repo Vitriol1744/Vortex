@@ -3,8 +3,9 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 #undef None
+
 namespace Vortex::Input
 {
     enum class KeyCode : int16

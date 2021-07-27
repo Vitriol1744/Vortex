@@ -3,8 +3,8 @@
 //
 #include "IIndexBuffer.hpp"
 
-#include "IRendererAPI.hpp"
-#include "Graphics/API/OpenGL46/GL46IndexBuffer.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Graphics/API/OpenGL46/GL46IndexBuffer.hpp"
 
 #undef None
 

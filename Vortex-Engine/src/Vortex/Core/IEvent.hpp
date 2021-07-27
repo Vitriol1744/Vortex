@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
-#include "Core/EventSystem.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/EventSystem.hpp"
 
 #include <vector>
 #include <unordered_map>

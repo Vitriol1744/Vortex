@@ -2,7 +2,7 @@
 // Created by vitriol1744 on 08.07.2021.
 //
 #include "EventSystem.hpp"
-#include "Core/IEvent.hpp"
+#include "Vortex/Core/IEvent.hpp"
 
 namespace Vortex
 {
