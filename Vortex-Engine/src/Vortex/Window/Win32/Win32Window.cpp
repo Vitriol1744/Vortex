@@ -453,6 +453,9 @@ namespace Vortex
             case WM_KILLFOCUS:
                 focusChangedEvent(false);
                 break;
+	    case WM_SYSCOMMAND:
+		//TODO: WM_SYSCOMMAND
+		break;
 
             default:
                 break;
