@@ -60,7 +60,6 @@ namespace Vortex
 
             Window window;
             XIC inputContext;
-            WindowData data;
 
             bool keys[static_cast<uint32>(Input::KeyCode::KeysCount)];
             bool buttons[static_cast<uint32>(Input::MouseCode::ButtonsCount)];

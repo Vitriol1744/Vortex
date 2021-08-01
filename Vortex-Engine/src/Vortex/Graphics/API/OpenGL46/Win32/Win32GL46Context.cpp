@@ -2,10 +2,17 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32GL46Context.hpp"
+
+extern "C"
+{
+    // Force Machine to use Dedicated Graphics
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001; // NVidia
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;   // AMD
+}
 
 namespace Vortex::Graphics
 {
@@ -17,7 +24,7 @@ namespace Vortex::Graphics
         WNDCLASSEXW wcex{};
         wcex.cbSize = sizeof(wcex);
         wcex.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
-        wcex.lpfnWndProc = DefWindowProc;
+        wcex.lpfnWndProc = DefWindowProcW;
         wcex.cbClsExtra = 0;
         wcex.cbWndExtra = 0;
         wcex.hCursor = LoadCursor(hInstance, IDC_ARROW);
@@ -67,45 +74,26 @@ namespace Vortex::Graphics
 
         const int32 pixelFormatAttributes[] =
         {
-            WGL_DRAW_TO_WINDOW_ARB,
-            GL_TRUE,
-
-            WGL_SUPPORT_OPENGL_ARB,
-            GL_TRUE,
-
-            WGL_DOUBLE_BUFFER_ARB,
-            GL_TRUE,
-
+            WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+            WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+            WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
             WGL_PIXEL_TYPE_ARB,
             WGL_TYPE_RGBA_ARB,
-
             WGL_ACCELERATION_ARB,
             WGL_FULL_ACCELERATION_ARB,
-
-            WGL_COLOR_BITS_ARB,
-            32,
-
-            WGL_ALPHA_BITS_ARB,
-            8,
-
-            WGL_DEPTH_BITS_ARB,
-            24,
-
-            WGL_STENCIL_BITS_ARB,
-            8,
-
-            WGL_SAMPLE_BUFFERS_ARB,
-            GL_TRUE,
-
-            WGL_SAMPLES_ARB,
-            4,
-
+            WGL_COLOR_BITS_ARB, 32,
+            WGL_ALPHA_BITS_ARB, 8,
+            WGL_DEPTH_BITS_ARB, 24,
+            WGL_STENCIL_BITS_ARB, 8,
+            WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+            WGL_SAMPLES_ARB, 4,
             0
         };
 
-        int32 pixelFormat;
-        UINT formatsCount;
-        const bool status = wglChoosePixelFormatARB(deviceContext, pixelFormatAttributes, nullptr, 1, &pixelFormat, &formatsCount);
+        int32 pixelFormat = 0;
+        UINT formatsCount = 0;
+        
+        const bool status = wglChoosePixelFormatARB ? wglChoosePixelFormatARB(deviceContext, pixelFormatAttributes, nullptr, 1, &pixelFormat, &formatsCount) : false;
         VT_CORE_ASSERT(status != 0 && formatsCount != 0);
 
         PIXELFORMATDESCRIPTOR pfd;
@@ -114,28 +102,33 @@ namespace Vortex::Graphics
 
         const int32 contextAttributes[] =
         {
-            WGL_CONTEXT_MAJOR_VERSION_ARB,
-            4,
-            WGL_CONTEXT_MINOR_VERSION_ARB,
-            6,
-            WGL_CONTEXT_PROFILE_MASK_ARB,
-            WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 6,
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0
         };
 
-        renderingContext = wglCreateContextAttribsARB(deviceContext, 0, contextAttributes);
+        if (wglCreateContextAttribsARB) renderingContext = wglCreateContextAttribsARB(deviceContext, 0, contextAttributes);
         VT_CORE_ASSERT(renderingContext != 0);
 
         wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(fakeRC);
         ReleaseDC(fakeWindow, fakeDC);
         DestroyWindow(fakeWindow);
+        UnregisterClassW(fakeWindowClass, hInstance);
 
         VT_CORE_ASSERT(wglMakeCurrent(deviceContext, renderingContext) != 0);
 
-        UnregisterClassW(fakeWindowClass, hInstance);
+        GLint major = 0, minor = 0;
+        glGetIntegerv(GL_MAJOR_VERSION, &major);
+        glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-        VT_CORE_ASSERT(LoadGLFunctions() == true);
+        VT_CORE_LOG_INFO("OpenGL Context Created!");
+        VT_CORE_LOG_INFO("Version: {}.{}", major, minor);
+        VT_CORE_LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
+        VT_CORE_LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
+
+        VT_CORE_ASSERT(LoadOpenGLFunctions() == true);
     }
 
     GL46Context::~GL46Context()
@@ -147,7 +140,7 @@ namespace Vortex::Graphics
 
     void GL46Context::Present()
     {
-        ::SwapBuffers(deviceContext);
+        SwapBuffers(deviceContext);
     }
 
     void GL46Context::Activate()

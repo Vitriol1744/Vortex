@@ -13,8 +13,13 @@
 
 namespace Vortex
 {
-    Ref<IWindow> IWindow::CreateWindow(int width, int height, std::wstring_view title, Ref<IWindow> share)
+    Ref<IWindow> IWindow::CreateWindow(uint32 width, uint32 height, std::wstring_view title, Ref<IWindow> share)
     {
-        return CreateRef<WindowImpl>(width, height, title, share);
+        return CreateWindow(width, height, 32, title, share);
+    }
+
+    Ref<IWindow> IWindow::CreateWindow(uint32 width, uint32 height, uint32 bitsPerPixel, std::wstring_view title, Ref<IWindow> share)
+    {
+        return CreateRef<WindowImpl>(width, height, bitsPerPixel, title, share);
     }
 }

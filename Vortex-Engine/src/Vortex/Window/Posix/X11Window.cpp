@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
@@ -84,7 +84,7 @@ namespace Vortex
                 case XK_Escape:         return KeyCode::Escape;
                 case XK_BackSpace:      return KeyCode::BackSpace;
                 case XK_Tab:            return KeyCode::Tab;
-                case XK_Caps_Lock:      return KeyCode::Capslock;
+                case XK_Caps_Lock:      return KeyCode::CapsLock;
                 case XK_KP_Enter:       return KeyCode::Enter;
                 case XK_Return:         return KeyCode::Return;
                 case XK_Shift_L:        return KeyCode::LShift;
@@ -106,7 +106,7 @@ namespace Vortex
                 case XK_comma:          return KeyCode::Comma;
                 case XK_period:         return KeyCode::Period;
                 case XK_slash:          return KeyCode::Slash;
-                case XK_backslash:      return KeyCode::Backslash;
+                case XK_backslash:      return KeyCode::BackSlash;
                 case XK_Up:             return KeyCode::Up;
                 case XK_Down:           return KeyCode::Down;
                 case XK_Left:           return KeyCode::Left;
@@ -291,7 +291,7 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                (*GetWindowsMap())[event.xkey.window]->keyPressedEvent({key, 0, {0, 0}});
+                (*GetWindowsMap())[event.xkey.window]->keyPressedEvent({key, 0});
                 (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = true;
 
                 if (!XFilterEvent(&event, 0L))
@@ -329,7 +329,7 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                (*GetWindowsMap())[event.xkey.window]->keyReleasedEvent(key, {0, 0});
+                (*GetWindowsMap())[event.xkey.window]->keyReleasedEvent(key);
                 (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = false;
                 break;
             }
@@ -338,35 +338,35 @@ namespace Vortex
                 switch (event.xbutton.button)
                 {
                     case Button1:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Left, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Left);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Left)] = true;
                         break;
                     case Button2:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Middle, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Middle);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
                         break;
                     case Button3:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Right, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Right);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Right)] = true;
                         break;
                     case Button4:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({1, 0}, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({1, 0});
                         break;
                     case Button5:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({-1, 0}, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({-1, 0});
                         break;
                     case 6:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, 1}, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, 1});
                         break;
                     case 7:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, -1}, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, -1});
                         break;
                     case 8:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X1, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X1);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X1)] = true;
                         break;
                     case 9:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X2, {(float)event.xbutton.x, (float)event.xbutton.y});
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X2);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X2)] = true;
                         break;
                 }
@@ -394,7 +394,7 @@ namespace Vortex
                         break;
                 }
 
-                (*GetWindowsMap())[event.xbutton.window]->mouseButtonReleasedEvent(button, {(float)event.xbutton.x, (float)event.xbutton.y});
+                (*GetWindowsMap())[event.xbutton.window]->mouseButtonReleasedEvent(button);
                 (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(button)] = false;
                 
                 break;

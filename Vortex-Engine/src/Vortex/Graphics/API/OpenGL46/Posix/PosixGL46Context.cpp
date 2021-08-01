@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 29.06.2021.
 //
-#include "Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #ifdef VT_PLATFORM_LINUX
 #include "Window/Posix/X11Window.hpp"
