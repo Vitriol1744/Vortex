@@ -30,13 +30,13 @@ namespace Vortex::Graphics
     using GLboolean     = bool;
     using GLbyte        = signed char;
     using GLchar        = char;
-    using GLenum        = uint32;
+    using GLenum        = unsigned int;
     using GLfloat       = float;
-    using GLint         = int32;
+    using GLint         = int;
     using GLintptr      = khronos_intptr_t;
-    using GLsizei       = int32;
+    using GLsizei       = int;
     using GLsizeiptr    = khronos_ssize_t;
-    using GLuint        = uint32;
+    using GLuint        = unsigned int;
     using GLvoid        = void;
 
     using GLDEBUGPROC = GLvoid(APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam);
@@ -44,6 +44,8 @@ namespace Vortex::Graphics
 
     #pragma region glMacros
     #define GL_VERTEX_ARRAY                 0x8074
+    #define GL_MAJOR_VERSION                0x821B
+    #define GL_MINOR_VERSION                0x821C
     #define GL_DEBUG_OUTPUT_SYNCHRONOUS     0x8242
     #define GL_DEBUG_SEVERITY_NOTIFICATION  0x826B
     #define GL_ARRAY_BUFFER                 0x8892

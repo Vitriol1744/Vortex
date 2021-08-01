@@ -7,43 +7,43 @@
 
 namespace Vortex::Utility
 {
-    Ref<Pixel[]> TextureLoader::LoadTexture(std::string_view path)
+    #pragma pack(push, 1)
+    struct BMPHeader
+    {
+        int16 signature;
+        int32 size;
+        int16 reserved1;
+        int16 reserved2;
+        int32 offset;
+    };
+    #pragma pack(pop)
+
+    struct DIBHeader
+    {
+        int32 headersSize;
+        int32 width;
+        int32 height;
+        int16 colorPlanesCount;
+        int16 bitsPerPixel;
+        int32 compressionMethod;
+        int32 imageSize;
+        int32 horizontalResolution;
+        int32 verticalResolution;
+        int32 colorsCount;
+        int32 importantColors;
+    };
+
+    Scope<Pixel[]> TextureLoader::LoadTexture(std::string_view path)
     {
         return LoadPNG(path);
     }
 
-    Ref<Pixel[]> TextureLoader::LoadBMP(std::string_view path)
+    Scope<Pixel[]> TextureLoader::LoadBMP(std::string_view path)
     {
-        #pragma pack(push, 1)
-        struct BMPHeader
-        {
-            int16 signature;
-            int32 size;
-            int16 reserved1;
-            int16 reserved2;
-            int32 offset;
-        };
-        #pragma pack(pop)
-
-        struct DIBHeader
-        {
-            int32 headersSize;
-            int32 width;
-            int32 height;
-            int16 colorPlanesCount;
-            int16 bitsPerPixel;
-            int32 compressionMethod;
-            int32 imageSize;
-            int32 horizontalResolution;
-            int32 verticalResolution;
-            int32 colorsCount;
-            int32 importantColors;
-        };
-
         std::ifstream ifs(path.data(), std::ios::binary);
         if (!ifs) VT_CORE_LOG_WARN("Failed to Open BMP file at \"{}\"", path);
         
-        Ref<Pixel[]> pixels;
+        Scope<Pixel[]> pixels;
         
         BMPHeader bmpHeader;
         DIBHeader dibHeader;
@@ -56,7 +56,7 @@ namespace Vortex::Utility
             return nullptr;
         };
         
-        pixels = CreateRef<Pixel[]>(dibHeader.imageSize);
+        pixels = CreateScope<Pixel[]>(dibHeader.imageSize);
         ifs.seekg(bmpHeader.offset, std::ios_base::beg);
     
         // Channels have to be swapped because bitmap has BGR format.
@@ -71,7 +71,7 @@ namespace Vortex::Utility
         return pixels;
     }
 
-    Ref<Pixel[]> TextureLoader::LoadPNG(std::string_view path)
+    Scope<Pixel[]> TextureLoader::LoadPNG(std::string_view path)
     {
         VT_CORE_ASSERT_MSG(false, "BMP Files are not supported!");
         return nullptr;

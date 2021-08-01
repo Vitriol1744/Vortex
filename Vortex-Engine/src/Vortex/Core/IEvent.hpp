@@ -78,7 +78,7 @@ namespace Vortex
             int listenersCount = 0;
             std::unordered_map<const char*, std::function<void(T)>> listeners;
 
-            T arg1;
+            T arg1{};
     };
 
     template<typename T1, typename T2>
@@ -108,7 +108,7 @@ namespace Vortex
             int listenersCount = 0;
             std::unordered_map<const char*, std::function<void(T1, T2)>> listeners;
 
-            T1 arg1;
-            T2 arg2;
+            T1 arg1{};
+            T2 arg2{};
     };
 }

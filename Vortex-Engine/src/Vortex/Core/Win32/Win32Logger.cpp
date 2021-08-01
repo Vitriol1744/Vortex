@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 24.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32Logger.hpp"
@@ -37,6 +37,9 @@ namespace Vortex
                 break;
         }
 
+        WriteConsoleA(hConsole, "[", 1, nullptr, nullptr);
+        WriteConsoleA(hConsole, name.data(), name.size(), nullptr, nullptr);
+        WriteConsoleA(hConsole, "]: ", 3, nullptr, nullptr);
         WriteConsoleA(hConsole, formattedString.data(), formattedString.size(), nullptr, nullptr);
         SetConsoleTextAttribute(hConsole, 0x07);
 

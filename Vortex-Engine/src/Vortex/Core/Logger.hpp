@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
-#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #include <string>
 
@@ -29,7 +29,7 @@ namespace Vortex
             static void Initialize(); //NOTE: Has to be implemented by derived class
             virtual void Log(LogLevel level, std::string_view formattedString) = 0;
             
-            void SetName(std::string_view name) { this->name = std::string("[") + std::string(name) + "]: "; }
+            void SetName(std::string_view name) { this->name = name; }
             
         protected:
             std::string name;

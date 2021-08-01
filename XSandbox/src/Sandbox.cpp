@@ -37,7 +37,11 @@ Sandbox::Sandbox()
 
     window->HideCursor();
     window->ShowCursor();
-    window->SetFullscreen(true);
+    window->SetResizable(false);
+    //window->SetIcon("assets/textures/");
+    //window->SetWidth(800);
+    //window->SetFullscreen(true);
+    //window->SetPosition(333, 111);
 
     window->mouseMovedEvent.AddListener("Sandbox::OnMouseMove", std::bind(&Sandbox::OnMouseMove, this, std::placeholders::_1));
 
@@ -154,7 +158,6 @@ void Sandbox::Render()
     //    }
     //}
     Graphics::Renderer2D::DrawSprite(sprite);
-    
     Graphics::Renderer2D::Submit();
 
     view = Math::Mat4(1.0f) * Math::Mat4::LookAt(Math::Vec3(0.0f, 0.0f, 3.0f), Math::Vec3(0.0f, 0.0f, -1.0f), Math::Vec3(0.0f, 1.0f, 1.0f));

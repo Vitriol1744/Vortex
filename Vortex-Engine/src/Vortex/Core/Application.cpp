@@ -8,6 +8,11 @@
 
 //TODO: Remove later!
 #include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
+#include "Vortex/Utility/AudioLoader.hpp"
+#include "Vortex/Audio/AudioManager.hpp"
+#include "Vortex/Audio/ISound.hpp"
+//^^^^^^^^^^^^^^^^^^^|
+//===================|
 
 using namespace Vortex;
 
@@ -15,10 +20,20 @@ using namespace Vortex;
 
 namespace Vortex
 {
+    using namespace Audio;
+
     Application::Application()
     {
+        //NOTE: Logger should always be initialized first!
         LoggingManager::Instance(); // Initialize Logger!
+        Platform::Initialize();
         Time::Instance(); // Initialize Time!
+        AudioManager::Initialize();
+
+        static Ref<ISound> sound1 = ISound::Create("assets/sounds/breakout.wav");
+        static Ref<ISound> sound2 = ISound::Create("assets/sounds/sound.wav");
+        sound1->Play();
+        //sound2->Play();
     }
 
     void Application::Run()

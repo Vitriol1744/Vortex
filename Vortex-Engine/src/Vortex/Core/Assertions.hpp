@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 #include "Vortex/Core/Logger.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS

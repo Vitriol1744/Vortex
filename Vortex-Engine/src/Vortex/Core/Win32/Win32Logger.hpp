@@ -7,10 +7,10 @@
 
 namespace Vortex
 {
-    class VT_API LoggerImpl : public Logger
+    class VT_API LoggerImpl final : public Logger
     {
         public:
-            inline explicit LoggerImpl(std::string_view name) { this->name = name; }
+            inline explicit LoggerImpl(std::string_view name) { SetName(name); }
         
             ~LoggerImpl() override = default;
         

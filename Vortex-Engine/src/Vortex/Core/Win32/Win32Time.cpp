@@ -3,7 +3,7 @@
 //
 #include "vtpch.hpp"
 #include "Vortex/Core/Time.hpp"
-#include "Vortex/Core/Macros.hpp"
+#include "Vortex/Core/PlatformInit.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include <Windows.h>
