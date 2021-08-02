@@ -436,11 +436,16 @@ namespace Vortex
                 break;
             }
             case WM_MOUSEMOVE:
+            {
                 POINT point = (POINT)lParam;
                 ScreenToClient(hWnd, &point);
-                data.position = { point.x, point.y };
-                mouseMovedEvent({ point.x, point.y });
+                uint32 x = point.x;
+                uint32 y = point.y;
+
+                data.position = { x, y };
+                mouseMovedEvent(Math::Vec2(x, y));
                 break;
+            }
             case WM_SIZE:
                 data.width = LOWORD(lParam);
                 data.height = HIWORD(lParam);

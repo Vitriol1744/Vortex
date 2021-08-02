@@ -13,7 +13,7 @@ namespace Vortex::Audio
 	XA2SoundBuffer::XA2SoundBuffer(std::string_view filepath)
 	{
 		uint32 size;
-		uint8* data = AudioLoader::LoadWAV(filepath, size, *((Utility::WAVFormat*)&format));
+		uint8* data = AudioLoader::LoadWAV(filepath, size, *(reinterpret_cast<Utility::WAVFormat*>(&format)));
 		
 		memset(&buffer, 0, sizeof(buffer));
 		buffer.AudioBytes = size;
