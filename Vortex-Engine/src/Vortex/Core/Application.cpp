@@ -9,31 +9,71 @@
 //TODO: Remove later!
 #include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 #include "Vortex/Utility/AudioLoader.hpp"
-#include "Vortex/Audio/AudioManager.hpp"
-#include "Vortex/Audio/ISound.hpp"
+#include "AL/al.h"
+#include "AL/alc.h"
+#include "Vortex/Input/Gamepad.hpp"
 //^^^^^^^^^^^^^^^^^^^|
 //===================|
 
 using namespace Vortex;
+using namespace Vortex::Input;
+using namespace Vortex::Utility;
 
 #undef None
 
+ALCdevice* device;
+ALCcontext* context;
+ALuint buffer;
+ALuint source;
+uint8* data;
+WAVFormat format;
+uint32 size;
+
 namespace Vortex
 {
-    using namespace Audio;
-
     Application::Application()
     {
         //NOTE: Logger should always be initialized first!
         LoggingManager::Instance(); // Initialize Logger!
         Platform::Initialize();
         Time::Instance(); // Initialize Time!
-        AudioManager::Initialize();
+        
+        device = alcOpenDevice(nullptr);
+        context = alcCreateContext(device, nullptr);
 
-        static Ref<ISound> sound1 = ISound::Create("assets/sounds/breakout.wav");
-        static Ref<ISound> sound2 = ISound::Create("assets/sounds/sound.wav");
-        sound1->Play();
-        //sound2->Play();
+        if (!alcMakeContextCurrent(context))
+        {
+            VT_CORE_LOG_ERROR("Failed to make context current!");
+        }
+
+        alGenBuffers(1, &buffer);
+        data = AudioLoader::LoadWAV("assets/sounds/breakout.wav", size, format);
+
+        ALenum alFormat = {};
+        if (format.channelsCount == 1 && format.bitsPerSample == 8)
+            alFormat = AL_FORMAT_MONO8;
+        else if (format.channelsCount == 1 && format.bitsPerSample == 16)
+            alFormat = AL_FORMAT_MONO16;
+        else if (format.channelsCount == 2 && format.bitsPerSample == 8)
+            alFormat = AL_FORMAT_STEREO8;
+        else if (format.channelsCount == 2 && format.bitsPerSample == 16)
+            alFormat = AL_FORMAT_STEREO16;
+        else
+        {
+            //VT_CORE_LOG_ERROR("FormatType: {}, channelsCount");
+            VT_CORE_LOG_ERROR("ERROR: unrecognised wave format!, channels: {}, bps: {}", format.channelsCount, format.bitsPerSample);
+        }
+
+        alBufferData(buffer, alFormat, data, size, format.sampleRate);
+        alGenSources(1, &source);
+        alSourcef(source, AL_PITCH, 1);
+        alSourcef(source, AL_GAIN, 1.0f);
+        alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+        alSource3f(source, AL_VELOCITY, 0, 0, 0);
+        alSourcei(source, AL_LOOPING, AL_FALSE);
+        alSourcei(source, AL_BUFFER, buffer);
+
+        alSourcePlay(source);
     }
 
     void Application::Run()
@@ -47,6 +87,7 @@ namespace Vortex
 
         while (running)
         {
+            Gamepad::PollInput();
             if (Time::GetTime().Seconds() - fpsTimer >= 1.0f)
             {
                 Time::SetFPSCounter(frames);

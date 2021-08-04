@@ -7,7 +7,7 @@
 
 namespace Vortex
 {
-    class VT_API Application : Singleton<Application>
+    class VT_API Application
     {
         public:
             Application();
