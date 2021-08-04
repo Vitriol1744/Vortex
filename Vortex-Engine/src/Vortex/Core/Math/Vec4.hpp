@@ -6,6 +6,7 @@
 #include "Vortex/Core/Math/Vector4.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
 
+// This Header Contains Vector4 friend functions and exists to avoid circular header includes
 namespace Vortex::Math
 {
     template<typename T>

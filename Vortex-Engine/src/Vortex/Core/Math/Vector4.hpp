@@ -15,7 +15,7 @@ namespace Vortex::Math
     struct Matrix4x4f;
     
     template<typename T>
-    struct VT_API Vector4
+    struct Vector4
     {
         inline Vector4()                                noexcept = default;
         inline Vector4(T scalar)                        noexcept : x(scalar), y(scalar), z(scalar), w(scalar) { }

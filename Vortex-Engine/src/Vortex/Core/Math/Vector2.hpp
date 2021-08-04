@@ -11,7 +11,7 @@
 namespace Vortex::Math
 {
     template<typename T>
-    struct VT_API Vector2
+    struct Vector2
     {
         inline Vector2() noexcept = default;
         inline Vector2(T scalar) noexcept : x(scalar), y(scalar) { }
