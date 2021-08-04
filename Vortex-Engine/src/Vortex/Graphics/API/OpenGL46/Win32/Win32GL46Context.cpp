@@ -16,7 +16,7 @@ extern "C"
 
 namespace Vortex::Graphics
 {
-    GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share) : window(static_cast<HWND>(windowHandle))
+    GL46Context::GL46Context(GLvoid* windowHandle, uint32 bitsPerPixel, IGraphicsContext* share) : window(static_cast<HWND>(windowHandle))
     {
         HINSTANCE hInstance = GetModuleHandleW(nullptr);
         const wchar_t* fakeWindowClass = L"Fake Window Class";
@@ -50,7 +50,7 @@ namespace Vortex::Graphics
         fakePFD.nVersion = 1;
         fakePFD.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
         fakePFD.iPixelType = PFD_TYPE_RGBA;
-        fakePFD.cColorBits = 32;
+        fakePFD.cColorBits = bitsPerPixel;
         fakePFD.cAlphaBits = 8;
         fakePFD.cDepthBits = 24;
 
@@ -77,11 +77,9 @@ namespace Vortex::Graphics
             WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
             WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
             WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-            WGL_PIXEL_TYPE_ARB,
-            WGL_TYPE_RGBA_ARB,
-            WGL_ACCELERATION_ARB,
-            WGL_FULL_ACCELERATION_ARB,
-            WGL_COLOR_BITS_ARB, 32,
+            WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+            WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+            WGL_COLOR_BITS_ARB, bitsPerPixel,
             WGL_ALPHA_BITS_ARB, 8,
             WGL_DEPTH_BITS_ARB, 24,
             WGL_STENCIL_BITS_ARB, 8,

@@ -25,7 +25,7 @@ namespace Vortex
 {
     namespace
     {
-        const wchar_t* windowClassName = L"Window Class";
+        constexpr const wchar_t* windowClassName = L"Window Class";
         HINSTANCE hInstance = nullptr;
 
         KeyCode     VTKeyCode(uint32 keycode, bool extended = false)
@@ -186,8 +186,7 @@ namespace Vortex
         {
             case GraphicsAPI::OpenGL46:
             {
-                //TODO: Set Bits Per Pixel
-                data.graphicsContext = new GL46Context(reinterpret_cast<void*>(hWnd), share ? share->GetGraphicsContext() : nullptr);
+                data.graphicsContext = new GL46Context(reinterpret_cast<void*>(hWnd), bitsPerPixel, share ? share->GetGraphicsContext() : nullptr);
                 break;
             }
             case GraphicsAPI::None:
@@ -202,6 +201,7 @@ namespace Vortex
     }
     WindowImpl::~WindowImpl()
     {
+        delete data.graphicsContext;
         GetWindowsMap()->erase(hWnd);
         DestroyWindow(hWnd);
         windowsCount--;
@@ -372,10 +372,11 @@ namespace Vortex
     }
     LRESULT WINAPI WindowImpl::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-        int mask = 1 << 24;
-
         switch (msg)
         {
+            case WM_ACTIVATEAPP:
+                //TODO: ActivateApp
+                break;
             case WM_CHAR:
             {
                 uint32 c = static_cast<uint32>(wParam);
@@ -458,9 +459,9 @@ namespace Vortex
             case WM_KILLFOCUS:
                 focusChangedEvent(false);
                 break;
-	    case WM_SYSCOMMAND:
-		//TODO: WM_SYSCOMMAND
-		break;
+	        case WM_SYSCOMMAND:
+		        //TODO: WM_SYSCOMMAND
+		        break;
 
             default:
                 break;

@@ -8,24 +8,27 @@
 #ifdef VT_PLATFORM_WINDOWS
 #include <Windows.h>
 
-namespace
-{
-    LARGE_INTEGER frequency;
-    LARGE_INTEGER counter;
-}
-
 namespace Vortex
 {
-    Time::Time()
+    namespace
     {
-        QueryPerformanceFrequency(&frequency);
+        LARGE_INTEGER GetPerformanceFrequency()
+        {
+            LARGE_INTEGER frequency;
+            QueryPerformanceFrequency(&frequency);
+
+            return frequency;
+        }
     }
 
     Timestep Time::GetTime()
     {
-        QueryPerformanceCounter(&counter);
+        LARGE_INTEGER performanceCounter;
+        static LARGE_INTEGER performanceFrequency = GetPerformanceFrequency();
 
-        return Timestep((double)counter.QuadPart / (double)frequency.QuadPart);
+        QueryPerformanceCounter(&performanceCounter);
+
+        return Timestep((double)performanceCounter.QuadPart / (double)performanceFrequency.QuadPart);
     }
 
     void Time::Sleep(Timestep timestep)

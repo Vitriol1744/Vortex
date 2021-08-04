@@ -197,6 +197,8 @@ namespace Vortex
     }
     WindowImpl::~WindowImpl()
     {
+        delete data.graphicsContext;
+        GetWindowsMap()->erase(window);
         XDestroyIC(inputContext);
         XDestroyWindow(display, window);
         windowsCount--;

@@ -10,11 +10,6 @@
 
 namespace Vortex
 {
-    Time::Time()
-    {
-        VT_CORE_LOG_INFO("Time Initialized!");
-    }
-
     Timestep Time::GetTime()
     {
         timespec currentTime{};

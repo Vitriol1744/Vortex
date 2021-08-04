@@ -11,7 +11,7 @@ namespace Vortex::Graphics
 {
     struct VT_API GL46Context final : public IGraphicsContext
     {
-        explicit GL46Context(void* windowHandle, IGraphicsContext* share);
+        explicit GL46Context(void* windowHandle, uint32 bitsPerPixel, IGraphicsContext* share);
         ~GL46Context() override;
 
         void Present() override;

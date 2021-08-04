@@ -3,7 +3,6 @@
 //
 #include "Sandbox.hpp"
 
-#include "Vortex/Core/EntryPoint.hpp"
 #include "Vortex/Core/Time.hpp"
 #include "Vortex/Graphics/API/IVertexBuffer.hpp"
 #include "Vortex/Graphics/API/IIndexBuffer.hpp"

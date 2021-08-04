@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#include "Vortex/Core/Export.hpp"
+
 namespace Vortex
 {
     template<class T>

@@ -13,7 +13,6 @@ namespace Vortex
         public:
             friend class Application;
 
-            Time();
             static Timestep GetTime();
             static void Sleep(Timestep timestep);
 
@@ -27,6 +26,8 @@ namespace Vortex
             inline static void SetDeltaTime(float64 deltaTime) { Time::deltaTime = deltaTime; }
             inline static void SetFPSCounter(int32 fpsCounter) { Time::fpsCounter = fpsCounter; }
     };
+
+    template class VT_API Singleton<Time>;
 }
 
 

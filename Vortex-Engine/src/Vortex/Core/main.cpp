@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#include "Vortex/Core/Application.hpp"
+
 int main(int argc, char** argv)
 {
     Vortex::Application* app = Vortex::CreateApplication();
@@ -10,10 +12,10 @@ int main(int argc, char** argv)
 }
 
 #ifdef _WIN32
-/*#include <Windows.h>
+#include <Windows.h>
 int WINAPI wWinMain(HINSTANCE _In_ hInstance, HINSTANCE _In_opt_ hPrevInstance, LPWSTR _In_ lpCmdLine, int _In_ nCmdShow)
 {
-    return main(0, nullptr);
-}*/
+    return main(__argc, __argv);
+}
 #endif
 

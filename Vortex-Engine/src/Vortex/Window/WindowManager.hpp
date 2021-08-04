@@ -29,6 +29,8 @@ namespace Vortex
             Ref<IWindow> boundWindow = nullptr;
             std::vector<Ref<IWindow>> windows;
     };
+
+    template class VT_API Singleton<WindowManager>;
 }
 
 

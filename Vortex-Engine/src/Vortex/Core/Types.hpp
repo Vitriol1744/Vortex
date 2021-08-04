@@ -21,6 +21,8 @@ namespace Vortex
     using float32 = float;
     using float64 = double;
 
+    using uint = uint32_t;
+
     template<typename T>
     using Scope = std::unique_ptr<T>;
     template<typename T, typename... Args>

@@ -28,4 +28,6 @@ namespace Vortex::Graphics
 
             static Ref<IShader> Create(std::string_view vertexPath, std::string_view pixelPath, bool precompiled = true);
     };
+
+    template class VT_API NonCopyable<IShader>;
 }

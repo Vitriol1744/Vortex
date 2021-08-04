@@ -13,7 +13,7 @@ namespace Vortex::Utility
     class VT_API Timer
     {
         public:
-            inline Timer() { Start(); }
+            Timer() { Start(); }
 
             inline void Start() { start = Time::GetTime(); }
 

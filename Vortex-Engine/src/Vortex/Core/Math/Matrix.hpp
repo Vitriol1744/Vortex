@@ -10,7 +10,7 @@ namespace Vortex::Math
 {
     template<typename T>
     struct Vector3;
-    struct Matrix4x4f
+    struct VT_API Matrix4x4f
     {
         inline Matrix4x4f() noexcept = default;
         explicit Matrix4x4f(float32 diagonal) noexcept;
@@ -23,7 +23,7 @@ namespace Vortex::Math
             Vector4<float32> vec[4];
         };
 
-        friend Matrix4x4f operator*(Matrix4x4f left, const Matrix4x4f& right);
+        friend VT_API Matrix4x4f operator*(Matrix4x4f left, const Matrix4x4f& right);
 
         inline Matrix4x4f& operator*=(Matrix4x4f& right) noexcept;
         inline Matrix4x4f& operator*=(Matrix4x4f&& right) noexcept;

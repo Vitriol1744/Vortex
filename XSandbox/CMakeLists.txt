@@ -20,3 +20,12 @@ add_custom_command (TARGET ${PROJECT_NAME} COMMAND ${CMAKE_COMMAND} -E copy_dire
 
 add_custom_target(COPY_TARGET ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Vortex-Engine/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets DEPENDS Vortex-Engine ${PROJECT_NAME})
 
+#if (_WIN32)
+#add_custom_target (
+#    COPY_TARGET ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/Vortex-Engine.dll 
+#    ${CMAKE_BINARY_DIR}/XSandbox DEPENDS Vortex-Engine ${PROJECT_NAME})
+#elseif (UNIX)
+#add_custom_target (
+#    COPY_TARGET ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/Vortex-Engine/libVortex-Engine.so 
+#    ${CMAKE_BINARY_DIR}/XSandbox DEPENDS Vortex-Engine ${PROJECT_NAME})
+#endif ()
