@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 30.06.2021.
 //
-
+#pragma once
 #include "Vortex/Core/Core.hpp"
 
 #include <string_view>

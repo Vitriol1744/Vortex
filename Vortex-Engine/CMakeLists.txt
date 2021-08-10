@@ -30,7 +30,7 @@ if (UNIX)
     set (LIBS ${LIBS} X11)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES} "src/Vortex/Input/Mouse.hpp")
+add_library (${PROJECT_NAME} STATIC ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

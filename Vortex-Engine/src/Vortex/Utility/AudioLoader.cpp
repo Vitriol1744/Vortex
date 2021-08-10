@@ -30,7 +30,7 @@ namespace Vortex::Utility
 		uint8* data = nullptr;
 		if (!ifs.is_open())
 		{
-			VT_CORE_LOG_WARN("Failed to Open WAV file at path: {}", filepath);
+			VTCoreLogWarn("Failed to Open WAV file at path: {}", filepath);
 			return nullptr;
 		}
 
@@ -50,7 +50,7 @@ namespace Vortex::Utility
 
 					if (std::strncmp((char*)&fileType, "WAVE", 4) != 0)
 					{
-						VT_CORE_LOG_WARN("FileType is not WAV! filepath: {}", filepath);
+						VTCoreLogWarn("FileType is not WAV! filepath: {}", filepath);
 						return nullptr;
 					}
 					break;
