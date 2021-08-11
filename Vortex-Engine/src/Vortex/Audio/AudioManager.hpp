@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Audio/OpenAL.hpp"
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
 #include <vector>
 #include <string>
