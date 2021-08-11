@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
@@ -15,6 +15,22 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 
+static constexpr const unsigned long functionHint           = 1 << 0;
+static constexpr const unsigned long decorationsHint        = 1 << 1;
+
+static constexpr const unsigned long borderStyle            = 1 << 1;
+static constexpr const unsigned long resizeStyle            = 1 << 2;
+static constexpr const unsigned long titleStyle             = 1 << 3;
+static constexpr const unsigned long menuStyle              = 1 << 4;
+static constexpr const unsigned long minimizeStyle          = 1 << 5;
+static constexpr const unsigned long maximizeStyle          = 1 << 6;
+
+static constexpr const unsigned long resizeFunc             = 1 << 1;
+static constexpr const unsigned long moveFunc               = 1 << 2;
+static constexpr const unsigned long minimizeFunc           = 1 << 3;
+static constexpr const unsigned long maximizeFunc           = 1 << 4;
+static constexpr const unsigned long closeFunc              = 1 << 5;
+
 namespace Vortex
 {
     using namespace Input;
@@ -23,6 +39,8 @@ namespace Vortex
     
     namespace
     {
+        bool ewmhSupported = false;
+
         #pragma clang diagnostic push
         #pragma ide diagnostic ignored "OCDFAInspection"
         Input::KeyCode TranslateKeyCode(uint32 keycode)
@@ -138,6 +156,55 @@ namespace Vortex
             }
         }
         #pragma clang diagnostic pop
+
+        static bool IsEwmhSupported(Display* display)
+        {
+            bool result = false;
+
+            Atom wmCheck = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", true);
+            Atom netSupported = XInternAtom(display, "_NET_SUPPORTED", true) & wmCheck;
+            if (!netSupported) return false;
+
+            int status;
+            Atom type;
+            int format;
+            unsigned long items;
+            unsigned long bytes;
+            unsigned char* data;
+            Window rootWindow = DefaultRootWindow(display);
+
+            status = XGetWindowProperty(display, rootWindow, wmCheck, 0, 1, 0, 33, &type, &format, &items, &bytes, &data);
+
+            if (status != Success || type != XA_WINDOW || items != 1)
+            {
+                if (status == Success) XFree(data);
+
+                return false;
+            }
+            rootWindow = *reinterpret_cast<Window*>(data);
+            XFree(data);
+            if (!rootWindow) return false;
+
+            status = XGetWindowProperty(display, rootWindow, wmCheck, 0, 1, 0, 33, &type, &format, &items, &bytes, &data);
+
+            if (status != Success || type != XA_WINDOW || items != 1)
+            {
+                if (status == Success) XFree(data);
+
+                return false;
+            }
+
+            Window childWindow = *reinterpret_cast<Window*>(data);
+            XFree(data);
+            if (!childWindow) return false;
+
+            if (rootWindow != childWindow) return false;
+            result = true;
+
+            if (result == Success) XFree(data);
+
+            return result;
+        }
     }
 
     uint32      WindowImpl::windowsCount    = 0;
@@ -145,44 +212,23 @@ namespace Vortex
     XIM         WindowImpl::inputMethod     = nullptr;
     Cursor      WindowImpl::blankCursor     = 0;
 
-    WindowImpl::WindowImpl(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share)
+    WindowImpl::WindowImpl(int32 width, int32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share)
     {
-        data.position.x = 0;
-        data.position.y = 0;
+        // Initialize Variables
         if (windowsCount == 0) Initialize();
+        memset(keys, 0, static_cast<uint32>(KeyCode::KeysCount));
+        memset(buttons, 0, static_cast<uint32>(MouseCode::ButtonsCount));
+        data.width = width;
+        data.height = height;
+        int32 x = data.position.x = 0;
+        int32 y = data.position.y = 0;
+        lastUserActivityTime = 0;
+        rootWindow = DefaultRootWindow(display);
+        screen = DefaultScreenOfDisplay(display);
+        data.sharedContext = share ? share->GetGraphicsContext() : nullptr;
 
-        window = XCreateSimpleWindow
-        (
-            display, DefaultRootWindow(display),
-            data.position.x, data.position.y, 800, 600, 0, BlackPixel(display, DefaultScreen(display)),
-            BlackPixel(display, DefaultScreen(display))
-        );
-        windowsCount++;
-        (*GetWindowsMap())[window] = this;
-
-        Graphics::IRendererAPI::Initialize();
-        switch (Graphics::IRendererAPI::GetGraphicsAPI())
-        {
-            case Graphics::GraphicsAPI::OpenGL46:
-            {
-                data.graphicsContext = new Graphics::GL46Context(reinterpret_cast<void*>(&window), share ? share->GetGraphicsContext() : nullptr);
-                break;
-            }
-            case Graphics::GraphicsAPI::None:
-
-            default:
-                VT_CORE_ASSERT_MSG(false, "Graphics API Not Supported!");
-                break;
-        }
-
-        inputContext = XCreateIC(inputMethod, XNClientWindow, window, XNFocusWindow, window, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, NULL);
-        VT_CORE_ASSERT(inputContext != nullptr);
-        XSelectInput
-        (
-            display, window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
-            StructureNotifyMask
-        );
-        XMapWindow(display, window);
+        // Create Window
+        Create(width, height, bitsPerPixel, title, data.sharedContext);
 
         if (windowsCount == 1)
         {
@@ -197,11 +243,7 @@ namespace Vortex
     }
     WindowImpl::~WindowImpl()
     {
-        delete data.graphicsContext;
-        GetWindowsMap()->erase(window);
-        XDestroyIC(inputContext);
-        XDestroyWindow(display, window);
-        windowsCount--;
+        Destroy();
         if (windowsCount == 0) Shutdown();
     }
 
@@ -228,38 +270,165 @@ namespace Vortex
     {
         XDefineCursor(display, window, blankCursor);
     }
-    void WindowImpl::SetFullscreen(bool fullscreen) const noexcept
+    void WindowImpl::RequestFocus() const
     {
-        if (fullscreen)
+        Atom netActiveWindow = XInternAtom(display, "_NET_ACTIVE_WINDOW", true);
+
+        if (netActiveWindow)
         {
-            //TODO: Handle fullscreen
+            XEvent event;
+            memset(&event, 0, sizeof(event));
+
+            event.type = ClientMessage;
+            event.xclient.window = window;
+            event.xclient.message_type = netActiveWindow;
+            event.xclient.format = 32;
+            event.xclient.data.l[0] = 1;
+            event.xclient.data.l[1] = lastUserActivityTime;
+            event.xclient.data.l[2] = 0;
+
+            int mask = SubstructureNotifyMask | SubstructureRedirectMask;
+            VT_CORE_ASSERT(XSendEvent(display, DefaultRootWindow(display), false, mask, &event));
         }
         else
         {
-        
+            XSetInputFocus(display, window, RevertToPointerRoot, CurrentTime);
+            XRaiseWindow(display, window);
         }
     }
-    void WindowImpl::SetIcon(std::string_view path, int32 width, int32 height) const noexcept
+    void WindowImpl::SetFullscreen(bool fullscreen)
     {
-        //TODO: Set Icon
+        if (fullscreen != data.fullscreen)
+        {
+            if (fullscreen)
+            {
+                Atom wmBypassCompositor = XInternAtom(display, "_NET_WM_BYPASS_COMPOSITOR", true);
+                if (wmBypassCompositor)
+                {
+                    static const unsigned char bypassCompositor = 1;
+                    XChangeProperty(display, window, bypassCompositor, XA_CARDINAL, 32, PropModeReplace, &bypassCompositor, 1);
+                }
+
+                Atom wmState = XInternAtom(display, "_NET_WM_STATE", true);
+                Atom wmStateFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", true);
+
+                XEvent event = {};
+                uint64 mask = SubstructureNotifyMask | SubstructureRedirectMask;
+
+                event.type = ClientMessage;
+                event.xclient.window = window;
+                event.xclient.format = 32;
+                event.xclient.message_type = wmState;
+                event.xclient.data.l[0] = 1;
+                event.xclient.data.l[1] = wmStateFullscreen;
+                event.xclient.data.l[2] = 0;
+                event.xclient.data.l[3] = 1;
+                XSendEvent(display, rootWindow, false, mask, &event);
+                data.resizable = false;
+            }
+            else
+            {
+                //FIXME: Linux: Disable Fullscreen
+                SetSize(data.width, data.height);
+                SetStyle(WindowStyle::Titlebar | WindowStyle::MaximizeButton | WindowStyle::MinimizeButton | WindowStyle::CloseButton);
+                data.resizable = true;
+            }
+            data.fullscreen = fullscreen;
+        }
+    }
+    void WindowImpl::SetIcon(strview path, int32 width, int32 height) const noexcept
+    {
+        //TODO: Linux: Set Icon
     }
     void WindowImpl::SetTitle(std::string_view title) const noexcept
     {
-        XStoreName(display, window, title.data());
-    }
-    void WindowImpl::SetTitle(std::wstring_view title) const noexcept
-    {
-        //TODO: wide strings support
-        SetTitle(std::string(title.begin(), title.end()));
+        std::string _title(title.begin(), title.end());
+        Atom wmName = XInternAtom(display, "_NET_WM_NAME", false);
+        Atom u8string = XInternAtom(display, "UTF8_STRING", false);
+        Atom wmIconName = XInternAtom(display, "_NET_WM_ICON_NAME", false);
+
+        Xutf8SetWMProperties(display, window, title.data(), title.data(), NULL, 0, NULL, NULL, NULL);
+
+        XChangeProperty(display,  window, wmName, u8string, 8, PropModeReplace, (unsigned char*) title.data(), title.size());
+        XChangeProperty(display,  window, wmIconName, u8string, 8, PropModeReplace, (unsigned char*)title.data(), title.size());
+
+        XFlush(display);
+
+        data.title = title;
     }
     void WindowImpl::SetPosition(uint32 x, uint32 y) const
     {
         XMoveWindow(display, window, x, y);
-        //TODO:data.position = Vec2u(x, y);
+        data.position = Vec2u(x, y);
+    }
+    void WindowImpl::SetResizable(bool resizable)
+    {
+        if (resizable != data.resizable)
+        {
+            if (resizable)
+            {
+                XSizeHints* sizeHints = XAllocSizeHints();
+                sizeHints->flags = PMinSize | PMaxSize;
+                sizeHints->min_width = sizeHints->max_width = data.width;
+                sizeHints->min_height = sizeHints->max_height = data.height;
+
+                XSetWMNormalHints(display, window, sizeHints);
+                XFree(sizeHints);
+            }
+            else
+            {
+                //FIXME: Temporary Solution! Recreating Window on SetResizable(true)
+                Recreate(data.width, data.height, data.bitsPerPixel, data.title, data.sharedContext);
+            }
+        }
+        data.resizable = resizable;
+    }
+    void WindowImpl::SetSize(uint32 width, uint32 height)
+    {
+        if (!data.resizable)
+        {
+            XSizeHints* sizeHints = XAllocSizeHints();
+            sizeHints->flags = PMinSize | PMaxSize;
+            sizeHints->min_width = sizeHints->max_width = width;
+            sizeHints->min_height = sizeHints->max_height = height;
+            XSetWMNormalHints(display, window, sizeHints);
+            XFree(sizeHints);
+        }
+
+        XResizeWindow(display, window, width, height);
+    }
+    void WindowImpl::SetStyle(WindowStyle style)
+    {
+        Atom wmHints = XInternAtom(display, "_MOTIF_WM_HINTS", false);
+        unsigned char xStyle    = 0;
+        unsigned char xFunction = 0;
+
+        if (style & WindowStyle::Titlebar)
+        {
+            xStyle      |= borderStyle | titleStyle | minimizeStyle | menuStyle;
+            xFunction   |= moveFunc | minimizeFunc;
+        }
+        if (style & WindowStyle::CloseButton)
+        {
+            xStyle |= 0;
+            xFunction |= closeFunc;
+        }
+
+        const unsigned char hints[]
+        {
+            functionHint | decorationsHint,
+            xFunction,
+            xStyle,
+            0,
+            0
+        };
+
+        XChangeProperty(display, window, wmHints, wmHints, 32, PropModeReplace, hints, 5);
     }
     void WindowImpl::SetVisible(bool visible) const noexcept
     {
-        //TODO: Implement This:
+        if (visible) XMapWindow(display, window);
+        else XUnmapWindow(display, window);
     }
 
     void WindowImpl::ActivateContext() const
@@ -267,88 +436,151 @@ namespace Vortex
         data.graphicsContext->Activate();
     }
 
+    void WindowImpl::SetWMUserTime(::Time time)
+    {
+        if (time && time != lastUserActivityTime)
+        {
+            Atom userTime = XInternAtom(display, "_NET_WM_USER_TIME", true);
+            if (userTime)
+            {
+                const unsigned char* ptr = reinterpret_cast<const unsigned char*>(&time);
+                XChangeProperty(display, window, userTime, XA_CARDINAL, 32, PropModeReplace, ptr, 1);
+            }
+            lastUserActivityTime = time;
+        }
+    }
+    void WindowImpl::Recreate(int32 width, int32 height, int8 bitsPerPixel, strview title, IGraphicsContext* sharedContext)
+    {
+        Destroy();
+        Create(width, height, bitsPerPixel, title, sharedContext);
+    }
+    void WindowImpl::Create(int32 width, int32 height, int8 bitsPerPixel, strview title, IGraphicsContext* sharedContext)
+    {
+        Visual* visual = DefaultVisual(display, DefaultScreen(display));
+        int depth = DefaultDepth(display, DefaultScreen(display));
+        XSetWindowAttributes attributes;
+        int32 x = data.position.x;
+        int32 y = data.position.y;
+        unsigned long blackPixel = BlackPixel(display, DefaultScreen(display));
+
+        long eventMask = ButtonMotionMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask;
+        eventMask |= FocusChangeMask | KeyPressMask | KeyReleaseMask | LeaveWindowMask | PointerMotionMask;
+        eventMask |= PropertyChangeMask | StructureNotifyMask | VisibilityChangeMask;
+
+        attributes.colormap = XCreateColormap(display, rootWindow, visual, AllocNone);
+        attributes.event_mask = eventMask;
+        attributes.override_redirect = false;
+        
+        window = XCreateWindow(display, rootWindow, x, y, width, height, 0, depth, InputOutput, visual, CWEventMask | CWOverrideRedirect | CWColormap, &attributes);
+        SetTitle(title);
+        windowsCount++;
+        (*GetWindowsMap())[window] = this;
+
+        CreateGraphicsContext(bitsPerPixel, sharedContext);
+        PostInitialize();
+        
+        SetVisible(true);
+    }
+    void WindowImpl::CreateGraphicsContext(uint8 bitsPerPixel, IGraphicsContext* sharedContext)
+    {
+        Graphics::IRendererAPI::Initialize();
+        switch (Graphics::IRendererAPI::GetGraphicsAPI())
+        {
+            case Graphics::GraphicsAPI::OpenGL46:
+            {
+                data.graphicsContext = new Graphics::GL46Context(reinterpret_cast<void*>(&window), sharedContext);
+                break;
+            }
+            case Graphics::GraphicsAPI::None:
+
+                default:
+                    VT_CORE_ASSERT_MSG(false, "Graphics API Not Supported!");
+                    break;
+        }
+    }
+    void WindowImpl::PostInitialize()
+    {
+        Atom wmProtocols = XInternAtom(display, "WM_PROTOCOLS", false);
+        if (!wmProtocols) VTCoreLogError("Failed to acquire WM_PROTOCOLS Atom!");
+        std::vector<Atom> atoms;
+
+        Atom wmDeleteWindow = XInternAtom(display, "WM_DELETE_WINDOW", false);
+        if (wmDeleteWindow) atoms.push_back(wmDeleteWindow);
+        else VTCoreLogError("Failed to acquire WM_DELETE_WINDOW Atom!");
+
+        Atom wmPing = XInternAtom(display, "_NET_WM_PING", true);
+        Atom wmPid = XInternAtom(display, "_NET_WM_PID", true);
+        if (wmPing && wmPid)
+        {
+            const long pid = getpid();
+
+            const unsigned char* pidPtr = reinterpret_cast<const unsigned char*>(&pid);
+            XChangeProperty(display, window, wmPid, XA_CARDINAL, 32, PropModeReplace, pidPtr, 1);
+
+            atoms.push_back(wmPing);
+        }
+
+        if (!atoms.empty())
+        {
+            const unsigned char* atomsPtr = reinterpret_cast<const unsigned char*>(atoms.data());
+            XChangeProperty(display, window, wmProtocols, XA_ATOM, 32, PropModeReplace, atomsPtr, atoms.size());
+        }
+        else VTCoreLogError("Failure!");
+
+        inputContext = XCreateIC(inputMethod, XNClientWindow, window, XNFocusWindow, window, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, nullptr);
+        VT_CORE_ASSERT(inputContext != nullptr);
+
+        Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);
+
+        XWMHints* hints = XAllocWMHints();
+        hints->flags         = StateHint;
+        hints->initial_state = NormalState;
+        XSetWMHints(display, window, hints);
+        XFree(hints);
+    }
+    void WindowImpl::Destroy()
+    {
+        delete data.graphicsContext;
+        GetWindowsMap()->erase(window);
+        XDestroyIC(inputContext);
+        XDestroyWindow(display, window);
+        windowsCount--;
+    }
+
     void WindowImpl::Initialize()
     {
         display = XOpenDisplay(nullptr);
         VT_CORE_ASSERT(display != nullptr);
 
+        ewmhSupported = IsEwmhSupported(display);
+        VT_CORE_ASSERT(ewmhSupported != false);
+
         inputMethod = XOpenIM(display, nullptr, nullptr, nullptr);
     }
     void WindowImpl::Shutdown()
     {
+        XCloseIM(inputMethod);
         XCloseDisplay(display);
     }
 
-    //TODO: Add More Events
     void WindowImpl::HandleEvent(XEvent event)
     {
         switch(event.type)
         {
-            case KeyPress:
-            {
-                KeyCode key = KeyCode::Unknown;
-                for (int i = 0; i < 4; i++)
-                {
-                    key = TranslateKeyCode(XLookupKeysym(&event.xkey, i));
-                    if (key != KeyCode::Unknown) break;
-                }
-
-                (*GetWindowsMap())[event.xkey.window]->keyPressedEvent({key, 0});
-                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = true;
-
-                if (!XFilterEvent(&event, 0L))
-                {
-                    if ((*GetWindowsMap())[event.xkey.window]->inputContext)
-                    {
-                        Status status;
-                        uint8  keyBuffer[16];
-
-                        int32 length = Xutf8LookupString
-                        (
-                            (*GetWindowsMap())[event.xkey.window]->inputContext,
-                            &event.xkey,
-                            reinterpret_cast<char*>(keyBuffer),
-                            sizeof(keyBuffer),
-                            nullptr,
-                            &status
-                        );
-
-                        if (length > 0)
-                        {
-                            (*GetWindowsMap())[event.xkey.window]->keyTypedEvent(keyBuffer[0]);
-                        }
-                    }
-                }
-                break;
-            }
-            case KeyRelease:
-            {
-                KeyCode key = KeyCode::Unknown;
-
-                for (int i = 0; i < 4; i++)
-                {
-                    key = TranslateKeyCode(XLookupKeysym(&event.xkey, i));
-                    if (key != KeyCode::Unknown) break;
-                }
-
-                (*GetWindowsMap())[event.xkey.window]->keyReleasedEvent(key);
-                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = false;
-                break;
-            }
             case ButtonPress:
             {
                 switch (event.xbutton.button)
                 {
                     case Button1:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Left);
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Left, false);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Left)] = true;
                         break;
                     case Button2:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Middle);
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Middle, false);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
                         break;
                     case Button3:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Right);
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Right, false);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Right)] = true;
                         break;
                     case Button4:
@@ -364,14 +596,15 @@ namespace Vortex
                         (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, -1});
                         break;
                     case 8:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X1);
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X1, false);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X1)] = true;
                         break;
                     case 9:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X2);
+                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X2, false);
                         (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X2)] = true;
                         break;
                 }
+                SetWMUserTime(event.xbutton.time);
                 break;
             }
             case ButtonRelease:
@@ -403,12 +636,119 @@ namespace Vortex
             }
             case ClientMessage:
             {
-                
+                static Atom wmProtocols = XInternAtom(display, "WM_PROTOCOLS", false);
+
+                VTCoreLogInfo("ClientMEssage!");
+                if (event.xclient.message_type == wmProtocols)
+                {
+                    VTCoreLogInfo("WM Protocols!");
+                    static Atom wmDeleteWindow  = XInternAtom(display, "WM_DELETE_WINDOW", false);
+                    static Atom wmPing          = XInternAtom(display, "_NET_WM_PING", true);
+
+                    // Window Closed Event
+                    if (event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmDeleteWindow))
+                    {
+                        VTCoreLogInfo("Window Closed!");
+                        windowClosedEvent();
+                        data.isOpen = false;
+                    }
+                    else if (wmPing && event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmPing))
+                    {
+                        // Send _NET_WM_PING event back to root window to indicate that window is still responding
+                        event.xclient.window = DefaultRootWindow(display);
+                        XSendEvent(display, DefaultRootWindow(display), false, SubstructureNotifyMask | SubstructureRedirectMask, &event);
+                    }
+
+                }
+                break;
+            }
+            case ConfigureNotify:
+            {
+                // Window Resized Event
+                if (event.xconfigure.width != data.width || event.xconfigure.height != data.height)
+                {
+                    windowResizedEvent(Math::Vec2u(event.xconfigure.width, event.xconfigure.height));
+                    data.width = event.xconfigure.width;
+                    data.height = event.xconfigure.height;
+                }
+                break;
+            }
+            case FocusIn:
+            {
+                if (inputContext) XSetICFocus(inputContext);
+                focusChangedEvent(true);
+                break;
+            }
+            case FocusOut:
+            {
+                if (inputContext) XUnsetICFocus(inputContext);
+                focusChangedEvent(false);
+                break;
+            }
+            case KeyPress:
+            {
+                KeyCode key = KeyCode::Unknown;
+                for (int i = 0; i < 4; i++)
+                {
+                    key = TranslateKeyCode(XLookupKeysym(&event.xkey, i));
+                    if (key != KeyCode::Unknown) break;
+                }
+
+                (*GetWindowsMap())[event.xkey.window]->keyPressedEvent(key, 0);
+                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = true;
+
+                if (!XFilterEvent(&event, 0L))
+                {
+                    if ((*GetWindowsMap())[event.xkey.window]->inputContext)
+                    {
+                        Status status;
+                        uint8  keyBuffer[16];
+
+                        int32 length = Xutf8LookupString
+                                (
+                                        (*GetWindowsMap())[event.xkey.window]->inputContext,
+                                        &event.xkey,
+                                        reinterpret_cast<char*>(keyBuffer),
+                                        sizeof(keyBuffer),
+                                        nullptr,
+                                        &status
+                                        );
+
+                        if (length > 0)
+                        {
+                            (*GetWindowsMap())[event.xkey.window]->keyTypedEvent(keyBuffer[0]);
+                        }
+                    }
+                }
+                SetWMUserTime(event.xkey.time);
+                break;
+            }
+            case KeyRelease:
+            {
+                KeyCode key = KeyCode::Unknown;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    key = TranslateKeyCode(XLookupKeysym(&event.xkey, i));
+                    if (key != KeyCode::Unknown) break;
+                }
+
+                (*GetWindowsMap())[event.xkey.window]->keyReleasedEvent(key);
+                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = false;
                 break;
             }
             case MotionNotify:
-                (*GetWindowsMap())[event.xbutton.window]->mouseMovedEvent({(float)event.xmotion.x_root, (float)event.xmotion.y_root});
+            {
+                (*GetWindowsMap())[event.xbutton.window]->mouseMovedEvent({(float)event.xmotion.x, (float)event.xmotion.y});
                 break;
+            }
+            case PropertyNotify:
+            {
+                if (lastUserActivityTime) lastUserActivityTime = event.xproperty.time;
+                break;
+            }
+            case UnmapNotify: data.visible = false;
+            case VisibilityNotify: data.visible = true;
 
             default:
                 break;

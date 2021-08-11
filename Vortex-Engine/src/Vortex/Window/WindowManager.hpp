@@ -18,10 +18,10 @@ namespace Vortex
             WindowManager() = default;
             ~WindowManager() = default;
 
-            inline void Bind(Ref<IWindow> window) { boundWindow = std::move(window); boundWindow->ActivateContext(); }
+            inline void Bind(Ref<IWindow> window) { boundWindow = window; boundWindow->ActivateContext(); }
             VT_NODISCARD inline Ref<IWindow> GetWindow() const { return boundWindow; }
             
-            Ref<IWindow> NewWindow(int32 width, int32 height, std::wstring_view title, Ref<IWindow> share = nullptr);
+            Ref<IWindow> NewWindow(int32 width, int32 height, std::string_view title, Ref<IWindow> share = nullptr);
 
             VT_NODISCARD inline Ref<IWindow> GetBound() const { return boundWindow; }
 

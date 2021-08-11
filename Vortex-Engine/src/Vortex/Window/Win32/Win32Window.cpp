@@ -3,7 +3,7 @@
 //
 
 #include "vtpch.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 //#define _UNICODE
@@ -19,7 +19,7 @@ using namespace Vortex::Input;
 using namespace Vortex::Graphics;
 
 #define VTCreateWindow(width, height, title, style, x, y) \
-    CreateWindowExW(0, windowClassName, title.data(), style, x, y, width, height, nullptr, nullptr, hInstance, nullptr)
+    CreateWindowExA(0, windowClassName, title.data(), style, x, y, width, height, nullptr, nullptr, hInstance, nullptr)
 
 namespace Vortex
 {
@@ -154,7 +154,7 @@ namespace Vortex
 
     unsigned int WindowImpl::windowsCount = 0;
 
-    WindowImpl::WindowImpl(uint32 width, uint32 height, uint32 bitsPerPixel, std::wstring_view title, Ref<IWindow> share)
+    WindowImpl::WindowImpl(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share)
     { 
         if (!windowsCount) Initialize();
 
@@ -179,7 +179,7 @@ namespace Vortex
         (*GetWindowsMap())[hWnd] = this;
         memset(keys, 0, sizeof(bool) * static_cast<uint32>(KeyCode::KeysCount));
 
-        VT_CORE_LOG_TRACE("Window Created! width: {}, height: {}", data.width, data.height);
+        VTCoreLogTrace("Window Created! width: {}, height: {}", data.width, data.height);
 
         IRendererAPI::Initialize();
         switch (IRendererAPI::GetGraphicsAPI())
@@ -192,7 +192,7 @@ namespace Vortex
             case GraphicsAPI::None:
 
             default:
-                VT_CORE_LOG_FATAL("Graphics API Not Supported!");
+                VTCoreLogFatal("Graphics API Not Supported!");
                 break;
         }
 
@@ -263,7 +263,7 @@ namespace Vortex
 
                 //if (ChangeDisplaySettingsW(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
                 //{
-                //    VT_CORE_LOG_ERROR("Failed to change display mode for fullscreen");
+                //    VTCoreLogError("Failed to change display mode for fullscreen");
                 //    return;
                 //}
 
@@ -297,11 +297,6 @@ namespace Vortex
     void WindowImpl::SetTitle(std::string_view title) const noexcept
     {
         SetWindowTextA(hWnd, title.data());
-        data.title = std::wstring(title.begin(), title.end());
-    }
-    void WindowImpl::SetTitle(std::wstring_view title) const noexcept
-    {
-        SetWindowTextW(hWnd, title.data());
         data.title = title;
     }
     void WindowImpl::SetPosition(uint32 x, uint32 y) const
@@ -450,7 +445,7 @@ namespace Vortex
             case WM_SIZE:
                 data.width = LOWORD(lParam);
                 data.height = HIWORD(lParam);
-                windowResizedEvent(static_cast<WindowResizedEventType>(wParam), { LOWORD(lParam), HIWORD(lParam) });
+                windowResizedEvent({ LOWORD(lParam), HIWORD(lParam) });
                 //TODO: Change Viewport?
                 break;
             case WM_SETFOCUS:

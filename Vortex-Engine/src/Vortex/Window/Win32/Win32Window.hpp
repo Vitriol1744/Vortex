@@ -18,7 +18,7 @@ namespace Vortex
     class VT_API WindowImpl : public IWindow
     {
         public:
-            WindowImpl(uint32 width, uint32 height, uint32 bitsPerPixel, std::wstring_view title, Ref<IWindow> share = nullptr);
+            WindowImpl(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share = nullptr);
             ~WindowImpl() override;
 
             void Update() override;
@@ -40,7 +40,6 @@ namespace Vortex
             virtual void SetFullscreen(bool fullscreen = true) override;
             virtual void SetIcon(std::string_view path, int32 width, int32 height) const override;
             virtual void SetTitle(std::string_view title) const noexcept override;
-            virtual void SetTitle(std::wstring_view title) const noexcept override;
             virtual void SetPosition(uint32 x, uint32 y) const override;
             virtual void SetResizable(bool resizable) override;
             virtual void SetSize(uint32 width, uint32 height) override;

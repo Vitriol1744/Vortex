@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
-#include "Vortex/Core/IEvent.hpp"
+#include "Vortex/Core/Event.hpp"
 
 #include "Vortex/Input/KeyCode.hpp"
 #include "Vortex/Input/MouseCode.hpp"
@@ -19,6 +19,23 @@
 
 namespace Vortex
 {
+    enum class WindowStyle : uint8
+    {
+        None,
+        Titlebar,
+        MaximizeButton,
+        MinimizeButton,
+        CloseButton
+    };
+    inline WindowStyle operator|(const WindowStyle& left, const WindowStyle& right)
+    {
+        return static_cast<WindowStyle>(static_cast<uint8>(left) | static_cast<uint8>(right));
+    }
+    inline uint8 operator&(const WindowStyle& left, const WindowStyle& right)
+    {
+        return static_cast<uint8>(left) & static_cast<uint8>(right);
+    }
+
     class VT_API IWindow : public NonCopyable<IWindow>
     {
         public:
@@ -49,26 +66,20 @@ namespace Vortex
             //TODO: Icon Loading:
             //virtual void SetIcon(const Utility::Pixel* pixels, int32 width, int32 height) const = 0;
             virtual void SetTitle(std::string_view title) const noexcept = 0;
-            virtual void SetTitle(std::wstring_view title) const noexcept = 0;
             virtual void SetPosition(Math::Vec2u position) const { SetPosition(position.x, position.y); }
             virtual void SetPosition(uint32 x, uint32 y) const = 0;
             virtual void SetResizable(bool resizable) = 0;
             virtual void SetSize(Math::Vec2u size) { SetSize(size.x, size.y); }
             virtual void SetSize(uint32 width, uint32 height) = 0;
+            //TODO: Windows: Window: Implement SetStyle function in windows implementation and make it pure virtual!
+            virtual void SetStyle(WindowStyle style) { };
             virtual void SetWidth(uint32 width) { SetSize(width, data.height); }
             virtual void SetHeight(uint32 height) { SetSize(data.width, height); }
             virtual void SetVisible(bool visible) const = 0;
 
-            VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, std::wstring_view title, Ref<IWindow> share = nullptr);
-            VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, uint32 bitsPerPixel, std::wstring_view title, Ref<IWindow> share = nullptr);
-
-            enum WindowResizedEventType
-            {
-                Restored = 0,
-                Minimized = 1,
-                Maximized = 2
-            };
-
+            VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, std::string_view title, Ref<IWindow> share = nullptr);
+            VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share = nullptr);
+            
             // Window Events
             // Vortex::input::KeyCode keycode, uint32 repeatCount
             Event<Input::KeyCode, uint32> keyPressedEvent;
@@ -85,9 +96,11 @@ namespace Vortex
             // Vortex::Math::Vec2 mousePosition
             Event<Math::Vec2> mouseMovedEvent;
             // Vortex::IWindow::WindowResizedEventType windowResizedEventType, Vortex::Math::Vec2u windowSize;
-            Event<WindowResizedEventType, Math::Vec2u> windowResizedEvent;
+            Event<Math::Vec2u> windowResizedEvent;
             // bool focus
             Event<bool> focusChangedEvent;
+            //
+            Event<> windowClosedEvent;
 
         protected:
             struct WindowData
@@ -95,14 +108,15 @@ namespace Vortex
                 uint32 width = 800;
                 uint32 height = 600;
                 uint16 bitsPerPixel = 32;
-                std::wstring title = L"Vortex";
+                std::string title = "Vortex";
                 Math::Vec2u position = { 0, 0 };
                 Math::Vec2 mousePosition = { 0, 0 };
                 bool isOpen = true;
                 bool fullscreen = false;
-                bool resizable = false;
+                bool resizable = true;
                 bool visible = true;
                 Graphics::IGraphicsContext* graphicsContext = nullptr;
+                Graphics::IGraphicsContext* sharedContext = nullptr;
             };
 
             mutable WindowData data;
