@@ -66,7 +66,6 @@ namespace Vortex::Utility
 					data = new uint8[size];
 					ifs.read((char*)data, size);
 					return data;
-					break;
 
 				default:
 					ifs.seekg(chunkSize, std::ios_base::cur);
