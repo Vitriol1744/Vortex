@@ -15,7 +15,7 @@ namespace Vortex
         public:
             void PushEvent(IEventBase* event);
 
-            void Update();
+            void PollEvents();
 
         private:
             std::queue<IEventBase*> eventBus;

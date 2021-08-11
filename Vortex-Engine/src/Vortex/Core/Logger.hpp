@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #include <string>
 

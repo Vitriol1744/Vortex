@@ -1,14 +1,19 @@
 //
 // Created by Vitriol1744 on 22.06.2021.
 //
-#pragma once
-
-#include "Vortex/Core/Application.hpp"
+#include "Vortex/Engine/Engine.hpp"
 
 int main(int argc, char** argv)
 {
-    Vortex::Application* app = Vortex::CreateApplication();
-    app->Run();
+    std::vector<char*> args;
+    for (int i = 0; i < argc; i++) args.push_back(argv[i]);
+
+    Vortex::Engine* engine = new Vortex::Engine(args);
+    engine->Initialize();
+    engine->Run();
+    engine->Shutdown();
+
+    delete engine;
 }
 
 #ifdef _WIN32

@@ -2,7 +2,7 @@
 // Created by vitriol1744 on 08.07.2021.
 //
 #include "EventSystem.hpp"
-#include "Vortex/Core/IEvent.hpp"
+#include "Vortex/Core/Event.hpp"
 
 namespace Vortex
 {
@@ -11,7 +11,7 @@ namespace Vortex
         eventBus.push(event);
     }
 
-    void EventSystem::Update()
+    void EventSystem::PollEvents()
     {
         while (!eventBus.empty())
         {

@@ -74,7 +74,9 @@ namespace Vortex
                 listenersCount--;
             }
             inline void operator()(T arg1) { this->arg1 = arg1; EventSystem::Instance()->PushEvent(this); }
-            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1); }        private:
+            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1); }
+
+        private:
             int listenersCount = 0;
             std::unordered_map<const char*, std::function<void(T)>> listeners;
 
@@ -103,8 +105,9 @@ namespace Vortex
                 listenersCount--;
             }
             inline void operator()(T1 arg1, T2 arg2) { this->arg1 = arg1; this->arg2 = arg2; EventSystem::Instance()->PushEvent(this); }
-            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1, arg2); }        private:
+            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1, arg2); }
 
+        private:
             int listenersCount = 0;
             std::unordered_map<const char*, std::function<void(T1, T2)>> listeners;
 
