@@ -11,10 +11,10 @@ namespace Vortex
     class VT_API Time : public Singleton<Time>
     {
         public:
-            friend class Application;
+            friend class Engine;
 
-            static Timestep GetTime();
-            static void Sleep(Timestep timestep);
+            inline static Timestep GetTime() { return Timestep(Platform::GetCurrentTime()); }
+            inline static void Sleep(Timestep timestep) { Platform::Sleep(timestep.Seconds()); }
 
             VT_NODISCARD inline static float64 DeltaTime() { return deltaTime; }
             VT_NODISCARD inline static int32 FPSCounter() { return fpsCounter; }
