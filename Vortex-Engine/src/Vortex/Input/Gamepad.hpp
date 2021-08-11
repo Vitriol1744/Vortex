@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
-#include "Vortex/Core/IEvent.hpp"
+#include "Vortex/Core/Event.hpp"
 
 namespace Vortex::Input
 {

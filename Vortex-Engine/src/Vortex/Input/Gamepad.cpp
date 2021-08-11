@@ -14,7 +14,8 @@ namespace Vortex::Input
 
 	Gamepad* Gamepad::Instance()
 	{
-		static Gamepad* instance = new GamepadImpl;
+	    //TODO: Linux: Gamepad
+		static Gamepad* instance = nullptr;//new GamepadImpl;
 
 		return instance;
 	}

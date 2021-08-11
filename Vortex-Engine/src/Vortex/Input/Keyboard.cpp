@@ -11,7 +11,8 @@ namespace Vortex::Input
 {
 	Keyboard* Keyboard::Instance()
 	{
-		static Keyboard* instance = new KeyboardImpl;
+	    //TODO: Input Polling for Linux
+		static Keyboard* instance;// = new KeyboardImpl;
 
 		return instance;
 	}

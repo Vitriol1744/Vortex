@@ -1,8 +1,10 @@
 //
 // Created by Vitriol1744 on 04.08.2021.
 //
-#include "Win32Mouse.hpp"
+#include "Vortex/Core/Platform.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
+#include "Win32Mouse.hpp"
 #include <Windows.h>
 
 namespace Vortex::Input
@@ -39,3 +41,4 @@ namespace Vortex::Input
 		SetCursorPos(x, y);
 	}
 }
+#endif

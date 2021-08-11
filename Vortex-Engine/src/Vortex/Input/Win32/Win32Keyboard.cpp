@@ -1,8 +1,10 @@
 //
 // Created by Vitriol1744 on 04.08.2021.
 //
-#include "Win32Keyboard.hpp"
+#include "Vortex/Core/Platform.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
+#include "Win32Keyboard.hpp"
 #include <Windows.h>
 
 namespace Vortex::Input
@@ -124,3 +126,4 @@ namespace Vortex::Input
 		return (GetAsyncKeyState(Win32KeyCode(keycode)) & 0x8000) != 0;
 	}
 }
+#endif

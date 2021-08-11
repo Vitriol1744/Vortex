@@ -1,10 +1,12 @@
 //
 // Created by Vitriol1744 on 03.08.2021.
 //
+#include "Vortex/Core/Platform.hpp"
+
+#ifdef VT_PLATFORM_WINDOWS
 #include "Win32Gamepad.hpp"
 
 #pragma comment(lib, "XInput.lib")
-
 #define VTP_BUTTON(button) static_cast<bool>(buttons & button)
 
 namespace Vortex::Input
@@ -116,3 +118,4 @@ namespace Vortex::Input
         if (controller.deadzoneY > 0) controller.RY *= 1 / (1 - controller.deadzoneY);
     }
 }
+#endif
