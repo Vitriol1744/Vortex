@@ -91,7 +91,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator+=(T& right) noexcept
         {
             x += right;
@@ -101,7 +100,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator-=(Vector4<T>& right) noexcept
         {
             x -= right.x;
@@ -111,7 +109,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator-=(T& right) noexcept
         {
             x -= right;
@@ -121,8 +118,7 @@ namespace Vortex::Math
 
             return *this;
         }
-
-        //inline Vector4<T>& operator*=(Matrix4x4f& right) noexcept
+        //TODO:inline Vector4<T>& operator*=(Matrix4x4f& right) noexcept
         //{
         //    x = x * right[0 + 0 * 4] + y * right[1 + 0 * 4] + z * right[2 + 0 * 4] + w * right[3 + 0 * 4];
         //    y = x * right[0 + 1 * 4] + y * right[1 + 1 * 4] + z * right[2 + 1 * 4] + w * right[3 + 1 * 4];
@@ -131,7 +127,6 @@ namespace Vortex::Math
 //
         //    return *this;
         //}
-
         inline Vector4<T>& operator*=(Vector4<T>& right) noexcept
         {
             x *= right.x;
@@ -141,7 +136,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator*=(T& right) noexcept
         {
             x *= right;
@@ -151,7 +145,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator/=(Vector4<T>& right)
         {
             x /= right.x;
@@ -161,7 +154,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator/=(T& right)
         {
             x /= right;
@@ -171,7 +163,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator%=(Vector4<T>& right) noexcept
         {
             x %= right.x;
@@ -181,7 +172,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator%=(T& right) noexcept
         {
             x %= right;
@@ -191,7 +181,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator++() noexcept
         {
             x++;
@@ -201,7 +190,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator++(int) noexcept
         {
             Vector4<T> temp(*this);
@@ -209,7 +197,6 @@ namespace Vortex::Math
 
             return temp;
         }
-
         inline Vector4<T>& operator--() noexcept
         {
             x--;
@@ -219,7 +206,6 @@ namespace Vortex::Math
 
             return *this;
         }
-
         inline Vector4<T>& operator--(int) noexcept
         {
             Vector4<T> temp(*this);

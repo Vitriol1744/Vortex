@@ -19,7 +19,7 @@ namespace Vortex::Math
         inline Vector3() noexcept = default;
         inline Vector3(T scalar) noexcept : x(scalar), y(scalar), z(scalar) { }
         inline Vector3(T x, T y, T z) noexcept : x(x), y(y), z(z) { }
-        inline Vector3(Vector2<T>& xy, T z) noexcept : xy(xy), __xy_z(z) { }
+        inline Vector3(Vector2<T> xy, T z) noexcept : xy(xy), __xy_z(z) { }
 
         union
         {
@@ -212,13 +212,13 @@ namespace Vortex::Math
     };
 
     template<typename T>
-    Vector3<T>& operator+(Vector3<T> left, const Vector3<T>& right) noexcept
+    Vector3<T> operator+(Vector3<T> left, const Vector3<T>& right) noexcept
     {
         left += right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator+(Vector3<T> left, const T& right) noexcept
+    Vector3<T> operator+(Vector3<T> left, const T& right) noexcept
     {
         left += right;
         return left;
@@ -236,37 +236,37 @@ namespace Vortex::Math
         return left;
     }
     template<typename T>
-    Vector3<T>& operator*(Vector3<T> left, const Vector3<T>& right) noexcept
+    Vector3<T> operator*(Vector3<T> left, const Vector3<T>& right) noexcept
     {
         left *= right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator*(Vector3<T> left, const T& right) noexcept
+    Vector3<T> operator*(Vector3<T> left, const T& right) noexcept
     {
         left *= right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator/(Vector3<T> left, const Vector3<T>& right)
+    Vector3<T> operator/(Vector3<T> left, const Vector3<T>& right)
     {
         left /= right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator/(Vector3<T> left, const T& right)
+    Vector3<T> operator/(Vector3<T> left, const T& right)
     {
         left /= right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator%(Vector3<T> left, const Vector3<T>& right)
+    Vector3<T> operator%(Vector3<T> left, const Vector3<T>& right)
     {
         left %= right;
         return left;
     }
     template<typename T>
-    Vector3<T>& operator%(Vector3<T> left, const T& right)
+    Vector3<T> operator%(Vector3<T> left, const T& right)
     {
         left %= right;
         return left;
