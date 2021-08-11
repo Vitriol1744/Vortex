@@ -5,26 +5,25 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include <vector>
+
 namespace Vortex
 {
     class VT_API Application
     {
         public:
-            Application();
+            Application() = default;
             ~Application() = default;
 
-            void Run();
+            virtual void Initialize() { }
+            virtual void Shutdown() { }
 
             virtual void Update() { }
             virtual void Render() { }
 
         protected:
-            bool running = true;
-            int32 framerateLimit = 0; // 0 means that framerate limit is disabled.
-
-        private:
-            int32 frames = 0;
+            std::vector<char*> arguments;
     };
 
-    extern Application* CreateApplication();
+    extern Application* CreateApplication(std::vector<char*> arguments);
 }
