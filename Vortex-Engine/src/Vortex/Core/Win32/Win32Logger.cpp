@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 24.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32Logger.hpp"

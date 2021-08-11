@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#include "Vortex/Core/Types.hpp"
+
 #if defined(_WIN64)
     #define VT_PLATFORM_WINDOWS
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -38,6 +40,12 @@
 
 namespace Vortex::Platform
 {
-    bool Initialize();
-    bool Shutdown();
+    namespace Internal
+    {
+        bool Initialize();
+        bool Shutdown();
+    }
+
+    float64 GetCurrentTime();
+    void Sleep(float64 seconds);
 }

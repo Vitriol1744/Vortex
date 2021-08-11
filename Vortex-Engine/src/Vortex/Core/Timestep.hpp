@@ -3,10 +3,24 @@
 //
 #pragma once
 
-#include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/Types.hpp"
 
 namespace Vortex
 {
+    constexpr float64 Milliseconds(float64 ms)
+    {
+        return ms / 1000;
+    }
+    constexpr float64 Microseconds(float64 us)
+    {
+        return Milliseconds(us) / 1000;
+    }
+    constexpr float64 Nanoseconds(float ns)
+    {
+        return Microseconds(ns) / 1000;
+    }
+
     class VT_API Timestep
     {
         public:

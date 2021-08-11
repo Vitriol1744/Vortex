@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_LINUX
 #include "PosixLogger.hpp"
@@ -45,7 +45,7 @@ namespace Vortex
         
         ::write(STDOUT_FILENO, "[", 1);
         ::write(STDOUT_FILENO, name.c_str(), name.size());
-        ::write(STDOUT_FILENO, "]: "), 3);
+        ::write(STDOUT_FILENO, "]: ", 3);
         ::write(STDOUT_FILENO, formattedString.data(), formattedString.size());
         
         // Change color before printing new line character
