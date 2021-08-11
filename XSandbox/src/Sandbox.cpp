@@ -3,13 +3,7 @@
 //
 #include "Sandbox.hpp"
 
-#include "Vortex/Core/Time.hpp"
-#include "Vortex/Graphics/API/IVertexBuffer.hpp"
-#include "Vortex/Graphics/API/IIndexBuffer.hpp"
-#include "Vortex/Graphics/API/IVertexArray.hpp"
-
 #include <iostream>
-#include "Vortex/Utility/Timer.hpp"
 
 using namespace Vortex::Utility;
 
@@ -26,40 +20,45 @@ struct Vertex
     float32 textureIndex;
 };
 
-Sandbox::Sandbox()
+Sandbox::Sandbox(std::vector<char*>& arguments)
 {
-    VT_LOG_TRACE("Hello, World!");
+    
+}
 
-    window = WindowManager::Instance()->NewWindow(width, height, L"Vortex");
-
-    Graphics::Renderer2D::Initialize();
-
-    window->HideCursor();
-    window->ShowCursor();
-    window->SetResizable(false);
+void Sandbox::Initialize()
+{
+    window = WindowManager::Instance()->NewWindow(width, height, "Vortex");
+    Renderer2D::Initialize();
     //window->SetIcon("assets/textures/");
-    //window->SetWidth(800);
-    //window->SetFullscreen(true);
     //window->SetPosition(333, 111);
-
     window->mouseMovedEvent.AddListener("Sandbox::OnMouseMove", std::bind(&Sandbox::OnMouseMove, this, std::placeholders::_1));
 
-    framerateLimit = 0;
+    buffer.Initialize();
+    buffer.LoadFromFile("assets/sounds/breakout.wav");
+    source.Initialize();
     
+    source.SetPitch(1.0f);
+    source.SetGain(1.0f);
+    source.SetPosition(0.0f, 0.0f, 0.0f);
+    source.SetVelocity(0.0f, 0.0f, 0.0f);
+    source.SetLooping(false);
+    source.SetBuffer(buffer);
+    source.Play();
+
     #pragma region vertices
     float32 vertices[]
     {
         -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
         -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
         -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 
         -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
         -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
         -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
 
@@ -70,31 +69,31 @@ Sandbox::Sandbox()
         -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
         -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,
 
         -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
         -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
         -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 
         -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
         -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,
         -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
     };
     #pragma endregion
-    
+
     projection = Math::Mat4::Orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
-    
+
     #pragma region indices
     uint32 indices[]
     {
@@ -104,16 +103,22 @@ Sandbox::Sandbox()
         19, 20, 21, 22, 23, 24,
         25, 26, 27, 28, 29, 30,
         31, 32, 33, 34, 35, 36,
-    };
+        };
     #pragma endregion
 
     shader1 = Graphics::IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
     shader1->Bind();
+    texture = ITexture2D::Create("assets/textures/bmpTexture.bmp");
+}
+void Sandbox::Shutdown()
+{
+
 }
 
 void Sandbox::Update()
 {
-    running = window->IsOpen();
+    if (!window->IsOpen()) Engine::Stop();
+
     window->Update();
 
     if (window->IsKeyPressed(Input::KeyCode::W))
@@ -135,16 +140,15 @@ void Sandbox::Update()
         sprite.Move(1 * Time::DeltaTime(), 0);
     }
 
-    window->SetTitle(L"FPS: " + std::to_wstring(Time::FPSCounter()));
+    window->SetTitle("FPS: " + std::to_string(Time::FPSCounter()));
 }
-
 void Sandbox::Render()
 {
-    Timer timer;
     shader1->Bind();
     Graphics::IRendererAPI::SetClearColor(Math::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
     Graphics::IRendererAPI::Clear();
-    
+
+    //spritesCount = 15;
     //float xo = -2.5f;
     //float yo = -2.5f;
     //for (int y = 0; y < spritesCount; y++)
@@ -156,19 +160,22 @@ void Sandbox::Render()
     //        Graphics::Renderer2D::DrawQuad({xp, yp}, { 0.045f, 0.045f }, Math::Vec4(x / spritesCount, 0.3f, y / spritesCount, 1.0f));
     //    }
     //}
-    Graphics::Renderer2D::DrawSprite(sprite);
-    Graphics::Renderer2D::Submit();
-
+    texture->Bind();
+    shader1->SetUniform1i("u_Texture", 0);
     view = Math::Mat4(1.0f) * Math::Mat4::LookAt(Math::Vec3(0.0f, 0.0f, 3.0f), Math::Vec3(0.0f, 0.0f, -1.0f), Math::Vec3(0.0f, 1.0f, 1.0f));
     projection = Math::Mat4::Perspective(45.0f, (float32)width / (float32)height, 0.1f, 100.0f);
     shader1->SetUniformMat4f("uView", view);
     shader1->SetUniformMat4f("uProjection", projection);
 
+
+    Graphics::Renderer2D::DrawSprite(sprite);
+    Graphics::Renderer2D::Submit();
+
     window->Present();
 }
 
-Vortex::Application* Vortex::CreateApplication()
+Vortex::Application* Vortex::CreateApplication(std::vector<char*> arguments)
 {
-    return new Sandbox;
+    return new Sandbox(arguments);
 }
 

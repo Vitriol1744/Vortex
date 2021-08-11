@@ -40,10 +40,12 @@ namespace Vortex::Graphics
         Vertex* current = nullptr;
         uint32* indices = nullptr;
         uint32 indicesCount = 0;
+        bool initialized = false;
     }
 
     void Renderer2D::Initialize()
     {
+        if (initialized) return;
         mesh = IVertexArray::Create();
         vertexBuffer = IVertexBuffer::Create(maxVerticesCount * sizeof(Vertex));
 
@@ -79,15 +81,19 @@ namespace Vortex::Graphics
         indexBuffer = IIndexBuffer::Create(indices, maxIndicesCount);
         mesh->SetIndexBuffer(indexBuffer);
         delete[] indices;
+
+        initialized = true;
     }
 
     void Renderer2D::Shutdown()
     {
+        if (!initialized) return;
         if (vertices)
         {
             delete[] vertices;
             vertices = nullptr;
         }
+        initialized = false;
     }
 
     void Renderer2D::DrawSprite(Sprite sprite)
@@ -97,11 +103,13 @@ namespace Vortex::Graphics
             Submit();
         }
 
+        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
+
         for (int32 i = 0; i < 4; i++)
         {
             current->position = (defaultPositions[i] * sprite.transform).xyz;
             current->color = sprite.color;
-            current->texCoords = Math::Vec2(0.0f, 0.0f);
+            current->texCoords = textureCoords[i];
             current->textureIndex = 0;
             current++;
         }
@@ -111,20 +119,18 @@ namespace Vortex::Graphics
     
     void Renderer2D::DrawQuad(const Vec2& position, const Vec2& size, const Vec4& color)
     {
-        //Mat4 transform = Mat4::Translate(Mat4(1.0f), Vec3(position.x, position.y, 0.0f)) * Mat4::Scale(Mat4(1.0f), { size.x, size.y, 1.0f });
-        //Mat4 transform = Mat4::Scale(Mat4(1.0f), Vec3(size.x ,size.y, 1.0f));
-        //Mat4 transform(1.0f);
-        
         if (indicesCount >= maxIndicesCount)
         {
             Submit();
         }
+
+        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
     
         for (int32 i = 0; i < 4; i++)
         {
-            current->position = (defaultPositions[i]).xyz;
+            current->position = Math::Vec3((defaultPositions[i]).xy + position, 0.0f);
             current->color = color;
-            current->texCoords = Math::Vec2(0.0f, 0.0f);
+            current->texCoords = textureCoords[i];
             current->textureIndex = 0;
             current++;
         }

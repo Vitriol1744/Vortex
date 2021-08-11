@@ -7,14 +7,21 @@
 
 #include "Vortex/Graphics/Sprite.hpp"
 #include "Vortex/Graphics/Renderer2D.hpp"
+#include "Vortex/Audio/AudioSource.hpp"
+
+#include "Vortex/Graphics/API/ITexture2D.hpp"
 
 using namespace Vortex;
+using namespace Vortex::Audio;
 using namespace VTGraphics;
 
 class Sandbox : public Vortex::Application
 {
     public:
-        Sandbox();
+        Sandbox(std::vector<char*>& arguments);
+
+        void Initialize() override;
+        void Shutdown() override;
 
         void Update() override;
         void Render() override;
@@ -24,18 +31,17 @@ class Sandbox : public Vortex::Application
     private:
         const int32 width  = 800;
         const int32 height = 600;
-        int spritesCount = 1000;
-        Ref<VTGraphics::IVertexArray> mesh1;
-        Ref<VTGraphics::IVertexArray> mesh2;
-        Ref<VTGraphics::IVertexBuffer> vertexBuffer;
-        Ref<VTGraphics::IIndexBuffer> indexBuffer;
+        int spritesCount = 100;
 
         Ref<VTGraphics::IShader> shader1;
-        Ref<VTGraphics::IShader> shader2;
+
+        SoundBuffer buffer{false};
+        AudioSource source{false};
 
         VTGraphics::Sprite sprite;
 
         Ref<IWindow> window;
+        Ref<ITexture> texture;
 
         Math::Mat4 model;
         Math::Mat4 view;
