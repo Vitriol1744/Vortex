@@ -21,7 +21,9 @@ namespace Vortex::Graphics
             virtual GLvoid Bind() const noexcept override;
             virtual GLvoid Unbind() const noexcept override;
 
-            virtual GLvoid Data(GLuint* indices, GLuint size) override;
+            virtual inline GLuint GetIndicesCount() const noexcept override { return count; }
+
+            virtual GLvoid SetData(GLuint* indices, GLuint size) override;
 
         private:
             GLuint id = 0;

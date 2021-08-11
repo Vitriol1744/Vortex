@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32GL46Context.hpp"
@@ -55,7 +55,7 @@ namespace Vortex::Graphics
         fakePFD.cDepthBits = 24;
 
         const int32 fakePFDID = ChoosePixelFormat(fakeDC, &fakePFD);
-        VT_CORE_ASSERT(fakePFDID != 0);
+        VT_CORE_ASSERT(fakePFDID !=penguinking 0);
         VT_CORE_ASSERT(SetPixelFormat(fakeDC, fakePFDID, &fakePFD) != 0);
 
         HGLRC fakeRC = wglCreateContext(fakeDC);
@@ -121,10 +121,10 @@ namespace Vortex::Graphics
         glGetIntegerv(GL_MAJOR_VERSION, &major);
         glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-        VT_CORE_LOG_INFO("OpenGL Context Created!");
-        VT_CORE_LOG_INFO("Version: {}.{}", major, minor);
-        VT_CORE_LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
-        VT_CORE_LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
+        VTCoreLogTrace("OpenGL Context Created!");
+        VTCoreLogInfo("Version: {}.{}", major, minor);
+        VTCoreLogInfo("Vendor: {}", glGetString(GL_VENDOR));
+        VTCoreLogInfo("Renderer: {}", glGetString(GL_RENDERER));
 
         VT_CORE_ASSERT(LoadOpenGLFunctions() == true);
     }

@@ -13,10 +13,11 @@ namespace Vortex::Graphics
     class GL46RendererAPI final : public IRendererAPI
     {
         public:
-            GLvoid SetClearColorImpl(Math::Vec4 color) noexcept override;
-            GLvoid ClearImpl() noexcept override;
+            GLvoid SetClearColorImpl(Math::Vec4 color) override;
+            GLvoid SetViewportImpl(const Math::Rectangle& rect) override;
 
-            GLvoid DrawIndexedImpl(const Ref<IVertexArray> mesh, uint32_t indicesCount) override;
+            GLvoid ClearImpl() noexcept override;
+            GLvoid DrawIndexedImpl(const Ref<IVertexArray>& mesh, uint32_t indicesCount) override;
 
             static GLvoid Initialize();
 

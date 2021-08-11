@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 29.06.2021.
 //
-#include "Vortex/Core/PlatformInit.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_LINUX
 #include "Window/Posix/X11Window.hpp"
@@ -16,12 +16,13 @@ namespace Vortex::Graphics
 {
     GLboolean GL46Context::initialized = false;
 
-    GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share) : IGraphicsContext(windowHandle)
+    GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share)
     {
         XInitThreads();
         display = WindowImpl::Display();
         window = *(reinterpret_cast<Window*>(windowHandle));
-    
+
+        //TODO: SetBitsPerPixel to Custom Value!
         static GLint visualAttributes[] =
         {
             GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -62,14 +63,15 @@ namespace Vortex::Graphics
         glGetIntegerv(GL_MAJOR_VERSION, &major);
         glGetIntegerv(GL_MINOR_VERSION, &minor);
     
-        VT_CORE_LOG_INFO("OpenGL Context Created!");
-        VT_CORE_LOG_INFO("Version: {}.{}", major, minor);
-        VT_CORE_LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
-        VT_CORE_LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
+        VTCoreLogTrace("OpenGL Context Created!");
+        VTCoreLogInfo("Version: {}.{}", major, minor);
+        VTCoreLogInfo("Vendor: {}", glGetString(GL_VENDOR));
+        VTCoreLogInfo("Renderer: {}", glGetString(GL_RENDERER));
+        VTCoreLogInfo("Shading Language Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         if (!initialized)
         {
-            if (!LoadGLFunctions()) VT_CORE_LOG_ERROR("Failed to Load OpenGL Functions!");
+            if (!LoadOpenGLFunctions()) VTCoreLogError("Failed to Load OpenGL Functions!");
             SwapInterval = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress(reinterpret_cast<const unsigned char*>("glXSwapIntervalMESA"));
             GL46RendererAPI::Initialize();
         }

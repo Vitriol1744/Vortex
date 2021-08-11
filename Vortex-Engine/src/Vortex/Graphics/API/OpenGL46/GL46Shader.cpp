@@ -3,13 +3,25 @@
 //
 #include "GL46Shader.hpp"
 
+#include "Vortex/Core/HashedString.hpp"
+
 #include <fstream>
 #include <vector>
 
 namespace Vortex::Graphics
 {
-    GL46Shader::GL46Shader(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled)
+    GL46Shader::GL46Shader(strview name, strview vertexPath, strview fragmentPath, bool precompiled)
     {
+        this->name = HashedString(name);
+
+        Load(vertexPath, fragmentPath, precompiled);
+    }
+
+    GL46Shader::GL46Shader(strview vertexPath, strview fragmentPath, bool precompiled)
+    {
+        auto lastDot = vertexPath.find_last_of(".");
+        name = HashedString(vertexPath.substr(lastDot + 1));
+
         Load(vertexPath, fragmentPath, precompiled);
     }
 
@@ -28,18 +40,18 @@ namespace Vortex::Graphics
         glUseProgram(0);
     }
 
-    GLvoid GL46Shader::Reload(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept
+    GLvoid GL46Shader::Reload(strview vertexPath, strview fragmentPath, bool precompiled) noexcept
     {
         glDeleteProgram(id);
         Load(vertexPath, fragmentPath, precompiled);
     }
 
-    GLvoid GL46Shader::Load(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled)
+    GLvoid GL46Shader::Load(strview vertexPath, strview fragmentPath, bool precompiled)
     {
-        if (id) VT_CORE_LOG_WARN("If Shader was already loaded Reload should be invoked instead! Otherwise VRAM leaks may occur!");
+        if (id) VTCoreLogWarn("If Shader was already loaded Reload should be invoked instead! Otherwise VRAM leaks may occur!");
         id = glCreateProgram();
-        GLuint vertexShader     = 0;
-        GLuint fragmentShader   = 0;
+        GLuint vertexShader;
+        GLuint fragmentShader;
 
         std::ifstream ifs(vertexPath.data(), std::ios_base::binary);
         if (!ifs.is_open())
@@ -65,6 +77,7 @@ namespace Vortex::Graphics
         }
         else
         {
+            VTCoreLogInfo("VertexShader:\n {}\n\nPixelShader:\n {}", vertexSource, fragmentSource);
             vertexShader    = CompileShader(vertexSource, GL_VERTEX_SHADER);
             fragmentShader  = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
         }
@@ -86,7 +99,7 @@ namespace Vortex::Graphics
 
             glGetProgramInfoLog(id, maxLength, &maxLength, &infoLog[0]);
 
-            VT_CORE_LOG_ERROR("\nFailed to Link Shader! Error:\n{}", infoLog.data());
+            VTCoreLogError("\nFailed to Link Shader! Error:\n{}", infoLog.data());
 
             glDeleteProgram(id);
             glDeleteShader(vertexShader);
@@ -101,37 +114,47 @@ namespace Vortex::Graphics
         glUseProgram(id);
     }
 
-    GLvoid GL46Shader::SetUniform1f(std::string_view name, GLfloat value) const noexcept
+    GLvoid GL46Shader::SetUniform1i(strview name, int32 value) const
     {
-        GLint location = glGetUniformLocation(id, name.data());
-        glUniform1f(location, value);
+        glUniform1i(GetUniformLocation(name.data()), value);
+    }
+    GLvoid GL46Shader::SetUniform1f(strview name, GLfloat value) const
+    {
+        glUniform1f(GetUniformLocation(name.data()), value);
+    }
+    GLvoid GL46Shader::SetUniform2f(strview name, Math::Vec2 vec) const
+    {
+        glUniform2f(GetUniformLocation(name.data()), vec.x, vec.y);
+    }
+    GLvoid GL46Shader::SetUniform3f(strview name, Math::Vec3 vec) const
+    {
+        glUniform3f(GetUniformLocation(name.data()), vec.x, vec.y, vec.z);
+    }
+    GLvoid GL46Shader::SetUniform4f(strview name, Math::Vec4 vec) const
+    {
+        glUniform4f(GetUniformLocation(name.data()), vec.x, vec.y, vec.z, vec.w);
+    }
+    GLvoid GL46Shader::SetUniformMat4f(strview name, Math::Mat4 mat) const
+    {
+        glUniformMatrix4fv(GetUniformLocation(name.data()), 1, GL_TRUE, mat.data);
     }
 
-    GLvoid GL46Shader::SetUniform2f(std::string_view name, Math::Vec2 vec) const noexcept
+    GLuint GL46Shader::GetUniformLocation(const GLchar* uniform) const
     {
-        GLint location = glGetUniformLocation(id, name.data());
-        glUniform2f(location, vec.x, vec.y);
-    }
+        HashedString uniformName(uniform);
+        if (uniformCache.find(uniformName.stringID) != uniformCache.end()) return uniformCache[uniformName.stringID];
 
-    GLvoid GL46Shader::SetUniform3f(std::string_view name, Math::Vec3 vec) const noexcept
-    {
-        GLint location = glGetUniformLocation(id, name.data());
-        glUniform3f(location, vec.x, vec.y, vec.z);
-    }
+        GLint location = glGetUniformLocation(id, uniform);
+        if (location < 0)
+        {
+            VTCoreLogWarn("Failed to find location of uniform with name: {}", uniform);
+            return 0;
+        }
 
-    GLvoid GL46Shader::SetUniform4f(std::string_view name, Math::Vec4 vec) const noexcept
-    {
-        GLint location = glGetUniformLocation(id, name.data());
-        glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
+        uniformCache[uniformName.stringID] = location;
+        return location;
     }
-
-    GLvoid GL46Shader::SetUniformMat4f(std::string_view name, Math::Mat4 mat) const noexcept
-    {
-        GLint location = glGetUniformLocation(id, name.data());
-        glUniformMatrix4fv(location, 1, GL_TRUE, mat.data);
-    }
-
-    GLuint GL46Shader::CompileShader(std::string_view source, GLenum shaderType)
+    GLuint GL46Shader::CompileShader(strview source, GLenum shaderType)
     {
         GLuint shader = glCreateShader(shaderType);
 
@@ -151,7 +174,7 @@ namespace Vortex::Graphics
 
             glGetShaderInfoLog(shader, maxLength, nullptr, &infoLog[0]);
 
-            VT_CORE_LOG_ERROR("\nFailed to Compile {} Shader! Error:\n{}", shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment", infoLog.data());
+            VTCoreLogError("\nFailed to Compile {} Shader! Error:\n{}", shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment", infoLog.data());
 
             glDeleteShader(shader);
             return 0;

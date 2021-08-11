@@ -5,29 +5,34 @@
 
 #include "Vortex/Core/Core.hpp"
 
-#include <string_view>
-
-namespace Vortex::Graphics
+namespace Vortex
 {
-    class VT_API IShader : public NonCopyable<IShader>
+    namespace Graphics
     {
-        public:
-            virtual ~IShader() noexcept = default;
+        class VT_API IShader : public NonCopyable<IShader>
+        {
+            public:
+                virtual ~IShader() noexcept = default;
 
-            virtual void Bind() const noexcept = 0;
-            virtual void Unbind() const noexcept = 0;
+                virtual void Bind() const noexcept = 0;
+                virtual void Unbind() const noexcept = 0;
 
-            virtual void Reload(std::string_view vertexPath, std::string_view pixelPath, bool precompiled) noexcept = 0;
-            virtual void Load(std::string_view vertexPath, std::string_view pixelPath, bool precompiled) = 0;
+                virtual HashedString GetName() const noexcept = 0;
 
-            virtual void SetUniform1f(std::string_view name, float32 value) const noexcept = 0;
-            virtual void SetUniform2f(std::string_view name, Math::Vec2 vec) const noexcept = 0;
-            virtual void SetUniform3f(std::string_view name, Math::Vec3 vec) const noexcept = 0;
-            virtual void SetUniform4f(std::string_view name, Math::Vec4 vec) const noexcept = 0;
-            virtual void SetUniformMat4f(std::string_view name, Math::Mat4 mat) const noexcept = 0;
+                virtual void Reload(strview vertexPath, strview pixelPath, bool precompiled) noexcept = 0;
+                virtual void Load(strview vertexPath, strview pixelPath, bool precompiled) = 0;
 
-            static Ref<IShader> Create(std::string_view vertexPath, std::string_view pixelPath, bool precompiled = true);
-    };
+                virtual void SetUniform1i(strview name, int32 value) const = 0;
+                virtual void SetUniform1f(strview name, float32 value) const = 0;
+                virtual void SetUniform2f(strview name, Math::Vec2 vec) const = 0;
+                virtual void SetUniform3f(strview name, Math::Vec3 vec) const = 0;
+                virtual void SetUniform4f(strview name, Math::Vec4 vec) const = 0;
+                virtual void SetUniformMat4f(strview name, Math::Mat4 mat) const = 0;
 
-    template class VT_API NonCopyable<IShader>;
+                static Ref<IShader> Create(strview name, strview vertexPath, strview pixelPath, bool precompiled = true);
+                static Ref<IShader> Create(strview vertexPath, strview pixelPath, bool precompiled = true);
+        };
+    }
+
+    template class VT_API NonCopyable<Graphics::IShader>;
 }

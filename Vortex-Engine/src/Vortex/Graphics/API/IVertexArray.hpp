@@ -18,8 +18,11 @@ namespace Vortex::Graphics
             virtual void Bind() = 0;
             virtual void Unbind() = 0;
 
-            virtual void AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer) = 0;
-            virtual void SetIndexBuffer(Ref<IIndexBuffer> indexBuffer) = 0;
+            virtual std::vector<Ref<IVertexBuffer>>& GetVertexBuffers() noexcept = 0;
+            virtual Ref<IIndexBuffer>& GetIndexBuffer() noexcept = 0;
+
+            virtual void AddVertexBuffer(const Ref<IVertexBuffer>& vertexBuffer) = 0;
+            virtual void SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer) = 0;
 
             static Ref<IVertexArray> Create();
     };

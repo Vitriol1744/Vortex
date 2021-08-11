@@ -20,8 +20,11 @@ namespace Vortex::Graphics
             GLvoid Bind() override;
             GLvoid Unbind() noexcept override;
 
-            GLvoid AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer) override;
-            GLvoid SetIndexBuffer(Ref<IIndexBuffer> indexBuffer) override;
+            virtual inline std::vector<Ref<IVertexBuffer>>& GetVertexBuffers() noexcept override { return vertexBuffers; }
+            virtual inline Ref<IIndexBuffer>& GetIndexBuffer() noexcept override { return indexBuffer; }
+
+            GLvoid AddVertexBuffer(const Ref<IVertexBuffer>& vertexBuffer) override;
+            GLvoid SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer) override;
 
         private:
             GLuint id = 0;

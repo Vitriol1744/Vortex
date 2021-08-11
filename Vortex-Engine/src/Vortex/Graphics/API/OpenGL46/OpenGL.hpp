@@ -10,18 +10,18 @@
     #include "Gl/Gl.h"
     #include "GL/wglext.h"
 #elif defined(VT_PLATFORM_LINUX)
-    #include <X11/Xlib.h>
-    #include <X11/Xutil.h>
-    #include <GL/glx.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <GL/glx.h>
 #endif
 
 #include <KHR/khrplatform.h>
 
 #undef APIENTRY
 #ifdef VT_PLATFORM_WINDOWS
-    #define APIENTRY __stdcall
+#define APIENTRY __stdcall
 #else
-    #define APIENTRY
+#define APIENTRY
 #endif
 
 namespace Vortex::Graphics
@@ -102,6 +102,7 @@ namespace Vortex::Graphics
     VT_DECLARE_GL_FUNC(Uniform2f, GLvoid, GLint location, GLfloat v0, GLfloat v1);
     VT_DECLARE_GL_FUNC(Uniform3f, GLvoid, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
     VT_DECLARE_GL_FUNC(Uniform4f, GLvoid, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+    VT_DECLARE_GL_FUNC(Uniform1i, GLvoid, GLint location, GLuint v0);
     VT_DECLARE_GL_FUNC(UniformMatrix4fv, GLvoid, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
     VT_DECLARE_GL_FUNC(UseProgram, GLvoid, GLuint program);
     VT_DECLARE_GL_FUNC(ValidateProgram, GLvoid, GLuint program);

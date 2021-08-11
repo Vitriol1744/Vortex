@@ -39,7 +39,7 @@ namespace Vortex::Graphics
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    GLvoid GL46IndexBuffer::Data(GLuint* indices, GLuint size)
+    GLvoid GL46IndexBuffer::SetData(GLuint* indices, GLuint size)
     {
         Bind();
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, indices);

@@ -39,6 +39,7 @@ namespace Vortex::Graphics
     VT_GL_INIT_FUNC(Uniform2f);
     VT_GL_INIT_FUNC(Uniform3f);
     VT_GL_INIT_FUNC(Uniform4f);
+    VT_GL_INIT_FUNC(Uniform1i);
     VT_GL_INIT_FUNC(UniformMatrix4fv);
     VT_GL_INIT_FUNC(UseProgram);
     VT_GL_INIT_FUNC(ValidateProgram);
@@ -62,7 +63,7 @@ namespace Vortex::Graphics
         if (!ptr)
         {
             initialized = false;
-            VT_CORE_LOG_FATAL("Failed to Get Address of {} Procedure", name);
+            VTCoreLogFatal("Failed to Get Address of {} Procedure", name);
         }
 
         return ptr;
@@ -120,6 +121,7 @@ namespace Vortex::Graphics
         VT_GL_LOAD(Uniform2f);
         VT_GL_LOAD(Uniform3f);
         VT_GL_LOAD(Uniform4f);
+        VT_GL_LOAD(Uniform1i);
         VT_GL_LOAD(UniformMatrix4fv);
         VT_GL_LOAD(UseProgram);
         VT_GL_LOAD(ValidateProgram);
@@ -128,7 +130,7 @@ namespace Vortex::Graphics
         VT_GL_LOAD(VertexAttribPointer);
         #pragma endregion
 
-        if (initialized) VT_CORE_LOG_TRACE("OpenGL Functions Successfully Loaded!\n");
+        if (initialized) VTCoreLogTrace("OpenGL Functions Successfully Loaded!\n");
         return initialized;
     }
 }

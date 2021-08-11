@@ -10,6 +10,24 @@
 
 namespace Vortex::Graphics
 {
+    Ref<IShader> IShader::Create(strview name, strview vertexPath, strview pixelPath, bool precompiled)
+    {
+        Ref<IShader> result;
+        switch (IRendererAPI::GetGraphicsAPI())
+        {
+            case GraphicsAPI::OpenGL46:
+                result = CreateRef<GL46Shader>(name, vertexPath, pixelPath, precompiled);
+                break;
+            case GraphicsAPI::None:
+
+            default:
+                result = nullptr;
+        }
+
+        VT_CORE_ASSERT_MSG(result, "Graphics API not Supported!");
+        return result;
+    }
+
     Ref<IShader> IShader::Create(std::string_view vertexPath, std::string_view pixelPath, bool precompiled)
     {
         Ref<IShader> result;
@@ -25,6 +43,7 @@ namespace Vortex::Graphics
                 break;
         }
 
+        VT_CORE_ASSERT_MSG(result, "Graphics API not Supported!");
         return result;
     }
 }

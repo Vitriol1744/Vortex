@@ -50,7 +50,7 @@ namespace Vortex::Graphics
         glBindVertexArray(0);
     }
 
-    GLvoid GL46VertexArray::AddVertexBuffer(Ref<IVertexBuffer> vertexBuffer)
+    GLvoid GL46VertexArray::AddVertexBuffer(const Ref<IVertexBuffer>& vertexBuffer)
     {
         Bind();
         vertexBuffer->Bind();
@@ -98,7 +98,7 @@ namespace Vortex::Graphics
         }
     }
 
-    GLvoid GL46VertexArray::SetIndexBuffer(Ref<IIndexBuffer> indexBuffer)
+    GLvoid GL46VertexArray::SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer)
     {
         Bind();
         indexBuffer->Bind();
