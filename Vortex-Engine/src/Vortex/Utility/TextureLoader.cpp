@@ -33,15 +33,15 @@ namespace Vortex::Utility
         int32 importantColors;
     };
 
-    Scope<Pixel[]> TextureLoader::LoadTexture(std::string_view path)
+    Scope<Pixel[]> TextureLoader::LoadTexture(std::string_view path, uint32& width, uint32& height, uint8& channels)
     {
-        return LoadPNG(path);
+        return LoadBMP(path, width, height, channels);
     }
 
-    Scope<Pixel[]> TextureLoader::LoadBMP(std::string_view path)
+    Scope<Pixel[]> TextureLoader::LoadBMP(std::string_view path, uint32& width, uint32& height, uint8& channels)
     {
         std::ifstream ifs(path.data(), std::ios::binary);
-        if (!ifs) VT_CORE_LOG_WARN("Failed to Open BMP file at \"{}\"", path);
+        if (!ifs) VTCoreLogWarn("Failed to Open BMP file at \"{}\"", path);
         
         Scope<Pixel[]> pixels;
         
@@ -52,12 +52,13 @@ namespace Vortex::Utility
         ifs.read((char*)&dibHeader, sizeof(dibHeader));
         if (bmpHeader.signature != 0x4D42)
         {
-            VT_CORE_LOG_WARN("File at path: {} is not BMP file!", path.data());
+            VTCoreLogWarn("File at path: {} is not BMP file!", path.data());
             return nullptr;
         };
         
         pixels = CreateScope<Pixel[]>(dibHeader.imageSize);
-        ifs.seekg(bmpHeader.offset, std::ios_base::beg);
+        ifs.seekg(bmpHeader.offset);
+        ifs.read((char*)pixels.get(), dibHeader.imageSize);
     
         // Channels have to be swapped because bitmap has BGR format.
         uint8 temp = 0;
@@ -68,10 +69,12 @@ namespace Vortex::Utility
             pixels[i + 2] = temp;
         }
 
+        width = dibHeader.width;
+        height = dibHeader.height;
+        channels = 3;
         return pixels;
     }
-
-    Scope<Pixel[]> TextureLoader::LoadPNG(std::string_view path)
+    Scope<Pixel[]> TextureLoader::LoadPNG(std::string_view path, uint32& width, uint32& height, uint8& channels)
     {
         VT_CORE_ASSERT_MSG(false, "BMP Files are not supported!");
         return nullptr;

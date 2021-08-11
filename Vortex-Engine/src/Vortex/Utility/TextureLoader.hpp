@@ -14,11 +14,10 @@ namespace Vortex::Utility
     class VT_API TextureLoader
     {
         public:
-            Scope<Pixel[]> LoadTexture(std::string_view path);
-
-        private:
-            Scope<Pixel[]> LoadBMP(std::string_view path);
-            Scope<Pixel[]> LoadPNG(std::string_view path);
+            static Scope<Pixel[]> LoadTexture(std::string_view path, uint32& width, uint32& height, uint8& channels);
+            
+            static Scope<Pixel[]> LoadBMP(std::string_view path, uint32& width, uint32& height, uint8& channels);
+            static Scope<Pixel[]> LoadPNG(std::string_view path, uint32& width, uint32& height, uint8& channels);
     };
 }
 
