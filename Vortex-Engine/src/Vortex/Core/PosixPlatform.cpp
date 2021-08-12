@@ -32,7 +32,8 @@ namespace Vortex::Platform
     }
     void Sleep(float64 seconds)
     {
-        usleep(Timestep(seconds).Microseconds());
+        if (seconds <= 0) return;
+        //usleep(Timestep(seconds).Microseconds());
     }
 }
 #endif

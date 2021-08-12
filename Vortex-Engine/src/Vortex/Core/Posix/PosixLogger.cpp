@@ -17,7 +17,7 @@ namespace Vortex
     
     void LoggerImpl::Log(LogLevel level, std::string_view formattedString)
     {
-        // Subtract 1 from size because, we don't want to print null terminator character.
+        // Subtract 1 from size, because we don't want to print null terminator character.
         ::write(STDOUT_FILENO, "\u001b[0m", sizeof("\u001b[0m") - 1);
         switch (level)
         {

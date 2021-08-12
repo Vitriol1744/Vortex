@@ -11,6 +11,8 @@
 #include "Vortex/Utility/AudioLoader.hpp"
 #include "Vortex/Input/Gamepad.hpp"
 
+#include <iostream>
+
 namespace Vortex
 {
     using namespace Audio;
@@ -21,7 +23,7 @@ namespace Vortex
     {
         VT_CORE_ASSERT_MSG(instance == nullptr, "Engine can only have 1 instance!");
         instance = this;
-        app = CreateApplication(arguments);
+        this->arguments = arguments;
     }
 
     void Engine::Initialize()
@@ -31,9 +33,8 @@ namespace Vortex
         Platform::Internal::Initialize();
         Time::Instance(); // Initialize Time!
         AudioManager::Initialize();
-        framerateLimit = 60;
         VTCoreLogInfo("");
-
+        app = CreateApplication(arguments);
         VTCoreLogInfo("Arguments: ");
         for (int i = 0; i < arguments.size(); i++) VTCoreLogInfo("Arg[{}]: {}", i, arguments[i]);
         VTCoreLogInfo("");
@@ -54,6 +55,9 @@ namespace Vortex
         //glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 
         app->Initialize();
+        #pragma clang diagnostic push
+        #pragma ide diagnostic ignored "EndlessLoop"
+        #pragma ide diagnostic ignored "ConstantConditionsOC"
         while (running)
         {
             //Gamepad::PollInput();
@@ -75,6 +79,7 @@ namespace Vortex
             frames++;
             EventSystem::Instance()->PollEvents();
         }
+        #pragma clang diagnostic pop
         app->Shutdown();
     }
 }

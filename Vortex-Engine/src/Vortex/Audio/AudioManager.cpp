@@ -18,7 +18,6 @@ namespace Vortex::Audio
         {
             if (context) alcDestroyContext(context);
             if (device) alcCloseDevice(device);
-            VTCoreLogInfo("Device Destroyed!");
         }
 
         ALCdevice* device;

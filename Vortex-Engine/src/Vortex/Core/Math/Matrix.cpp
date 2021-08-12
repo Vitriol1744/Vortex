@@ -26,125 +26,124 @@ namespace Vortex::Math
 
     Matrix4x4f& Matrix4x4f::Invert()
     {
-        float temp[16];
+        float32 temp[16];
 
-        temp[0] = data[5] * data[10] * data[15] -
-                data[5] * data[11] * data[14] -
-                data[9] * data[6] * data[15] +
-                data[9] * data[7] * data[14] +
-                data[13] * data[6] * data[11] -
-                data[13] * data[7] * data[10];
+        temp[0] =   data[5]  * data[10] * data[15] -
+                    data[5]  * data[11] * data[14] -
+                    data[9]  * data[6]  * data[15] +
+                    data[9]  * data[7]  * data[14] +
+                    data[13] * data[6]  * data[11] -
+                    data[13] * data[7]  * data[10];
 
-        temp[4] = -data[4] * data[10] * data[15] +
-                data[4] * data[11] * data[14] +
-                data[8] * data[6] * data[15] -
-                data[8] * data[7] * data[14] -
-                data[12] * data[6] * data[11] +
-                data[12] * data[7] * data[10];
+        temp[4] =  -data[4]  * data[10] * data[15] +
+                    data[4]  * data[11] * data[14] +
+                    data[8]  * data[6]  * data[15] -
+                    data[8]  * data[7]  * data[14] -
+                    data[12] * data[6]  * data[11] +
+                    data[12] * data[7]  * data[10];
 
-        temp[8] = data[4] * data[9] * data[15] -
-                data[4] * data[11] * data[13] -
-                data[8] * data[5] * data[15] +
-                data[8] * data[7] * data[13] +
-                data[12] * data[5] * data[11] -
-                data[12] * data[7] * data[9];
+        temp[8] =   data[4]  * data[9]  * data[15] -
+                    data[4]  * data[11] * data[13] -
+                    data[8]  * data[5]  * data[15] +
+                    data[8]  * data[7]  * data[13] +
+                    data[12] * data[5]  * data[11] -
+                    data[12] * data[7]  * data[9];
 
-        temp[12] = -data[4] * data[9] * data[14] +
-                data[4] * data[10] * data[13] +
-                data[8] * data[5] * data[14] -
-                data[8] * data[6] * data[13] -
-                data[12] * data[5] * data[10] +
-                data[12] * data[6] * data[9];
+        temp[12] = -data[4]  * data[9]  * data[14] +
+                    data[4]  * data[10] * data[13] +
+                    data[8]  * data[5]  * data[14] -
+                    data[8]  * data[6]  * data[13] -
+                    data[12] * data[5]  * data[10] +
+                    data[12] * data[6]  * data[9];
 
-        temp[1] = -data[1] * data[10] * data[15] +
-                data[1] * data[11] * data[14] +
-                data[9] * data[2] * data[15] -
-                data[9] * data[3] * data[14] -
-                data[13] * data[2] * data[11] +
-                data[13] * data[3] * data[10];
+        temp[1] =  -data[1]  * data[10] * data[15] +
+                    data[1]  * data[11] * data[14] +
+                    data[9]  * data[2]  * data[15] -
+                    data[9]  * data[3]  * data[14] -
+                    data[13] * data[2]  * data[11] +
+                    data[13] * data[3]  * data[10];
 
-        temp[5] = data[0] * data[10] * data[15] -
-                data[0] * data[11] * data[14] -
-                data[8] * data[2] * data[15] +
-                data[8] * data[3] * data[14] +
-                data[12] * data[2] * data[11] -
-                data[12] * data[3] * data[10];
+        temp[5] =   data[0]  * data[10] * data[15] -
+                    data[0]  * data[11] * data[14] -
+                    data[8]  * data[2]  * data[15] +
+                    data[8]  * data[3]  * data[14] +
+                    data[12] * data[2]  * data[11] -
+                    data[12] * data[3]  * data[10];
 
-        temp[9] = -data[0] * data[9] * data[15] +
-                data[0] * data[11] * data[13] +
-                data[8] * data[1] * data[15] -
-                data[8] * data[3] * data[13] -
-                data[12] * data[1] * data[11] +
-                data[12] * data[3] * data[9];
+        temp[9] =  -data[0]  * data[9]  * data[15] +
+                    data[0]  * data[11] * data[13] +
+                    data[8]  * data[1]  * data[15] -
+                    data[8]  * data[3]  * data[13] -
+                    data[12] * data[1]  * data[11] +
+                    data[12] * data[3]  * data[9];
 
-        temp[13] = data[0] * data[9] * data[14] -
-                data[0] * data[10] * data[13] -
-                data[8] * data[1] * data[14] +
-                data[8] * data[2] * data[13] +
-                data[12] * data[1] * data[10] -
-                data[12] * data[2] * data[9];
+        temp[13] =  data[0]  * data[9]  * data[14] -
+                    data[0]  * data[10] * data[13] -
+                    data[8]  * data[1]  * data[14] +
+                    data[8]  * data[2]  * data[13] +
+                    data[12] * data[1]  * data[10] -
+                    data[12] * data[2]  * data[9];
 
-        temp[2] = data[1] * data[6] * data[15] -
-                data[1] * data[7] * data[14] -
-                data[5] * data[2] * data[15] +
-                data[5] * data[3] * data[14] +
-                data[13] * data[2] * data[7] -
-                data[13] * data[3] * data[6];
+        temp[2] =   data[1]  * data[6]  * data[15] -
+                    data[1]  * data[7]  * data[14] -
+                    data[5]  * data[2]  * data[15] +
+                    data[5]  * data[3]  * data[14] +
+                    data[13] * data[2]  * data[7]  -
+                    data[13] * data[3]  * data[6];
 
-        temp[6] = -data[0] * data[6] * data[15] +
-                data[0] * data[7] * data[14] +
-                data[4] * data[2] * data[15] -
-                data[4] * data[3] * data[14] -
-                data[12] * data[2] * data[7] +
-                data[12] * data[3] * data[6];
+        temp[6] =  -data[0]  * data[6]  * data[15] +
+                    data[0]  * data[7]  * data[14] +
+                    data[4]  * data[2]  * data[15] -
+                    data[4]  * data[3]  * data[14] -
+                    data[12] * data[2]  * data[7]  +
+                    data[12] * data[3]  * data[6];
 
-        temp[10] = data[0] * data[5] * data[15] -
-                data[0] * data[7] * data[13] -
-                data[4] * data[1] * data[15] +
-                data[4] * data[3] * data[13] +
-                data[12] * data[1] * data[7] -
-                data[12] * data[3] * data[5];
+        temp[10] =  data[0]  * data[5]  * data[15] -
+                    data[0]  * data[7]  * data[13] -
+                    data[4]  * data[1]  * data[15] +
+                    data[4]  * data[3]  * data[13] +
+                    data[12] * data[1]  * data[7]  -
+                    data[12] * data[3]  * data[5];
 
-        temp[14] = -data[0] * data[5] * data[14] +
-                data[0] * data[6] * data[13] +
-                data[4] * data[1] * data[14] -
-                data[4] * data[2] * data[13] -
-                data[12] * data[1] * data[6] +
-                data[12] * data[2] * data[5];
+        temp[14] = -data[0]  * data[5]  * data[14] +
+                    data[0]  * data[6]  * data[13] +
+                    data[4]  * data[1]  * data[14] -
+                    data[4]  * data[2]  * data[13] -
+                    data[12] * data[1]  * data[6]  +
+                    data[12] * data[2]  * data[5];
 
-        temp[3] = -data[1] * data[6] * data[11] +
-                data[1] * data[7] * data[10] +
-                data[5] * data[2] * data[11] -
-                data[5] * data[3] * data[10] -
-                data[9] * data[2] * data[7] +
-                data[9] * data[3] * data[6];
+        temp[3] =  -data[1]  * data[6]  * data[11] +
+                    data[1]  * data[7]  * data[10] +
+                    data[5]  * data[2]  * data[11] -
+                    data[5]  * data[3]  * data[10] -
+                    data[9]  * data[2]  * data[7]  +
+                    data[9]  * data[3]  * data[6];
 
-        temp[7] = data[0] * data[6] * data[11] -
-                data[0] * data[7] * data[10] -
-                data[4] * data[2] * data[11] +
-                data[4] * data[3] * data[10] +
-                data[8] * data[2] * data[7] -
-                data[8] * data[3] * data[6];
+        temp[7] =   data[0]  * data[6]  * data[11] -
+                    data[0]  * data[7]  * data[10] -
+                    data[4]  * data[2]  * data[11] +
+                    data[4]  * data[3]  * data[10] +
+                    data[8]  * data[2]  * data[7]  -
+                    data[8]  * data[3]  * data[6];
 
-        temp[11] = -data[0] * data[5] * data[11] +
-                data[0] * data[7] * data[9] +
-                data[4] * data[1] * data[11] -
-                data[4] * data[3] * data[9] -
-                data[8] * data[1] * data[7] +
-                data[8] * data[3] * data[5];
+        temp[11] = -data[0]  * data[5]  * data[11] +
+                    data[0]  * data[7]  * data[9]  +
+                    data[4]  * data[1]  * data[11] -
+                    data[4]  * data[3]  * data[9]  -
+                    data[8]  * data[1]  * data[7]  +
+                    data[8]  * data[3]  * data[5];
 
-        temp[15] = data[0] * data[5] * data[10] -
-                data[0] * data[6] * data[9] -
-                data[4] * data[1] * data[10] +
-                data[4] * data[2] * data[9] +
-                data[8] * data[1] * data[6] -
-                data[8] * data[2] * data[5];
+        temp[15] =  data[0]  * data[5]  * data[10] -
+                    data[0]  * data[6]  * data[9]  -
+                    data[4]  * data[1]  * data[10] +
+                    data[4]  * data[2]  * data[9]  +
+                    data[8]  * data[1]  * data[6]  -
+                    data[8]  * data[2]  * data[5];
 
-        float determinant = data[0] * temp[0] + data[1] * temp[4] + data[2] * temp[8] + data[3] * temp[12];
+        float32 determinant = data[0] * temp[0] + data[1] * temp[4] + data[2] * temp[8] + data[3] * temp[12];
         determinant = 1.0f / determinant;
 
-        for (int32 i = 0; i < 4 * 4; i++)
-            data[i] = temp[i] * determinant;
+        for (int32 i = 0; i < 4 * 4; i++) data[i] = temp[i] * determinant;
 
         return *this;
     }
@@ -267,11 +266,11 @@ namespace Vortex::Math
 
         float32 q = 1.0f / (float32)Tan(ToRadians(0.5f * fov));
 
-        result.data[0 + 0 * 4] = q/aspectRatio;
+        result.data[0 + 0 * 4] = q / aspectRatio;
         result.data[1 + 1 * 4] = q;
-        result.data[2 + 2 * 4] = (near+far)/(near-far);
+        result.data[2 + 2 * 4] = (near + far) / (near - far);
         result.data[2 + 3 * 4] = -1.0f;
-        result.data[3 + 2 * 4] = (2.0f*near*far)/(near-far);
+        result.data[3 + 2 * 4] = (2.0f * near * far) / (near - far);
 
         return result;
     }

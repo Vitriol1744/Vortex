@@ -12,6 +12,7 @@ set (CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/OpenAL)
+add_subdirectory (vendor/glm)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DDEBUG)
@@ -22,8 +23,9 @@ add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (WIN32_EXECUTABLE TRUE)
 set (VENDOR "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
-set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt")
-set (LIBS "OpenGL::GL" "fmt" "OpenAL")
+set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt" "${VENDOR}/glm")
+
+set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm")
 file (GLOB_RECURSE SOURCES "src/*/*.cpp")
 
 if (UNIX)

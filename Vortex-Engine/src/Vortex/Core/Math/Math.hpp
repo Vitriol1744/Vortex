@@ -6,4 +6,5 @@
 #include "Vortex/Core/Math/MathCommon.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
+#include "Vortex/Core/Math/Quaternion.hpp"
 #include "Vortex/Core/Math/Rectangle.hpp"
