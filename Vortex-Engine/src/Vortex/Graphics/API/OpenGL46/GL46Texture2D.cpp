@@ -1,5 +1,5 @@
 //
-// Created by vitriol1744 on 7/26/21.
+// Created by Vitriol1744 on 26.07.2021.
 //
 #include "GL46Texture2D.hpp"
 

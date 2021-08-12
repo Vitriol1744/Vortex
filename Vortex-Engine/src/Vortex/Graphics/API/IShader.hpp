@@ -5,6 +5,10 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 namespace Vortex
 {
     namespace Graphics
@@ -19,7 +23,7 @@ namespace Vortex
 
                 virtual HashedString GetName() const noexcept = 0;
 
-                virtual void Reload(strview vertexPath, strview pixelPath, bool precompiled) noexcept = 0;
+                virtual void Reload(strview vertexPath, strview pixelPath, bool precompiled) = 0;
                 virtual void Load(strview vertexPath, strview pixelPath, bool precompiled) = 0;
 
                 virtual void SetUniform1i(strview name, int32 value) const = 0;
@@ -27,7 +31,7 @@ namespace Vortex
                 virtual void SetUniform2f(strview name, Math::Vec2 vec) const = 0;
                 virtual void SetUniform3f(strview name, Math::Vec3 vec) const = 0;
                 virtual void SetUniform4f(strview name, Math::Vec4 vec) const = 0;
-                virtual void SetUniformMat4f(strview name, Math::Mat4 mat) const = 0;
+                virtual void SetUniformMat4f(strview name, glm::mat4 mat) const = 0;
 
                 static Ref<IShader> Create(strview name, strview vertexPath, strview pixelPath, bool precompiled = true);
                 static Ref<IShader> Create(strview vertexPath, strview pixelPath, bool precompiled = true);

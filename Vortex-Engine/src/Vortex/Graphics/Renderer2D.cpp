@@ -3,6 +3,7 @@
 //
 #include "Renderer2D.hpp"
 
+#include "Vortex/Graphics/API/IShader.hpp"
 #include "Vortex/Graphics/API/IVertexArray.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
 
@@ -14,9 +15,9 @@ namespace Vortex::Graphics
     {
         struct Vertex
         {
-            Math::Vec3 position;
-            Math::Vec4 color;
-            Math::Vec2 texCoords;
+            glm::vec3 position;
+            glm::vec4 color;
+            glm::vec2 texCoords;
             float32 textureIndex;
         };
 
@@ -24,7 +25,7 @@ namespace Vortex::Graphics
         constexpr uint32 maxVerticesCount   = maxSpritesCount * 4;
         constexpr uint32 maxIndicesCount    = maxSpritesCount * 6;
 
-        Math::Vec4 defaultPositions[] =
+        glm::vec4 defaultPositions[] =
         {
             { -0.5f,  0.5f, 0.0f, 1.0f  },
             {  0.5f,  0.5f, 0.0f, 1.0f  },
@@ -32,6 +33,7 @@ namespace Vortex::Graphics
             {  0.5f, -0.5f, 0.0f, 1.0f  }
         };
 
+        Ref<IShader> shader = nullptr;
         Ref<IVertexArray> mesh = nullptr;
         Ref<IVertexBuffer> vertexBuffer = nullptr;
         Ref<IIndexBuffer> indexBuffer = nullptr;
@@ -41,12 +43,24 @@ namespace Vortex::Graphics
         uint32* indices = nullptr;
         uint32 indicesCount = 0;
         bool initialized = false;
+
+        glm::mat4 viewProjectionMatrix;
+    }
+
+    void Renderer2D::BeginScene(const Camera& camera)
+    {
+        viewProjectionMatrix = camera.GetViewProjectionMatrix();
+    }
+    void Renderer2D::EndScene()
+    {
+        viewProjectionMatrix = glm::mat4(1.0f);
     }
 
     void Renderer2D::Initialize()
     {
         if (initialized) return;
         mesh = IVertexArray::Create();
+        shader = IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
         vertexBuffer = IVertexBuffer::Create(maxVerticesCount * sizeof(Vertex));
 
         if (!vertices)
@@ -84,7 +98,6 @@ namespace Vortex::Graphics
 
         initialized = true;
     }
-
     void Renderer2D::Shutdown()
     {
         if (!initialized) return;
@@ -103,11 +116,11 @@ namespace Vortex::Graphics
             Submit();
         }
 
-        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
+        glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
 
         for (int32 i = 0; i < 4; i++)
         {
-            current->position = (defaultPositions[i] * sprite.transform).xyz;
+            current->position = sprite.transform * defaultPositions[i];
             current->color = sprite.color;
             current->texCoords = textureCoords[i];
             current->textureIndex = 0;
@@ -116,19 +129,15 @@ namespace Vortex::Graphics
 
         indicesCount += 6;
     }
-    
-    void Renderer2D::DrawQuad(const Vec2& position, const Vec2& size, const Vec4& color)
+    void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
     {
-        if (indicesCount >= maxIndicesCount)
-        {
-            Submit();
-        }
+        if (indicesCount >= maxIndicesCount) Submit();
 
-        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
+        glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
     
         for (int32 i = 0; i < 4; i++)
         {
-            current->position = Math::Vec3((defaultPositions[i]).xy + position, 0.0f);
+            current->position = glm::vec4(position, 0, 1) * defaultPositions[i];
             current->color = color;
             current->texCoords = textureCoords[i];
             current->textureIndex = 0;
@@ -141,7 +150,9 @@ namespace Vortex::Graphics
     void Renderer2D::Submit()
     {
         mesh->Bind();
-        vertexBuffer->Bind();
+        shader->Bind();
+        
+        shader->SetUniformMat4f("u_ViewProjection", viewProjectionMatrix);
         uint32 dataSize = (uint32)((uint8*)current - (uint8*)vertices);
         vertexBuffer->SetData(vertices, dataSize);
 

@@ -5,6 +5,7 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include "Vortex/Graphics/Camera.hpp"
 #include "Vortex/Graphics/Sprite.hpp"
 #include "Vortex/Graphics/API/IVertexArray.hpp"
 
@@ -15,11 +16,14 @@ namespace Vortex::Graphics
     class VT_API Renderer2D
     {
         public:
+            static void BeginScene(const Camera& camera);
+            static void EndScene();
+
             static void Initialize();
             static void Shutdown();
             
             static void DrawSprite(Sprite sprite);
-            static void DrawQuad(const Math::Vec2& position, const Math::Vec2& size, const Math::Vec4& color);
+            static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
             
             static void Submit();
     };

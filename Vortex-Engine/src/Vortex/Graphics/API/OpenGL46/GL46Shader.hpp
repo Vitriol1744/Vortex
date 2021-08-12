@@ -24,7 +24,7 @@ namespace Vortex::Graphics
             GLvoid Bind() const noexcept override;
             GLvoid Unbind() const noexcept override;
 
-            GLvoid Reload(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) noexcept override;
+            GLvoid Reload(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) override;
             GLvoid Load(std::string_view vertexPath, std::string_view fragmentPath, bool precompiled) override;
 
             inline HashedString GetName() const noexcept override { return name; }
@@ -34,7 +34,7 @@ namespace Vortex::Graphics
             GLvoid SetUniform2f(strview name, Math::Vec2 vec) const override;
             GLvoid SetUniform3f(strview name, Math::Vec3 vec) const override;
             GLvoid SetUniform4f(strview name, Math::Vec4 vec) const override;
-            GLvoid SetUniformMat4f(strview name, Math::Mat4 mat) const override;
+            virtual GLvoid SetUniformMat4f(strview name, glm::mat4 mat) const override;
 
         private:
             GLuint id = 0;

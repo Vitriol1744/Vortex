@@ -347,8 +347,8 @@ namespace Vortex
         Atom u8string = XInternAtom(display, "UTF8_STRING", false);
         Atom wmIconName = XInternAtom(display, "_NET_WM_ICON_NAME", false);
 
-        Xutf8SetWMProperties(display, window, title.data(), title.data(), NULL, 0, NULL, NULL, NULL);
-
+        //Xutf8SetWMProperties(display, window, title.data(), title.data(), NULL, 0, NULL, NULL, NULL);
+        
         XChangeProperty(display,  window, wmName, u8string, 8, PropModeReplace, (unsigned char*) title.data(), title.size());
         XChangeProperty(display,  window, wmIconName, u8string, 8, PropModeReplace, (unsigned char*)title.data(), title.size());
 
@@ -638,17 +638,14 @@ namespace Vortex
             {
                 static Atom wmProtocols = XInternAtom(display, "WM_PROTOCOLS", false);
 
-                VTCoreLogInfo("ClientMEssage!");
                 if (event.xclient.message_type == wmProtocols)
                 {
-                    VTCoreLogInfo("WM Protocols!");
                     static Atom wmDeleteWindow  = XInternAtom(display, "WM_DELETE_WINDOW", false);
                     static Atom wmPing          = XInternAtom(display, "_NET_WM_PING", true);
 
                     // Window Closed Event
                     if (event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmDeleteWindow))
                     {
-                        VTCoreLogInfo("Window Closed!");
                         windowClosedEvent();
                         data.isOpen = false;
                     }

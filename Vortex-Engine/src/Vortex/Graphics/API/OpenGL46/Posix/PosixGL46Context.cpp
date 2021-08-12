@@ -59,12 +59,8 @@ namespace Vortex::Graphics
 
         glXMakeCurrent(display, window, context);
     
-        GLint major = 0, minor = 0;
-        glGetIntegerv(GL_MAJOR_VERSION, &major);
-        glGetIntegerv(GL_MINOR_VERSION, &minor);
-    
         VTCoreLogTrace("OpenGL Context Created!");
-        VTCoreLogInfo("Version: {}.{}", major, minor);
+        VTCoreLogInfo("Version: {}", glGetString(GL_VERSION));
         VTCoreLogInfo("Vendor: {}", glGetString(GL_VENDOR));
         VTCoreLogInfo("Renderer: {}", glGetString(GL_RENDERER));
         VTCoreLogInfo("Shading Language Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));

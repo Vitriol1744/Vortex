@@ -5,6 +5,10 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 namespace Vortex::Graphics
 {
     class VT_API Sprite
@@ -12,15 +16,15 @@ namespace Vortex::Graphics
         public:
             Sprite();
 
-            void Move(Math::Vec2 offset);
+            void Move(glm::vec2 offset);
             void Move(float32 x, float32 y);
             void Restart();
             
-            inline void SetTransform(Math::Mat4& transform) { this->transform = transform; }
-            inline void SetColor(const Math::Vec4& color) { this->color = color; }
+            inline void SetTransform(glm::mat4& transform) { this->transform = transform; }
+            inline void SetColor(const glm::vec4& color) { this->color = color; }
 
-            Math::Mat4 transform;
-            Math::Vec4 color;
+            glm::mat4 transform;
+            glm::vec4 color;
     };
 }
 

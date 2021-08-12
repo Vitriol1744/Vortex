@@ -7,6 +7,10 @@
 
 #include <vector>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 namespace Vortex::Graphics
 {
     enum class CameraProjection
@@ -26,21 +30,24 @@ namespace Vortex::Graphics
             void CreatePerspective(float32 fov, float32 aspectRatio, float32 near, float32 far);
 
             inline CameraProjection GetProjection() const { return cameraProjection; }
-            inline Math::Vec3 GetPosition() const { return position; }
-            inline Math::Mat4 GetProjectionMatrix() const { return projection; }
-            inline Math::Mat4 GetViewMatrix() const { return view; }
-            inline Math::Mat4 GetViewProjectionMatrix() const { return viewProjection; }
+            inline glm::vec3 GetPosition() const { return position; }
+            inline glm::vec3 GetScale() const { return scale; }
+            inline glm::mat4 GetProjectionMatrix() const { return projection; }
+            inline glm::mat4 GetViewMatrix() const { return view; }
+            inline glm::mat4 GetViewProjectionMatrix() const { return viewProjection; }
 
-            inline void SetPosition(Math::Vec3 position) { this->position = position; Update(); }
-            
+            inline void SetPosition(glm::vec3 position) { this->position = position; Update(); }
+            inline void SetScale(glm::vec3 scale) { this->scale = scale; Update(); }
+
         private:
             CameraProjection cameraProjection;
             bool updated = false;
-            Math::Vec3 position = { 0, 0, 0 };
+            glm::vec3 position = {0.0f, 0.0f, 0.0f};
+            glm::vec3 scale = { 1.0f, 1.0f, 1.0f};
 
-            Math::Mat4 projection;
-            Math::Mat4 view;
-            Math::Mat4 viewProjection;
+            glm::mat4 projection = glm::mat4(1.0f);
+            glm::mat4 view = glm::mat4(1.0f);
+            glm::mat4 viewProjection = glm::mat4(1.0f);
 
             void Update();
             

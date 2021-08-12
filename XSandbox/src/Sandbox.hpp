@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <Vortex/Graphics/Camera.hpp>
 #include "Vortex.hpp"
 
 #include "Vortex/Graphics/Sprite.hpp"
@@ -27,13 +28,12 @@ class Sandbox : public Vortex::Application
         void Render() override;
 
         void OnMouseMove(Math::Vec2);
+        void OnMouseScroll(Math::Vec2);
 
     private:
-        const int32 width  = 800;
-        const int32 height = 600;
+        int32 width  = 800;
+        int32 height = 600;
         int spritesCount = 100;
-
-        Ref<VTGraphics::IShader> shader1;
 
         SoundBuffer buffer{false};
         AudioSource source{false};
@@ -42,10 +42,9 @@ class Sandbox : public Vortex::Application
 
         Ref<IWindow> window;
         Ref<ITexture> texture;
-
-        Math::Mat4 model;
-        Math::Mat4 view;
-        Math::Mat4 projection;
+        Camera camera;
+        glm::vec3 cameraPosition;
+        glm::vec3 cameraScale;
 
         float y{}, y2 = 1;
         float angle = 0.0f;

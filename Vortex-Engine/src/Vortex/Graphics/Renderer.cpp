@@ -10,7 +10,7 @@ namespace Vortex::Graphics
     using namespace Math;
     namespace
     {
-        Mat4 viewProjectionMatrix;
+        glm::mat4 viewProjectionMatrix;
     }
 
     void Renderer::BeginScene(const Camera& camera)
@@ -22,7 +22,7 @@ namespace Vortex::Graphics
         
     }
 
-    void Renderer::DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& mesh, Math::Mat4 transform)
+    void Renderer::DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& mesh, glm::mat4 transform)
     {
         shader->Bind();
         shader->SetUniformMat4f("u_ViewProjection", viewProjectionMatrix);

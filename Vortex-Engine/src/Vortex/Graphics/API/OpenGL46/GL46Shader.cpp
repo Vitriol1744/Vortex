@@ -40,7 +40,7 @@ namespace Vortex::Graphics
         glUseProgram(0);
     }
 
-    GLvoid GL46Shader::Reload(strview vertexPath, strview fragmentPath, bool precompiled) noexcept
+    GLvoid GL46Shader::Reload(strview vertexPath, strview fragmentPath, bool precompiled)
     {
         glDeleteProgram(id);
         Load(vertexPath, fragmentPath, precompiled);
@@ -134,9 +134,9 @@ namespace Vortex::Graphics
     {
         glUniform4f(GetUniformLocation(name.data()), vec.x, vec.y, vec.z, vec.w);
     }
-    GLvoid GL46Shader::SetUniformMat4f(strview name, Math::Mat4 mat) const
+    GLvoid GL46Shader::SetUniformMat4f(strview name, glm::mat4 mat) const
     {
-        glUniformMatrix4fv(GetUniformLocation(name.data()), 1, GL_TRUE, mat.data);
+        glUniformMatrix4fv(GetUniformLocation(name.data()), 1, GL_FALSE, glm::value_ptr(mat));
     }
 
     GLuint GL46Shader::GetUniformLocation(const GLchar* uniform) const
