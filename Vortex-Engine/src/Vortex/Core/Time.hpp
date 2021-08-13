@@ -8,7 +8,7 @@
 
 namespace Vortex
 {
-    class VT_API Time : public Singleton<Time>
+    class Time : public Singleton<Time>
     {
         public:
             friend class Engine;

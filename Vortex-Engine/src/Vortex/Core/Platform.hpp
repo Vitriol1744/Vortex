@@ -38,14 +38,31 @@
     #define VT_RELEASE
 #endif
 
-namespace Vortex::Platform
+namespace Vortex
 {
-    namespace Internal
+    enum class LogLevel;
+    namespace Platform
     {
-        bool Initialize();
-        bool Shutdown();
-    }
+        namespace Internal
+        {
+            bool Initialize();
+            bool Shutdown();
+        }
 
-    float64 GetCurrentTime();
-    void Sleep(float64 seconds);
+        enum class ConsoleTextColor
+        {
+            Default,
+            White,
+            Black,
+            Green,
+            Cyan,
+            Yellow,
+            Red
+        };
+
+        float64 GetCurrentTime();
+        void Sleep(float64 seconds);
+        void Print(const char* text, size_t bytes);
+        void SetConsoleTextColor(ConsoleTextColor foregroundColor, ConsoleTextColor backgroundColor);
+    }
 }

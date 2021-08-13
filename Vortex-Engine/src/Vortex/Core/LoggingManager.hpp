@@ -14,7 +14,7 @@
 
 namespace Vortex
 {
-    class VT_API LoggingManager : public Singleton<LoggingManager>
+    class LoggingManager : public Singleton<LoggingManager>
     {
         public:
             LoggingManager();
@@ -26,6 +26,8 @@ namespace Vortex
             Ref<Logger> coreLogger;
             Ref<Logger> logger;
     };
+
+    template class VT_API Singleton<LoggingManager>;
 }
 
 #if defined(VT_DEBUG)
