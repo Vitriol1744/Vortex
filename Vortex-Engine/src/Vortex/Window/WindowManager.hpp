@@ -12,7 +12,7 @@
 
 namespace Vortex
 {
-    class VT_API WindowManager : public Singleton<WindowManager>
+    class WindowManager : public Singleton<WindowManager>
     {
         public:
             WindowManager() = default;

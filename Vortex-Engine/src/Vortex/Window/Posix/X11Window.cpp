@@ -7,8 +7,6 @@
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
 
-#include <cstdio>
-
 #ifdef VT_PLATFORM_LINUX
 #include "X11Window.hpp"
 #include <X11/keysym.h>
@@ -151,8 +149,7 @@ namespace Vortex
                 case XK_Home:           return KeyCode::Home;
                 case XK_End:            return KeyCode::End;
 
-                default:
-                    return KeyCode::Unknown;
+                default:                return KeyCode::Unknown;
             }
         }
         #pragma clang diagnostic pop
@@ -569,46 +566,50 @@ namespace Vortex
         {
             case ButtonPress:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xbutton.window];
+                if (!window) return;
                 switch (event.xbutton.button)
                 {
                     case Button1:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Left, false);
-                        (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Left)] = true;
+                        window->mouseButtonPressedEvent(MouseCode::Left, false);
+                        window->buttons[static_cast<uint32>(MouseCode::Left)] = true;
                         break;
                     case Button2:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Middle, false);
-                        (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
+                        window->mouseButtonPressedEvent(MouseCode::Middle, false);
+                        window->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
                         break;
                     case Button3:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::Right, false);
-                        (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::Right)] = true;
+                        window->mouseButtonPressedEvent(MouseCode::Right, false);
+                        window->buttons[static_cast<uint32>(MouseCode::Right)] = true;
                         break;
                     case Button4:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({1, 0});
+                        window->mouseScrolledEvent({1, 0});
                         break;
                     case Button5:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({-1, 0});
+                        window->mouseScrolledEvent({-1, 0});
                         break;
                     case 6:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, 1});
+                        window->mouseScrolledEvent({0, 1});
                         break;
                     case 7:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseScrolledEvent({0, -1});
+                        window->mouseScrolledEvent({0, -1});
                         break;
                     case 8:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X1, false);
-                        (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X1)] = true;
+                        window->mouseButtonPressedEvent(MouseCode::X1, false);
+                        window->buttons[static_cast<uint32>(MouseCode::X1)] = true;
                         break;
                     case 9:
-                        (*GetWindowsMap())[event.xbutton.window]->mouseButtonPressedEvent(MouseCode::X2, false);
-                        (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(MouseCode::X2)] = true;
+                        window->mouseButtonPressedEvent(MouseCode::X2, false);
+                        window->buttons[static_cast<uint32>(MouseCode::X2)] = true;
                         break;
                 }
-                SetWMUserTime(event.xbutton.time);
+                window->SetWMUserTime(event.xbutton.time);
                 break;
             }
             case ButtonRelease:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xbutton.window];
+                if (!window) return;
                 MouseCode button = MouseCode::Unknown;
                 switch (event.xbutton.button)
                 {
@@ -629,13 +630,14 @@ namespace Vortex
                         break;
                 }
 
-                (*GetWindowsMap())[event.xbutton.window]->mouseButtonReleasedEvent(button);
-                (*GetWindowsMap())[event.xkey.window]->buttons[static_cast<uint32>(button)] = false;
-                
+                window->mouseButtonReleasedEvent(button);
+                window->buttons[static_cast<uint32>(button)] = false;
                 break;
             }
             case ClientMessage:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xclient.window];
+                if (!window) return;
                 static Atom wmProtocols = XInternAtom(display, "WM_PROTOCOLS", false);
 
                 if (event.xclient.message_type == wmProtocols)
@@ -646,8 +648,8 @@ namespace Vortex
                     // Window Closed Event
                     if (event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmDeleteWindow))
                     {
-                        windowClosedEvent();
-                        data.isOpen = false;
+                        window->windowClosedEvent();
+                        window->data.isOpen = false;
                     }
                     else if (wmPing && event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmPing))
                     {
@@ -661,29 +663,37 @@ namespace Vortex
             }
             case ConfigureNotify:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xconfigure.window];
+                if (!window) return;
                 // Window Resized Event
-                if (event.xconfigure.width != data.width || event.xconfigure.height != data.height)
+                if (event.xconfigure.width != window->data.width || event.xconfigure.height != window->data.height)
                 {
-                    windowResizedEvent(Math::Vec2u(event.xconfigure.width, event.xconfigure.height));
-                    data.width = event.xconfigure.width;
-                    data.height = event.xconfigure.height;
+                    window->windowResizedEvent(Math::Vec2u(event.xconfigure.width, event.xconfigure.height));
+                    window->data.width = event.xconfigure.width;
+                    window->data.height = event.xconfigure.height;
                 }
                 break;
             }
             case FocusIn:
             {
-                if (inputContext) XSetICFocus(inputContext);
-                focusChangedEvent(true);
+                WindowImpl* window = (*GetWindowsMap())[event.xfocus.window];
+                if (!window) return;
+                if (window->inputContext) XSetICFocus(window->inputContext);
+                window->focusChangedEvent(true);
                 break;
             }
             case FocusOut:
             {
-                if (inputContext) XUnsetICFocus(inputContext);
-                focusChangedEvent(false);
+                WindowImpl* window = (*GetWindowsMap())[event.xfocus.window];
+                if (!window) return;
+                if (window->inputContext) XUnsetICFocus(window->inputContext);
+                window->focusChangedEvent(false);
                 break;
             }
             case KeyPress:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xkey.window];
+                if (!window) return;
                 KeyCode key = KeyCode::Unknown;
                 for (int i = 0; i < 4; i++)
                 {
@@ -691,37 +701,39 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                (*GetWindowsMap())[event.xkey.window]->keyPressedEvent(key, 0);
-                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = true;
+                window->keyPressedEvent(key, 0);
+                window->keys[static_cast<uint32>(key)] = true;
 
                 if (!XFilterEvent(&event, 0L))
                 {
-                    if ((*GetWindowsMap())[event.xkey.window]->inputContext)
+                    if (window->inputContext)
                     {
                         Status status;
                         uint8  keyBuffer[16];
 
                         int32 length = Xutf8LookupString
-                                (
-                                        (*GetWindowsMap())[event.xkey.window]->inputContext,
-                                        &event.xkey,
-                                        reinterpret_cast<char*>(keyBuffer),
-                                        sizeof(keyBuffer),
-                                        nullptr,
-                                        &status
-                                        );
+                        (
+                            window->inputContext,
+                            &event.xkey,
+                            reinterpret_cast<char*>(keyBuffer),
+                            sizeof(keyBuffer),
+                            nullptr,
+                            &status
+                        );
 
                         if (length > 0)
                         {
-                            (*GetWindowsMap())[event.xkey.window]->keyTypedEvent(keyBuffer[0]);
+                            window->keyTypedEvent(keyBuffer[0]);
                         }
                     }
                 }
-                SetWMUserTime(event.xkey.time);
+                window->SetWMUserTime(event.xkey.time);
                 break;
             }
             case KeyRelease:
             {
+                WindowImpl* window = (*GetWindowsMap())[event.xkey.window];
+                if (!window) return;
                 KeyCode key = KeyCode::Unknown;
 
                 for (int i = 0; i < 4; i++)
@@ -730,22 +742,40 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                (*GetWindowsMap())[event.xkey.window]->keyReleasedEvent(key);
-                (*GetWindowsMap())[event.xkey.window]->keys[static_cast<uint32>(key)] = false;
+                window->keyReleasedEvent(key);
+                window->keys[static_cast<uint32>(key)] = false;
                 break;
             }
             case MotionNotify:
             {
-                (*GetWindowsMap())[event.xbutton.window]->mouseMovedEvent({(float)event.xmotion.x, (float)event.xmotion.y});
+                WindowImpl* window = (*GetWindowsMap())[event.xmotion.window];
+                if (!window) return;
+                window->mouseMovedEvent({(float)event.xmotion.x, (float)event.xmotion.y});
+                window->data.mousePosition.x = event.xmotion.x;
+                window->data.mousePosition.y = event.xmotion.y;
                 break;
             }
             case PropertyNotify:
             {
-                if (lastUserActivityTime) lastUserActivityTime = event.xproperty.time;
+                WindowImpl* window = (*GetWindowsMap())[event.xproperty.window];
+                if (!window) return;
+                if (window->lastUserActivityTime) window->lastUserActivityTime = event.xproperty.time;
                 break;
             }
-            case UnmapNotify: data.visible = false;
-            case VisibilityNotify: data.visible = true;
+            case UnmapNotify:
+            {
+                WindowImpl* window = (*GetWindowsMap())[event.xunmap.window];
+                if (!window) return;
+                window->data.visible = false;
+                break;
+            }
+            case VisibilityNotify:
+            {
+                WindowImpl* window = (*GetWindowsMap())[event.xmap.window];
+                if (!window) return;
+                window->data.visible = true;
+                break;
+            }
 
             default:
                 break;

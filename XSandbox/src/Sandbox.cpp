@@ -6,6 +6,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "Vortex/Input/Keyboard.hpp"
+
 using namespace Vortex::Utility;
 
 void Sandbox::OnMouseMove(Math::Vec2 pos)
@@ -58,7 +60,6 @@ void Sandbox::Shutdown()
 void Sandbox::Update()
 {
     if (!window->IsOpen()) Engine::Stop();
-
     window->Update();
 
     if (window->IsKeyPressed(Input::KeyCode::W))
@@ -99,7 +100,7 @@ void Sandbox::Render()
             Graphics::Renderer2D::DrawQuad({xp, yp}, { 0.045f, 0.045f }, glm::vec4((float32)x / spritesCount, 0.3f, (float32)y / spritesCount, 1.0f));
         }
     }
-    
+
     texture->Bind();
 
     Renderer2D::DrawSprite(sprite);

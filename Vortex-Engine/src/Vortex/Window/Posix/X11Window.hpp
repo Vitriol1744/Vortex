@@ -23,7 +23,7 @@ namespace Vortex
             virtual void Present() override; // Presents BackBuffer to the Screen
 
             virtual inline Graphics::IGraphicsContext* GetGraphicsContext() override { return data.graphicsContext; }
-            inline static Display* Display() { return display; }
+            inline static Display* GetDisplay() { return display; }
         
             VT_NODISCARD virtual inline bool IsKeyPressed(Input::KeyCode keycode) const noexcept override { return keys[static_cast<uint32>(keycode)]; }
             VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
@@ -87,7 +87,7 @@ namespace Vortex
                 return windowsMap;
             }
 
-            void HandleEvent(XEvent event);
+            static void HandleEvent(XEvent event);
     };
 }
 
