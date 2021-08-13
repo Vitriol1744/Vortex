@@ -15,6 +15,7 @@ namespace Vortex::Input
 			inline static bool IsKeyPressed(KeyCode keycode) { return Instance()->IsKeyPressedImpl(keycode); }
 	
 		protected:
+	        virtual ~Keyboard() = default;
 			virtual bool IsKeyPressedImpl(KeyCode keycode) const = 0;
 
 		private:

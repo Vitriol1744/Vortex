@@ -19,7 +19,7 @@ namespace Vortex::Graphics
     GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share)
     {
         XInitThreads();
-        display = WindowImpl::Display();
+        display = WindowImpl::GetDisplay();
         window = *(reinterpret_cast<Window*>(windowHandle));
 
         //TODO: SetBitsPerPixel to Custom Value!
