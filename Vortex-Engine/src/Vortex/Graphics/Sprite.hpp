@@ -16,15 +16,15 @@ namespace Vortex::Graphics
         public:
             Sprite();
 
-            void Move(glm::vec2 offset);
+            void Move(Math::Vec2 offset);
             void Move(float32 x, float32 y);
             void Restart();
             
-            inline void SetTransform(glm::mat4& transform) { this->transform = transform; }
-            inline void SetColor(const glm::vec4& color) { this->color = color; }
+            inline void SetTransform(Math::Mat4& transform) { this->transform = transform; }
+            inline void SetColor(const Math::Vec4& color) { this->color = color; }
 
-            glm::mat4 transform;
-            glm::vec4 color;
+            Math::Mat4 transform;
+            Math::Vec4 color;
     };
 }
 

@@ -3,27 +3,27 @@
 //
 #include "Sprite.hpp"
 
-using namespace Vortex::Math;
-
 namespace Vortex::Graphics
 {
+    using namespace Vortex::Math;
+    
     Sprite::Sprite()
     {
-        transform = glm::mat4(1.0f);
-        color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        transform = Mat4(1.0f);
+        color = Vec4(1.0f, 1.0f, 0.0f, 1.0f);
     }
 
-    void Sprite::Move(glm::vec2 offset)
+    void Sprite::Move(Vec2 offset)
     {
         Move(offset.x, offset.y);
     }
 
     void Sprite::Move(float32 x, float32 y)
     {
-        transform = glm::translate(transform, glm::vec3(x, y, 0));}
+        transform = Translate(transform, Vec3(x, y, 0));}
 
     void Sprite::Restart()
     {
-        transform = glm::mat4(1.0f);
+        transform = Mat4(1.0f);
     }
 }
