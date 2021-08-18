@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include <Vortex/Graphics/Camera.hpp>
+#include <Vortex/Graphics/CameraController3D.hpp>
 #include "Vortex.hpp"
 
 #include "Vortex/Graphics/Sprite.hpp"
@@ -14,6 +14,9 @@
 
 using namespace Vortex;
 using namespace Vortex::Audio;
+using namespace Vortex::Math;
+using namespace Vortex::Input;
+using namespace Vortex::Graphics;
 using namespace VTGraphics;
 
 class Sandbox : public Vortex::Application
@@ -27,8 +30,8 @@ class Sandbox : public Vortex::Application
         void Update() override;
         void Render() override;
 
-        void OnMouseMove(Math::Vec2);
-        void OnMouseScroll(Math::Vec2);
+        bool OnMouseMove(Vec2);
+        bool OnMouseScroll(Vec2);
 
     private:
         int32 width  = 800;
@@ -38,16 +41,17 @@ class Sandbox : public Vortex::Application
         SoundBuffer buffer{false};
         AudioSource source{false};
 
-        VTGraphics::Sprite sprite;
+        Sprite sprite;
 
-        Ref<IWindow> window;
-        Ref<ITexture> texture;
-        Camera camera;
-        glm::vec3 cameraPosition;
-        glm::vec3 cameraScale;
+        Ref<IWindow>        window;
+        Ref<ITexture>       texture;
+        Ref<IVertexArray>   vertexArray;
+        Ref<IVertexBuffer>  vertexBuffer;
+        Ref<IIndexBuffer>   indexBuffer;
+        Ref<IShader>        shader1;
+        Ref<IShader>        shader2;
 
-        float y{}, y2 = 1;
-        float angle = 0.0f;
+        CameraController3D cameraController;
 };
 
 
