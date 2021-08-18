@@ -16,6 +16,7 @@ namespace Vortex::Graphics
     {
         public:
             GL46VertexArray() noexcept;
+            ~GL46VertexArray() noexcept;
 
             GLvoid Bind() override;
             GLvoid Unbind() noexcept override;

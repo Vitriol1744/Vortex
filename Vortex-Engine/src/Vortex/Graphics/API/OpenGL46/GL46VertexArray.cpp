@@ -40,6 +40,11 @@ namespace Vortex::Graphics
         glBindVertexArray(id);
     }
 
+    GL46VertexArray::~GL46VertexArray() noexcept
+    {
+        glDeleteVertexArrays(1, &id);
+    }
+
     GLvoid GL46VertexArray::Bind()
     {
         glBindVertexArray(id);
