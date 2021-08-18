@@ -1,0 +1,4 @@
+[submodule "Vortex-Engine/vendor/imgui"]
+	path = Vortex-Engine/vendor/imgui
+	url = https://github.com/vitriol1744/imgui
+	branch = docking
