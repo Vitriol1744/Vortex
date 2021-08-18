@@ -25,13 +25,20 @@ namespace Vortex::Graphics
         //TODO: SetBitsPerPixel to Custom Value!
         static GLint visualAttributes[] =
         {
-            GLX_RENDER_TYPE, GLX_RGBA_BIT,
-            GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-            GLX_DOUBLEBUFFER, true,
-            GLX_RED_SIZE, 1,
-            GLX_GREEN_SIZE, 1,
-            GLX_BLUE_SIZE, 1,
-            0L
+                GLX_X_RENDERABLE        , True,
+                GLX_DRAWABLE_TYPE       , GLX_WINDOW_BIT,
+                GLX_RENDER_TYPE         , GLX_RGBA_BIT,
+                GLX_X_VISUAL_TYPE       , GLX_TRUE_COLOR,
+                GLX_RED_SIZE            , 8,
+                GLX_GREEN_SIZE          , 8,
+                GLX_BLUE_SIZE           , 8,
+                GLX_ALPHA_SIZE          , 8,
+                GLX_DEPTH_SIZE          , 24,
+                GLX_STENCIL_SIZE        , 8,
+                GLX_DOUBLEBUFFER        , True,
+                //GLX_SAMPLE_BUFFERS    , 1,
+                //GLX_SAMPLES           , 4,
+                0L
         };
     
         int framebufferConfigsCount = 0;
@@ -74,6 +81,8 @@ namespace Vortex::Graphics
         initialized = true;
 
         SwapInterval(0); //TODO: Toggleable vsync
+        //TODO: Temporary glEnable(GL_DEPTH_TEST)!
+        glEnable(GL_DEPTH_TEST);
     }
     
     GL46Context::~GL46Context() noexcept

@@ -43,6 +43,6 @@ namespace Vortex::Graphics
             mutable std::unordered_map<uint64, GLuint> uniformCache;
 
             GLuint GetUniformLocation(const GLchar* uniform) const;
-            static GLuint CompileShader(std::string_view source, GLenum shaderType);
+            static GLuint CompileShader(strview source, GLenum shaderType, strview shaderPath);
     };
 }

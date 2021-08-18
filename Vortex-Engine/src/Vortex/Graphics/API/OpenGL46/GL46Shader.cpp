@@ -78,8 +78,8 @@ namespace Vortex::Graphics
         else
         {
             VTCoreLogInfo("VertexShader:\n {}\n\nPixelShader:\n {}", vertexSource, fragmentSource);
-            vertexShader    = CompileShader(vertexSource, GL_VERTEX_SHADER);
-            fragmentShader  = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
+            vertexShader    = CompileShader(vertexSource, GL_VERTEX_SHADER, vertexPath);
+            fragmentShader  = CompileShader(fragmentSource, GL_FRAGMENT_SHADER, fragmentPath);
         }
 
         glAttachShader(id, vertexShader);
@@ -141,6 +141,7 @@ namespace Vortex::Graphics
 
     GLuint GL46Shader::GetUniformLocation(const GLchar* uniform) const
     {
+        return glGetUniformLocation(id, uniform);
         HashedString uniformName(uniform);
         if (uniformCache.find(uniformName.stringID) != uniformCache.end()) return uniformCache[uniformName.stringID];
 
@@ -154,7 +155,7 @@ namespace Vortex::Graphics
         uniformCache[uniformName.stringID] = location;
         return location;
     }
-    GLuint GL46Shader::CompileShader(strview source, GLenum shaderType)
+    GLuint GL46Shader::CompileShader(strview source, GLenum shaderType, strview shaderPath)
     {
         GLuint shader = glCreateShader(shaderType);
 
@@ -174,7 +175,8 @@ namespace Vortex::Graphics
 
             glGetShaderInfoLog(shader, maxLength, nullptr, &infoLog[0]);
 
-            VTCoreLogError("\nFailed to Compile {} Shader! Error:\n{}", shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment", infoLog.data());
+            VTCoreLogError("\nFailed to Compile {} Shader!\nPath: {}\nError:\n{}",
+             shaderType == GL_VERTEX_SHADER ? "Vertex" : "Fragment", shaderPath, infoLog.data());
 
             glDeleteShader(shader);
             return 0;
