@@ -10,9 +10,9 @@
     #include "Gl/Gl.h"
     #include "GL/wglext.h"
 #elif defined(VT_PLATFORM_LINUX)
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <GL/glx.h>
+    #include <X11/Xlib.h>
+    #include <X11/Xutil.h>
+    #include <GL/glx.h>
 #endif
 
 #include <KHR/khrplatform.h>
@@ -27,7 +27,7 @@
 namespace Vortex::Graphics
 {
     #pragma region glTypes
-    using GLboolean     = bool;
+    using GLboolean     = unsigned char;
     using GLbyte        = signed char;
     using GLchar        = char;
     using GLenum        = unsigned int;
@@ -68,12 +68,15 @@ namespace Vortex::Graphics
 
     #pragma region glFunctions
     #define VT_DECLARE_GL_FUNC(name, return_type, ...) \
-        using PFNGL##name##PROC = return_type(*)(__VA_ARGS__); \
+        using PFNGL##name##PROC = return_type(APIENTRY*)(__VA_ARGS__); \
         extern PFNGL##name##PROC gl##name
     VT_DECLARE_GL_FUNC(AttachShader, GLvoid, GLuint program, GLuint shader);
     VT_DECLARE_GL_FUNC(BindBuffer, GLvoid, GLenum target, GLuint buffer);
+    VT_DECLARE_GL_FUNC(BindSampler, GLvoid, GLuint unit, GLuint sampler);
     VT_DECLARE_GL_FUNC(BindTexture, GLvoid, GLenum target, GLuint texture);
     VT_DECLARE_GL_FUNC(BindVertexArray, GLvoid, GLuint array);
+    VT_DECLARE_GL_FUNC(BlendEquationSeparate, GLvoid, GLenum modeRGB, GLenum modeAlpha);
+    VT_DECLARE_GL_FUNC(BlendFuncSeparate, GLvoid, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
     VT_DECLARE_GL_FUNC(BufferData, GLvoid, GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
     VT_DECLARE_GL_FUNC(BufferSubData, GLvoid, GLenum target, GLintptr offset, const GLsizeiptr size, const GLvoid* data);
     VT_DECLARE_GL_FUNC(CopyBufferSubData, GLvoid, GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
@@ -87,12 +90,18 @@ namespace Vortex::Graphics
     VT_DECLARE_GL_FUNC(DeleteBuffers, GLvoid, GLsizei n, const GLuint* buffers);
     VT_DECLARE_GL_FUNC(DeleteProgram, GLvoid, GLuint program);
     VT_DECLARE_GL_FUNC(DeleteShader, GLvoid, GLuint shader);
+    VT_DECLARE_GL_FUNC(DeleteVertexArrays, GLvoid, GLsizei n, const GLuint* arrays);
     VT_DECLARE_GL_FUNC(DetachShader, GLvoid, GLuint program, GLuint shader);
+    VT_DECLARE_GL_FUNC(DrawElementsBaseVertex, GLvoid, GLenum mode, GLsizei count, GLenum type, GLvoid* indices, GLint baseVertex);
     VT_DECLARE_GL_FUNC(EnableVertexAttribArray, GLvoid, GLuint index);
+    VT_DECLARE_GL_FUNC(GenBuffers, GLvoid, GLsizei n, GLuint* buffers);
+    VT_DECLARE_GL_FUNC(GenVertexArrays, GLvoid, GLsizei n, GLuint* arrays);
+    VT_DECLARE_GL_FUNC(GetAttribLocation, GLint, GLuint program, const GLchar* name);
     VT_DECLARE_GL_FUNC(GetProgramInfoLog, GLvoid, GLuint program, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
     VT_DECLARE_GL_FUNC(GetProgramiv, GLvoid, GLuint program, GLenum pname, GLint* params);
     VT_DECLARE_GL_FUNC(GetShaderInfoLog, GLvoid, GLuint shader, GLsizei maxLength, GLsizei* length, GLchar* infoLog);
     VT_DECLARE_GL_FUNC(GetShaderiv, GLvoid, GLuint shader, GLenum pname, GLint* params);
+    VT_DECLARE_GL_FUNC(GetStringi, GLubyte*, GLenum name, GLuint index);
     VT_DECLARE_GL_FUNC(GetUniformLocation, GLint, GLuint program, const GLchar* name);
     VT_DECLARE_GL_FUNC(LinkProgram, GLvoid, GLuint program);
     VT_DECLARE_GL_FUNC(ShaderBinary, GLvoid, GLsizei count, const GLuint* shaders, GLenum binaryFormat, const GLvoid* binary, GLsizei length);
