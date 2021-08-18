@@ -27,7 +27,7 @@ namespace Vortex
             inline void RemoveAllListeners() { listeners.clear(); listenersCount = 0;}
             VT_NODISCARD inline int GetListenersCount() const { return listenersCount; }
 
-            inline void AddListener(const char* id, const std::function<void()>& listener)
+            inline void AddListener(const char* id, const std::function<bool()>& listener)
             {
                 if (listeners.find(id) == listeners.end())
                 {
@@ -36,7 +36,7 @@ namespace Vortex
                 }
                 else VT_CORE_ASSERT_MSG(false, "Listener with given id already exists!");
             }
-            inline void RemoveListener(const char* id, const std::function<void()>& listener)
+            inline void RemoveListener(const char* id, const std::function<bool()>& listener)
             {
                 listeners.erase(id);
                 listenersCount--;
@@ -49,17 +49,17 @@ namespace Vortex
 
         private:
             int listenersCount = 0;
-            std::unordered_map<const char*, std::function<void()>> listeners;
+            std::unordered_map<const char*, std::function<bool()>> listeners;
     };
 
-    template<typename T>
-    class Event<T> : public IEventBase
+    template<typename Arg1>
+    class Event<Arg1> : public IEventBase
     {
         public:
             inline void RemoveAllListeners() { listeners.clear(); listenersCount = 0;}
             VT_NODISCARD inline int GetListenersCount() const { return listenersCount; }
 
-            inline void AddListener(const char* id, const std::function<void(T)>& listener)
+            inline void AddListener(const char* id, const std::function<bool(Arg1)>& listener)
             {
                 if (listeners.find(id) == listeners.end())
                 {
@@ -68,29 +68,39 @@ namespace Vortex
                 }
                 else VT_CORE_ASSERT_MSG(false, "Listener with given id already exists!");
             }
-            inline void RemoveListener(const char* id, const std::function<void(T)>& listener)
+            inline void RemoveListener(const char* id, const std::function<bool(Arg1)>& listener)
             {
                 listeners.erase(id);
                 listenersCount--;
             }
-            inline void operator()(T arg1) { this->arg1 = arg1; EventSystem::Instance()->PushEvent(this); }
-            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1); }
+            inline void operator()(Arg1 arg1) { eventsData.push(arg1); EventSystem::Instance()->PushEvent(this); }
+            inline void Dispatch() override
+            {
+                Arg1& arg1 = eventsData.front();
+                for (const auto& listener : listeners)
+                {
+                    if (listener.second)
+                    {
+                        if (listener.second(arg1)) break;
+                    }
+                }
+                eventsData.pop();
+            }
 
         private:
             int listenersCount = 0;
-            std::unordered_map<const char*, std::function<void(T)>> listeners;
-
-            T arg1{};
+            std::unordered_map<const char*, std::function<bool(Arg1)>> listeners;
+            std::queue<Arg1> eventsData;
     };
 
-    template<typename T1, typename T2>
-    class Event<T1, T2> : public IEventBase
+    template<typename Arg1, typename Arg2>
+    class Event<Arg1, Arg2> : public IEventBase
     {
         public:
             inline void RemoveAllListeners() { listeners.clear(); listenersCount = 0;}
             VT_NODISCARD inline int GetListenersCount() const { return listenersCount; }
 
-            inline void AddListener(const char* id, const std::function<void(T1, T2)>& listener)
+            inline void AddListener(const char* id, const std::function<bool(Arg1, Arg2)>& listener)
             {
                 if (listeners.find(id) == listeners.end())
                 {
@@ -99,19 +109,37 @@ namespace Vortex
                 }
                 else VT_CORE_ASSERT_MSG(false, "Listener with given id already exists!");
             }
-            inline void RemoveListener(const char* id, const std::function<void(T1, T2)>& listener)
+            inline void RemoveListener(const char* id, const std::function<bool(Arg1, Arg2)>& listener)
             {
                 listeners.erase(id);
                 listenersCount--;
             }
-            inline void operator()(T1 arg1, T2 arg2) { this->arg1 = arg1; this->arg2 = arg2; EventSystem::Instance()->PushEvent(this); }
-            inline void Dispatch() override { for (const auto& listener : listeners) if (listener.second) listener.second.operator()(arg1, arg2); }
+            inline void operator()(Arg1 arg1, Arg2 arg2)
+            {
+                eventsData.push({arg1, arg2});
+                EventSystem::Instance()->PushEvent(this);
+            }
+            inline void Dispatch() override
+            {
+                auto&[arg1, arg2] = eventsData.front();
+                for (const auto& listener : listeners)
+                {
+                    if (listener.second)
+                    {
+                        if (listener.second(arg1, arg2)) break;
+                    }
+                }
+                eventsData.pop();
+            }
 
         private:
             int listenersCount = 0;
-            std::unordered_map<const char*, std::function<void(T1, T2)>> listeners;
-
-            T1 arg1{};
-            T2 arg2{};
+            std::unordered_map<const char*, std::function<bool(Arg1, Arg2)>> listeners;
+            struct EventData
+            {
+                Arg1 arg1;
+                Arg2 arg2;
+            };
+            std::queue<EventData> eventsData;
     };
 }

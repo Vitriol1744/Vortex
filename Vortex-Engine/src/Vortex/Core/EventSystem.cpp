@@ -15,10 +15,8 @@ namespace Vortex
     {
         while (!eventBus.empty())
         {
-            //TODO: Smart pointers?
-            eventBus.front()->Dispatch();
-            //delete eventBus.front();
-            eventBus.pop();
+             eventBus.front()->Dispatch();
+             eventBus.pop();
         }
     }
 }
