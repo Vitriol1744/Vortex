@@ -11,8 +11,9 @@ set (CMAKE_CXX_STANDARD 20)
 set (CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory (vendor/fmt)
-add_subdirectory (vendor/OpenAL)
+add_subdirectory (vendor/imgui)
 add_subdirectory (vendor/glm)
+add_subdirectory (vendor/OpenAL)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DDEBUG)
@@ -25,7 +26,7 @@ set (WIN32_EXECUTABLE TRUE)
 set (VENDOR "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
 set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt" "${VENDOR}/glm")
 
-set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm")
+set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm" "imgui")
 file (GLOB_RECURSE SOURCES "src/*/*.cpp")
 
 if (UNIX)
@@ -40,7 +41,7 @@ target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 #target_precompile_headers (${PROJECT_NAME} PRIVATE "src/Vortex/vtpch.hpp")
 
 #if (_WIN32)
-#add_custom_command (
+#add_custom_command (                                      
 #    TARGET ${PROJECT_NAME} POST_BUILD
 #    COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${CMAKE_BINARY_DIR}/Vortex-Engine/Vortex-Engine.dll ${CMAKE_BINARY_DIR}/XSandbox/ DEPENDS Vortex-Engine})
 #elseif (UNIX)
