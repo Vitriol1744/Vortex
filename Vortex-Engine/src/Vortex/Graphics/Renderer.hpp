@@ -17,6 +17,6 @@ namespace Vortex::Graphics
             static void BeginScene(const Camera& camera);
             static void EndScene();
 
-            static void DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& vao, glm::mat4 transform);
+            static void DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& vao, Math::Mat4 transform);
     };
 }

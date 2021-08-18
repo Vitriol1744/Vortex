@@ -15,9 +15,9 @@ namespace Vortex::Graphics
     {
         struct Vertex
         {
-            glm::vec3 position;
-            glm::vec4 color;
-            glm::vec2 texCoords;
+            Vec3 position;
+            Vec4 color;
+            Vec2 texCoords;
             float32 textureIndex;
         };
 
@@ -25,7 +25,7 @@ namespace Vortex::Graphics
         constexpr uint32 maxVerticesCount   = maxSpritesCount * 4;
         constexpr uint32 maxIndicesCount    = maxSpritesCount * 6;
 
-        glm::vec4 defaultPositions[] =
+        Vec4 defaultPositions[] =
         {
             { -0.5f,  0.5f, 0.0f, 1.0f  },
             {  0.5f,  0.5f, 0.0f, 1.0f  },
@@ -44,12 +44,12 @@ namespace Vortex::Graphics
         uint32 indicesCount = 0;
         bool initialized = false;
 
-        glm::mat4 viewProjectionMatrix;
+        Mat4 viewProjectionMatrix;
     }
 
     void Renderer2D::BeginScene(const Camera& camera)
     {
-        viewProjectionMatrix = camera.GetViewProjectionMatrix();
+        viewProjectionMatrix = const_cast<Camera&>(camera).GetViewProjectionMatrix();
     }
     void Renderer2D::EndScene()
     {
@@ -60,7 +60,7 @@ namespace Vortex::Graphics
     {
         if (initialized) return;
         mesh = IVertexArray::Create();
-        shader = IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
+        shader = IShader::Create("assets/shaders/batch.vert", "assets/shaders/batch.frag", false);
         vertexBuffer = IVertexBuffer::Create(maxVerticesCount * sizeof(Vertex));
 
         if (!vertices)
@@ -116,7 +116,7 @@ namespace Vortex::Graphics
             Submit();
         }
 
-        glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
+        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
 
         for (int32 i = 0; i < 4; i++)
         {
@@ -129,11 +129,11 @@ namespace Vortex::Graphics
 
         indicesCount += 6;
     }
-    void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+    void Renderer2D::DrawQuad(const Vec2& position, const Vec2& size, const Vec4& color)
     {
         if (indicesCount >= maxIndicesCount) Submit();
 
-        glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
+        Vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } };
     
         for (int32 i = 0; i < 4; i++)
         {

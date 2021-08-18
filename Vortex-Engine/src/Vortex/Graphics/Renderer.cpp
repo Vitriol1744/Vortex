@@ -10,22 +10,28 @@ namespace Vortex::Graphics
     using namespace Math;
     namespace
     {
-        glm::mat4 viewProjectionMatrix;
+        Mat4 viewProjectionMatrix;
+        Mat4 view;
+        Mat4 projection;
     }
 
     void Renderer::BeginScene(const Camera& camera)
     {
-        viewProjectionMatrix = camera.GetViewProjectionMatrix();
+        viewProjectionMatrix = const_cast<Camera&>(camera).GetViewProjectionMatrix();
+        view = const_cast<Camera&>(camera).GetViewMatrix();
+        projection = camera.GetProjectionMatrix();
     }
     void Renderer::EndScene()
     {
         
     }
 
-    void Renderer::DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& mesh, glm::mat4 transform)
+    void Renderer::DrawMesh(const Ref<IShader>& shader, const Ref<IVertexArray>& mesh, Mat4 transform)
     {
         shader->Bind();
         shader->SetUniformMat4f("u_ViewProjection", viewProjectionMatrix);
+        shader->SetUniformMat4f("u_View", view);
+        shader->SetUniformMat4f("u_Projection", projection);
         shader->SetUniformMat4f("u_Model", transform);
 
         IRendererAPI::DrawIndexed(mesh);
