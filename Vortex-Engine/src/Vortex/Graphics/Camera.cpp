@@ -18,21 +18,23 @@ namespace Vortex::Graphics
 
     void Camera::CreateOrthographic(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)
     {
-        projection = glm::ortho(left, right, bottom, top, near, far);
-        Update();
+        projection = Orthographic(left, right, bottom, top, near, far);
     }
     void Camera::CreatePerspective(float32 fov, float32 aspectRatio, float32 near, float32 far)
     {
-        projection = glm::perspective(fov, aspectRatio, near, far);
-        Update();
+        projection = Perspective((float32)ToRadians(fov), aspectRatio, near, far);
     }
 
-    void Camera::Update()
+    Mat4 Camera::GetViewMatrix()
     {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-                * glm::scale(glm::mat4(1.0f), scale);
+        view = ToMat4(rotation) * Translate(Mat4(1.0f), -position);
+        return view;
+    }
 
-        view = glm::inverse(transform);
-        viewProjection = projection * view;
+    Mat4 Camera::GetViewProjectionMatrix()
+    {
+        viewProjection = projection * GetViewMatrix();
+
+        return viewProjection;
     }
 }
