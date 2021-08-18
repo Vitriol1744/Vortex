@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 13.08.2021.
 //
-#include "PosixMouse.hpp"
+#include "Vortex/Core/Input/Mouse.hpp"
 
 #include <X11/Xlib.h>
 
@@ -9,9 +9,9 @@ namespace Vortex::Input
 {
     static Display* display = XOpenDisplay(nullptr);
 
-    bool MouseImpl::IsButtonPressedImpl(MouseCode mousecode)
+    bool Mouse::IsButtonPressed(MouseCode mousecode)
     {
-        Window root
+        Window root;
         Window child;
         int32 x, y;
         int32 rootX, rootY;
@@ -24,13 +24,13 @@ namespace Vortex::Input
             case MouseCode::Left:       return buttons & Button1Mask;
             case MouseCode::Middle:     return buttons & Button2Mask;
             case MouseCode::Right:      return buttons & Button3Mask;
-            case MouseCode::X1:         return button & Button4Mask;
-            case MouseCode::X2:         return button & Button5Mask;
+            case MouseCode::X1:         return buttons & Button4Mask;
+            case MouseCode::X2:         return buttons & Button5Mask;
 
             default:                    return false;
         }
     }
-    Math::Vec2i MouseImpl::CursorPositionImpl()
+    Math::Vec2i Mouse::CursorPosition()
     {
         Window root;
         Window child;
@@ -43,7 +43,7 @@ namespace Vortex::Input
         return { rootX, rootY };
     }
 
-    void MouseImpl::SetCursorPositionImpl(int32 x, int32 y)
+    void Mouse::SetCursorPosition(int32 x, int32 y)
     {
         XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
         XFlush(display);

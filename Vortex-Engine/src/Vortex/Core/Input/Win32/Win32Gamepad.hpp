@@ -5,7 +5,7 @@
 
 #include "Vortex/Core/Core.hpp"
 
-#include "Vortex/Input/Gamepad.hpp"
+#include "Vortex/Core/Input/Gamepad.hpp"
 
 #include <Windows.h>
 #include <Xinput.h>

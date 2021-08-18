@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 13.08.2021.
 //
-#include "PosixKeyboard.hpp"
+#include "Vortex/Core/Input/Keyboard.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -120,7 +120,7 @@ namespace Vortex::Input
         }
     }
 
-    bool KeyboardImpl::IsKeyPressedImpl(Input::KeyCode keycode) const
+    bool Keyboard::IsKeyPressed(Input::KeyCode keycode)
     {
         static Display* display = XOpenDisplay(nullptr);
 

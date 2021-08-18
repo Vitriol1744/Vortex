@@ -4,7 +4,7 @@
 #include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-#include "Win32Keyboard.hpp"
+#include "Vortex/Core/Input/Keyboard.hpp"
 #include <Windows.h>
 
 namespace Vortex::Input
@@ -121,7 +121,7 @@ namespace Vortex::Input
         return 0;
 	}
 
-	bool KeyboardImpl::IsKeyPressedImpl(KeyCode keycode) const
+	bool Keyboard::IsKeyPressed(KeyCode keycode)
 	{
 		return (GetAsyncKeyState(Win32KeyCode(keycode)) & 0x8000) != 0;
 	}

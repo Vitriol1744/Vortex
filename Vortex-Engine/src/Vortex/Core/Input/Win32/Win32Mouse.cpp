@@ -4,7 +4,7 @@
 #include "Vortex/Core/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-#include "Win32Mouse.hpp"
+#include "Vortex/Core/Input/Mouse.hpp"
 #include <Windows.h>
 
 namespace Vortex::Input
@@ -23,12 +23,12 @@ namespace Vortex::Input
 		return 0;
 	}
 
-	bool MouseImpl::IsButtonPressedImpl(MouseCode mousecode)
+	bool Mouse::IsButtonPressed(MouseCode mousecode)
 	{
 		return (GetAsyncKeyState(Win32MouseCode(mousecode)) & 0x8000) != 0;
 	}
 
-	Math::Vec2i MouseImpl::CursorPositionImpl()
+	Math::Vec2i Mouse::CursorPosition()
 	{
 		POINT mousePos;
 		GetCursorPos(&mousePos);
@@ -36,7 +36,7 @@ namespace Vortex::Input
 		return { mousePos.x, mousePos.y };
 	}
 
-	void MouseImpl::SetCursorPositionImpl(int32 x, int32 y)
+	void Mouse::SetCursorPosition(int32 x, int32 y)
 	{
 		SetCursorPos(x, y);
 	}

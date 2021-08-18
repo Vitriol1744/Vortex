@@ -9,7 +9,7 @@ namespace Vortex::Input
 {
     enum class MouseCode : int8
     {
-        Unknown = -1,
+        Unknown = 0,
         None,
         Left,
         Right,

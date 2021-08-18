@@ -10,7 +10,7 @@ namespace Vortex::Input
 {
     enum class KeyCode : int16
     {
-        Unknown = -1,
+        Unknown = 0,
         None,
         Num0,
         Num1,
