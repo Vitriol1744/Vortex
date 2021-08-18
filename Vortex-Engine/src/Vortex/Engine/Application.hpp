@@ -5,6 +5,8 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include <imgui/imgui.h>
+
 #include <vector>
 
 namespace Vortex

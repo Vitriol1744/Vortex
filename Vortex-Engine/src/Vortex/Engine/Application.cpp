@@ -11,7 +11,7 @@
 //TODO: Remove later!
 #include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 #include "Vortex/Utility/AudioLoader.hpp"
-#include "Vortex/Input/Gamepad.hpp"
+#include "Vortex/Core/Input/Gamepad.hpp"
 //^^^^^^^^^^^^^^^^^^^|
 //===================|
 
