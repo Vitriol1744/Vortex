@@ -6,8 +6,8 @@
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/Event.hpp"
 
-#include "Vortex/Input/KeyCode.hpp"
-#include "Vortex/Input/MouseCode.hpp"
+#include "Vortex/Core/Input/KeyCode.hpp"
+#include "Vortex/Core/Input/MouseCode.hpp"
 
 #include "Vortex/Graphics/API/IGraphicsContext.hpp"
 
