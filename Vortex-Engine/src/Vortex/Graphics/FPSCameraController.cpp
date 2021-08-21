@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 13.08.2021.
 //
-#include "CameraController3D.hpp"
+#include "FPSCameraController.hpp"
 
 #include "Vortex/Core/Input/Input.hpp"
 #include "Vortex/Core/Time.hpp"
@@ -11,11 +11,10 @@ namespace Vortex::Graphics
     using namespace Math;
     using namespace Input;
 
-    void CameraController3D::Update()
+    void FPSCameraController::Update()
     {
         Quat qPitch = AngleAxis(ToRadians(-pitch), Vec3(1, 0, 0));
         Quat qYaw = AngleAxis(ToRadians(yaw), Vec3(0, 1, 0));
-        Quat qRoll = AngleAxis(ToRadians(roll),Vec3(0,0,1));
 
         Quat orientation = Normalize(qPitch * qYaw);
 
@@ -23,7 +22,7 @@ namespace Vortex::Graphics
         Vec3 right = Rotate(Inverse(orientation), Vec3(1.0, 0.0, 0.0));
         Vec3 up = Vec3(0.0, 1.0, 0.0);
 
-        camera.SetRotation(orientation);
+        camera.SetRotation(qPitch * qYaw);
 
         static bool firstUpdate = true;
         if (firstUpdate)
@@ -33,7 +32,6 @@ namespace Vortex::Graphics
         }
 
         Vec2 currentMousePos = Mouse::CursorPosition();
-        //TODO: KeyBinds!
         if (Mouse::IsButtonPressed(MouseCode::Right))
         {
             float32 xOffset = currentMousePos.x - lastMousePos.x;

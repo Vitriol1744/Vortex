@@ -9,10 +9,10 @@
 
 namespace Vortex::Graphics
 {
-    class CameraController3D
+    class FPSCameraController
     {
         public:
-            CameraController3D() { }
+            FPSCameraController() { }
 
             void Update();
 
@@ -20,6 +20,7 @@ namespace Vortex::Graphics
 
         private:
             Camera camera;
+            
             Math::Vec2 lastMousePos = { 0.0f, 0.0f };
             float32 mouseSensitivity   = 150.0f;
 
