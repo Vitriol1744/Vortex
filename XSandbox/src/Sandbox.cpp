@@ -13,12 +13,12 @@ using namespace Vortex::Math;
 using namespace Vortex::Utility;
 
 Vec2 lastMousePos;
-bool Sandbox::OnMouseMove(Vec2 pos)
+bool Sandbox::OnMouseMove(IWindow* window, Vec2 pos)
 {
     return false;
 }
 
-bool Sandbox::OnMouseScroll(Vec2 scroll)
+bool Sandbox::OnMouseScroll(IWindow* window, Vec2 scroll)
 {
     return false;
 }
@@ -35,8 +35,8 @@ void Sandbox::Initialize()
     height = 728;
     window = Engine::GetWindow();
     Renderer2D::Initialize();
-    window->mouseMovedEvent.AddListener("Sandbox::OnMouseMove", std::bind(&Sandbox::OnMouseMove, this, std::placeholders::_1));
-    window->mouseScrolledEvent.AddListener("Sandbox::OnMouseScroll", std::bind(&Sandbox::OnMouseScroll, this, std::placeholders::_1));
+    VTAddListener(window->mouseMovedEvent, &Sandbox::OnMouseMove, this, VT_PH(1), VT_PH(2));
+    VTAddListener(window->mouseScrolledEvent, &Sandbox::OnMouseScroll, this, VT_PH(1), VT_PH(2));
 
 
     cameraController.GetCamera().CreatePerspective(75, width / height, 0.1f, 100.0f);
@@ -175,9 +175,26 @@ void Sandbox::Render()
     model = Translate(Mat4(1.0f), Vec3(8.0f, 0.0f, -10.0f));
     Renderer::DrawMesh(shader1, vertexArray, model);
 
-    for (int i = 0; i < 30; i++)
+    Vec3 cubePositions[] =
     {
-        model = Translate(Mat4(1.0f), Vec3(i + 3, 0, i + 15) + lightPos);
+        Vec3( 0.0f,  0.0f,  0.0f),
+        Vec3( 2.0f,  5.0f, -15.0f),
+        Vec3(-1.5f, -2.2f, -2.5f),
+        Vec3(-3.8f, -2.0f, -12.3f),
+        Vec3( 2.4f, -0.4f, -3.5f),
+        Vec3(-1.7f,  3.0f, -7.5f),
+        Vec3( 1.3f, -2.0f, -2.5f),
+        Vec3( 1.5f,  2.0f, -2.5f),
+        Vec3( 1.5f,  0.2f, -1.5f),
+        Vec3(-1.3f,  1.0f, -1.5f)
+    };
+
+    for (int i = 0; i < 10; i++)
+    {
+        model = Translate(Mat4(1.0f), cubePositions[i]);
+        float32 angle = 20.0f * i + sin(Time::GetTime().Seconds()) * 100;
+        model = Rotate(model, angle, Vec3(1.0f, 0.3f, 0.5f));
+        
         Renderer::DrawMesh(shader1, vertexArray, model);
     }
 

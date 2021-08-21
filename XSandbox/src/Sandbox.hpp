@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include <Vortex/Graphics/CameraController3D.hpp>
+#include <Vortex/Graphics/FPSCameraController.hpp>
 #include "Vortex.hpp"
 
 #include "Vortex/Graphics/Sprite.hpp"
@@ -30,8 +30,8 @@ class Sandbox : public Vortex::Application
         void Update() override;
         void Render() override;
 
-        bool OnMouseMove(Vec2);
-        bool OnMouseScroll(Vec2);
+        bool OnMouseMove(IWindow*, Vec2);
+        bool OnMouseScroll(IWindow*, Vec2);
 
     private:
         int32 width  = 800;
@@ -51,7 +51,7 @@ class Sandbox : public Vortex::Application
         Ref<IShader>        shader1;
         Ref<IShader>        shader2;
 
-        CameraController3D cameraController;
+        FPSCameraController cameraController;
 };
 
 
