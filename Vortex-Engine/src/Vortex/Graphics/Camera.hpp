@@ -50,7 +50,5 @@ namespace Vortex::Graphics
             Math::Mat4 projection = glm::mat4(1.0f);
             Math::Mat4 view = glm::mat4(1.0f);
             Math::Mat4 viewProjection = glm::mat4(1.0f);
-
-            //TODO: static std::vector<Camera*> cameras;
     };
 }

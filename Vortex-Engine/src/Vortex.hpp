@@ -9,7 +9,7 @@
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Graphics/Graphics.hpp"
 #include "Vortex/Utility/Utility.hpp"
-#include "Vortex/Window/WindowManager.hpp"
+#include "Vortex/Graphics/Window/WindowManager.hpp"
 
 namespace VTAudio       = Vortex::Audio;
 namespace VTMath        = Vortex::Math;
