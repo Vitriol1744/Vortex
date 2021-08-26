@@ -110,7 +110,7 @@ namespace Vortex::Audio
     }
     ALvoid AudioSource::SetLooping(ALboolean looping) const
     {
-        alCall(alSourcef(id, AL_LOOPING, looping));
+        alCall(alSourcei(id, AL_LOOPING, looping));
     }
     ALvoid AudioSource::SetBuffer(SoundBuffer& buffer) const
     {
