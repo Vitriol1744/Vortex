@@ -35,8 +35,8 @@ void Sandbox::Initialize()
     height = 728;
     window = Engine::GetWindow();
     Renderer2D::Initialize();
-    VTAddListener(window->mouseMovedEvent, &Sandbox::OnMouseMove, this, VT_PH(1), VT_PH(2));
-    VTAddListener(window->mouseScrolledEvent, &Sandbox::OnMouseScroll, this, VT_PH(1), VT_PH(2));
+    VTAddListener(WindowEvents::mouseMovedEvent, &Sandbox::OnMouseMove, this, VT_PH(1), VT_PH(2));
+    VTAddListener(WindowEvents::mouseScrolledEvent, &Sandbox::OnMouseScroll, this, VT_PH(1), VT_PH(2));
 
 
     cameraController.GetCamera().CreatePerspective(75, width / height, 0.1f, 100.0f);
@@ -52,7 +52,7 @@ void Sandbox::Initialize()
     source.SetVelocity(0.0f, 0.0f, 0.0f);
     source.SetLooping(false);
     source.SetBuffer(buffer);
-    //source.Play();
+    source.Play();
 
     texture = ITexture2D::Create("assets/textures/bmpTexture.bmp");
 
@@ -146,10 +146,13 @@ void Sandbox::Shutdown()
 void Sandbox::Update()
 {
     if (!window->IsOpen()) Engine::Stop();
-    window->Update();
+    IWindow::PollEvents();
 
     cameraController.Update();
     window->SetTitle("FPS: " + std::to_string(Time::FPSCounter()));
+
+    if (Mouse::IsButtonPressed(MouseCode::Left)) window->SetCursor(CursorShape::Grabbed);
+    if (Mouse::IsButtonPressed(MouseCode::Middle)) window->SetCursor(CursorShape::IBeam);
 }
 void Sandbox::Render()
 {

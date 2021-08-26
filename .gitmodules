@@ -5,3 +5,5 @@
 [submodule "Vortex-Engine/vendor/glm"]
 	path = Vortex-Engine/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "Vortex-Engine/vendor/OpenAL"]
+	url = https://github.com/kcat/openal-soft
