@@ -12,6 +12,7 @@
 
 #include <string>
 #include <unordered_map>
+#undef CursorShape
 
 namespace Vortex
 {
@@ -47,6 +48,8 @@ namespace Vortex
             virtual void ShowCursor() const noexcept override;
             virtual void HideCursor() const noexcept override;
             virtual void RequestFocus() const override;
+            virtual void SetCursor(CursorShape shape) override { }
+            virtual void SetCursor(const Ref<Utility::Pixel> pixels, int32 width, int32 height) override { }
             virtual void SetFullscreen(bool fullscreen) override;
             virtual void SetIcon(std::string_view path, int32 width, int32 height) noexcept override;
             //TODO: Linux: SetIcon

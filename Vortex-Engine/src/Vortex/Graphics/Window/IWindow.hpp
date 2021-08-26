@@ -16,6 +16,7 @@
 #include <string>
 
 #undef CreateWindow
+#undef CursorShape
 
 namespace Vortex
 {

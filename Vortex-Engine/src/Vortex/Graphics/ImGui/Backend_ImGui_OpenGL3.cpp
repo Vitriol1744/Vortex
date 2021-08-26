@@ -154,8 +154,6 @@ using Graphics::glGetAttribLocation;
 using Graphics::glGenBuffers;
 using Graphics::glDeleteBuffers;
 using Graphics::glDeleteProgram;
-using Graphics::glBlendEquation;
-using Graphics::glActiveTexture;
 using Graphics::GLsizeiptr;
 using Graphics::GLchar;
 //using Graphics::glDrawElements;
@@ -371,7 +369,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
+    Graphics::glBlendEquation(GL_FUNC_ADD);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -453,7 +451,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 
     // Backup GL state
     GLenum last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture);
-    glActiveTexture(GL_TEXTURE0);
+    Graphics::glActiveTexture(GL_TEXTURE0);
     GLuint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&last_program);
     GLuint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
@@ -556,7 +554,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     if (bd->GlVersion >= 330)
         glBindSampler(0, last_sampler);
 #endif
-    glActiveTexture(last_active_texture);
+    Graphics::glActiveTexture(last_active_texture);
 #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     glBindVertexArray(last_vertex_array_object);
 #endif

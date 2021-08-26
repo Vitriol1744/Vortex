@@ -3,8 +3,19 @@
 //
 #pragma once
 
-#ifdef VT_PLATFORM_WINDOWS
-    #include "Win32/Win32GL46Context.hpp"
-#elif defined(VT_PLATFORM_LINUX)
-    #include "Graphics/API/OpenGL46/GLX/GLXContext.hpp"
-#endif
+#include "Vortex/Graphics/API/IGraphicsContext.hpp"
+
+#include "Vortex/Platform/EGL.hpp"
+
+namespace Vortex::Graphics
+{
+    struct VT_API GL46Context final : public IGraphicsContext
+    {
+        explicit GL46Context(void* windowHandle, IGraphicsContext* share);
+
+        void Present() noexcept override;
+        void Activate() override;
+
+        Platform::EGLContext context;
+    };
+}

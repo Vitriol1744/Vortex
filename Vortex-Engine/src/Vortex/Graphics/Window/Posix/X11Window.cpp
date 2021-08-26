@@ -16,6 +16,8 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 
+#undef None
+
 static constexpr const unsigned long functionHint           = 1 << 0;
 static constexpr const unsigned long decorationsHint        = 1 << 1;
 
@@ -330,7 +332,7 @@ namespace Vortex
             {
                 //FIXME: Linux: Disable Fullscreen
                 SetSize(data.width, data.height);
-                SetStyle(WindowStyle::Titlebar | WindowStyle::MaximizeButton | WindowStyle::MinimizeButton | WindowStyle::CloseButton);
+                SetStyle(WindowStyle::Titlebar | WindowStyle::MaximizeButton | WindowStyle::MinimizeButton);
                 data.resizable = true;
             }
             data.fullscreen = fullscreen;
@@ -416,11 +418,6 @@ namespace Vortex
         {
             xStyle      |= borderStyle | titleStyle | minimizeStyle | menuStyle;
             xFunction   |= moveFunc | minimizeFunc;
-        }
-        if (style & WindowStyle::CloseButton)
-        {
-            xStyle |= 0;
-            xFunction |= closeFunc;
         }
 
         const unsigned char hints[]
