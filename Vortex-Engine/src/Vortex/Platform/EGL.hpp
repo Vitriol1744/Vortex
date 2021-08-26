@@ -10,6 +10,12 @@ constexpr const int DEFAULT_OPENGL_CONTEXT_VERSION_MINOR = 6;
 
 namespace Vortex::Platform
 {
+    #ifdef VT_PLATFORM_WINDOWS
+    using NativeWindowHandle = void*;
+    #elif defined(VT_PLATFORM_LINUX)
+    using NativeWindowhandle = uint64;
+    #endif
+    
     enum class OpenGLProfile
     {
         Compatibility,
@@ -20,12 +26,14 @@ namespace Vortex::Platform
     
     struct VT_API EGLContextCreateInfo
     {
-        void* windowHandle;
+        NativeWindowhandle windowHandle;
         int32 bitsPerPixel;
 
         uint32 openGLContextVersionMajor = 4;
         uint32 openGLContextVersionMinor = 6;
         OpenGLProfile openGLProfile      = OpenGLProfile::Default;
+        
+        Ref<void> sharedContext;
     };
     
     struct VT_API EGLContext

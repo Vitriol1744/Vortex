@@ -142,6 +142,9 @@ namespace Vortex::Platform
 		if (wglCreateContextAttribs) context->renderingContext = wglCreateContextAttribs(context->deviceContext, 0, contextAttributes);
 		VT_CORE_ASSERT(context->renderingContext != 0);
 		
+		Ref<WGLContext> sharedContext = std::reinterpret_pointer_cast<WGLContext>(createInfo.sharedContext);
+		wglShareLists(context->context, sharedContext ? sharedContext->renderingContext : nullptr);
+		
 		wglMakeCurrent(context->deviceContext, context->renderingContext);
 
 		return { context };

@@ -3,6 +3,7 @@
 //
 #include "Vortex/Platform/LibraryManager.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
 #include <Windows.h>
 
 #include <cstring>
@@ -24,3 +25,4 @@ namespace Vortex::Platform
 		return GetProcAddress(library, procName);
 	}
 }
+#endif

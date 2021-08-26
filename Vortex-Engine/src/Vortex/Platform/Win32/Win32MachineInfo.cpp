@@ -3,6 +3,7 @@
 //
 #include "Vortex/Platform/MachineInfo.hpp"
 
+#ifdef VT_PLATFORM_WINDOWS
 #include <Windows.h>
 
 namespace Vortex::Platform
@@ -26,3 +27,4 @@ namespace Vortex::Platform
 		return GetTotalMemory() - GetAvailableMemory();
 	}
 }
+#endif
