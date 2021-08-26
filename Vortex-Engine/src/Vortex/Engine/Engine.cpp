@@ -11,8 +11,9 @@
 
 #include "Vortex/Engine/Application.hpp"
 
-//TODO: Remove later!
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
+
+//TODO: Remove later!
 #include "Vortex/Graphics/ImGui/Backend_ImGui_OpenGL3.hpp"
 #include "Vortex/Graphics/ImGui/ImGui.hpp"
 
@@ -21,6 +22,7 @@
 namespace Vortex
 {
     using namespace Audio;
+    using namespace Graphics;
 
     Engine* Engine::instance = nullptr;
 
@@ -38,6 +40,7 @@ namespace Vortex
         Platform::Internal::Initialize();
         Time::Instance(); // Initialize Time!
         AudioManager::Initialize();
+        IRendererAPI::Initialize();
         VTCoreLogInfo("");
         window = WindowManager::Instance()->NewWindow(width, height, "Vortex", nullptr);
         app = CreateApplication(arguments);
@@ -96,12 +99,12 @@ namespace Vortex
         IRendererAPI::Clear();
         app->Update();
 
-        ImGuiRenderer::Begin();
-        
-        static bool show = true;
-        ImGui::ShowDemoWindow(&show);
-        
-        ImGuiRenderer::End();
+        //ImGuiRenderer::Begin();
+        //
+        //static bool show = true;
+        //ImGui::ShowDemoWindow(&show);
+        //
+        //ImGuiRenderer::End();
     }
 
     void Engine::Render()
