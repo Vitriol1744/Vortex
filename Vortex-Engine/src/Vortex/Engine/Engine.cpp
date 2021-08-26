@@ -99,12 +99,12 @@ namespace Vortex
         IRendererAPI::Clear();
         app->Update();
 
-        //ImGuiRenderer::Begin();
-        //
-        //static bool show = true;
-        //ImGui::ShowDemoWindow(&show);
-        //
-        //ImGuiRenderer::End();
+        ImGuiRenderer::Begin();
+        
+        static bool show = true;
+        ImGui::ShowDemoWindow(&show);
+        
+        ImGuiRenderer::End();
     }
 
     void Engine::Render()
