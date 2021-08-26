@@ -44,16 +44,16 @@ namespace
         vd->window->SetVisible(false);
         vd->window->SetStyle(WindowStyle::None);
 
-        VTAddListener(vd->window->keyPressedEvent, ImGuiRenderer::OnKeyPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
-        VTAddListener(vd->window->keyReleasedEvent, ImGuiRenderer::OnKeyReleasedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->keyTypedEvent, ImGuiRenderer::OnKeyTypedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->mouseButtonPressedEvent, ImGuiRenderer::OnMouseButtonPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
-        VTAddListener(vd->window->mouseButtonReleasedEvent, ImGuiRenderer::OnMouseButtonReleasedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->mouseScrolledEvent, ImGuiRenderer::OnMouseScrolledEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->mouseMovedEvent, ImGuiRenderer::OnMouseMovedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->windowResizedEvent, ImGuiRenderer::OnWindowResizedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(vd->window->windowClosedEvent, ImGuiRenderer::OnWindowClosedEvent, VT_PH(1));
-        VTAddListener(vd->window->windowMovedEvent, ImGuiRenderer::OnWindowMovedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::keyPressedEvent, ImGuiRenderer::OnKeyPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
+        VTAddListener(WindowEvents::keyReleasedEvent, ImGuiRenderer::OnKeyReleasedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::keyTypedEvent, ImGuiRenderer::OnKeyTypedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseButtonPressedEvent, ImGuiRenderer::OnMouseButtonPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
+        VTAddListener(WindowEvents::mouseButtonReleasedEvent, ImGuiRenderer::OnMouseButtonReleasedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseScrolledEvent, ImGuiRenderer::OnMouseScrolledEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseMovedEvent, ImGuiRenderer::OnMouseMovedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::windowResizedEvent, ImGuiRenderer::OnWindowResizedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::windowClosedEvent, ImGuiRenderer::OnWindowClosedEvent, VT_PH(1));
+        VTAddListener(WindowEvents::windowMovedEvent, ImGuiRenderer::OnWindowMovedEvent, VT_PH(1), VT_PH(2));
     }
     void DestroyWindow(ImGuiViewport* viewport)
     {
@@ -75,7 +75,7 @@ namespace
     }
     ImVec2 GetWindowPosition(ImGuiViewport* viewport)
     {
-        Math::Vec2 pos = ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->Position();
+        Math::Vec2 pos = ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->GetPosition();
         return ImVec2(pos.x, pos.y);
     }
     void SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
@@ -86,7 +86,7 @@ namespace
     }
     ImVec2 GetWindowSize(ImGuiViewport* viewport)
     {
-        Math::Vec2 size = ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->Size();
+        Math::Vec2 size = ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->GetSize();
         return ImVec2(size.x, size.y);
     }
     void SetWindowFocus(ImGuiViewport* viewport)
@@ -95,7 +95,7 @@ namespace
     }
     bool GetWindowFocus(ImGuiViewport* viewport)
     {
-        return ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->Focus();
+        return ((ImGui_ImplVortex_ViewportData*)(viewport->PlatformUserData))->window->IsFocused();
     }
     bool GetWindowMinimized(ImGuiViewport* viewport)
     {
@@ -207,14 +207,14 @@ namespace Vortex::Graphics
         platformIO.Monitors.push_back(monitor);
 
         ImGui_ImplOpenGL3_Init("#version 460");
-        VTAddListener(window->keyPressedEvent, ImGuiRenderer::OnKeyPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
-        VTAddListener(window->keyReleasedEvent, ImGuiRenderer::OnKeyReleasedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(window->keyTypedEvent, ImGuiRenderer::OnKeyTypedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(window->mouseButtonPressedEvent, ImGuiRenderer::OnMouseButtonPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
-        VTAddListener(window->mouseButtonReleasedEvent, ImGuiRenderer::OnMouseButtonReleasedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(window->mouseScrolledEvent, ImGuiRenderer::OnMouseScrolledEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(window->mouseMovedEvent, ImGuiRenderer::OnMouseMovedEvent, VT_PH(1), VT_PH(2));
-        VTAddListener(window->windowResizedEvent, ImGuiRenderer::OnWindowResizedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::keyPressedEvent, ImGuiRenderer::OnKeyPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
+        VTAddListener(WindowEvents::keyReleasedEvent, ImGuiRenderer::OnKeyReleasedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::keyTypedEvent, ImGuiRenderer::OnKeyTypedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseButtonPressedEvent, ImGuiRenderer::OnMouseButtonPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
+        VTAddListener(WindowEvents::mouseButtonReleasedEvent, ImGuiRenderer::OnMouseButtonReleasedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseScrolledEvent, ImGuiRenderer::OnMouseScrolledEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::mouseMovedEvent, ImGuiRenderer::OnMouseMovedEvent, VT_PH(1), VT_PH(2));
+        VTAddListener(WindowEvents::windowResizedEvent, ImGuiRenderer::OnWindowResizedEvent, VT_PH(1), VT_PH(2));
     }
     void ImGuiRenderer::Shutdown()
     {
@@ -226,7 +226,7 @@ namespace Vortex::Graphics
         ImGuiIO& io = ImGui::GetIO();
         ImGuiPlatformIO& platformIO = ImGui::GetPlatformIO();
 
-        io.DisplaySize = ImVec2(ImGuiRenderer::window->Width(), ImGuiRenderer::window->Height());
+        io.DisplaySize = ImVec2(ImGuiRenderer::window->GetWidth(), ImGuiRenderer::window->GetHeight());
         io.DeltaTime = (float32)Time::DeltaTime();
 
         io.MouseHoveredViewport = 0;
@@ -341,7 +341,7 @@ namespace Vortex::Graphics
     bool ImGuiRenderer::OnMouseMovedEvent(IWindow* window, Math::Vec2 position)
     {
         ImGuiIO& io = ::ImGui::GetIO();
-        io.MousePos = ImVec2(position.x + window->Position().x, position.y + window->Position().y);
+        io.MousePos = ImVec2(position.x + window->GetPosition().x, position.y + window->GetPosition().y);
 
         return false;
     }

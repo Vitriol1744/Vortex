@@ -21,28 +21,33 @@ namespace Vortex
             WindowImpl(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share = nullptr);
             ~WindowImpl() override;
 
-            void Update() override;
-            void Present() override;
+            static void PollEvents();
+            virtual void Present() override;
 
             virtual inline Graphics::IGraphicsContext* GetGraphicsContext() override { return data.graphicsContext; }
 
             VT_NODISCARD virtual inline bool IsKeyPressed(Input::KeyCode keycode) const noexcept override { return keys[static_cast<uint32>(keycode)]; }
             VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
-            VT_NODISCARD virtual inline Math::Vec2 MousePosition() const noexcept override { return data.mousePosition; }
+            VT_NODISCARD virtual inline Math::Vec2 GetMousePosition() const noexcept override { return data.mousePosition; }
 
-            VT_NODISCARD virtual inline bool Focus() const noexcept override { return hWnd == GetForegroundWindow(); }
+            VT_NODISCARD virtual NativeWindowHandleType GetNativeWindowHandle() const noexcept override { return hWnd; }
+            VT_NODISCARD virtual inline bool IsFocused() const noexcept override { return hWnd == GetForegroundWindow(); }
             VT_NODISCARD virtual inline bool IsOpen() const noexcept override { return data.isOpen; }
-            VT_NODISCARD virtual inline Math::Vec2u Position() const noexcept override { return data.position; }
+            VT_NODISCARD virtual inline Math::Vec2u GetPosition() const noexcept override { return data.position; }
 
             virtual void ShowCursor() const noexcept override;
             virtual void HideCursor() const noexcept override;
             virtual void RequestFocus() const override;
+            virtual void SetCursor(CursorShape shape) override;
+            virtual void SetCursor(const Ref<Utility::Pixel> pixels, int32 width, int32 height) override;
             virtual void SetFullscreen(bool fullscreen = true) override;
-            virtual void SetIcon(std::string_view path, int32 width, int32 height) const override;
+            virtual void SetIcon(std::string_view path, int32 width, int32 height) override;
+            virtual void SetIcon(const Utility::Pixel* pixels, int32 width, int32 height) override;
             virtual void SetTitle(std::string_view title) const noexcept override;
             virtual void SetPosition(uint32 x, uint32 y) const override;
             virtual void SetResizable(bool resizable) override;
             virtual void SetSize(uint32 width, uint32 height) override;
+            virtual void SetStyle(WindowStyle style) override;
             virtual void SetVisible(bool visible = true) const override;
 
             virtual void ActivateContext() const override;
@@ -51,6 +56,8 @@ namespace Vortex
             static uint32 windowsCount;
 
             HWND hWnd;
+            HICON hIcon;
+            HANDLE hCursor;
 
             bool keys[static_cast<uint32>(Input::KeyCode::KeysCount)];
             bool buttons[static_cast<uint32>(Input::MouseCode::ButtonsCount)];

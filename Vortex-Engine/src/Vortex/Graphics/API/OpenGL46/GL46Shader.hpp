@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
-#include "Core/Math/Math.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/Math/Math.hpp"
 
-#include "Graphics/API/IShader.hpp"
-#include "OpenGL.hpp"
+#include "Vortex/Graphics/API/IShader.hpp"
+#include "Vortex/Platform/OpenGL.hpp"
 
 #include <unordered_map>
 

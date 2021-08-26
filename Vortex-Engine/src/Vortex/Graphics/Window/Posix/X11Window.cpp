@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 29.06.2021.
 //
 #include "vtpch.hpp"
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
@@ -247,7 +247,7 @@ namespace Vortex
         if (windowsCount == 0) Shutdown();
     }
 
-    void WindowImpl::Update()
+    void WindowImpl::PollEvents()
     {
         while (XEventsQueued(display, QueuedAlready))
         {
@@ -336,7 +336,7 @@ namespace Vortex
             data.fullscreen = fullscreen;
         }
     }
-    void WindowImpl::SetIcon(strview path, int32 width, int32 height) const noexcept
+    void WindowImpl::SetIcon(strview path, int32 width, int32 height) noexcept
     {
         //TODO: Linux: Set Icon
     }
@@ -582,35 +582,35 @@ namespace Vortex
                 switch (event.xbutton.button)
                 {
                     case VT_XButtonLeft:
-                        window->mouseButtonPressedEvent(window, MouseCode::Left, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Left, false);
                         window->buttons[static_cast<uint32>(MouseCode::Left)] = true;
                         break;
                     case VT_XButtonMiddle:
-                        window->mouseButtonPressedEvent(window, MouseCode::Middle, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Middle, false);
                         window->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
                         break;
                     case VT_XButtonRight:
-                        window->mouseButtonPressedEvent(window, MouseCode::Right, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Right, false);
                         window->buttons[static_cast<uint32>(MouseCode::Right)] = true;
                         break;
                     case VT_XScrollXUp:
-                        window->mouseScrolledEvent(window, {1, 0});
+                        WindowEvents::mouseScrolledEvent(window, {1, 0});
                         break;
                     case VT_XScrollXDown:
-                        window->mouseScrolledEvent(window, {-1, 0});
+                        WindowEvents::mouseScrolledEvent(window, {-1, 0});
                         break;
                     case VT_XScrollYUp:
-                        window->mouseScrolledEvent(window, {0, 1});
+                        WindowEvents::mouseScrolledEvent(window, {0, 1});
                         break;
                     case VT_XScrollYDown:
-                        window->mouseScrolledEvent(window, {0, -1});
+                        WindowEvents::mouseScrolledEvent(window, {0, -1});
                         break;
                     case VT_XButtonX1:
-                        window->mouseButtonPressedEvent(window, MouseCode::X1, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::X1, false);
                         window->buttons[static_cast<uint32>(MouseCode::X1)] = true;
                         break;
                     case VT_XButtonX2:
-                        window->mouseButtonPressedEvent(window, MouseCode::X2, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::X2, false);
                         window->buttons[static_cast<uint32>(MouseCode::X2)] = true;
                         break;
                 }
@@ -641,7 +641,7 @@ namespace Vortex
                         break;
                 }
 
-                window->mouseButtonReleasedEvent(window, button);
+                WindowEvents::mouseButtonReleasedEvent(window, button);
                 window->buttons[static_cast<uint32>(button)] = false;
                 break;
             }
@@ -659,7 +659,7 @@ namespace Vortex
                     // Window Closed Event
                     if (event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmDeleteWindow))
                     {
-                        window->windowClosedEvent(window);
+                        WindowEvents::windowClosedEvent(window);
                         window->data.isOpen = false;
                     }
                     else if (wmPing && event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(wmPing))
@@ -679,7 +679,7 @@ namespace Vortex
                 // Window Resized Event
                 if (event.xconfigure.width != window->data.width || event.xconfigure.height != window->data.height)
                 {
-                    window->windowResizedEvent(window, Math::Vec2u(event.xconfigure.width, event.xconfigure.height));
+                    WindowEvents::windowResizedEvent(window, Math::Vec2u(event.xconfigure.width, event.xconfigure.height));
                     window->data.width = event.xconfigure.width;
                     window->data.height = event.xconfigure.height;
                 }
@@ -696,7 +696,7 @@ namespace Vortex
                 WindowImpl* window = (*GetWindowsMap())[event.xfocus.window];
                 if (!window) return;
                 if (window->inputContext) XSetICFocus(window->inputContext);
-                window->focusChangedEvent(window, true);
+                WindowEvents::focusChangedEvent(window, true);
                 break;
             }
             case FocusOut:
@@ -704,7 +704,7 @@ namespace Vortex
                 WindowImpl* window = (*GetWindowsMap())[event.xfocus.window];
                 if (!window) return;
                 if (window->inputContext) XUnsetICFocus(window->inputContext);
-                window->focusChangedEvent(window, false);
+                WindowEvents::focusChangedEvent(window, false);
                 break;
             }
             case KeyPress:
@@ -718,7 +718,7 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                window->keyPressedEvent(window, key, 0);
+                WindowEvents::keyPressedEvent(window, key, 0);
                 window->keys[static_cast<uint32>(key)] = true;
 
                 if (!XFilterEvent(&event, XNone))
@@ -740,7 +740,7 @@ namespace Vortex
 
                         if (length > 0)
                         {
-                            window->keyTypedEvent(window, keyBuffer[0]);
+                            WindowEvents::keyTypedEvent(window, keyBuffer[0]);
                         }
                     }
                 }
@@ -759,7 +759,7 @@ namespace Vortex
                     if (key != KeyCode::Unknown) break;
                 }
 
-                window->keyReleasedEvent(window, key);
+                WindowEvents::keyReleasedEvent(window, key);
                 window->keys[static_cast<uint32>(key)] = false;
                 break;
             }
@@ -774,7 +774,7 @@ namespace Vortex
             {
                 WindowImpl* window = (*GetWindowsMap())[event.xmotion.window];
                 if (!window) return;
-                window->mouseMovedEvent(window, {(float)event.xmotion.x, (float)event.xmotion.y});
+                WindowEvents::mouseMovedEvent(window, {(float)event.xmotion.x, (float)event.xmotion.y});
                 window->data.mousePosition.x = event.xmotion.x;
                 window->data.mousePosition.y = event.xmotion.y;
                 break;

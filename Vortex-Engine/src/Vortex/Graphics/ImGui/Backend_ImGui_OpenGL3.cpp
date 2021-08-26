@@ -63,7 +63,7 @@
 //  2017-05-01: OpenGL: Fixed save and restore of current GL_ACTIVE_TEXTURE.
 //  2016-09-05: OpenGL: Fixed save and restore of current scissor rectangle.
 //  2016-07-29: OpenGL: Explicitly setting GL_UNPACK_ROW_LENGTH to reduce issues because SDL changes it. (#752)
-
+#define IMGUI_IMPL_OPENGL_LOADER_VORTEX
 //----------------------------------------
 // OpenGL    GLSL      GLSL
 // version   version   string
@@ -118,6 +118,7 @@
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>            // Needs to be initialized with gl3wInit() in user's code
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_VORTEX)
 #include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 //TODO: Temporary!
 using namespace Vortex;
@@ -153,6 +154,11 @@ using Graphics::glGetAttribLocation;
 using Graphics::glGenBuffers;
 using Graphics::glDeleteBuffers;
 using Graphics::glDeleteProgram;
+using Graphics::glBlendEquation;
+using Graphics::glActiveTexture;
+using Graphics::GLsizeiptr;
+using Graphics::GLchar;
+//using Graphics::glDrawElements;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 #include <glad/glad.h>          // Needs to be initialized with gladLoadGL() in user's code.
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD2)
@@ -476,7 +482,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
     GLboolean last_enable_primitive_restart = (bd->GlVersion >= 310) ? glIsEnabled(GL_PRIMITIVE_RESTART) : GL_FALSE;
 #endif
-
+#define IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
     // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
     // The renderer would actually work without any VAO bound, but then our VertexAttrib calls would overwrite the default one currently bound.
@@ -532,7 +538,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                         glDrawElementsBaseVertex(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)), (GLint)pcmd->VtxOffset);
                     else
 #endif
-                    glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)));
+                    Graphics::glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)));
                 }
             }
         }

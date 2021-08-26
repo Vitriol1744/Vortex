@@ -21,7 +21,7 @@ namespace Vortex
             WindowImpl(int32 width, int32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share = nullptr);
             virtual ~WindowImpl() override;
 
-            virtual void Update() override; // Polls Events
+            static void PollEvents();
             virtual void Present() override; // Presents BackBuffer to the Screen
 
             virtual inline Graphics::IGraphicsContext* GetGraphicsContext() override { return data.graphicsContext; }
@@ -29,9 +29,10 @@ namespace Vortex
         
             VT_NODISCARD virtual inline bool IsKeyPressed(Input::KeyCode keycode) const noexcept override { return keys[static_cast<uint32>(keycode)]; }
             VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
-            VT_NODISCARD virtual inline Math::Vec2 MousePosition() const noexcept override { return data.mousePosition; }
+            VT_NODISCARD virtual inline Math::Vec2 GetMousePosition() const noexcept override { return data.mousePosition; }
 
-            VT_NODISCARD virtual inline bool Focus() const noexcept override
+            VT_NODISCARD virtual NativeWindowHandleType GetNativeWindowHandle() const noexcept override { return window; }
+            VT_NODISCARD virtual inline bool IsFocused() const noexcept override
             {
                 Window focused;
                 int revert;
@@ -40,14 +41,16 @@ namespace Vortex
                 return focused == window;
             }
             VT_NODISCARD virtual inline bool IsOpen() const noexcept override { return data.isOpen; }
-            VT_NODISCARD virtual inline Math::Vec2u Position() const noexcept override { return data.position; }
-            VT_NODISCARD virtual inline Math::Vec2u Size() const noexcept override { return { data.width, data.height }; }
+            VT_NODISCARD virtual inline Math::Vec2u GetPosition() const noexcept override { return data.position; }
+            VT_NODISCARD virtual inline Math::Vec2u GetSize() const noexcept override { return { data.width, data.height }; }
 
             virtual void ShowCursor() const noexcept override;
             virtual void HideCursor() const noexcept override;
             virtual void RequestFocus() const override;
             virtual void SetFullscreen(bool fullscreen) override;
-            virtual void SetIcon(std::string_view path, int32 width, int32 height) const noexcept override;
+            virtual void SetIcon(std::string_view path, int32 width, int32 height) noexcept override;
+            //TODO: Linux: SetIcon
+            virtual void SetIcon(const Utility::Pixel* pixels, int32 width, int32 height) override { }
             virtual void SetTitle(std::string_view title) const noexcept override;
             virtual void SetPosition(uint32 x, uint32 y) const override;
             virtual void SetResizable(bool resizable) override;

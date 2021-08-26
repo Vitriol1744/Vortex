@@ -69,11 +69,13 @@ namespace Vortex::Graphics
         if(ptr == nullptr || (ptr == (GLvoid*)0x1) || (ptr == (GLvoid*)0x2) || (ptr == (GLvoid*)0x3) || (ptr == (GLvoid*)-1))
         {
             HMODULE module = LoadLibraryA("opengl32.dll");
+            if (!module) goto failure;
             ptr = (GLvoid*)GetProcAddress(module, name);
         }
 
         if (!ptr)
         {
+            failure:
             initialized = false;
             VTCoreLogFatal("Failed to Get Address of {} Procedure", name);
         }

@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Graphics/API/IRendererAPI.hpp"
-#include "OpenGL.hpp"
+#include "Vortex/Graphics/API/IRendererAPI.hpp"
+#include "Vortex/Platform/OpenGL.hpp"
 
 namespace Vortex::Graphics
 {

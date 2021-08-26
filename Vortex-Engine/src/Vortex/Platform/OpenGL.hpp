@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
-    #include "Gl/Gl.h"
+    #include "GL/GL.h"
     #include "GL/wglext.h"
 #elif defined(VT_PLATFORM_LINUX)
     #include <X11/Xlib.h>
@@ -19,9 +19,9 @@
 
 #undef APIENTRY
 #ifdef VT_PLATFORM_WINDOWS
-#define APIENTRY __stdcall
+    #define APIENTRY __stdcall
 #else
-#define APIENTRY
+    #define APIENTRY
 #endif
 
 namespace Vortex::Graphics
@@ -177,12 +177,6 @@ namespace Vortex::Graphics
     VT_DECLARE_GL_FUNC(VertexAttribIPointer, GLvoid, GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer);
     VT_DECLARE_GL_FUNC(VertexAttribPointer, GLvoid, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer);
     #pragma endregion
-
-    #ifdef VT_PLATFORM_WINDOWS
-    GLvoid* GetProcAddress(const GLbyte* name);
-    #elif defined(VT_PLATFORM_LINUX)
-    GLvoid* GetProcAddress(const GLubyte* name);
-    #endif
 
     GLboolean LoadOpenGLFunctions();
 }

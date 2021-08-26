@@ -3,14 +3,15 @@
 //
 
 #include "vtpch.hpp"
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-//#define _UNICODE
 #include "Win32Window.hpp"
 
-#include "Vortex/Input/KeyCode.hpp"
-#include "Vortex/Input/MouseCode.hpp"
+#include "Vortex/Core/Utf.hpp"
+#include "Vortex/Core/Input/KeyCode.hpp"
+#include "Vortex/Core/Input/MouseCode.hpp"
+
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
 
@@ -19,13 +20,13 @@ using namespace Vortex::Input;
 using namespace Vortex::Graphics;
 
 #define VTCreateWindow(width, height, title, style, x, y) \
-    CreateWindowExA(0, windowClassName, title.data(), style, x, y, width, height, nullptr, nullptr, hInstance, nullptr)
+    CreateWindowExW(0, windowClassName, title.data(), style, x, y, width, height, nullptr, nullptr, hInstance, nullptr)
 
 namespace Vortex
 {
     namespace
     {
-        constexpr const wchar_t* windowClassName = L"Window Class";
+        constexpr LPCWSTR windowClassName = L"Window Class";
         HINSTANCE hInstance = nullptr;
 
         KeyCode     VTKeyCode(uint32 keycode, bool extended = false)
@@ -150,6 +151,16 @@ namespace Vortex
 
             return MouseCode::Unknown;
         }
+        LONG        Win32Style(WindowStyle style, bool resizable)
+        {
+            LONG result = 0;
+            if (style & WindowStyle::Titlebar) result |= WS_CAPTION;
+            if (style & WindowStyle::MaximizeButton) result |= WS_MAXIMIZEBOX;
+            if (style & WindowStyle::MinimizeButton) result |= WS_MAXIMIZEBOX;
+            if (resizable) result |= WS_THICKFRAME;
+        
+            return result;
+        }
     }
 
     unsigned int WindowImpl::windowsCount = 0;
@@ -175,13 +186,15 @@ namespace Vortex
         int x = (GetDeviceCaps(dc, HORZRES) - static_cast<int>(width)) / 2;
         int y = (GetDeviceCaps(dc, VERTRES) - static_cast<int>(height)) / 2;
         
-        hWnd = VTCreateWindow(data.width, height, title, style, x, y);
+        std::wstring _title;
+        ToWideString(title.begin(), title.end(), std::back_inserter(_title), 0);
+
+        hWnd = VTCreateWindow(data.width, height, _title, style, x, y);
         (*GetWindowsMap())[hWnd] = this;
         memset(keys, 0, sizeof(bool) * static_cast<uint32>(KeyCode::KeysCount));
 
         VTCoreLogTrace("Window Created! width: {}, height: {}", data.width, data.height);
 
-        IRendererAPI::Initialize();
         switch (IRendererAPI::GetGraphicsAPI())
         {
             case GraphicsAPI::OpenGL46:
@@ -208,10 +221,10 @@ namespace Vortex
         if (!windowsCount) Shutdown();
     }
 
-    void WindowImpl::Update()
+    void WindowImpl::PollEvents()
     {
         MSG msg;
-        while (PeekMessageW(&msg, hWnd, 0, 0, PM_REMOVE))
+        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -233,6 +246,45 @@ namespace Vortex
     void WindowImpl::RequestFocus() const
     {
         SetForegroundWindow(hWnd);
+    }
+    void WindowImpl::SetCursor(CursorShape shape)
+    {
+        if (hCursor) DestroyCursor(reinterpret_cast<HCURSOR>(hCursor));
+        LONG cursorID = 0;
+        switch (shape)
+        {
+            case CursorShape::Arrow:        cursorID = 32512; break;
+            case CursorShape::IBeam:        cursorID = 32513; break;
+            case CursorShape::Crosshair:    cursorID = 32515; break;
+            case CursorShape::Grabbed:      cursorID = 32649; break;
+            case CursorShape::HResize:      cursorID = 32644; break;
+            case CursorShape::VResize:      cursorID = 32645; break;
+
+            default: return HideCursor();
+        }
+
+        hCursor = LoadImageW(nullptr, MAKEINTRESOURCEW(cursorID), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+        ::SetCursor(reinterpret_cast<HCURSOR>(hCursor));
+    }
+    void WindowImpl::SetCursor(const Ref<Utility::Pixel> pixels, int32 width, int32 height)
+    {
+        if (hCursor) DestroyCursor(reinterpret_cast<HCURSOR>(hCursor));
+
+        uint64 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
+        Utility::Pixel* cursorPixels = new Utility::Pixel[size];
+
+        for (uint64 i = 0; i < size / 4; ++i)
+        {
+            cursorPixels[i * 4 + 0] = pixels.get()[i * 4 + 2];
+            cursorPixels[i * 4 + 1] = pixels.get()[i * 4 + 1];
+            cursorPixels[i * 4 + 2] = pixels.get()[i * 4 + 0];
+            cursorPixels[i * 4 + 3] = pixels.get()[i * 4 + 3];
+        }
+
+        hCursor = CreateIcon(hInstance, width, height, 1, 32, nullptr, cursorPixels);
+        delete cursorPixels;
+
+        ::SetCursor(reinterpret_cast<HCURSOR>(hCursor));
     }
     void WindowImpl::SetFullscreen(bool fullscreen)
     {
@@ -284,19 +336,44 @@ namespace Vortex
             data.fullscreen = fullscreen;
         }
     }
-    void WindowImpl::SetIcon(std::string_view path, int32 width, int32 height) const
+    void WindowImpl::SetIcon(std::string_view path, int32 width, int32 height)
     {
-        const std::wstring& name = std::wstring(path.begin(), path.end());
-        auto icon = (LONG_PTR)LoadImageW(nullptr, name.c_str(), IMAGE_ICON, width, height, LR_LOADFROMFILE);
-        //TODO: Refactor This
-        //SetClassLongPtrW(hWnd, GCLP_HICON, icon);
-        //SetClassLongPtrW(hWnd, GCLP_HICONSM, icon);
-        SendMessageW(hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
-        SendMessageW(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+        hIcon = reinterpret_cast<HICON>(LoadImageA(nullptr, path.data(), IMAGE_ICON, width, height, LR_LOADFROMFILE));
+
+        SendMessageW(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+        SendMessageW(hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+    }
+    void WindowImpl::SetIcon(const Utility::Pixel* pixels, int32 width, int32 height)
+    {
+        if (hIcon) DestroyIcon(hIcon);
+        
+        uint64 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
+        Utility::Pixel* iconPixels = new Utility::Pixel[size];
+        
+        for (uint64 i = 0; i < size / 4; ++i)
+        {
+            iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
+            iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
+            iconPixels[i * 4 + 2] = pixels[i * 4 + 0];
+            iconPixels[i * 4 + 3] = pixels[i * 4 + 3];
+        }
+
+        hIcon = CreateIcon(hInstance, width, height, 1, 32, nullptr, iconPixels);
+        delete iconPixels;
+
+        if (hIcon)
+        {
+            SendMessageW(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+            SendMessageW(hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+        }
+        else VTCoreLogWarn("Failed to Create Icon!");
     }
     void WindowImpl::SetTitle(std::string_view title) const noexcept
     {
-        SetWindowTextA(hWnd, title.data());
+        std::wstring _title;
+        ToWideString(title.begin(), title.end(), std::back_inserter(_title), 0);
+
+        SetWindowTextW(hWnd, _title.data());
         data.title = title;
     }
     void WindowImpl::SetPosition(uint32 x, uint32 y) const
@@ -322,6 +399,10 @@ namespace Vortex
 
         SetWindowPos(hWnd, 0, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
     }
+    void WindowImpl::SetStyle(WindowStyle style)
+    {
+        SetWindowLongW(hWnd, GWL_STYLE, Win32Style(style, data.resizable));
+    }
     void WindowImpl::SetVisible(bool visible) const
     {
         ShowWindow(hWnd, visible ? SW_SHOW : SW_HIDE);
@@ -345,7 +426,7 @@ namespace Vortex
         wcex.lpfnWndProc = HandleGlobalEvents;
         wcex.cbClsExtra = 0;
         wcex.cbWndExtra = 0;
-        wcex.hCursor = LoadCursor(hInstance, IDC_ARROW);
+        wcex.hCursor = LoadCursorA(hInstance, MAKEINTRESOURCEA(IDC_ARROW));
         wcex.hIcon = nullptr;
         wcex.hbrBackground = nullptr;
         wcex.hInstance = hInstance;
@@ -368,22 +449,58 @@ namespace Vortex
     LRESULT WINAPI WindowImpl::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         WindowImpl* window = (*GetWindowsMap())[hWnd];
+        static bool cursorTracked = true;
         switch (msg)
         {
             case WM_ACTIVATEAPP:
-                //TODO: ActivateApp
                 break;
             case WM_CHAR:
+            case WM_SYSCHAR:
             {
+                uint32 highSurrogate = 0;
+                if (wParam >= 0xd800 && wParam <= 0xdbff) highSurrogate = (WCHAR)wParam;
+                else
+                {
+                    uint32 codepoint = 0;
+
+                    if (wParam >= 0xdc00 && wParam <= 0xdfff)
+                    {
+                        if (highSurrogate)
+                        {
+                            codepoint += (highSurrogate - 0xd800) << 10;
+                            codepoint += (WCHAR)wParam - 0xdc00;
+                            codepoint += 0x10000;
+                        }
+                    }
+                    else codepoint = (WCHAR)wParam;
+                    WindowEvents::keyTypedEvent(window, codepoint);
+                }
+                return 0;
+            }
+            case WM_UNICHAR:
+            {
+                if (wParam == UNICODE_NOCHAR) return TRUE;
                 uint32 c = static_cast<uint32>(wParam);
-                keyTypedEvent(window, c);
-                break;
+                WindowEvents::keyTypedEvent(window, c);
+                return FALSE;
             }
             case WM_CLOSE:
             case WM_DESTROY:
                 data.isOpen = false;
                 PostQuitMessage(0);
                 break;
+            case WM_DEVICECHANGE:
+                break;
+            case WM_DISPLAYCHANGE:
+            {
+                Math::Vec2 resolution = { LOWORD(lParam), HIWORD(lParam) };
+                int32 depth = wParam;
+                WindowEvents::monitorResolutionChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), resolution, depth);
+                break;
+            }
+            case WM_DROPFILES:
+                break;
+            case WM_ERASEBKGND: return TRUE;
             case WM_SYSKEYUP:
             case WM_KEYUP:
             case WM_SYSKEYDOWN:
@@ -392,12 +509,12 @@ namespace Vortex
                 KeyCode key = VTKeyCode(static_cast<uint32>(wParam), lParam & (1 << 24));
                 if (((uint32)lParam & (1 << 31)) == 0)
                 {
-                    keyPressedEvent(window, key, lParam & 0xFF00);
+                    WindowEvents::keyPressedEvent(window, key, lParam & 0xFF00);
                     keys[static_cast<uint32>(key)] = true;
                 }
                 else
                 {
-                    keyReleasedEvent(window, key);
+                    WindowEvents::keyReleasedEvent(window, key);
                     keys[static_cast<uint32>(key)] = false;
                 }
                 break;
@@ -406,58 +523,100 @@ namespace Vortex
             case WM_MBUTTONUP:
             case WM_RBUTTONUP:
             case WM_XBUTTONUP:
-                mouseButtonReleasedEvent(window, VTMouseCode(wParam));
+                WindowEvents::mouseButtonReleasedEvent(window, VTMouseCode(wParam));
                 break;
             case WM_LBUTTONDOWN:
             case WM_MBUTTONDOWN:
             case WM_RBUTTONDOWN:
             case WM_XBUTTONDOWN:
-                mouseButtonPressedEvent(window, VTMouseCode(wParam), false);
+                WindowEvents::mouseButtonPressedEvent(window, VTMouseCode(wParam), false);
                 break;
             case WM_LBUTTONDBLCLK:
             case WM_MBUTTONDBLCLK:
             case WM_RBUTTONDBLCLK:
             case WM_XBUTTONDBLCLK:
-                mouseButtonPressedEvent(window, VTMouseCode(wParam), true);
+                WindowEvents::mouseButtonPressedEvent(window, VTMouseCode(wParam), true);
                 break;
-            case WM_MOUSEWHEEL:
-            {
-                int16 delta = HIWORD(wParam);
-                mouseScrolledEvent(window, { delta / 120.0f, 0.0f });
+            case WM_MOUSEACTIVATE: break;
+            case WM_MOUSELEAVE:
+                cursorTracked = false;
+                WindowEvents::mouseCursorEnterEvent(window, false);
                 break;
-            }
-            case WM_MOUSEHWHEEL:
-            {
-                int16 delta = HIWORD(wParam);
-                mouseScrolledEvent(window, { 0.0f, delta / 120.0f });
-                break;
-            }
             case WM_MOUSEMOVE:
             {
+                if (!cursorTracked)
+                {
+                    TRACKMOUSEEVENT lpEventTrack;
+                    lpEventTrack.cbSize      = sizeof(lpEventTrack);
+                    lpEventTrack.dwFlags     = TME_LEAVE;
+                    lpEventTrack.hwndTrack = window->hWnd;
+                    lpEventTrack.dwHoverTime = 0;
+                    TrackMouseEvent(&lpEventTrack);
+
+                    cursorTracked = true;
+                    WindowEvents::mouseCursorEnterEvent(window, true);
+                }
+
                 POINT point = (POINT)lParam;
                 ScreenToClient(hWnd, &point);
                 uint32 x = point.x;
                 uint32 y = point.y;
 
                 data.position = { x, y };
-                mouseMovedEvent(window, Math::Vec2(x, y));
+                WindowEvents::mouseMovedEvent(window, Math::Vec2(x, y));
+                break;
+            }
+            case WM_MOUSEWHEEL:
+            {
+                int16 delta = HIWORD(wParam);
+                WindowEvents::mouseScrolledEvent(window, { delta / 120.0f, 0.0f });
+                break;
+            }
+            case WM_MOUSEHWHEEL:
+            {
+                int16 delta = HIWORD(wParam);
+                WindowEvents::mouseScrolledEvent(window, { 0.0f, delta / 120.0f });
                 break;
             }
             case WM_SIZE:
                 data.width = LOWORD(lParam);
                 data.height = HIWORD(lParam);
-                windowResizedEvent(window, { LOWORD(lParam), HIWORD(lParam) });
-                //TODO: Change Viewport?
+                WindowEvents::windowResizedEvent(window, { LOWORD(lParam), HIWORD(lParam) });
+                
+                if (wParam == SIZE_MINIMIZED) data.minimized = true;
                 break;
             case WM_SETFOCUS:
-                focusChangedEvent(window, true);
+                WindowEvents::focusChangedEvent(window, true);
                 break;
             case WM_KILLFOCUS:
-                focusChangedEvent(window, false);
+                WindowEvents::focusChangedEvent(window, false);
                 break;
 	        case WM_SYSCOMMAND:
-		        //TODO: WM_SYSCOMMAND
-		        break;
+            {
+                switch (wParam)
+                {
+                    case SC_MONITORPOWER:
+                    {
+                        MonitorState monitorState = {};
+                        switch (lParam)
+                        {
+                            case -1: monitorState = MonitorState::On;       break;
+                            case  2: monitorState = MonitorState::Off;      break;
+                            case  1: monitorState = MonitorState::LowPower; break;
+                        }
+
+                        WindowEvents::monitorStateChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), monitorState);
+                        break;
+                    }
+                    case SC_SCREENSAVE:
+                        //NOTE: If fullscreen is enabled, disable screensaver
+                        if (data.fullscreen) return 0;
+                        WindowEvents::monitorStateChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), MonitorState::ScreenSaver);
+                        break;
+                }
+
+                break;
+            }
 
             default:
                 break;
