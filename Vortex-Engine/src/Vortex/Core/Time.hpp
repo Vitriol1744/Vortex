@@ -5,6 +5,7 @@
 
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/Timestep.hpp"
+#undef GetCurrentTime
 
 namespace Vortex
 {
