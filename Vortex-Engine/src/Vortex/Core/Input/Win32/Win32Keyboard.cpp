@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 04.08.2021.
 //
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Vortex/Core/Input/Keyboard.hpp"

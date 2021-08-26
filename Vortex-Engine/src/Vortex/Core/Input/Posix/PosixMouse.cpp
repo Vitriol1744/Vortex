@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 13.08.2021.
 //
 #include "Vortex/Core/Input/Mouse.hpp"
-
+#ifdef VT_PLATFORM_LINUX
 #include <X11/Xlib.h>
 
 namespace Vortex::Input
@@ -49,3 +49,4 @@ namespace Vortex::Input
         XFlush(display);
     }
 }
+#endif

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #include <string>
 
@@ -22,16 +22,13 @@ namespace Vortex
     class VT_API Logger
     {
         public:
-            Logger() = default;
-            explicit Logger(std::string_view name) { }
-            virtual ~Logger() = default;
+            Logger(std::string_view name) { SetName(name); }
             
-            static void Initialize(); //NOTE: Has to be implemented by derived class
-            virtual void Log(LogLevel level, std::string_view formattedString) = 0;
+            void Log(LogLevel level, std::string_view formattedString);
             
             void SetName(std::string_view name) { this->name = name; }
             
-        protected:
+        private:
             std::string name;
     };
 }

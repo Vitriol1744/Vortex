@@ -6,7 +6,7 @@
 #include "Vortex/Core/Export.hpp"
 #include "Vortex/Core/Singleton.hpp"
 #include "Vortex/Core/Types.hpp"
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #include "Vortex/Core/Logger.hpp"
 

@@ -2,7 +2,7 @@
 // Created by Vitriol1744 on 13.08.2021.
 //
 #include "Vortex/Core/Input/Keyboard.hpp"
-
+#ifdef VT_PLATFORM_LINUX
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
@@ -136,3 +136,4 @@ namespace Vortex::Input
         return false;
     }
 }
+#endif

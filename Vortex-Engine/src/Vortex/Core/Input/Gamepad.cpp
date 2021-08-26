@@ -4,7 +4,7 @@
 #include "Gamepad.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
-	#include "Vortex/Input/Win32/Win32Gamepad.hpp"
+	#include "Vortex/Core/Input/Win32/Win32Gamepad.hpp"
 #endif
 
 namespace Vortex::Input

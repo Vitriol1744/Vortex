@@ -1,7 +1,7 @@
 //
 // Created by Vitriol1744 on 03.08.2021.
 //
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #ifdef VT_PLATFORM_WINDOWS
 #include "Win32Gamepad.hpp"
@@ -72,7 +72,7 @@ namespace Vortex::Input
             {
                 // Controller is connected
                 controllers[index].isConnected = true;
-                VT_CORE_LOG_INFO("Controller is Connected!");
+                VTCoreLogInfo("Controller is Connected!");
 
                 // State Changed?
                 if (state.dwPacketNumber != packetNumber)
@@ -91,7 +91,7 @@ namespace Vortex::Input
                 // Controller is not connected
                 controllers[index].isConnected = false;
             }
-            else VT_CORE_LOG_ERROR("XInput: Failed to Retrieve State of Gamepad at index: {}", index);
+            else VTCoreLogError("XInput: Failed to Retrieve State of Gamepad at index: {}", index);
         }
 	}
 
