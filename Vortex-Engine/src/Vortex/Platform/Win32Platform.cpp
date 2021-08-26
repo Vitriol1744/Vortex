@@ -3,8 +3,12 @@
 //
 #include "Platform.hpp"
 
+#include "Vortex/Core/LoggingManager.hpp"
+#include "Vortex/Core/Timestep.hpp"
+
 #ifdef VT_PLATFORM_WINDOWS
 #include <Windows.h>
+#undef GetCurrentTime
 
 namespace Vortex::Platform
 {
@@ -38,7 +42,7 @@ namespace Vortex::Platform
             return true;
         }
     }
-    static HANDLE hConsole;
+    static HANDLE hConsole = nullptr;
 
     static LARGE_INTEGER GetPerformanceFrequency()
     {
@@ -48,7 +52,7 @@ namespace Vortex::Platform
         return frequency;
     }
 
-    float64 GetTime()
+    float64 GetCurrentTime()
     {
         LARGE_INTEGER performanceCounter;
         static LARGE_INTEGER performanceFrequency = GetPerformanceFrequency();
@@ -70,7 +74,7 @@ namespace Vortex::Platform
     }
     void SetConsoleTextColor(ConsoleTextColor foregroundColor, ConsoleTextColor backgroundColor)
     {
-        if (!hConsole) hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+         if (!hConsole) hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         int background = 0;
         int foreground = 0;
         switch (foregroundColor)
@@ -93,7 +97,7 @@ namespace Vortex::Platform
             case ConsoleTextColor::Yellow:  background = 0x60; break;
             case ConsoleTextColor::Red:     background = 0x40; break;
         }
-        SetConsoleTextAttribute(hConsole, background & foreground);
+        SetConsoleTextAttribute(hConsole, (background << 4) | foreground);
     }
 }
 #endif

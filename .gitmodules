@@ -2,3 +2,6 @@
 	path = Vortex-Engine/vendor/imgui
 	url = https://github.com/vitriol1744/imgui
 	branch = docking
+[submodule "Vortex-Engine/vendor/glm"]
+	path = Vortex-Engine/vendor/glm
+	url = https://github.com/g-truc/glm
