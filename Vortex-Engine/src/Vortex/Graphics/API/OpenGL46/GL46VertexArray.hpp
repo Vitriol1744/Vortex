@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "Core/Core.hpp"
+#include "Vortex/Core/Core.hpp"
 
-#include "Graphics/API/IVertexArray.hpp"
-#include "OpenGL.hpp"
+#include "Vortex/Graphics/API/IVertexArray.hpp"
+#include "Vortex/Platform/OpenGL.hpp"
 
 #include <vector>
 

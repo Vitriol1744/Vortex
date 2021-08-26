@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Platform/Platform.hpp"
 
 #define VT_STATIC_LIBRARY
 #ifndef VT_STATIC_LIBRARY

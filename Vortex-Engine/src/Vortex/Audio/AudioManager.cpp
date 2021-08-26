@@ -6,6 +6,8 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
+#include "Vortex/Core/Time.hpp"
+
 namespace Vortex::Audio
 {
     struct Device
@@ -20,9 +22,9 @@ namespace Vortex::Audio
             if (device) alcCloseDevice(device);
         }
 
-        ALCdevice* device;
-        ALCcontext* context;
-        AudioDevice id;
+        ALCdevice* device = nullptr;
+        ALCcontext* context = nullptr;
+        AudioDevice id = 0;
         std::string name;
     };
 
@@ -58,8 +60,6 @@ namespace Vortex::Audio
     ALCvoid AudioManager::Shutdown()
     {
         while (!devices.empty()) devices.pop_back();
-        if (defaultDevice.context) alcDestroyContext(defaultDevice.context);
-        if (defaultDevice.device) alcCloseDevice(defaultDevice.device);
     }
 
     std::vector<std::string> AudioManager::GetAudioDevices()

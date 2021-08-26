@@ -7,11 +7,13 @@ namespace Vortex::Graphics
 {
     #pragma region initializing opengl functions
     #define VT_GL_INIT_FUNC(name) PFNGL##name##PROC gl##name = nullptr
+    VT_GL_INIT_FUNC(ActiveTexture);
     VT_GL_INIT_FUNC(AttachShader);
     VT_GL_INIT_FUNC(BindBuffer);
     VT_GL_INIT_FUNC(BindSampler);
     VT_GL_INIT_FUNC(BindTexture);
     VT_GL_INIT_FUNC(BindVertexArray);
+    VT_GL_INIT_FUNC(BlendEquation);
     VT_GL_INIT_FUNC(BlendEquationSeparate);
     VT_GL_INIT_FUNC(BlendFuncSeparate);
     VT_GL_INIT_FUNC(BufferData);
@@ -29,6 +31,7 @@ namespace Vortex::Graphics
     VT_GL_INIT_FUNC(DeleteShader);
     VT_GL_INIT_FUNC(DeleteVertexArrays);
     VT_GL_INIT_FUNC(DetachShader);
+    VT_GL_INIT_FUNC(DrawElements);
     VT_GL_INIT_FUNC(DrawElementsBaseVertex);
     VT_GL_INIT_FUNC(EnableVertexAttribArray);
     VT_GL_INIT_FUNC(GenBuffers);
@@ -98,11 +101,13 @@ namespace Vortex::Graphics
 
         #pragma region loading opengl functions
         #define VT_GL_LOAD(name) gl##name = (PFNGL##name##PROC) GetProcAddress(ubyte(gl##name))
+        VT_GL_LOAD(ActiveTexture);
         VT_GL_LOAD(AttachShader);
         VT_GL_LOAD(BindBuffer);
         VT_GL_LOAD(BindSampler);
         VT_GL_LOAD(BindTexture);
         VT_GL_LOAD(BindVertexArray);
+        VT_GL_LOAD(BlendEquation);
         VT_GL_LOAD(BlendEquationSeparate);
         VT_GL_LOAD(BlendFuncSeparate);
         VT_GL_LOAD(BufferData);
@@ -120,6 +125,7 @@ namespace Vortex::Graphics
         VT_GL_LOAD(DeleteShader);
         VT_GL_LOAD(DeleteVertexArrays);
         VT_GL_LOAD(DetachShader);
+        VT_GL_LOAD(DrawElements);
         VT_GL_LOAD(DrawElementsBaseVertex);
         VT_GL_LOAD(EnableVertexAttribArray);
         VT_GL_LOAD(GenBuffers);

@@ -3,6 +3,10 @@
 //
 #pragma once
 
+#define VTAddListener2(event, name, function, ...) event.AddListener(std::to_string(name).data(), std::bind(function, __VA_ARGS__))
+#define VTAddListener(event, function, ...) VTAddListener2(event, __COUNTER__, function, __VA_ARGS__)
+#define VT_PH(n) std::placeholders::_##n
+
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/EventSystem.hpp"
 
@@ -139,6 +143,56 @@ namespace Vortex
             {
                 Arg1 arg1;
                 Arg2 arg2;
+            };
+            std::queue<EventData> eventsData;
+    };
+    template<typename Arg1, typename Arg2, typename Arg3>
+    class Event<Arg1, Arg2, Arg3> : public IEventBase
+    {
+        public:
+            inline void RemoveAllListeners() { listeners.clear(); listenersCount = 0;}
+            VT_NODISCARD inline int GetListenersCount() const { return listenersCount; }
+
+            inline void AddListener(const char* id, const std::function<bool(Arg1, Arg2, Arg3)>& listener)
+            {
+                if (listeners.find(id) == listeners.end())
+                {
+                    listeners[id] = listener;
+                    listenersCount++;
+                }
+                else VT_CORE_ASSERT_MSG(false, "Listener with given id already exists!");
+            }
+            inline void RemoveListener(const char* id, const std::function<bool(Arg1, Arg2, Arg3)>& listener)
+            {
+                listeners.erase(id);
+                listenersCount--;
+            }
+            inline void operator()(Arg1 arg1, Arg2 arg2, Arg3 arg3)
+            {
+                eventsData.push({arg1, arg2, arg3});
+                EventSystem::Instance()->PushEvent(this);
+            }
+            inline void Dispatch() override
+            {
+                auto&[arg1, arg2, arg3] = eventsData.front();
+                for (const auto& listener : listeners)
+                {
+                    if (listener.second)
+                    {
+                        if (listener.second(arg1, arg2, arg3)) break;
+                    }
+                }
+                eventsData.pop();
+            }
+
+        private:
+            int listenersCount = 0;
+            std::unordered_map<const char*, std::function<bool(Arg1, Arg2, Arg3)>> listeners;
+            struct EventData
+            {
+                Arg1 arg1;
+                Arg2 arg2;
+                Arg3 arg3;
             };
             std::queue<EventData> eventsData;
     };

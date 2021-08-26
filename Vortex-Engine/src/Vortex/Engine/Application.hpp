@@ -5,7 +5,7 @@
 
 #include "Vortex/Core/Core.hpp"
 
-#include <imgui/imgui.h>
+#include "Vortex/Engine/Engine.hpp"
 
 #include <vector>
 
@@ -22,6 +22,12 @@ namespace Vortex
 
             virtual void Update() { }
             virtual void Render() { }
+
+            inline void PushOverlay(Graphics::Layer* overlay) { Engine::GetLayerStack().PushOverlay(overlay); }
+            inline void PushLayer(Graphics::Layer* layer) { Engine::GetLayerStack().PushLayer(layer); }
+
+            inline void PopOverlay(Graphics::Layer* overlay) { Engine::GetLayerStack().PopOverlay(overlay); }
+            inline void PopLayer(Graphics::Layer* layer) { Engine::GetLayerStack().PopLayer(layer); }
 
         protected:
             std::vector<char*> arguments;

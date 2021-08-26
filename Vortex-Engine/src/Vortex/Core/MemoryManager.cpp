@@ -28,4 +28,5 @@ void* operator new(size_t size)
 void operator delete(void* ptr, size_t size)
 {
     MemoryManager::Instance()->Deallocate(ptr, size);
+    ptr = nullptr;
 }
