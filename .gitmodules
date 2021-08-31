@@ -7,3 +7,6 @@
 	url = https://github.com/g-truc/glm
 [submodule "Vortex-Engine/vendor/OpenAL"]
 	url = https://github.com/kcat/openal-soft
+[submodule "Vortex-Engine/vendor/fmt"]
+	path = Vortex-Engine/vendor/fmt
+	url = https://github.com/fmtlib/fmt

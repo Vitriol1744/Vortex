@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.10)
 project (Vortex-Engine)
 
 find_package (OpenGL REQUIRED COMPONENTS OpenGL)
+find_package (Vulkan REQUIRED COMPONENTS Vulkan)
 
 #TODO: Download FMT
 
@@ -24,9 +25,9 @@ add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (WIN32_EXECUTABLE TRUE)
 set (VENDOR "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
-set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt" "${VENDOR}/glm")
+set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt" "${VENDOR}/glm" ${Vulkan_INCLUDE_DIRS})
 
-set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm" "imgui")
+set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm" "imgui" ${Vulkan_LIBRARIES} dl)
 file (GLOB_RECURSE SOURCES "src/*/*.cpp")
 
 if (UNIX)
@@ -35,8 +36,7 @@ endif()
 
 add_library (${PROJECT_NAME} STATIC ${SOURCES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
 #target_precompile_headers (${PROJECT_NAME} PRIVATE "src/Vortex/vtpch.hpp")
 
