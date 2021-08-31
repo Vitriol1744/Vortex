@@ -26,7 +26,7 @@ namespace Vortex
             void Run();
             inline static void Stop() { instance->running = false; }
 
-            inline static Ref<IWindow>& GetWindow() { return instance->window; }
+            //inline static Ref<IWindow>& GetWindow() { return instance->window; }
             inline static Application* GetApplication() { return instance->app; }
             inline static Graphics::LayerStack& GetLayerStack() { return instance->layerStack; }
             inline static Graphics::ShaderLibrary& GetShadersLibrary() { return instance->shadersLibrary; }
@@ -35,7 +35,6 @@ namespace Vortex
 
         private:
             static Engine* instance;
-            Ref<IWindow> window;
             Application* app;
             Graphics::LayerStack layerStack;
             Graphics::ShaderLibrary shadersLibrary;

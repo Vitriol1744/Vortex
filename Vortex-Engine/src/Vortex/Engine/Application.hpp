@@ -14,8 +14,15 @@ namespace Vortex
     class VT_API Application
     {
         public:
-            Application() = default;
+            friend class Engine;
+
+            inline Application(std::string applicationName = "Vortex Application", Math::Vec3 applicationVersion = { 1, 0, 0 })
+                : applicationName(applicationName), applicationVersion(applicationVersion) { }
             ~Application() = default;
+
+            inline std::string_view GetName() const noexcept { return applicationName; }
+            inline Math::Vec3 GetVersion() const noexcept { return applicationVersion; }
+            inline Ref<IWindow> GetWindow() const noexcept { return window; }
 
             virtual void Initialize() { }
             virtual void Shutdown() { }
@@ -30,7 +37,18 @@ namespace Vortex
             inline void PopLayer(Graphics::Layer* layer) { Engine::GetLayerStack().PopLayer(layer); }
 
         protected:
+            Ref<IWindow> window;
+
+            std::string applicationName     = "Vortex Application";
+            Math::Vec3  applicationVersion  = { 1, 0, 0 };
+
             std::vector<char*> arguments;
+
+        private:
+            void CreateWindow(int32 width, int32 height, std::string_view title)
+            {
+                window = WindowManager::Instance()->NewWindow(800, 600, "Vortex", nullptr);
+            }
     };
 
     extern Application* CreateApplication(std::vector<char*> arguments);

@@ -40,19 +40,25 @@ namespace Vortex
         Platform::Internal::Initialize();
         Time::Instance(); // Initialize Time!
         AudioManager::Initialize();
-        IRendererAPI::Initialize();
-        VTCoreLogInfo("");
-        window = WindowManager::Instance()->NewWindow(width, height, "Vortex", nullptr);
+        VTCoreLogInfo("C++ Standard: {}", __cplusplus);
         app = CreateApplication(arguments);
-        VTCoreLogInfo("Arguments: ");
+        #ifdef USE_OPENGL
+        IRendererAPI::Initialize(GraphicsAPI::OpenGL46, app->GetName(), app->GetVersion());
+        #elif defined(USE_VULKAN)
+        IRendererAPI::Initialize(GraphicsAPI::Vulkan, app->GetName(), app->GetVersion());
+        #endif
+        app->CreateWindow(width, height, "Vortex Application");
+        VTCoreLogInfo("Command Line Arguments: ");
         for (int i = 0; i < arguments.size(); i++) VTCoreLogInfo("Arg[{}]: {}", i, arguments[i]);
-        VTCoreLogInfo("");
 
-        Graphics::ImGuiRenderer::Initialize(window);
+        #ifdef USE_OPENGL
+        Graphics::ImGuiRenderer::Initialize(app->GetWindow());
+        #endif
     }
     void Engine::Shutdown()
     {
         delete app;
+        IRendererAPI::Shutdown();
         AudioManager::Shutdown();
         Platform::Internal::Shutdown();
     }
@@ -70,6 +76,8 @@ namespace Vortex
         #pragma ide diagnostic ignored "ConstantConditionsOC"
         while (running)
         {
+            //TODO: Temporary!
+            framerateLimit = 0;
             //Gamepad::PollInput();
             if (Time::GetTime().Seconds() - fpsTimer >= 1.0f)
             {
@@ -99,17 +107,19 @@ namespace Vortex
         IRendererAPI::Clear();
         app->Update();
 
+        #ifdef USE_OPENGL
         ImGuiRenderer::Begin();
-        
+
         static bool show = true;
         ImGui::ShowDemoWindow(&show);
-        
+
         ImGuiRenderer::End();
+        #endif
     }
 
     void Engine::Render()
     {
-        window->ActivateContext();
+        app->GetWindow()->ActivateContext();
         app->Render();
     }
 }
