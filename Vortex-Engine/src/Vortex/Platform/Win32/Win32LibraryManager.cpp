@@ -20,6 +20,11 @@ namespace Vortex::Platform
 
 		return hModule;
 	}
+	void LibraryManager::CloseLibrary(void* library)
+	{
+	    FreeLibrary(library);
+	}
+	
 	void* LibraryManager::GetProcAddress(void* library, const char* procName)
 	{
 		return GetProcAddress(library, procName);

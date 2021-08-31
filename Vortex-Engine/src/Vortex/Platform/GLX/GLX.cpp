@@ -6,7 +6,7 @@
 
 #include "Vortex/Graphics/API/OpenGL46/OpenGL.hpp"
 
-#include "Vortex/Graphics/Window/Posix/X11Window.hpp"
+#include "Vortex/Graphics/Window/X11/X11Window.hpp"
 
 namespace Vortex::Platform
 {
@@ -79,7 +79,8 @@ namespace Vortex::Platform
         VT_CORE_ASSERT(context != nullptr);
 
         glXMakeCurrent(context->display, context->window, context->context);
-        
+
+        SwapInterval(0);
         return { std::reinterpret_pointer_cast<EGLContext>(context) };
     }
     void EGLSwapBuffers(EGLContext& _context)

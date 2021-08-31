@@ -32,17 +32,17 @@
     #error Unknown Platform!
 #endif
 
-#ifdef DEBUG
-    #define VT_DEBUG
-#else
-    #define VT_RELEASE
-#endif
-
 namespace Vortex
 {
     enum class LogLevel;
     namespace Platform
     {
+        #ifdef VT_PLATFORM_WINDOWS
+            using NativeWindowHandleType = void*;
+        #elif defined(VT_PLATFORM_LINUX)
+            using NativeWindowHandleType = uint64;
+        #endif
+
         namespace Internal
         {
             bool Initialize();

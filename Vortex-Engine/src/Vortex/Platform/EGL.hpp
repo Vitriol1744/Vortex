@@ -8,43 +8,41 @@
 constexpr const int DEFAULT_OPENGL_CONTEXT_VERSION_MAJOR = 4;
 constexpr const int DEFAULT_OPENGL_CONTEXT_VERSION_MINOR = 6;
 
-namespace Vortex::Platform
+namespace Vortex
 {
-    #ifdef VT_PLATFORM_WINDOWS
-    using NativeWindowHandle = void*;
-    #elif defined(VT_PLATFORM_LINUX)
-    using NativeWindowhandle = uint64;
-    #endif
-    
-    enum class OpenGLProfile
+    namespace Platform
     {
-        Compatibility,
-        Core,
+        enum class OpenGLProfile
+        {
+            Compatibility,
+            Core,
         
-        Default = Core
-    };
+            Default = Core
+        };
     
-    struct VT_API EGLContextCreateInfo
-    {
-        NativeWindowhandle windowHandle;
-        int32 bitsPerPixel;
+        struct VT_API EGLContextCreateInfo
+        {
+            NativeWindowHandleType windowHandle;
+            int32 bitsPerPixel;
 
-        uint32 openGLContextVersionMajor = 4;
-        uint32 openGLContextVersionMinor = 6;
-        OpenGLProfile openGLProfile      = OpenGLProfile::Default;
+            uint32 openGLContextVersionMajor = 4;
+            uint32 openGLContextVersionMinor = 6;
+            OpenGLProfile openGLProfile      = OpenGLProfile::Default;
         
-        Ref<void> sharedContext;
-    };
+            Ref<void> sharedContext;
+        };
     
-    struct VT_API EGLContext
-    {
-        Ref<void> nativeContext;
-        EGLContext() = default;
-        inline EGLContext(Ref<void> context) { nativeContext = context;  }
-        virtual ~EGLContext() = default;
-    };
+        struct VT_API EGLContext
+        {
+            Ref<void> nativeContext;
+            EGLContext() = default;
+            inline EGLContext(Ref<void> context) { nativeContext = context;  }
+            virtual ~EGLContext() = default;
+        };
 
-    EGLContext EGLCreateContext(EGLContextCreateInfo& createInfo);
-    void EGLSwapBuffers(EGLContext& context);
-    void EGLMakeContextCurrent(EGLContext& context);
+        EGLContext EGLCreateContext(EGLContextCreateInfo& createInfo);
+        void EGLSwapBuffers(EGLContext& context);
+        void EGLMakeContextCurrent(EGLContext& context);
+    }
+    using Platform::NativeWindowHandleType;
 }

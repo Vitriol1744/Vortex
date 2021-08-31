@@ -12,6 +12,8 @@ namespace Vortex::Platform
 	{
 		public:
 			static void* LoadLibrary(const char* filename);
+			static void  CloseLibrary(void* library);
+			
 			static void* GetProcAddress(void* library, const char* procName);
 	};
 }
