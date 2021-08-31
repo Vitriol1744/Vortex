@@ -23,3 +23,9 @@
 #else
     #define VT_API
 #endif
+
+#ifdef DEBUG
+    #define VT_DEBUG
+#else
+    #define VT_RELEASE
+#endif

@@ -10,7 +10,7 @@
 
 #include "Vortex/Core/Logger.hpp"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 namespace Vortex
 {
@@ -31,11 +31,11 @@ namespace Vortex
 }
 
 #if defined(VT_DEBUG)
-    #define VTCoreLogTrace(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Trace, fmt::format(__VA_ARGS__))
-    #define VTCoreLogInfo(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Info, fmt::format(__VA_ARGS__))
-    #define VTCoreLogWarn(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Warn, fmt::format(__VA_ARGS__))
-    #define VTCoreLogError(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Error, fmt::format(__VA_ARGS__))
-    #define VTCoreLogFatal(...)     LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Fatal, fmt::format(__VA_ARGS__))
+    #define VTCoreLogTrace(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Trace, fmt::format(__VA_ARGS__))
+    #define VTCoreLogInfo(...)       LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Info, fmt::format(__VA_ARGS__))
+    #define VTCoreLogWarn(...)       LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Warn, fmt::format(__VA_ARGS__))
+    #define VTCoreLogError(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Error, fmt::format(__VA_ARGS__))
+    #define VTCoreLogFatal(...)      LoggingManager::Instance()->CoreLogger()->Log(LogLevel::Fatal, fmt::format(__VA_ARGS__))
     
     #define VTLogTrace(...)  Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Trace, fmt::format(__VA_ARGS__))
     #define VTLogInfo(...)   Vortex::LoggingManager::Instance()->ClientLogger()->Log(Vortex::LogLevel::Info, fmt::format(__VA_ARGS__))

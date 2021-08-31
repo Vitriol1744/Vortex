@@ -14,3 +14,14 @@
 #include "Vortex/Core/HashedString.hpp"
 
 #define VT_NODISCARD [[nodiscard]]
+
+namespace Vortex
+{
+    constexpr const uint8 vortexVersion_Major = 0;
+    constexpr const uint8 vortexVersion_Minor = 1;
+    constexpr const uint8 vortexVersion_Patch = 0;
+}
+
+#ifndef __FUNCSIG__
+    #define __FUNCSIG__ __PRETTY_FUNCTION__
+#endif
