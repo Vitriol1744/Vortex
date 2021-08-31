@@ -108,7 +108,7 @@ namespace Vortex::Graphics
     #define GL_FRAGMENT_SHADER              0x8B30
     #define GL_VERTEX_SHADER                0x8B31
     #define GL_BOOL                         0x8B56
-    #define GL_COMPILE_STATUS               0x8B81
+    #define GL_COMPILE_STATUS               0x8B81  
     #define GL_LINK_STATUS                  0x8B82
     #define GL_INFO_LOG_LENGTH              0x8B84
     #define GL_SHADING_LANGUAGE_VERSION     0x8B8C

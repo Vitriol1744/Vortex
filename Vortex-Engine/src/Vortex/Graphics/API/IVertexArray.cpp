@@ -18,6 +18,11 @@ namespace Vortex::Graphics
             case GraphicsAPI::OpenGL46:
                 result = CreateRef<GL46VertexArray>();
                 break;
+            case GraphicsAPI::Vulkan:
+                //TODO: Vulkan: IVertexArray Impl
+                result = nullptr;
+                return result;
+                break;
 
             case GraphicsAPI::None:
             default:

@@ -5,6 +5,8 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include "Vortex/Platform/EGL.hpp"
+
 namespace Vortex::Graphics
 {
     struct VT_API IGraphicsContext
@@ -13,7 +15,6 @@ namespace Vortex::Graphics
         virtual ~IGraphicsContext() = default;
 
         virtual void Present() = 0;
-
         virtual void Activate() = 0;
     };
 }

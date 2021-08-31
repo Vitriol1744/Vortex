@@ -8,6 +8,11 @@ namespace Vortex::Graphics
 {
     using namespace Math;
 
+    GLvoid GL46RendererAPI::InitializeImpl()
+    {
+        
+    }
+
     GLvoid GL46RendererAPI::SetClearColorImpl(Math::Vec4 color)
     {
         glClearColor(color.r, color.g, color.b, color.a);
@@ -27,14 +32,30 @@ namespace Vortex::Graphics
          glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr);
     }
 
-    GLvoid GL46RendererAPI::Initialize()
+    GLboolean GL46RendererAPI::PostInitialize()
     {
+        if (!LoadOpenGLFunctions())
+        {
+            VTCoreLogError("Failed to Load OpenGL Functions!");
+            VTCoreLogError("Failed to Initialize OpenGL!");
+            return false;
+        }
+
+        VTCoreLogTrace("OpenGL Initialized!");
+        VTCoreLogInfo("Version: {}", glGetString(GL_VERSION));
+        VTCoreLogInfo("Vendor: {}", glGetString(GL_VENDOR));
+        VTCoreLogInfo("Renderer: {}", glGetString(GL_RENDERER));
+        VTCoreLogInfo("Shading Language Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
         glDebugMessageCallback(ErrorCallback, nullptr);
-
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+
+        glEnable(GL_DEPTH_TEST);
+
+        return true;
     }
 
     GLvoid GL46RendererAPI::ErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam)

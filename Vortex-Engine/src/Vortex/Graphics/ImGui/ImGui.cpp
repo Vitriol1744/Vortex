@@ -37,7 +37,7 @@ namespace
         viewport->PlatformUserData = vd;
 
         Ref<IWindow> sharedWindow = bd->window; // if opengl
-        vd->window = IWindow::CreateWindow((int)viewport->Size.x, (int)viewport->Size.y, "No Title Yet", sharedWindow);
+        vd->window = IWindow::CreateWindow((int)viewport->Size.x, (int)viewport->Size.y, 32, "No Title Yet", sharedWindow);
         vd->windowOwned = true;
         viewport->PlatformHandle = (void*)vd->window.get();
         vd->window->SetPosition((int)viewport->Pos.x, (int)viewport->Pos.y);

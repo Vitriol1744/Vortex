@@ -154,7 +154,7 @@ namespace Vortex::Graphics
         VT_GL_LOAD(VertexAttribPointer);
         #pragma endregion
 
-        if (initialized) VTCoreLogTrace("OpenGL Functions Successfully Loaded!\n");
+        if (initialized) VTCoreLogTrace("OpenGL Functions Successfully Loaded!");
         return initialized;
     }
 }

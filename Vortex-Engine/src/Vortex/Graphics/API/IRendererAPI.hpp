@@ -14,30 +14,38 @@ namespace Vortex::Graphics
     enum class GraphicsAPI
     {
         None,
-        OpenGL46
+        OpenGL46,
+        Vulkan
     };
 
     class VT_API IRendererAPI
     {
         public:
             IRendererAPI() = default;
-            virtual ~IRendererAPI() = default;
+            virtual ~IRendererAPI() { api = GraphicsAPI::None; }
 
-            static void Initialize();
+            static void Initialize(GraphicsAPI api, std::string_view applicationName, Math::Vec3 applicationVersion);
+            static void Shutdown();
+
             VT_NODISCARD inline static GraphicsAPI GetGraphicsAPI() { return api; }
 
-            inline static void SetClearColor(Math::Vec4 color) { Get()->SetClearColorImpl(color); }
-            inline static void SetViewport(const Math::Rectangle& rect) { Get()->SetViewportImpl(rect); }
+            inline static void SetClearColor(Math::Vec4 color) { instance->SetClearColorImpl(color); }
+            inline static void SetViewport(const Math::Rectangle& rect) { instance->SetViewportImpl(rect); }
 
-            inline static void Clear() { Get()->ClearImpl(); }
+            inline static void Clear() { instance->ClearImpl(); }
             inline static void DrawIndexed(const Ref<IVertexArray>& mesh, uint32 indicesCount = 0)
             {
                 if (!indicesCount) indicesCount = mesh->GetIndexBuffer()->GetIndicesCount();
-                Get()->DrawIndexedImpl(mesh, indicesCount);
+                instance->DrawIndexedImpl(mesh, indicesCount);
             }
 
-        private:
-            static Scope<IRendererAPI>& Get();
+        protected:
+            static GraphicsAPI api;
+            static IRendererAPI* instance;
+
+            Math::Vec3 applicationVersion;
+
+            virtual void InitializeImpl() = 0;
 
             virtual void SetClearColorImpl(Math::Vec4 color) = 0;
             virtual void SetViewportImpl(const Math::Rectangle& rect) = 0;
@@ -45,8 +53,6 @@ namespace Vortex::Graphics
             virtual void ClearImpl() = 0;
             virtual void DrawIndexedImpl(const Ref<IVertexArray>& mesh, uint32 indicesCount) = 0;
 
-            static GraphicsAPI api;
-
-            static Scope<IRendererAPI> CreateRendererAPI();
+            std::string applicationName;
     };
 }

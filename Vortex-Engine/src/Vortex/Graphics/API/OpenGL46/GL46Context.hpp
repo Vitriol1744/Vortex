@@ -9,13 +9,15 @@
 
 namespace Vortex::Graphics
 {
-    struct VT_API GL46Context final : public IGraphicsContext
+    class VT_API GL46Context final : public IGraphicsContext
     {
-        explicit GL46Context(void* windowHandle, IGraphicsContext* share);
+        public:
+            explicit GL46Context(NativeWindowHandleType windowHandle, IGraphicsContext* share);
 
-        void Present() noexcept override;
-        void Activate() override;
-
-        Platform::EGLContext context;
+            virtual void Present() noexcept override;
+            virtual void Activate() override;
+    
+        private:
+            Platform::EGLContext context;
     };
 }

@@ -7,10 +7,10 @@
 
 namespace Vortex::Graphics
 {
-    GL46Context::GL46Context(GLvoid* windowHandle, IGraphicsContext* share)
+    GL46Context::GL46Context(NativeWindowHandleType windowHandle, IGraphicsContext* share)
     {
         Platform::EGLContextCreateInfo createInfo;
-        createInfo.windowHandle = *(reinterpret_cast<Window*>(windowHandle));;
+        createInfo.windowHandle = windowHandle;
         createInfo.bitsPerPixel = 32;
         createInfo.openGLContextVersionMajor = 4;
         createInfo.openGLContextVersionMinor = 6;
@@ -18,23 +18,12 @@ namespace Vortex::Graphics
         createInfo.sharedContext = share ? reinterpret_cast<GL46Context*>(share)->context.nativeContext : nullptr;
         
         context = Platform::EGLCreateContext(createInfo);
-    
-        VTCoreLogTrace("OpenGL Context Created!");
-        VTCoreLogInfo("Version: {}", glGetString(GL_VERSION));
-        VTCoreLogInfo("Vendor: {}", glGetString(GL_VENDOR));
-        VTCoreLogInfo("Renderer: {}", glGetString(GL_RENDERER));
-        VTCoreLogInfo("Shading Language Version: {}", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         static bool initialized = false;
-        if (!initialized)
-        {
-            if (!LoadOpenGLFunctions()) VTCoreLogError("Failed to Load OpenGL Functions!");
-            GL46RendererAPI::Initialize();
-        }
+        if (!initialized) if (!GL46RendererAPI::PostInitialize()) return;
         initialized = true;
 
-        //TODO: Temporary glEnable(GL_DEPTH_TEST)!
-        glEnable(GL_DEPTH_TEST);
+        VTCoreLogTrace("OpenGL Context Created!");
     }
 
     void GL46Context::Present() noexcept

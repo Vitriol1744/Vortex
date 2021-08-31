@@ -10,14 +10,10 @@
 
 namespace Vortex
 {
-    uint32 count = 0;
-    uint32 vao;
-
     Ref<IWindow> WindowManager::NewWindow(int32 width, int32 height, std::string_view title, Ref<IWindow> share)
     {
-        windows.push_back(IWindow::CreateWindow(width, height, title, share));
-
-        count++;
+        return IWindow::CreateWindow(width, height, 32, title, share);
+        windows.push_back(IWindow::CreateWindow(width, height, 32, title, share));
 
         return windows.back();
     }

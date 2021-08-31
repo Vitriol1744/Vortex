@@ -8,21 +8,18 @@
     #include "Vortex/Graphics/Window/Win32/Win32Window.hpp"
     #undef CreateWindow
 #elif defined(VT_PLATFORM_LINUX)
-    #include "Vortex/Graphics/Window/Posix/X11Window.hpp"
+    #include "Vortex/Graphics/Window/X11/X11Window.hpp"
 #endif
 
 namespace Vortex
 {
-    Ref<IWindow> IWindow::CreateWindow(uint32 width, uint32 height, std::string_view title, Ref<IWindow> share)
-    {
-        return CreateWindow(width, height, 32, title, share);
-    }
     Ref<IWindow> IWindow::CreateWindow(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share)
     {
         return CreateRef<WindowImpl>(width, height, bitsPerPixel, title, share);
     }
 
     void IWindow::PollEvents() { WindowImpl::PollEvents(); }
+    uint32 IWindow::GetWindowsCount() noexcept { return WindowImpl::GetWindowsCountImpl(); }
 
     namespace WindowEvents
     {

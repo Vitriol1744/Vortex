@@ -30,6 +30,8 @@ namespace Vortex
             VT_NODISCARD virtual inline bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept override { return buttons[static_cast<uint32>(mousecode)]; }
             VT_NODISCARD virtual inline Math::Vec2 GetMousePosition() const noexcept override { return data.mousePosition; }
 
+            VT_NODISCARD inline static uint32 GetWindowsCountImpl() { return windowsCount; }
+
             VT_NODISCARD virtual NativeWindowHandleType GetNativeWindowHandle() const noexcept override { return hWnd; }
             VT_NODISCARD virtual inline bool IsFocused() const noexcept override { return hWnd == GetForegroundWindow(); }
             VT_NODISCARD virtual inline bool IsOpen() const noexcept override { return data.isOpen; }

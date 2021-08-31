@@ -77,7 +77,6 @@ namespace Vortex::Graphics
         }
         else
         {
-            VTCoreLogInfo("VertexShader:\n {}\n\nPixelShader:\n {}", vertexSource, fragmentSource);
             vertexShader    = CompileShader(vertexSource, GL_VERTEX_SHADER, vertexPath);
             fragmentShader  = CompileShader(fragmentSource, GL_FRAGMENT_SHADER, fragmentPath);
         }
@@ -141,11 +140,10 @@ namespace Vortex::Graphics
 
     GLuint GL46Shader::GetUniformLocation(const GLchar* uniform) const
     {
-        return glGetUniformLocation(id, uniform);
         HashedString uniformName(uniform);
         if (uniformCache.find(uniformName.stringID) != uniformCache.end()) return uniformCache[uniformName.stringID];
 
-        GLint location = glGetUniformLocation(id, uniform);
+        uint64 location = glGetUniformLocation(id, uniform);
         if (location < 0)
         {
             VTCoreLogWarn("Failed to find location of uniform with name: {}", uniform);

@@ -20,12 +20,6 @@
 
 namespace Vortex
 {
-    #ifdef VT_PLATFORM_WINDOWS
-    using NativeWindowHandleType = void*;
-    #elif defined(VT_PLATFORM_LINUX)
-    using NativeWindowHandleType = int64;
-    #endif
-
     enum class WindowStyle : uint8
     {
         None             = 0,
@@ -69,7 +63,8 @@ namespace Vortex
             VT_NODISCARD virtual bool IsKeyPressed(Input::KeyCode keycode) const noexcept = 0;
             VT_NODISCARD virtual bool IsMouseButtonPressed(Input::MouseCode mousecode) const noexcept = 0;
             VT_NODISCARD virtual Math::Vec2 GetMousePosition() const noexcept = 0;
-            
+
+            VT_NODISCARD static uint32 GetWindowsCount() noexcept;
             VT_NODISCARD virtual NativeWindowHandleType GetNativeWindowHandle() const noexcept = 0;
             VT_NODISCARD virtual bool IsFocused() const noexcept = 0;
             VT_NODISCARD virtual std::string GetTitle() const noexcept { return data.title; }
@@ -100,7 +95,6 @@ namespace Vortex
             virtual void SetHeight(uint32 height) { SetSize(data.width, height); }
             virtual void SetVisible(bool visible) const = 0;
 
-            VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, std::string_view title, Ref<IWindow> share = nullptr);
             VT_NODISCARD static Ref<IWindow> CreateWindow(uint32 width, uint32 height, uint32 bitsPerPixel, std::string_view title, Ref<IWindow> share = nullptr);
 
         protected:

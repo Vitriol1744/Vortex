@@ -36,8 +36,12 @@ namespace Vortex::Graphics
             case GraphicsAPI::OpenGL46:
                 result = CreateRef<GL46Shader>(vertexPath, pixelPath, precompiled);
                 break;
-            case GraphicsAPI::None:
+            case GraphicsAPI::Vulkan:
+                //TODO: Vulkan: IShader Impl!
+                return nullptr;
+                break;
 
+            case GraphicsAPI::None:
             default:
                 result = nullptr;
                 break;
