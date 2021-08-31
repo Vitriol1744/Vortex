@@ -33,8 +33,7 @@ void Sandbox::Initialize()
     lastMousePos = Input::Mouse::CursorPosition();
     width = 1280;
     height = 728;
-    window = Engine::GetWindow();
-    Renderer2D::Initialize();
+    //Renderer2D::Initialize();
     VTAddListener(WindowEvents::mouseMovedEvent, &Sandbox::OnMouseMove, this, VT_PH(1), VT_PH(2));
     VTAddListener(WindowEvents::mouseScrolledEvent, &Sandbox::OnMouseScroll, this, VT_PH(1), VT_PH(2));
 
@@ -54,7 +53,7 @@ void Sandbox::Initialize()
     source.SetBuffer(buffer);
     source.Play();
 
-    texture = ITexture2D::Create("assets/textures/bmpTexture.bmp");
+    //texture = ITexture2D::Create("assets/textures/bmpTexture.bmp");
 
     #pragma region vertices
     float32 vertices[]
@@ -106,23 +105,20 @@ void Sandbox::Initialize()
     #pragma region indices
     uint32 indices[]
     {
-        //Top
-        0, 1, 2,
-        3, 4, 5,
-        6, 7, 8,
-        9, 10, 11,
-        12, 13, 14,
-        15, 16, 17,
-        18, 19, 20,
-        21, 22, 23,
-        24, 25, 26,
-        27, 28, 29,
-        30, 31, 32,
-        33, 34, 35
+        0,  1,  2,  3,
+        4,  5,  6,  7,
+        8,  9,  10, 11,
+        12, 13, 14, 15,
+        16, 17, 18, 19,
+        20, 21, 22, 23,
+        24, 25, 26, 27,
+        28, 29, 30, 31,
+        32, 33, 34, 35
 
     };
     #pragma endregion
 
+    #ifdef USE_OPENGL
     vertexArray     = IVertexArray::Create();
     vertexArray->Bind();
     vertexBuffer    = IVertexBuffer::Create(vertices, sizeof(vertices));
@@ -137,6 +133,7 @@ void Sandbox::Initialize()
     vertexArray->SetIndexBuffer(indexBuffer);
     shader1 = IShader::Create("assets/shaders/basic.vert", "assets/shaders/basic.frag", false);
     shader2 = IShader::Create("assets/shaders/light.vert", "assets/shaders/light.frag", false);
+    #endif
 }
 void Sandbox::Shutdown()
 {
@@ -153,9 +150,11 @@ void Sandbox::Update()
 
     if (Mouse::IsButtonPressed(MouseCode::Left)) window->SetCursor(CursorShape::Grabbed);
     if (Mouse::IsButtonPressed(MouseCode::Middle)) window->SetCursor(CursorShape::IBeam);
+    if (Keyboard::IsKeyPressed(KeyCode::Escape)) Engine::Stop();
 }
 void Sandbox::Render()
 {
+    #ifdef USE_OPENGL
     IRendererAPI::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
     Renderer::BeginScene(cameraController.GetCamera());
 
@@ -209,6 +208,7 @@ void Sandbox::Render()
     
     Renderer::EndScene();
     window->Present();
+    #endif
 }
 
 Vortex::Application* Vortex::CreateApplication(std::vector<char*> arguments)

@@ -43,7 +43,6 @@ class Sandbox : public Vortex::Application
 
         Sprite sprite;
 
-        Ref<IWindow>        window;
         Ref<ITexture>       texture;
         Ref<IVertexArray>   vertexArray;
         Ref<IVertexBuffer>  vertexBuffer;
