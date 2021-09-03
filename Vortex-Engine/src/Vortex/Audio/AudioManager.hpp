@@ -16,7 +16,7 @@ namespace Vortex::Audio
     class VT_API AudioManager
     {
         public:
-            static ALCvoid Initialize();
+            static ALCboolean Initialize();
             static ALCvoid Shutdown();
 
             VT_NODISCARD static std::vector<std::string> GetAudioDevices();

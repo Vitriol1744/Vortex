@@ -40,10 +40,12 @@ namespace Vortex::Audio
         return id++;
     }
 
-    ALCvoid AudioManager::Initialize()
+    ALCboolean AudioManager::Initialize()
     {
         alcCall(nullptr, ALCdevice* device = alcOpenDevice(nullptr));
+        if (!device) return ALC_FALSE;
         alcCall(device, ALCcontext* context = alcCreateContext(device, nullptr));
+        if (!context) return ALC_FALSE;
         alcCall(device, alcMakeContextCurrent(context));
 
         defaultDevice.device = device;
@@ -55,6 +57,8 @@ namespace Vortex::Audio
         VTCoreLogInfo("Vendor: {}", alGetString(AL_VENDOR));
         VTCoreLogInfo("Renderer: {}", alGetString(AL_RENDERER));
         VTCoreLogInfo("Extensions: {}", alGetString(AL_EXTENSIONS));
+
+        return ALC_TRUE;
     }
 
     ALCvoid AudioManager::Shutdown()
