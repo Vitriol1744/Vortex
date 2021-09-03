@@ -42,4 +42,8 @@ namespace Vortex
         SetConsoleTextColor(ConsoleTextColor::White, ConsoleTextColor::Default);
         Print("\n", 1);
     }
+    void Logger::Endl()
+    {
+        Print("\n", 1);
+    }
 }

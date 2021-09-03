@@ -25,6 +25,7 @@ namespace Vortex
             Logger(std::string_view name) { SetName(name); }
             
             void Log(LogLevel level, std::string_view formattedString);
+            void Endl();
             
             void SetName(std::string_view name) { this->name = name; }
             
