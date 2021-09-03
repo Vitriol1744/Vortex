@@ -9,6 +9,10 @@ add_compile_options(-fPIC)
 set (CMAKE_CXX_STANDARD 23)
 set (CXX_STANDARD_REQUIRED ON)
 
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions (-DDEBUG)
+endif()
+
 add_definitions (-DUSE_VULKAN)
 
 add_subdirectory (Vortex-Engine)
