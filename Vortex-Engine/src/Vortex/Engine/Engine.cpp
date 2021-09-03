@@ -12,7 +12,6 @@
 #include "Vortex/Engine/Application.hpp"
 
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
-
 //TODO: Remove later!
 #include "Vortex/Graphics/ImGui/Backend_ImGui_OpenGL3.hpp"
 #include "Vortex/Graphics/ImGui/ImGui.hpp"
@@ -37,47 +36,65 @@ namespace Vortex
     {
         //NOTE: Logger should always be initialized first!
         LoggingManager::Instance(); // Initialize Logger!
+        VTCoreLogTrace("Initializing Vortex Engine...");
         Platform::Internal::Initialize();
         Time::Instance(); // Initialize Time!
-        AudioManager::Initialize();
+
+        VTCoreLogTrace("Initializing AudioManager...");
+        if (AudioManager::Initialize()) VTCoreLogTrace("AudioManager Initialized!");
+        else VTCoreLogError("Failed to Initialize AudioManager!");
         VTCoreLogInfo("C++ Standard: {}", __cplusplus);
+
         app = CreateApplication(arguments);
+        VTCoreLogTrace("Initializing RendererAPI...");
         #ifdef USE_OPENGL
         IRendererAPI::Initialize(GraphicsAPI::OpenGL46, app->GetName(), app->GetVersion());
         #elif defined(USE_VULKAN)
         IRendererAPI::Initialize(GraphicsAPI::Vulkan, app->GetName(), app->GetVersion());
         #endif
+        VTCoreLogTrace("RendererAPI Initialized!");
+        VTCoreLogInfo("Graphics API: {}", ToString(IRendererAPI::GetGraphicsAPI()));
+
         app->CreateWindow(width, height, "Vortex Application");
+        VTCoreLogEndl();
         VTCoreLogInfo("Command Line Arguments: ");
         for (int i = 0; i < arguments.size(); i++) VTCoreLogInfo("Arg[{}]: {}", i, arguments[i]);
 
         #ifdef USE_OPENGL
         Graphics::ImGuiRenderer::Initialize(app->GetWindow());
         #endif
+        VTCoreLogTrace("Vortex Engine Initialized!");
+        VTCoreLogInfo("Vortex Version: {}.{}.{}", vortexVersion_Major, vortexVersion_Minor, vortexVersion_Patch);
     }
     void Engine::Shutdown()
     {
-        delete app;
+        VTCoreLogTrace("Shutting Down Vortex Engine...");
         IRendererAPI::Shutdown();
+        VTCoreLogTrace("Shutting Down AudioManager...");
         AudioManager::Shutdown();
         Platform::Internal::Shutdown();
     }
 
     void Engine::Run()
     {
-        double previousFrame = Time::GetTime().Seconds();
-        double fpsTimer = previousFrame;
-
-        //TODO: Remove Later!
-
+        float64 previousFrame = Time::GetTime().Seconds();
+        float64 fpsTimer = previousFrame;
+        
+        VTCoreLogTrace("Initializing Application!");
+        VTCoreLogInfo("Application Name: {}", app->GetName());
+        uint32 app_Major = app->GetVersion().x;
+        uint32 app_Minor = app->GetVersion().y;
+        uint32 app_Patch = app->GetVersion().z;
+        VTCoreLogInfo("Application Version: {}.{}.{}", app_Major, app_Minor, app_Patch);
         app->Initialize();
+
         #pragma clang diagnostic push
         #pragma ide diagnostic ignored "EndlessLoop"
         #pragma ide diagnostic ignored "ConstantConditionsOC"
         while (running)
         {
-            //TODO: Temporary!
             framerateLimit = 0;
+            //TODO: Implement Gamepad Support On Linux!
             //Gamepad::PollInput();
             if (Time::GetTime().Seconds() - fpsTimer >= 1.0f)
             {
@@ -98,7 +115,9 @@ namespace Vortex
             EventSystem::Instance()->PollEvents();
         }
         #pragma clang diagnostic pop
+        VTCoreLogTrace("Shutting Down Application...");
         app->Shutdown();
+        delete app;
     }
 
     void Engine::Update()
