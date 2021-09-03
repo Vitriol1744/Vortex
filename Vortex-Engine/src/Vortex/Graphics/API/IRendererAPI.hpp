@@ -18,6 +18,18 @@ namespace Vortex::Graphics
         Vulkan
     };
 
+    inline std::string ToString(GraphicsAPI api)
+    {
+        switch (api)
+        {
+            case GraphicsAPI::None:     return "None";
+            case GraphicsAPI::OpenGL46: return "OpenGL46";
+            case GraphicsAPI::Vulkan:   return "Vulkan";
+        }
+
+        return "Unknown API!";
+    }
+
     class VT_API IRendererAPI
     {
         public:

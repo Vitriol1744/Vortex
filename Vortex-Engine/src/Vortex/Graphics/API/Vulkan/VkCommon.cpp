@@ -24,7 +24,7 @@ namespace Vortex::Graphics
                 break;
             case vk::Result::eEventReset:
                 result = "An event is unsignaled!";
-            break;
+                break;
             case vk::Result::eIncomplete:
                 result = "A return array was too small for the result!";
                 break;
@@ -119,9 +119,11 @@ namespace Vortex::Graphics
                 break;
 
             case vk::Result::eErrorUnknown:
-            default:
                 result = "An unknown error has occurred; "
                          "either the application has provided invalid input, or an implementation failure has occurred.";
+                break;
+
+            default:
                 break;
         }
 

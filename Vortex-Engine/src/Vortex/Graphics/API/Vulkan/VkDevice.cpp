@@ -5,10 +5,12 @@
 
 #include "Vortex/Graphics/API/Vulkan/VkRendererAPI.hpp"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
+#include <set>
+
 namespace Vortex::Graphics
 {
+    static std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
     VkDevice::~VkDevice()
     {
         device.destroy(VkAllocator::Get().callbacks);
@@ -20,8 +22,17 @@ namespace Vortex::Graphics
         if (initialized) return;
 
         PickPhysicalDevice(vkInstance, surface);
+        vk::PhysicalDeviceProperties physicalDeviceProperties;
+        physicalDevice.getProperties(&physicalDeviceProperties);
+        vk::PhysicalDeviceMemoryProperties memoryProperties;
+        physicalDevice.getMemoryProperties(&memoryProperties);
+
+        VTCoreLogInfo("Graphics Card: {}", physicalDeviceProperties.deviceName);
+        VTCoreLogInfo("VRAM: {}MB", physicalDeviceVRAM / 1024.0f / 1024.0f);
+
+        VTCoreLogTrace("Vulkan: Creating Logical Device...");
         CreateLogicalDevice();
-        
+        VTCoreLogTrace("Vulkan: Logical Device Created!");
         initialized = VK_TRUE;
     }
 
@@ -50,12 +61,14 @@ namespace Vortex::Graphics
 
             auto heapsPointer = memoryProperties.memoryHeaps;
             auto heaps = std::vector<vk::MemoryHeap>(heapsPointer.begin(), heapsPointer.begin() + memoryProperties.memoryHeapCount);
+            uint64 vram = 0;
 
             for (auto& heap : heaps)
             {
                 if (heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal)
                 {
-                    score += heap.size; // VRAM
+                    vram = heap.size;
+                    score += vram;
                     break;
                 }
             }
@@ -65,9 +78,12 @@ namespace Vortex::Graphics
             {
                 bestDevice = device;
                 topScore = score;
+                physicalDeviceVRAM = vram;
             }
         }
         physicalDevice = bestDevice;
+        VT_CORE_ASSERT_MSG(bestDevice, "Failed to find Suitable Device!");
+        VTCoreLogTrace("Vulkan: Picked Physical Device!");
     }
     void VkDevice::FindQueueFamilies(VkSurface& surface)
     {
@@ -93,31 +109,45 @@ namespace Vortex::Graphics
         const std::vector<const char*>& validationLayers = VkRendererAPI::GetValidationLayers();
         const vk::Bool32 useValidationLayers = VkRendererAPI::UseValidationLayers();
 
-        vk::DeviceQueueCreateInfo queueCreateInfo = {};
-        queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
-        queueCreateInfo.pNext = VK_NULL_HANDLE;
-        queueCreateInfo.flags = vk::DeviceQueueCreateFlags();
-        queueCreateInfo.queueFamilyIndex = graphicsQueueFamily.value();
-        queueCreateInfo.queueCount = 1;
+        std::set<uint32> queueFamilies =
+        {
+            graphicsQueueFamily.value(), presentQueueFamily.value(),
+            //computeQueueFamily.value(), transferQueueFamily.value()
+        };
+        std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+
         float32 queuePriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        for (uint32 queueFamily : queueFamilies)
+        {
+            vk::DeviceQueueCreateInfo queueCreateInfo = {};
+            queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
+            queueCreateInfo.pNext = VK_NULL_HANDLE;
+            queueCreateInfo.flags = vk::DeviceQueueCreateFlags();
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
 
         vk::DeviceCreateInfo deviceCreateInfo = {};
         deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
         deviceCreateInfo.pNext = nullptr;
         deviceCreateInfo.flags = vk::DeviceCreateFlagBits();
-        deviceCreateInfo.queueCreateInfoCount = 1;
-        deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+        deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
+        deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
         deviceCreateInfo.enabledLayerCount = useValidationLayers ? validationLayers.size() : 0;
         deviceCreateInfo.ppEnabledLayerNames = useValidationLayers ? validationLayers.data() : nullptr;
-        deviceCreateInfo.enabledExtensionCount = 0;
-        deviceCreateInfo.ppEnabledExtensionNames = nullptr;
+        deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+        deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
         deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
 
         VkCall(physicalDevice.createDevice(&deviceCreateInfo, VkAllocator::Get().callbacks, &device),
                "Failed to Create Logical Device!");
 
         device.getQueue(graphicsQueueFamily.value(), 0, &graphicsQueue);
+        device.getQueue(presentQueueFamily.value(), 0, &presentQueue);
+       //device.getQueue(computeQueueFamily.value(), 0, &computeQueue);
+       //device.getQueue(transferQueueFamily.value(), 0, &transferQueue);
     }
 
     vk::Bool32 VkDevice::IsDeviceSuitable(vk::PhysicalDevice physicalDevice)
@@ -125,8 +155,22 @@ namespace Vortex::Graphics
         vk::PhysicalDeviceFeatures deviceFeatures;
         physicalDevice.getFeatures(&deviceFeatures);
 
-        return deviceFeatures.geometryShader;
+        return deviceFeatures.geometryShader && CheckDeviceExtensionsSupport(physicalDevice);
+    }
+    vk::Bool32 VkDevice::CheckDeviceExtensionsSupport(vk::PhysicalDevice physicalDevice)
+    {
+        uint32 extensionCount = 0;
+        physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr);
+        std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
+        physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions)
+        {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
     }
 }
-
-#pragma clang diagnostic pop

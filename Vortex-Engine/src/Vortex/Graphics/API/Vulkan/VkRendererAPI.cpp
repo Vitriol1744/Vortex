@@ -59,7 +59,8 @@ namespace Vortex::Graphics
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
                 VTCoreLogError("Vulkan Validation Layer: {}", data->pMessage);
                 break;
-            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+
+            default:
                 break;
         }
 

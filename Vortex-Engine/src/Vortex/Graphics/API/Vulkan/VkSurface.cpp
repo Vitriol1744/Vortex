@@ -24,7 +24,6 @@ namespace Vortex::Graphics
     void VkSurface::Initialize(Platform::NativeWindowHandleType windowHandle)
     {
         VkSurfaceKHR surface;
-        //TODO: Choose Surface Format!
 
         #ifdef VT_PLATFORM_WINDOWS
             VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
@@ -50,6 +49,26 @@ namespace Vortex::Graphics
 
         this->surface = surface;
         VkInstance& vkInstance = VkRendererAPI::GetVulkanInstance();
-        VkRendererAPI::GetDevice().Initialize(vkInstance, *this);
+        VkDevice& device = VkRendererAPI::GetDevice();
+        device.Initialize(vkInstance, *this);
+
+        vk::PhysicalDevice& physicalDevice = device.GetPhysicalDevice();
+        VkCall(physicalDevice.getSurfaceCapabilitiesKHR(this->surface, &surfaceCapabilities),
+               "Failed to Acquire Surface Capabilities!");
+
+        uint32 formatCount = 0;
+        VkCall(physicalDevice.getSurfaceFormatsKHR(this->surface, &formatCount, nullptr),
+               "Failed to Acquire Surface Formats!");
+        std::vector<vk::SurfaceFormatKHR> surfaceFormats(formatCount);
+        VkCall(physicalDevice.getSurfaceFormatsKHR(this->surface, &formatCount, surfaceFormats.data()),
+               "Failed to Acquire Surface Formats!");
+        VT_CORE_ASSERT_MSG(formatCount, "Could not find any surface formats!");
+
+        surfaceFormat = *(surfaceFormats.data());
+        for (const auto& format : surfaceFormats)
+        {
+            if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+                surfaceFormat = format;
+        }
     }
 }

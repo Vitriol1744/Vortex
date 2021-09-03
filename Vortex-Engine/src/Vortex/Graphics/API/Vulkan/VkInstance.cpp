@@ -64,6 +64,7 @@ namespace Vortex::Graphics
         VkCall(vk::createInstance(&instanceCreateInfo, VkAllocator::Get().callbacks, &instance), "Failed to Create VkInstance!");
         VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
 
+        if (instance) VTCoreLogTrace("Vulkan: Instance Created Successfully!");
         SetupDebugMessenger();
     }
 
@@ -105,6 +106,8 @@ namespace Vortex::Graphics
 
         VkCall(instance.createDebugUtilsMessengerEXT(&createInfo, VkAllocator::Get().callbacks, &debugMessenger),
             "Failed to Create Debug Messenger!");
+
+        if (debugMessenger) VTCoreLogTrace("Vulkan: Debug Messenger Created Successfully!");
     }
 
     vk::DebugUtilsMessengerCreateInfoEXT VkInstance::GetMessengerCreateInfo()

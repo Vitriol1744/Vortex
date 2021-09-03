@@ -21,6 +21,14 @@ namespace Vortex::Graphics
     VkContext::VkContext(NativeWindowHandleType window)
     {
         windowSurface.Initialize(window);
+        vk::Extent2D extent;
+        if (windowSurface.GetSurfaceCapabilities().currentExtent.width != UINT32_MAX) extent = windowSurface.GetSurfaceCapabilities().currentExtent;
+        else
+        {
+            extent.width = 800;
+            extent.height = 600;
+        }
+        swapChain.Initialize(extent, windowSurface);
         contextsCount++;
     }
     VkContext::~VkContext()

@@ -17,11 +17,13 @@ namespace Vortex::Graphics
 
             void Initialize(Platform::NativeWindowHandleType windowHandle);
 
-            vk::SurfaceKHR GetSurface() const noexcept { return surface; }
-            vk::SurfaceFormatKHR GetSurfaceFormat() const noexcept { return surfaceFormat; }
+            inline const vk::SurfaceKHR& GetSurface() const noexcept { return surface; }
+            inline const vk::SurfaceFormatKHR& GetSurfaceFormat() const noexcept { return surfaceFormat; }
+            inline const vk::SurfaceCapabilitiesKHR& GetSurfaceCapabilities() const noexcept { return surfaceCapabilities; }
 
         private:
             vk::SurfaceKHR surface = VK_NULL_HANDLE;
             vk::SurfaceFormatKHR surfaceFormat;
+            vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     };
 }

@@ -9,6 +9,7 @@
 
 #include "Vortex/Graphics/API/Vulkan/VkInstance.hpp"
 #include "Vortex/Graphics/API/Vulkan/VkSurface.hpp"
+#include "Vortex/Graphics/API/Vulkan/VkSwapChain.hpp"
 
 namespace Vortex::Graphics
 {
@@ -23,5 +24,6 @@ namespace Vortex::Graphics
 
         private:
             VkSurface windowSurface;
+            VkSwapChain swapChain;
     };
 }

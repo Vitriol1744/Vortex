@@ -27,7 +27,7 @@
         }\
     }
 #else
-    #define VkCall(x) x
+    #define VkCall(x, msg) x
     #define VkCall_(x) x
 #endif
 
