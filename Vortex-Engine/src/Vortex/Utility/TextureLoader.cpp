@@ -62,7 +62,7 @@ namespace Vortex::Utility
     
         // Channels have to be swapped because bitmap has BGR format.
         uint8 temp = 0;
-        for (int64 i = 0; i < dibHeader.imageSize; i += 3)
+        for (std::size_t i = 0; i < dibHeader.imageSize; i += 3)
         {
             temp          = pixels[i];
             pixels[i]     = pixels[i + 2];

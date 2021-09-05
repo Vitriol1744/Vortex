@@ -56,7 +56,7 @@ namespace Vortex::Utility
 					break;
 				case fourccFMT:
 				{
-					uint32 pos = ifs.tellg();
+					uint32 pos = static_cast<uint32>(ifs.tellg());
 					ifs.read((char*)&format, sizeof(format));
 					ifs.seekg(chunkSize + pos, std::ios_base::beg);
 					break;
