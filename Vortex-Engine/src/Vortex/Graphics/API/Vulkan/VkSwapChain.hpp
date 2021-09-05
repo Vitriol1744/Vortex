@@ -13,7 +13,7 @@ namespace Vortex::Graphics
     class VT_API VkSwapChain
     {
         public:
-            VkSwapChain() = default;
+            VkSwapChain() { }
             ~VkSwapChain();
 
             void Initialize(const vk::Extent2D extent, const VkSurface& surface);
@@ -22,8 +22,12 @@ namespace Vortex::Graphics
             vk::SwapchainKHR swapChain;
             vk::PresentModeKHR presentMode;
             vk::Extent2D extent;
+            vk::Format imageFormat;
 
             std::vector<vk::Image> images;
             std::vector<vk::ImageView> imageViews;
+
+            void CreateSwapChain(const VkSurface& surface);
+            void CreateImageViews();
     };
 }
