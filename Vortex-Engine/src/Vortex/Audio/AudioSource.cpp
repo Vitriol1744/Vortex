@@ -95,13 +95,13 @@ namespace Vortex::Audio
         ALenum _type;
         switch (type)
         {
-            case SourceType::Undetermined:
+            case SourceType::eUndetermined:
                 _type = AL_UNDETERMINED;
                 break;
-            case SourceType::Static:
+            case SourceType::eStatic:
                 _type = AL_STATIC;
                 break;
-            case SourceType::Streaming:
+            case SourceType::eStreaming:
                 _type = AL_STREAMING;
                 break;
         }

@@ -14,11 +14,11 @@ namespace Vortex
     namespace Audio
     {
         enum class SourceType
-                {
-                Undetermined,
-                Static,
-                Streaming
-                };
+        {
+            eUndetermined,
+            eStatic,
+            eStreaming
+        };
 
         class AudioSource : public NonCopyable<AudioSource>
         {

@@ -6,8 +6,6 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
-#include "Vortex/Core/Time.hpp"
-
 namespace Vortex::Audio
 {
     struct Device
@@ -91,11 +89,11 @@ namespace Vortex::Audio
     }
     ALCvoid AudioManager::RemoveAudioDevice(std::string_view name)
     {
-        std::remove_if(devices.begin(), devices.end(), [name](Device& device){ return device.name == name; });
+        auto it = std::remove_if(devices.begin(), devices.end(), [name](Device& device){ return device.name == name; });
     }
     ALCvoid AudioManager::RemoveAudioDevice(AudioDevice deviceID)
     {
-        std::remove_if(devices.begin(), devices.end(), [deviceID](Device& device){ return device.id == deviceID; });
+        auto it = std::remove_if(devices.begin(), devices.end(), [deviceID](Device& device){ return device.id == deviceID; });
     }
 
     ALCvoid AudioManager::SetAudioDevice(std::string_view name)
