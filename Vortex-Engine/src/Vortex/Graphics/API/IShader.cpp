@@ -15,10 +15,10 @@ namespace Vortex::Graphics
         Ref<IShader> result;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46Shader>(name, vertexPath, pixelPath, precompiled);
                 break;
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
 
             default:
                 result = nullptr;
@@ -33,15 +33,15 @@ namespace Vortex::Graphics
         Ref<IShader> result;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46Shader>(vertexPath, pixelPath, precompiled);
                 break;
-            case GraphicsAPI::Vulkan:
+            case GraphicsAPI::eVulkan:
                 //TODO: Vulkan: IShader Impl!
                 return nullptr;
                 break;
 
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
             default:
                 result = nullptr;
                 break;

@@ -13,8 +13,8 @@ namespace Vortex::Graphics
 
     void FPSCameraController::Update()
     {
-        Quat qPitch = AngleAxis(ToRadians(-pitch), Vec3(1, 0, 0));
-        Quat qYaw = AngleAxis(ToRadians(yaw), Vec3(0, 1, 0));
+        Quat qPitch = AngleAxis(static_cast<float32>(ToRadians(-pitch)), Vec3(1, 0, 0));
+        Quat qYaw = AngleAxis(static_cast<float32>(ToRadians(yaw)), Vec3(0, 1, 0));
 
         Quat orientation = Normalize(qPitch * qYaw);
 
@@ -32,29 +32,29 @@ namespace Vortex::Graphics
         }
 
         Vec2 currentMousePos = Mouse::CursorPosition();
-        if (Mouse::IsButtonPressed(MouseCode::Right))
+        if (Mouse::IsButtonPressed(MouseCode::eRight))
         {
             float32 xOffset = currentMousePos.x - lastMousePos.x;
             float32 yOffset = lastMousePos.y - currentMousePos.y;
             xOffset *= mouseSensitivity;
             yOffset *= mouseSensitivity;
 
-            yaw   += xOffset * Time::DeltaTime();
-            pitch += yOffset * Time::DeltaTime();
+            yaw   += xOffset * static_cast<float32>(Time::DeltaTime());
+            pitch += yOffset * static_cast<float32>(Time::DeltaTime());
         }
-        if (Keyboard::IsKeyPressed(KeyCode::Left))
+        if (Keyboard::IsKeyPressed(KeyCode::eLeft))
         {
-            yaw -= 1.0f * mouseSensitivity * Time::DeltaTime();
+            yaw -= 1.0f * mouseSensitivity * static_cast<float32>(Time::DeltaTime());
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::Right))
+        else if (Keyboard::IsKeyPressed(KeyCode::eRight))
         {
-            yaw += 1.0f * mouseSensitivity * Time::DeltaTime();
+            yaw += 1.0f * mouseSensitivity * static_cast<float32>(Time::DeltaTime());
         }
         lastMousePos = currentMousePos;
 
 
         static float32 speed = 2;
-        if (Keyboard::IsKeyPressed(KeyCode::LShift))
+        if (Keyboard::IsKeyPressed(KeyCode::eLShift))
         {
             speed = 10;
         }
@@ -62,29 +62,29 @@ namespace Vortex::Graphics
         {
             speed = 2;
         }
-        if (Keyboard::IsKeyPressed(KeyCode::W))
+        if (Keyboard::IsKeyPressed(KeyCode::eW))
         {
-            camera.SetPosition(camera.GetPosition() + forward * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() + forward * static_cast<float32>(Time::DeltaTime()) * speed);
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::S))
+        else if (Keyboard::IsKeyPressed(KeyCode::eS))
         {
-            camera.SetPosition(camera.GetPosition() - forward * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() - forward * static_cast<float32>(Time::DeltaTime()) * speed);
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::A))
+        else if (Keyboard::IsKeyPressed(KeyCode::eA))
         {
-            camera.SetPosition(camera.GetPosition() - right * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() - right * static_cast<float32>(Time::DeltaTime()) * speed);
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::D))
+        else if (Keyboard::IsKeyPressed(KeyCode::eD))
         {
-            camera.SetPosition(camera.GetPosition() + right * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() + right * static_cast<float32>(Time::DeltaTime()) * speed);
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::Space))
+        else if (Keyboard::IsKeyPressed(KeyCode::eSpace))
         {
-            camera.SetPosition(camera.GetPosition() + up * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() + up * static_cast<float32>(Time::DeltaTime()) * speed);
         }
-        else if (Keyboard::IsKeyPressed(KeyCode::LCtrl))
+        else if (Keyboard::IsKeyPressed(KeyCode::eLCtrl))
         {
-            camera.SetPosition(camera.GetPosition() - up * (float32)Time::DeltaTime() * speed);
+            camera.SetPosition(camera.GetPosition() - up * static_cast<float32>(Time::DeltaTime()) * speed);
         }
         if (pitch >  89.0f) pitch = 89.0f;
         if (pitch < -89.0f) pitch = -89.0f;

@@ -11,7 +11,7 @@
 
 namespace Vortex::Graphics
 {
-    GraphicsAPI IRendererAPI::api = GraphicsAPI::None;
+    GraphicsAPI IRendererAPI::api = GraphicsAPI::eNone;
     IRendererAPI* IRendererAPI::instance = nullptr;
 
     void IRendererAPI::Initialize(GraphicsAPI api, std::string_view applicationName, Math::Vec3 applicationVersion)
@@ -19,14 +19,14 @@ namespace Vortex::Graphics
         IRendererAPI::api = api;
         switch (api)
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 instance = new GL46RendererAPI;
                 break;
-            case GraphicsAPI::Vulkan:
+            case GraphicsAPI::eVulkan:
                 instance = new VkRendererAPI;
                 break;
 
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
             default:
                 VTCoreLogError("{}: Unknown API!", __FUNCSIG__);
                 instance = nullptr;

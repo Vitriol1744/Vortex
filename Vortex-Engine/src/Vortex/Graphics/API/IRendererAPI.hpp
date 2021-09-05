@@ -13,18 +13,18 @@ namespace Vortex::Graphics
 {
     enum class GraphicsAPI
     {
-        None,
-        OpenGL46,
-        Vulkan
+        eNone,
+        eOpenGL46,
+        eVulkan
     };
 
     inline std::string ToString(GraphicsAPI api)
     {
         switch (api)
         {
-            case GraphicsAPI::None:     return "None";
-            case GraphicsAPI::OpenGL46: return "OpenGL46";
-            case GraphicsAPI::Vulkan:   return "Vulkan";
+            case GraphicsAPI::eNone:     return "None";
+            case GraphicsAPI::eOpenGL46: return "OpenGL46";
+            case GraphicsAPI::eVulkan:   return "Vulkan";
         }
 
         return "Unknown API!";
@@ -34,7 +34,7 @@ namespace Vortex::Graphics
     {
         public:
             IRendererAPI() = default;
-            virtual ~IRendererAPI() { api = GraphicsAPI::None; }
+            virtual ~IRendererAPI() { api = GraphicsAPI::eNone; }
 
             static void Initialize(GraphicsAPI api, std::string_view applicationName, Math::Vec3 applicationVersion);
             static void Shutdown();

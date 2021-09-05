@@ -20,11 +20,11 @@ namespace Vortex::Graphics
         Ref<IIndexBuffer> result = nullptr;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46IndexBuffer>(size);
                 break;
 
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
             default:
                 result = nullptr;
                 break;
@@ -39,11 +39,11 @@ namespace Vortex::Graphics
         Ref<IIndexBuffer> result = nullptr;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46IndexBuffer>(indices, size);
                 break;
             
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
             default:
                 result = nullptr;
                 break;

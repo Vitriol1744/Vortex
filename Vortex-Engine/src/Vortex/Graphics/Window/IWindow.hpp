@@ -22,10 +22,10 @@ namespace Vortex
 {
     enum class WindowStyle : uint8
     {
-        None             = 0,
-        Titlebar         = 1 << 0,
-        MaximizeButton   = 1 << 1,
-        MinimizeButton   = 1 << 2,
+        eNone             = 0,
+        eTitlebar         = 1 << 0,
+        eMaximizeButton   = 1 << 1,
+        eMinimizeButton   = 1 << 2,
     };
     inline WindowStyle operator|(const WindowStyle& left, const WindowStyle& right)
     {
@@ -38,13 +38,13 @@ namespace Vortex
 
     enum class CursorShape
     {
-        None,
-        Arrow,
-        IBeam,
-        Crosshair,
-        Grabbed,
-        HResize,
-        VResize
+        eNone,
+        eArrow,
+        eIBeam,
+        eCrosshair,
+        eGrabbed,
+        eHResize,
+        eVResize
     };
 
     class VT_API IWindow : public NonCopyable<IWindow>
@@ -124,10 +124,10 @@ namespace Vortex
 
     enum class MonitorState
     {
-        On,
-        Off,
-        LowPower,
-        ScreenSaver
+        eOn,
+        eOff,
+        eLowPower,
+        eScreenSaver
     };
 
     namespace WindowEvents

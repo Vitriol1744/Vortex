@@ -24,7 +24,7 @@ namespace Vortex::Graphics
             static GLboolean PostInitialize();
 
         private:
-            static GLvoid ErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam);
+            static GLvoid APIENTRY ErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam);
     };
 }
 

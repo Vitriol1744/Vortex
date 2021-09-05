@@ -51,111 +51,111 @@ namespace Vortex
         {
             switch (keycode)
             {
-                case XK_0:              return KeyCode::Num0;
-                case XK_1:              return KeyCode::Num1;
-                case XK_2:              return KeyCode::Num2;
-                case XK_3:              return KeyCode::Num3;
-                case XK_4:              return KeyCode::Num4;
-                case XK_5:              return KeyCode::Num5;
-                case XK_6:              return KeyCode::Num6;
-                case XK_7:              return KeyCode::Num7;
-                case XK_8:              return KeyCode::Num8;
-                case XK_9:              return KeyCode::Num9;
-                case XK_a:              return KeyCode::A;
-                case XK_b:              return KeyCode::B;
-                case XK_c:              return KeyCode::C;
-                case XK_d:              return KeyCode::D;
-                case XK_e:              return KeyCode::E;
-                case XK_f:              return KeyCode::F;
-                case XK_g:              return KeyCode::G;
-                case XK_h:              return KeyCode::H;
-                case XK_i:              return KeyCode::I;
-                case XK_j:              return KeyCode::J;
-                case XK_k:              return KeyCode::K;
-                case XK_l:              return KeyCode::L;
-                case XK_m:              return KeyCode::M;
-                case XK_n:              return KeyCode::N;
-                case XK_o:              return KeyCode::O;
-                case XK_p:              return KeyCode::P;
-                case XK_q:              return KeyCode::Q;
-                case XK_r:              return KeyCode::R;
-                case XK_s:              return KeyCode::S;
-                case XK_t:              return KeyCode::T;
-                case XK_u:              return KeyCode::U;
-                case XK_v:              return KeyCode::V;
-                case XK_w:              return KeyCode::W;
-                case XK_x:              return KeyCode::X;
-                case XK_y:              return KeyCode::Y;
-                case XK_z:              return KeyCode::Z;
-                case XK_grave:          return KeyCode::Tilde;
-                case XK_F1:             return KeyCode::F1;
-                case XK_F2:             return KeyCode::F2;
-                case XK_F3:             return KeyCode::F3;
-                case XK_F4:             return KeyCode::F4;
-                case XK_F5:             return KeyCode::F5;
-                case XK_F6:             return KeyCode::F6;
-                case XK_F7:             return KeyCode::F7;
-                case XK_F8:             return KeyCode::F8;
-                case XK_F9:             return KeyCode::F9;
-                case XK_F10:            return KeyCode::F10;
-                case XK_F11:            return KeyCode::F11;
-                case XK_F12:            return KeyCode::F12;
-                case XK_F13:            return KeyCode::F13;
-                case XK_F14:            return KeyCode::F14;
-                case XK_F15:            return KeyCode::F15;
-                case XK_Escape:         return KeyCode::Escape;
-                case XK_BackSpace:      return KeyCode::BackSpace;
-                case XK_Tab:            return KeyCode::Tab;
-                case XK_Caps_Lock:      return KeyCode::CapsLock;
-                case XK_KP_Enter:       return KeyCode::Enter;
-                case XK_Return:         return KeyCode::Return;
-                case XK_Shift_L:        return KeyCode::LShift;
-                case XK_Shift_R:        return KeyCode::RShift;
-                case XK_Control_L:      return KeyCode::LCtrl;
-                case XK_Control_R:      return KeyCode::RCtrl;
-                case XK_Alt_L:          return KeyCode::LAlt;
-                case XK_Alt_R:          return KeyCode::RAlt;
-                case XK_Super_L:        return KeyCode::LSystem;
-                case XK_Super_R:        return KeyCode::RSystem;
-                case XK_space:          return KeyCode::Space;
-                case XK_minus:          return KeyCode::Hyphen;
-                case XK_equal:          return KeyCode::Equal;
-                case XK_KP_Decimal:     return KeyCode::Decimal;
-                case XK_bracketleft:    return KeyCode::LBracket;
-                case XK_bracketright:   return KeyCode::RBracket;
-                case XK_semicolon:      return KeyCode::Semicolon;
-                case XK_apostrophe:     return KeyCode::Apostrophe;
-                case XK_comma:          return KeyCode::Comma;
-                case XK_period:         return KeyCode::Period;
-                case XK_slash:          return KeyCode::Slash;
-                case XK_backslash:      return KeyCode::BackSlash;
-                case XK_Up:             return KeyCode::Up;
-                case XK_Down:           return KeyCode::Down;
-                case XK_Left:           return KeyCode::Left;
-                case XK_Right:          return KeyCode::Right;
-                case XK_KP_Insert:      return KeyCode::Numpad0;
-                case XK_KP_End:         return KeyCode::Numpad1;
-                case XK_KP_Down:        return KeyCode::Numpad2;
-                case XK_KP_Page_Down:   return KeyCode::Numpad3;
-                case XK_KP_Left:        return KeyCode::Numpad4;
-                case XK_KP_Begin:       return KeyCode::Numpad5;
-                case XK_KP_Right:       return KeyCode::Numpad6;
-                case XK_KP_Home:        return KeyCode::Numpad7;
-                case XK_KP_Up:          return KeyCode::Numpad8;
-                case XK_KP_Page_Up:     return KeyCode::Numpad9;
-                case XK_KP_Separator:   return KeyCode::Separator;
-                case XK_KP_Add:         return KeyCode::Add;
-                case XK_KP_Subtract:    return KeyCode::Subtract;
-                case XK_KP_Multiply:    return KeyCode::Multiply;
-                case XK_KP_Divide:      return KeyCode::Divide;
-                case XK_Insert:         return KeyCode::Insert;
-                case XK_Delete:         return KeyCode::Delete;
-                case XK_Page_Up:        return KeyCode::PageUp;
-                case XK_Page_Down:      return KeyCode::PageDown;
-                case XK_Home:           return KeyCode::Home;
-                case XK_End:            return KeyCode::End;
+                case XK_0:              return KeyCode::eNum0;
+                case XK_1:              return KeyCode::eNum1;
+                case XK_2:              return KeyCode::eNum2;
+                case XK_3:              return KeyCode::eNum3;
+                case XK_4:              return KeyCode::eNum4;
+                case XK_5:              return KeyCode::eNum5;
+                case XK_6:              return KeyCode::eNum6;
+                case XK_7:              return KeyCode::eNum7;
+                case XK_8:              return KeyCode::eNum8;
+                case XK_9:              return KeyCode::eNum9;
+                case XK_a:              return KeyCode::eA;
+                case XK_b:              return KeyCode::eB;
+                case XK_c:              return KeyCode::eC;
+                case XK_d:              return KeyCode::eD;
+                case XK_e:              return KeyCode::eE;
+                case XK_f:              return KeyCode::eF;
+                case XK_g:              return KeyCode::eG;
+                case XK_h:              return KeyCode::eH;
+                case XK_i:              return KeyCode::eI;
+                case XK_j:              return KeyCode::eJ;
+                case XK_k:              return KeyCode::eK;
+                case XK_l:              return KeyCode::eL;
+                case XK_m:              return KeyCode::eM;
+                case XK_n:              return KeyCode::eN;
+                case XK_o:              return KeyCode::eO;
+                case XK_p:              return KeyCode::eP;
+                case XK_q:              return KeyCode::eQ;
+                case XK_r:              return KeyCode::eR;
+                case XK_s:              return KeyCode::eS;
+                case XK_t:              return KeyCode::eT;
+                case XK_u:              return KeyCode::eU;
+                case XK_v:              return KeyCode::eV;
+                case XK_w:              return KeyCode::eW;
+                case XK_x:              return KeyCode::eX;
+                case XK_y:              return KeyCode::eY;
+                case XK_z:              return KeyCode::eZ;
+                case XK_grave:          return KeyCode::eTilde;
+                case XK_F1:             return KeyCode::eF1;
+                case XK_F2:             return KeyCode::eF2;
+                case XK_F3:             return KeyCode::eF3;
+                case XK_F4:             return KeyCode::eF4;
+                case XK_F5:             return KeyCode::eF5;
+                case XK_F6:             return KeyCode::eF6;
+                case XK_F7:             return KeyCode::eF7;
+                case XK_F8:             return KeyCode::eF8;
+                case XK_F9:             return KeyCode::eF9;
+                case XK_F10:            return KeyCode::eF10;
+                case XK_F11:            return KeyCode::eF11;
+                case XK_F12:            return KeyCode::eF12;
+                case XK_F13:            return KeyCode::eF13;
+                case XK_F14:            return KeyCode::eF14;
+                case XK_F15:            return KeyCode::eF15;
+                case XK_Escape:         return KeyCode::eEscape;
+                case XK_BackSpace:      return KeyCode::eBackSpace;
+                case XK_Tab:            return KeyCode::eTab;
+                case XK_Caps_Lock:      return KeyCode::eCapsLock;
+                case XK_KP_Enter:       return KeyCode::eEnter;
+                case XK_Return:         return KeyCode::eReturn;
+                case XK_Shift_L:        return KeyCode::eLShift;
+                case XK_Shift_R:        return KeyCode::eRShift;
+                case XK_Control_L:      return KeyCode::eLCtrl;
+                case XK_Control_R:      return KeyCode::eRCtrl;
+                case XK_Alt_L:          return KeyCode::eLAlt;
+                case XK_Alt_R:          return KeyCode::eRAlt;
+                case XK_Super_L:        return KeyCode::eLSystem;
+                case XK_Super_R:        return KeyCode::eRSystem;
+                case XK_space:          return KeyCode::eSpace;
+                case XK_minus:          return KeyCode::eHyphen;
+                case XK_equal:          return KeyCode::eEqual;
+                case XK_KP_Decimal:     return KeyCode::eDecimal;
+                case XK_bracketleft:    return KeyCode::eLBracket;
+                case XK_bracketright:   return KeyCode::eRBracket;
+                case XK_semicolon:      return KeyCode::eSemicolon;
+                case XK_apostrophe:     return KeyCode::eApostrophe;
+                case XK_comma:          return KeyCode::eComma;
+                case XK_period:         return KeyCode::ePeriod;
+                case XK_slash:          return KeyCode::eSlash;
+                case XK_backslash:      return KeyCode::eBackSlash;
+                case XK_Up:             return KeyCode::eUp;
+                case XK_Down:           return KeyCode::eDown;
+                case XK_Left:           return KeyCode::eLeft;
+                case XK_Right:          return KeyCode::eRight;
+                case XK_KP_Insert:      return KeyCode::eNumpad0;
+                case XK_KP_End:         return KeyCode::eNumpad1;
+                case XK_KP_Down:        return KeyCode::eNumpad2;
+                case XK_KP_Page_Down:   return KeyCode::eNumpad3;
+                case XK_KP_Left:        return KeyCode::eNumpad4;
+                case XK_KP_Begin:       return KeyCode::eNumpad5;
+                case XK_KP_Right:       return KeyCode::eNumpad6;
+                case XK_KP_Home:        return KeyCode::eNumpad7;
+                case XK_KP_Up:          return KeyCode::eNumpad8;
+                case XK_KP_Page_Up:     return KeyCode::eNumpad9;
+                case XK_KP_Separator:   return KeyCode::eSeparator;
+                case XK_KP_Add:         return KeyCode::eAdd;
+                case XK_KP_Subtract:    return KeyCode::eSubtract;
+                case XK_KP_Multiply:    return KeyCode::eMultiply;
+                case XK_KP_Divide:      return KeyCode::eDivide;
+                case XK_Insert:         return KeyCode::eInsert;
+                case XK_Delete:         return KeyCode::eDelete;
+                case XK_Page_Up:        return KeyCode::ePageUp;
+                case XK_Page_Down:      return KeyCode::ePageDown;
+                case XK_Home:           return KeyCode::eHome;
+                case XK_End:            return KeyCode::eEnd;
 
-                default:                return KeyCode::Unknown;
+                default:                return KeyCode::eUnknown;
             }
         }
         #pragma clang diagnostic pop
@@ -219,8 +219,8 @@ namespace Vortex
     {
         // Initialize Variables
         if (windowsCount == 0) Initialize();
-        memset(keys, 0, static_cast<uint32>(KeyCode::KeysCount));
-        memset(buttons, 0, static_cast<uint32>(MouseCode::ButtonsCount));
+        memset(keys, 0, static_cast<uint32>(KeyCode::eKeysCount));
+        memset(buttons, 0, static_cast<uint32>(MouseCode::eButtonsCount));
         data.width = width;
         data.height = height;
         int32 x = data.position.x = 0;
@@ -334,7 +334,7 @@ namespace Vortex
             {
                 //FIXME: Linux: Disable Fullscreen
                 SetSize(data.width, data.height);
-                SetStyle(WindowStyle::Titlebar | WindowStyle::MaximizeButton | WindowStyle::MinimizeButton);
+                SetStyle(WindowStyle::eTitlebar | WindowStyle::eMaximizeButton | WindowStyle::eMinimizeButton);
                 data.resizable = true;
             }
             data.fullscreen = fullscreen;
@@ -403,7 +403,7 @@ namespace Vortex
     }
     void WindowImpl::SetStyle(WindowStyle style)
     {
-        if (style == WindowStyle::None)
+        if (style == WindowStyle::eNone)
         {
             Atom window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
             long value = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
@@ -416,7 +416,7 @@ namespace Vortex
         unsigned char xStyle    = 0;
         unsigned char xFunction = 0;
 
-        if (style & WindowStyle::Titlebar)
+        if (style & WindowStyle::eTitlebar)
         {
             xStyle      |= borderStyle | titleStyle | minimizeStyle | menuStyle;
             xFunction   |= moveFunc | minimizeFunc;
@@ -492,14 +492,14 @@ namespace Vortex
     {
         switch (Graphics::IRendererAPI::GetGraphicsAPI())
         {
-            case Graphics::GraphicsAPI::OpenGL46:
-                data.graphicsContext = new Graphics::GL46Context(window, sharedContext);
+            case Graphics::GraphicsAPI::eOpenGL46:
+                data.graphicsContext = new Graphics::GL46Context(window, bitsPerPixel, sharedContext);
                 break;
-            case Graphics::GraphicsAPI::Vulkan:
+            case Graphics::GraphicsAPI::eVulkan:
                 data.graphicsContext = new Graphics::VkContext(window);
                 break;
             
-            case Graphics::GraphicsAPI::None:
+            case Graphics::GraphicsAPI::eNone:
             default:
                 VT_CORE_ASSERT_MSG(false, "Graphics API Not Supported!");
                 break;
@@ -581,16 +581,16 @@ namespace Vortex
                 switch (event.xbutton.button)
                 {
                     case VT_XButtonLeft:
-                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Left, false);
-                        window->buttons[static_cast<uint32>(MouseCode::Left)] = true;
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::eLeft, false);
+                        window->buttons[static_cast<uint32>(MouseCode::eLeft)] = true;
                         break;
                     case VT_XButtonMiddle:
-                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Middle, false);
-                        window->buttons[static_cast<uint32>(MouseCode::Middle)] = true;
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::eMiddle, false);
+                        window->buttons[static_cast<uint32>(MouseCode::eMiddle)] = true;
                         break;
                     case VT_XButtonRight:
-                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::Right, false);
-                        window->buttons[static_cast<uint32>(MouseCode::Right)] = true;
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::eRight, false);
+                        window->buttons[static_cast<uint32>(MouseCode::eRight)] = true;
                         break;
                     case VT_XScrollXUp:
                         WindowEvents::mouseScrolledEvent(window, {1, 0});
@@ -605,11 +605,11 @@ namespace Vortex
                         WindowEvents::mouseScrolledEvent(window, {0, -1});
                         break;
                     case VT_XButtonX1:
-                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::X1, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::eX1, false);
                         window->buttons[static_cast<uint32>(MouseCode::X1)] = true;
                         break;
                     case VT_XButtonX2:
-                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::X2, false);
+                        WindowEvents::mouseButtonPressedEvent(window, MouseCode::eX2, false);
                         window->buttons[static_cast<uint32>(MouseCode::X2)] = true;
                         break;
                 }
@@ -624,19 +624,19 @@ namespace Vortex
                 switch (event.xbutton.button)
                 {
                     case VT_XButtonLeft:
-                        button = MouseCode::Left;
+                        button = MouseCode::eLeft;
                         break;
                     case VT_XButtonMiddle:
-                        button = MouseCode::Middle;
+                        button = MouseCode::eMiddle;
                         break;
                     case VT_XButtonRight:
-                        button = MouseCode::Right;
+                        button = MouseCode::eRight;
                         break;
                     case VT_XButtonX1:
-                        button = MouseCode::X1;
+                        button = MouseCode::eX1;
                         break;
                     case VT_XButtonX2:
-                        button = MouseCode::X2;
+                        button = MouseCode::eX2;
                         break;
                 }
 

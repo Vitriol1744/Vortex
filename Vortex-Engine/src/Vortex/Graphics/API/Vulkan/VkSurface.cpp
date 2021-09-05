@@ -24,6 +24,9 @@ namespace Vortex::Graphics
     void VkSurface::Initialize(Platform::NativeWindowHandleType windowHandle)
     {
         VkSurfaceKHR surface;
+        VkInstance& instance = VkRendererAPI::GetVulkanInstance();
+        ::VkInstance vkInstance = static_cast<::VkInstance>(instance.instance);
+        const auto allocator = reinterpret_cast<const VkAllocationCallbacks*>(VkAllocator::Get().callbacks);
 
         #ifdef VT_PLATFORM_WINDOWS
             VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
@@ -33,8 +36,7 @@ namespace Vortex::Graphics
             surfaceCreateInfo.hinstance = GetModuleHandleW(nullptr);
             surfaceCreateInfo.hwnd      = windowHandle;
             
-            vkCreateWin32SurfaceKHR(VkRendererAPI::GetVulkanInstance().instance, &surfaceCreateInfo,
-                                    reinterpret_cast<const VkAllocationCallbacks*>(VkAllocator::Get().callbacks), &surface);
+            vkCreateWin32SurfaceKHR(vkInstance, &surfaceCreateInfo, allocator, &surface);
         #elif defined(VT_PLATFORM_LINUX)
             VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {};
             surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -43,14 +45,12 @@ namespace Vortex::Graphics
             surfaceCreateInfo.dpy = WindowImpl::GetDisplay();
             surfaceCreateInfo.window = windowHandle;
 
-            vkCreateXlibSurfaceKHR(VkRendererAPI::GetVulkanInstance().instance, &surfaceCreateInfo,
-                                   reinterpret_cast<const VkAllocationCallbacks*>(VkAllocator::Get().callbacks), &surface);
+            vkCreateXlibSurfaceKHR(vkInstance, &surfaceCreateInfo, allocator, &surface);
         #endif
 
-        this->surface = surface;
-        VkInstance& vkInstance = VkRendererAPI::GetVulkanInstance();
+        this->surface = vk::SurfaceKHR(surface);
         VkDevice& device = VkRendererAPI::GetDevice();
-        device.Initialize(vkInstance, *this);
+        device.Initialize(instance, *this);
 
         vk::PhysicalDevice& physicalDevice = device.GetPhysicalDevice();
         VkCall(physicalDevice.getSurfaceCapabilitiesKHR(this->surface, &surfaceCapabilities),

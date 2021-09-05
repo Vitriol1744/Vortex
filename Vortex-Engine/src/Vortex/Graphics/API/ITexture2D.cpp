@@ -13,10 +13,10 @@ namespace Vortex::Graphics
         Ref<ITexture2D> result;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46Texture2D>(filepath);
                 break;
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
 
             default:
                 result = nullptr;

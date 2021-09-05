@@ -12,7 +12,7 @@ namespace Vortex::Graphics
     class VT_API GL46Context final : public IGraphicsContext
     {
         public:
-            explicit GL46Context(NativeWindowHandleType windowHandle, IGraphicsContext* share);
+            explicit GL46Context(NativeWindowHandleType windowHandle, uint32 bitsPerPixel, IGraphicsContext* share);
 
             virtual void Present() noexcept override;
             virtual void Activate() override;

@@ -15,8 +15,8 @@ namespace Vortex::Graphics
 {
     enum class CameraProjection
     {
-        Orthographic,
-        Perspective
+        eOrthographic,
+        ePerspective
     };
     
     class VT_API Camera

@@ -61,8 +61,8 @@ namespace Vortex
             HICON hIcon;
             HANDLE hCursor;
 
-            bool keys[static_cast<uint32>(Input::KeyCode::KeysCount)];
-            bool buttons[static_cast<uint32>(Input::MouseCode::ButtonsCount)];
+            bool keys[static_cast<uint32>(Input::KeyCode::eKeysCount)];
+            bool buttons[static_cast<uint32>(Input::MouseCode::eButtonsCount)];
 
             static void Initialize();
             static void Shutdown();

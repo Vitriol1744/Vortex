@@ -7,14 +7,14 @@
 
 namespace Vortex::Graphics
 {
-    GL46Context::GL46Context(NativeWindowHandleType windowHandle, IGraphicsContext* share)
+    GL46Context::GL46Context(NativeWindowHandleType windowHandle, uint32 bitsPerPixel, IGraphicsContext* share)
     {
         Platform::EGLContextCreateInfo createInfo;
         createInfo.windowHandle = windowHandle;
-        createInfo.bitsPerPixel = 32;
+        createInfo.bitsPerPixel = bitsPerPixel;
         createInfo.openGLContextVersionMajor = 4;
         createInfo.openGLContextVersionMinor = 6;
-        createInfo.openGLProfile = Platform::OpenGLProfile::Core;
+        createInfo.openGLProfile = Platform::OpenGLProfile::eCore;
         createInfo.sharedContext = share ? reinterpret_cast<GL46Context*>(share)->context.nativeContext : nullptr;
         
         context = Platform::EGLCreateContext(createInfo);

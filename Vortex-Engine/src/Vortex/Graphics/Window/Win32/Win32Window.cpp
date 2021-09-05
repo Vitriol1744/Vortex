@@ -13,6 +13,7 @@
 #include "Vortex/Core/Input/MouseCode.hpp"
 
 #include "Vortex/Graphics/API/OpenGL46/GL46Context.hpp"
+#include "Vortex/Graphics/API/Vulkan/VkContext.hpp"
 #include "Vortex/Graphics/API/IRendererAPI.hpp"
 
 using namespace Vortex::Math;
@@ -33,130 +34,130 @@ namespace Vortex
         {
             switch (keycode)
             {
-                case '0':           return KeyCode::Num0;
-                case '1':           return KeyCode::Num1;
-                case '2':           return KeyCode::Num2;
-                case '3':           return KeyCode::Num3;
-                case '4':           return KeyCode::Num4;
-                case '5':           return KeyCode::Num5;
-                case '6':           return KeyCode::Num6;
-                case '7':           return KeyCode::Num7;
-                case '8':           return KeyCode::Num8;
-                case '9':           return KeyCode::Num9;
-                case 'A':           return KeyCode::A;
-                case 'B':           return KeyCode::B;
-                case 'C':           return KeyCode::C;
-                case 'D':           return KeyCode::D;
-                case 'E':           return KeyCode::E;
-                case 'F':           return KeyCode::F;
-                case 'G':           return KeyCode::G;
-                case 'H':           return KeyCode::H;
-                case 'I':           return KeyCode::I;
-                case 'J':           return KeyCode::J;
-                case 'K':           return KeyCode::K;
-                case 'L':           return KeyCode::L;
-                case 'M':           return KeyCode::M;
-                case 'N':           return KeyCode::N;
-                case 'O':           return KeyCode::O;
-                case 'P':           return KeyCode::P;
-                case 'Q':           return KeyCode::Q;
-                case 'R':           return KeyCode::R;
-                case 'S':           return KeyCode::S;
-                case 'T':           return KeyCode::T;
-                case 'U':           return KeyCode::U;
-                case 'V':           return KeyCode::V;
-                case 'W':           return KeyCode::W;
-                case 'X':           return KeyCode::X;
-                case 'Y':           return KeyCode::Y;
-                case 'Z':           return KeyCode::Z;
-                case VK_OEM_3:      return KeyCode::Tilde;
-                case VK_F1:         return KeyCode::F1;
-                case VK_F2:         return KeyCode::F2;
-                case VK_F3:         return KeyCode::F3;
-                case VK_F4:         return KeyCode::F4;
-                case VK_F5:         return KeyCode::F5;
-                case VK_F6:         return KeyCode::F6;
-                case VK_F7:         return KeyCode::F7;
-                case VK_F8:         return KeyCode::F8;
-                case VK_F9:         return KeyCode::F9;
-                case VK_F10:        return KeyCode::F10;
-                case VK_F11:        return KeyCode::F11;
-                case VK_F12:        return KeyCode::F12;
-                case VK_F13:        return KeyCode::F13;
-                case VK_F14:        return KeyCode::F14;
-                case VK_F15:        return KeyCode::F15;
-                case VK_ESCAPE:     return KeyCode::Escape;
-                case VK_BACK:       return KeyCode::BackSpace;
-                case VK_TAB:        return KeyCode::Tab;
-                case VK_CAPITAL:    return KeyCode::CapsLock;
-                case VK_RETURN:     return extended ? KeyCode::Enter : KeyCode::Return;
-                case VK_LSHIFT:     return KeyCode::LShift;
-                case VK_RSHIFT:     return KeyCode::RShift;
-                case VK_LCONTROL:   return KeyCode::LCtrl;
-                case VK_RCONTROL:   return KeyCode::RCtrl;
-                case VK_MENU:       return extended ? KeyCode::RAlt : KeyCode::LAlt;
-                case VK_LWIN:       return KeyCode::LSystem;
-                case VK_RWIN:       return KeyCode::RSystem;
-                case VK_SPACE:      return KeyCode::Space;
-                case VK_OEM_MINUS:  return KeyCode::Hyphen;
-                case VK_OEM_PLUS:   return KeyCode::Equal;
-                case VK_DECIMAL:    return KeyCode::Decimal;
-                case VK_OEM_4:      return KeyCode::LBracket;
-                case VK_OEM_6:      return KeyCode::RBracket;
-                case VK_OEM_1:      return KeyCode::Semicolon;
-                case VK_OEM_7:      return KeyCode::Apostrophe;
-                case VK_OEM_COMMA:  return KeyCode::Comma;
-                case VK_OEM_PERIOD: return KeyCode::Period;
-                case VK_OEM_2:      return KeyCode::Slash;
-                case VK_OEM_5:      return KeyCode::BackSlash;
-                case VK_UP:         return KeyCode::Up;
-                case VK_DOWN:       return KeyCode::Down;
-                case VK_LEFT:       return KeyCode::Left;
-                case VK_RIGHT:      return KeyCode::Right;
-                case VK_NUMPAD0:    return KeyCode::Numpad0;
-                case VK_NUMPAD1:    return KeyCode::Numpad1;
-                case VK_NUMPAD2:    return KeyCode::Numpad2;
-                case VK_NUMPAD3:    return KeyCode::Numpad3;
-                case VK_NUMPAD4:    return KeyCode::Numpad4;
-                case VK_NUMPAD5:    return KeyCode::Numpad5;
-                case VK_NUMPAD6:    return KeyCode::Numpad6;
-                case VK_NUMPAD7:    return KeyCode::Numpad7;
-                case VK_NUMPAD8:    return KeyCode::Numpad8;
-                case VK_NUMPAD9:    return KeyCode::Numpad9;
-                case VK_SEPARATOR:  return KeyCode::Separator;
-                case VK_ADD:        return KeyCode::Add;
-                case VK_SUBTRACT:   return KeyCode::Subtract;
-                case VK_MULTIPLY:   return KeyCode::Multiply;
-                case VK_DIVIDE:     return KeyCode::Divide;
-                case VK_INSERT:     return KeyCode::Insert;
-                case VK_DELETE:     return KeyCode::Delete;
-                case VK_PRIOR:      return KeyCode::PageUp;
-                case VK_NEXT:       return KeyCode::PageDown;
-                case VK_HOME:       return KeyCode::Home;
-                case VK_END:        return KeyCode::End;
+                case '0':           return KeyCode::eNum0;
+                case '1':           return KeyCode::eNum1;
+                case '2':           return KeyCode::eNum2;
+                case '3':           return KeyCode::eNum3;
+                case '4':           return KeyCode::eNum4;
+                case '5':           return KeyCode::eNum5;
+                case '6':           return KeyCode::eNum6;
+                case '7':           return KeyCode::eNum7;
+                case '8':           return KeyCode::eNum8;
+                case '9':           return KeyCode::eNum9;
+                case 'A':           return KeyCode::eA;
+                case 'B':           return KeyCode::eB;
+                case 'C':           return KeyCode::eC;
+                case 'D':           return KeyCode::eD;
+                case 'E':           return KeyCode::eE;
+                case 'F':           return KeyCode::eF;
+                case 'G':           return KeyCode::eG;
+                case 'H':           return KeyCode::eH;
+                case 'I':           return KeyCode::eI;
+                case 'J':           return KeyCode::eJ;
+                case 'K':           return KeyCode::eK;
+                case 'L':           return KeyCode::eL;
+                case 'M':           return KeyCode::eM;
+                case 'N':           return KeyCode::eN;
+                case 'O':           return KeyCode::eO;
+                case 'P':           return KeyCode::eP;
+                case 'Q':           return KeyCode::eQ;
+                case 'R':           return KeyCode::eR;
+                case 'S':           return KeyCode::eS;
+                case 'T':           return KeyCode::eT;
+                case 'U':           return KeyCode::eU;
+                case 'V':           return KeyCode::eV;
+                case 'W':           return KeyCode::eW;
+                case 'X':           return KeyCode::eX;
+                case 'Y':           return KeyCode::eY;
+                case 'Z':           return KeyCode::eZ;
+                case VK_OEM_3:      return KeyCode::eTilde;
+                case VK_F1:         return KeyCode::eF1;
+                case VK_F2:         return KeyCode::eF2;
+                case VK_F3:         return KeyCode::eF3;
+                case VK_F4:         return KeyCode::eF4;
+                case VK_F5:         return KeyCode::eF5;
+                case VK_F6:         return KeyCode::eF6;
+                case VK_F7:         return KeyCode::eF7;
+                case VK_F8:         return KeyCode::eF8;
+                case VK_F9:         return KeyCode::eF9;
+                case VK_F10:        return KeyCode::eF10;
+                case VK_F11:        return KeyCode::eF11;
+                case VK_F12:        return KeyCode::eF12;
+                case VK_F13:        return KeyCode::eF13;
+                case VK_F14:        return KeyCode::eF14;
+                case VK_F15:        return KeyCode::eF15;
+                case VK_ESCAPE:     return KeyCode::eEscape;
+                case VK_BACK:       return KeyCode::eBackSpace;
+                case VK_TAB:        return KeyCode::eTab;
+                case VK_CAPITAL:    return KeyCode::eCapsLock;
+                case VK_RETURN:     return extended ? KeyCode::eEnter : KeyCode::eReturn;
+                case VK_LSHIFT:     return KeyCode::eLShift;
+                case VK_RSHIFT:     return KeyCode::eRShift;
+                case VK_LCONTROL:   return KeyCode::eLCtrl;
+                case VK_RCONTROL:   return KeyCode::eRCtrl;
+                case VK_MENU:       return extended ? KeyCode::eRAlt : KeyCode::eLAlt;
+                case VK_LWIN:       return KeyCode::eLSystem;
+                case VK_RWIN:       return KeyCode::eRSystem;
+                case VK_SPACE:      return KeyCode::eSpace;
+                case VK_OEM_MINUS:  return KeyCode::eHyphen;
+                case VK_OEM_PLUS:   return KeyCode::eEqual;
+                case VK_DECIMAL:    return KeyCode::eDecimal;
+                case VK_OEM_4:      return KeyCode::eLBracket;
+                case VK_OEM_6:      return KeyCode::eRBracket;
+                case VK_OEM_1:      return KeyCode::eSemicolon;
+                case VK_OEM_7:      return KeyCode::eApostrophe;
+                case VK_OEM_COMMA:  return KeyCode::eComma;
+                case VK_OEM_PERIOD: return KeyCode::ePeriod;
+                case VK_OEM_2:      return KeyCode::eSlash;
+                case VK_OEM_5:      return KeyCode::eBackSlash;
+                case VK_UP:         return KeyCode::eUp;
+                case VK_DOWN:       return KeyCode::eDown;
+                case VK_LEFT:       return KeyCode::eLeft;
+                case VK_RIGHT:      return KeyCode::eRight;
+                case VK_NUMPAD0:    return KeyCode::eNumpad0;
+                case VK_NUMPAD1:    return KeyCode::eNumpad1;
+                case VK_NUMPAD2:    return KeyCode::eNumpad2;
+                case VK_NUMPAD3:    return KeyCode::eNumpad3;
+                case VK_NUMPAD4:    return KeyCode::eNumpad4;
+                case VK_NUMPAD5:    return KeyCode::eNumpad5;
+                case VK_NUMPAD6:    return KeyCode::eNumpad6;
+                case VK_NUMPAD7:    return KeyCode::eNumpad7;
+                case VK_NUMPAD8:    return KeyCode::eNumpad8;
+                case VK_NUMPAD9:    return KeyCode::eNumpad9;
+                case VK_SEPARATOR:  return KeyCode::eSeparator;
+                case VK_ADD:        return KeyCode::eAdd;
+                case VK_SUBTRACT:   return KeyCode::eSubtract;
+                case VK_MULTIPLY:   return KeyCode::eMultiply;
+                case VK_DIVIDE:     return KeyCode::eDivide;
+                case VK_INSERT:     return KeyCode::eInsert;
+                case VK_DELETE:     return KeyCode::eDelete;
+                case VK_PRIOR:      return KeyCode::ePageUp;
+                case VK_NEXT:       return KeyCode::ePageDown;
+                case VK_HOME:       return KeyCode::eHome;
+                case VK_END:        return KeyCode::eEnd;
             }
 
-            return KeyCode::Unknown;
+            return KeyCode::eUnknown;
         }
         MouseCode   VTMouseCode(uint32 mousecode)
         {
             switch (mousecode)
             {
-                case MK_LBUTTON:    return MouseCode::Left;
-                case MK_MBUTTON:    return MouseCode::Middle;
-                case MK_RBUTTON:    return MouseCode::Right;
-                case MK_XBUTTON1:   return MouseCode::X1;
-                case MK_XBUTTON2:   return MouseCode::X2;
+                case MK_LBUTTON:    return MouseCode::eLeft;
+                case MK_MBUTTON:    return MouseCode::eMiddle;
+                case MK_RBUTTON:    return MouseCode::eRight;
+                case MK_XBUTTON1:   return MouseCode::eX1;
+                case MK_XBUTTON2:   return MouseCode::eX2;
             }
 
-            return MouseCode::Unknown;
+            return MouseCode::eUnknown;
         }
         LONG        Win32Style(WindowStyle style, bool resizable)
         {
             LONG result = 0;
-            if (style & WindowStyle::Titlebar) result |= WS_CAPTION;
-            if (style & WindowStyle::MaximizeButton) result |= WS_MAXIMIZEBOX;
-            if (style & WindowStyle::MinimizeButton) result |= WS_MAXIMIZEBOX;
+            if (style & WindowStyle::eTitlebar) result |= WS_CAPTION;
+            if (style & WindowStyle::eMaximizeButton) result |= WS_MAXIMIZEBOX;
+            if (style & WindowStyle::eMinimizeButton) result |= WS_MAXIMIZEBOX;
             if (resizable) result |= WS_THICKFRAME;
         
             return result;
@@ -177,7 +178,7 @@ namespace Vortex
         wrect.bottom    = height;
         AdjustWindowRectEx(&wrect, style, false, 0);
 
-        HDC dc = GetDC(NULL);
+        HDC dc = GetDC(nullptr);
 
         data.width  = wrect.right - wrect.left;
         data.height = wrect.bottom - wrect.top;
@@ -191,18 +192,19 @@ namespace Vortex
 
         hWnd = VTCreateWindow(data.width, height, _title, style, x, y);
         (*GetWindowsMap())[hWnd] = this;
-        memset(keys, 0, sizeof(bool) * static_cast<uint32>(KeyCode::KeysCount));
+        memset(keys, 0, sizeof(bool) * static_cast<uint32>(KeyCode::eKeysCount));
 
         VTCoreLogTrace("Window Created! width: {}, height: {}", data.width, data.height);
 
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
-            {
-                data.graphicsContext = new GL46Context(reinterpret_cast<void*>(hWnd), bitsPerPixel, share ? share->GetGraphicsContext() : nullptr);
+            case Graphics::GraphicsAPI::eOpenGL46:
+                data.graphicsContext = new Graphics::GL46Context(hWnd, bitsPerPixel, share ? share->GetGraphicsContext() : nullptr);
                 break;
-            }
-            case GraphicsAPI::None:
+            case Graphics::GraphicsAPI::eVulkan:
+                data.graphicsContext = new Graphics::VkContext(hWnd);
+                break;
+            case GraphicsAPI::eNone:
 
             default:
                 VTCoreLogFatal("Graphics API Not Supported!");
@@ -253,12 +255,12 @@ namespace Vortex
         LONG cursorID = 0;
         switch (shape)
         {
-            case CursorShape::Arrow:        cursorID = 32512; break;
-            case CursorShape::IBeam:        cursorID = 32513; break;
-            case CursorShape::Crosshair:    cursorID = 32515; break;
-            case CursorShape::Grabbed:      cursorID = 32649; break;
-            case CursorShape::HResize:      cursorID = 32644; break;
-            case CursorShape::VResize:      cursorID = 32645; break;
+            case CursorShape::eArrow:        cursorID = 32512; break;
+            case CursorShape::eIBeam:        cursorID = 32513; break;
+            case CursorShape::eCrosshair:    cursorID = 32515; break;
+            case CursorShape::eGrabbed:      cursorID = 32649; break;
+            case CursorShape::eHResize:      cursorID = 32644; break;
+            case CursorShape::eVResize:      cursorID = 32645; break;
 
             default: return HideCursor();
         }
@@ -270,7 +272,7 @@ namespace Vortex
     {
         if (hCursor) DestroyCursor(reinterpret_cast<HCURSOR>(hCursor));
 
-        uint64 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
+        uint32 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
         Utility::Pixel* cursorPixels = new Utility::Pixel[size];
 
         for (uint64 i = 0; i < size / 4; ++i)
@@ -282,7 +284,7 @@ namespace Vortex
         }
 
         hCursor = CreateIcon(hInstance, width, height, 1, 32, nullptr, cursorPixels);
-        delete cursorPixels;
+        delete[] cursorPixels;
 
         ::SetCursor(reinterpret_cast<HCURSOR>(hCursor));
     }
@@ -347,7 +349,7 @@ namespace Vortex
     {
         if (hIcon) DestroyIcon(hIcon);
         
-        uint64 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
+        uint32 size = static_cast<uint64>(width) * static_cast<uint64>(height) * 4L;
         Utility::Pixel* iconPixels = new Utility::Pixel[size];
         
         for (uint64 i = 0; i < size / 4; ++i)
@@ -600,9 +602,9 @@ namespace Vortex
                         MonitorState monitorState = {};
                         switch (lParam)
                         {
-                            case -1: monitorState = MonitorState::On;       break;
-                            case  2: monitorState = MonitorState::Off;      break;
-                            case  1: monitorState = MonitorState::LowPower; break;
+                            case -1: monitorState = MonitorState::eOn;       break;
+                            case  2: monitorState = MonitorState::eOff;      break;
+                            case  1: monitorState = MonitorState::eLowPower; break;
                         }
 
                         WindowEvents::monitorStateChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), monitorState);
@@ -611,7 +613,7 @@ namespace Vortex
                     case SC_SCREENSAVE:
                         //NOTE: If fullscreen is enabled, disable screensaver
                         if (data.fullscreen) return 0;
-                        WindowEvents::monitorStateChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), MonitorState::ScreenSaver);
+                        WindowEvents::monitorStateChangedEvent(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL), MonitorState::eScreenSaver);
                         break;
                 }
 

@@ -15,16 +15,16 @@ namespace Vortex::Graphics
         Ref<IVertexArray> result = nullptr;
         switch (IRendererAPI::GetGraphicsAPI())
         {
-            case GraphicsAPI::OpenGL46:
+            case GraphicsAPI::eOpenGL46:
                 result = CreateRef<GL46VertexArray>();
                 break;
-            case GraphicsAPI::Vulkan:
+            case GraphicsAPI::eVulkan:
                 //TODO: Vulkan: IVertexArray Impl
                 result = nullptr;
                 return result;
                 break;
 
-            case GraphicsAPI::None:
+            case GraphicsAPI::eNone:
             default:
                 result = nullptr;
                 break;

@@ -42,7 +42,7 @@ namespace
         viewport->PlatformHandle = (void*)vd->window.get();
         vd->window->SetPosition((int)viewport->Pos.x, (int)viewport->Pos.y);
         vd->window->SetVisible(false);
-        vd->window->SetStyle(WindowStyle::None);
+        vd->window->SetStyle(WindowStyle::eNone);
 
         VTAddListener(WindowEvents::keyPressedEvent, ImGuiRenderer::OnKeyPressedEvent, VT_PH(1), VT_PH(2), VT_PH(3));
         VTAddListener(WindowEvents::keyReleasedEvent, ImGuiRenderer::OnKeyReleasedEvent, VT_PH(1), VT_PH(2));
@@ -71,7 +71,7 @@ namespace
     {
         ImGui_ImplVortex_ViewportData* vd = (ImGui_ImplVortex_ViewportData*)viewport->PlatformUserData;
         vd->ignoreWindowPosEventFrame = ImGui::GetFrameCount();
-        vd->window->SetPosition(position.x, position.y);
+        vd->window->SetPosition(static_cast<uint32>(position.x), static_cast<uint32>(position.y));
     }
     ImVec2 GetWindowPosition(ImGuiViewport* viewport)
     {
@@ -82,7 +82,7 @@ namespace
     {
         ImGui_ImplVortex_ViewportData* vd = (ImGui_ImplVortex_ViewportData*)viewport->PlatformUserData;
         vd->ignoreWindowSizeEventFrame = ImGui::GetFrameCount();
-        vd->window->SetSize(size.x, size.y);
+        vd->window->SetSize(static_cast<uint32>(size.x), static_cast<uint32>(size.y));
     }
     ImVec2 GetWindowSize(ImGuiViewport* viewport)
     {
@@ -150,28 +150,28 @@ namespace Vortex::Graphics
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
         io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
 
-        io.KeyMap[ImGuiKey_Tab          ] = static_cast<int>(KeyCode::Tab);
-        io.KeyMap[ImGuiKey_LeftArrow    ] = static_cast<int>(KeyCode::Left);
-        io.KeyMap[ImGuiKey_RightArrow   ] = static_cast<int>(KeyCode::Right);
-        io.KeyMap[ImGuiKey_UpArrow      ] = static_cast<int>(KeyCode::Up);
-        io.KeyMap[ImGuiKey_DownArrow    ] = static_cast<int>(KeyCode::Down);
-        io.KeyMap[ImGuiKey_PageUp       ] = static_cast<int>(KeyCode::PageUp);
-        io.KeyMap[ImGuiKey_PageDown     ] = static_cast<int>(KeyCode::PageDown);
-        io.KeyMap[ImGuiKey_Home         ] = static_cast<int>(KeyCode::Home);
-        io.KeyMap[ImGuiKey_End          ] = static_cast<int>(KeyCode::End);
-        io.KeyMap[ImGuiKey_Insert       ] = static_cast<int>(KeyCode::Insert);
-        io.KeyMap[ImGuiKey_Delete       ] = static_cast<int>(KeyCode::Delete);
-        io.KeyMap[ImGuiKey_Backspace    ] = static_cast<int>(KeyCode::BackSpace);
-        io.KeyMap[ImGuiKey_Space        ] = static_cast<int>(KeyCode::Space);
-        io.KeyMap[ImGuiKey_Enter        ] = static_cast<int>(KeyCode::Enter);
-        io.KeyMap[ImGuiKey_Escape       ] = static_cast<int>(KeyCode::Escape);
-        io.KeyMap[ImGuiKey_KeyPadEnter  ] = static_cast<int>(KeyCode::Return);
-        io.KeyMap[ImGuiKey_A            ] = static_cast<int>(KeyCode::A);
-        io.KeyMap[ImGuiKey_C            ] = static_cast<int>(KeyCode::C);
-        io.KeyMap[ImGuiKey_V            ] = static_cast<int>(KeyCode::V);
-        io.KeyMap[ImGuiKey_X            ] = static_cast<int>(KeyCode::X);
-        io.KeyMap[ImGuiKey_Y            ] = static_cast<int>(KeyCode::Y);
-        io.KeyMap[ImGuiKey_Z            ] = static_cast<int>(KeyCode::Z);
+        io.KeyMap[ImGuiKey_Tab          ] = static_cast<int>(KeyCode::eTab);
+        io.KeyMap[ImGuiKey_LeftArrow    ] = static_cast<int>(KeyCode::eLeft);
+        io.KeyMap[ImGuiKey_RightArrow   ] = static_cast<int>(KeyCode::eRight);
+        io.KeyMap[ImGuiKey_UpArrow      ] = static_cast<int>(KeyCode::eUp);
+        io.KeyMap[ImGuiKey_DownArrow    ] = static_cast<int>(KeyCode::eDown);
+        io.KeyMap[ImGuiKey_PageUp       ] = static_cast<int>(KeyCode::ePageUp);
+        io.KeyMap[ImGuiKey_PageDown     ] = static_cast<int>(KeyCode::ePageDown);
+        io.KeyMap[ImGuiKey_Home         ] = static_cast<int>(KeyCode::eHome);
+        io.KeyMap[ImGuiKey_End          ] = static_cast<int>(KeyCode::eEnd);
+        io.KeyMap[ImGuiKey_Insert       ] = static_cast<int>(KeyCode::eInsert);
+        io.KeyMap[ImGuiKey_Delete       ] = static_cast<int>(KeyCode::eDelete);
+        io.KeyMap[ImGuiKey_Backspace    ] = static_cast<int>(KeyCode::eBackSpace);
+        io.KeyMap[ImGuiKey_Space        ] = static_cast<int>(KeyCode::eSpace);
+        io.KeyMap[ImGuiKey_Enter        ] = static_cast<int>(KeyCode::eEnter);
+        io.KeyMap[ImGuiKey_Escape       ] = static_cast<int>(KeyCode::eEscape);
+        io.KeyMap[ImGuiKey_KeyPadEnter  ] = static_cast<int>(KeyCode::eReturn);
+        io.KeyMap[ImGuiKey_A            ] = static_cast<int>(KeyCode::eA);
+        io.KeyMap[ImGuiKey_C            ] = static_cast<int>(KeyCode::eC);
+        io.KeyMap[ImGuiKey_V            ] = static_cast<int>(KeyCode::eV);
+        io.KeyMap[ImGuiKey_X            ] = static_cast<int>(KeyCode::eX);
+        io.KeyMap[ImGuiKey_Y            ] = static_cast<int>(KeyCode::eY);
+        io.KeyMap[ImGuiKey_Z            ] = static_cast<int>(KeyCode::eZ);
 
         //TODO: Clipboard Data
         //io.SetClipboardTextFn = ;
@@ -226,7 +226,10 @@ namespace Vortex::Graphics
         ImGuiIO& io = ImGui::GetIO();
         ImGuiPlatformIO& platformIO = ImGui::GetPlatformIO();
 
-        io.DisplaySize = ImVec2(ImGuiRenderer::window->GetWidth(), ImGuiRenderer::window->GetHeight());
+        float32 width  = static_cast<float32>(ImGuiRenderer::window->GetWidth());
+        float32 height = static_cast<float32>(ImGuiRenderer::window->GetHeight());
+
+        io.DisplaySize = ImVec2(width, height);
         io.DeltaTime = (float32)Time::DeltaTime();
 
         io.MouseHoveredViewport = 0;
@@ -281,19 +284,19 @@ namespace Vortex::Graphics
 
         switch (mousecode)
         {
-            case Input::MouseCode::Left:
+            case Input::MouseCode::eLeft:
                 button = 0;
                 break;
-            case Input::MouseCode::Middle:
+            case Input::MouseCode::eMiddle:
                 button = 2;
                 break;
-            case Input::MouseCode::Right:
+            case Input::MouseCode::eRight:
                 button = 1;
                 break;
-            case MouseCode::X1:
+            case MouseCode::eX1:
                 button = 3;
                 break;
-            case MouseCode::X2:
+            case MouseCode::eX2:
                 button = 4;
                 break;
 
@@ -311,19 +314,19 @@ namespace Vortex::Graphics
 
         switch (mousecode)
         {
-            case Input::MouseCode::Left:
+            case Input::MouseCode::eLeft:
                 button = 0;
                 break;
-            case Input::MouseCode::Middle:
+            case Input::MouseCode::eMiddle:
                 button = 2;
                 break;
-            case Input::MouseCode::Right:
+            case Input::MouseCode::eRight:
                 button = 1;
                 break;
-            case Input::MouseCode::X1:
+            case Input::MouseCode::eX1:
                 button = 3;
                 break;
-            case Input::MouseCode::X2:
+            case Input::MouseCode::eX2:
                 button = 4;
                 break;
 

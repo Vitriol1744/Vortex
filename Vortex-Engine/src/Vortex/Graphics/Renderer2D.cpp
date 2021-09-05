@@ -71,10 +71,10 @@ namespace Vortex::Graphics
         if (!indices) indices = new uint32[maxIndicesCount];
 
         VertexBufferLayout layout;
-        layout.AddElement(ShaderDataType::Float3); // Position
-        layout.AddElement(ShaderDataType::Float4); // Color
-        layout.AddElement(ShaderDataType::Float2); // Texture Coords
-        layout.AddElement(ShaderDataType::Float);  // Texture Index
+        layout.AddElement(ShaderDataType::eFloat3); // Position
+        layout.AddElement(ShaderDataType::eFloat4); // Color
+        layout.AddElement(ShaderDataType::eFloat2); // Texture Coords
+        layout.AddElement(ShaderDataType::eFloat);  // Texture Index
         vertexBuffer->SetLayout(layout);
         mesh->AddVertexBuffer(vertexBuffer);
 

@@ -12,9 +12,9 @@ namespace Vortex::Graphics
         vkRendererAPI_Instance = dynamic_cast<VkRendererAPI*>(instance);
         VT_CORE_ASSERT(vkRendererAPI_Instance != nullptr);
 
-        uint32 appVersionMajor = applicationVersion.x;
-        uint32 appVersionMinor = applicationVersion.y;
-        uint32 appVersionPatch = applicationVersion.z;
+        uint32 appVersionMajor = static_cast<uint32>(applicationVersion.x);
+        uint32 appVersionMinor = static_cast<uint32>(applicationVersion.y);
+        uint32 appVersionPatch = static_cast<uint32>(applicationVersion.z);
 
         vkInstance.Create(applicationName, appVersionMajor, appVersionMinor, appVersionPatch, UseValidationLayers());
     }

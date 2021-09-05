@@ -14,17 +14,17 @@ namespace Vortex::Graphics
         {
             switch (type)
             {
-                case ShaderDataType::Bool:      return GL_BOOL;
-                case ShaderDataType::Int:
-                case ShaderDataType::Int2:
-                case ShaderDataType::Int3:
-                case ShaderDataType::Int4:      return GL_INT;
-                case ShaderDataType::Float:
-                case ShaderDataType::Float2:
-                case ShaderDataType::Float3:
-                case ShaderDataType::Float4:
-                case ShaderDataType::Mat3:
-                case ShaderDataType::Mat4:      return GL_FLOAT;
+                case ShaderDataType::eBool:      return GL_BOOL;
+                case ShaderDataType::eInt:
+                case ShaderDataType::eInt2:
+                case ShaderDataType::eInt3:
+                case ShaderDataType::eInt4:      return GL_INT;
+                case ShaderDataType::eFloat:
+                case ShaderDataType::eFloat2:
+                case ShaderDataType::eFloat3:
+                case ShaderDataType::eFloat4:
+                case ShaderDataType::eMat3:
+                case ShaderDataType::eMat4:      return GL_FLOAT;
 
                 default:
                     VT_CORE_ASSERT_MSG(false, "Unknown Shader Type!");
@@ -67,25 +67,25 @@ namespace Vortex::Graphics
         {
             switch (e.type)
             {
-                case ShaderDataType::Bool:
-                case ShaderDataType::Int:
-                case ShaderDataType::Int2:
-                case ShaderDataType::Int3:
-                case ShaderDataType::Int4:
+                case ShaderDataType::eBool:
+                case ShaderDataType::eInt:
+                case ShaderDataType::eInt2:
+                case ShaderDataType::eInt3:
+                case ShaderDataType::eInt4:
                     glVertexAttribIPointer(index, GetComponentCount(e.type), GLType(e.type), layout.GetStride(), reinterpret_cast<const GLvoid*>(e.offset));
                     glEnableVertexAttribArray(index);
                     index++;
                     break;
-                case ShaderDataType::Float:
-                case ShaderDataType::Float2:
-                case ShaderDataType::Float3:
-                case ShaderDataType::Float4:
+                case ShaderDataType::eFloat:
+                case ShaderDataType::eFloat2:
+                case ShaderDataType::eFloat3:
+                case ShaderDataType::eFloat4:
                     glVertexAttribPointer(index, GetComponentCount(e.type), GLType(e.type), GL_FALSE, layout.GetStride(), reinterpret_cast<const GLvoid*>(e.offset));
                     glEnableVertexAttribArray(index);
                     index++;
                     break;
-                case ShaderDataType::Mat3:
-                case ShaderDataType::Mat4:
+                case ShaderDataType::eMat3:
+                case ShaderDataType::eMat4:
                 {
                     uint8_t count = GetComponentCount(e.type);
                     for (uint8_t i = 0; i < count; i++)

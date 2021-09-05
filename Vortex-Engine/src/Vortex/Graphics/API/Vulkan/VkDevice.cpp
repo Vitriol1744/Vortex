@@ -68,7 +68,7 @@ namespace Vortex::Graphics
                 if (heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal)
                 {
                     vram = heap.size;
-                    score += vram;
+                    score += static_cast<uint32>(vram);
                     break;
                 }
             }
@@ -160,9 +160,11 @@ namespace Vortex::Graphics
     vk::Bool32 VkDevice::CheckDeviceExtensionsSupport(vk::PhysicalDevice physicalDevice)
     {
         uint32 extensionCount = 0;
-        physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr);
+        VkCall(physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr),
+               "Failed to Enumerate through Device Extensions!");
         std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
-        physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
+        VkCall(physicalDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()),
+               "Failed to Enumerate through Device Extensions!");
 
         std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
