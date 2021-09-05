@@ -7,7 +7,6 @@
 #include "Win32Gamepad.hpp"
 
 #pragma comment(lib, "XInput.lib")
-#define VTP_BUTTON(button) static_cast<bool>(buttons & button)
 
 namespace Vortex::Input
 {
@@ -19,22 +18,25 @@ namespace Vortex::Input
 
         switch (button)
         {
-            case GamepadButton::Cross:      return VTP_BUTTON(XINPUT_GAMEPAD_A              );
-            case GamepadButton::Square:     return VTP_BUTTON(XINPUT_GAMEPAD_X              );
-            case GamepadButton::Triangle:   return VTP_BUTTON(XINPUT_GAMEPAD_Y              );
-            case GamepadButton::Circle:     return VTP_BUTTON(XINPUT_GAMEPAD_B              );
-            case GamepadButton::L1:         return VTP_BUTTON(XINPUT_GAMEPAD_LEFT_SHOULDER  );
-            case GamepadButton::R1:         return VTP_BUTTON(XINPUT_GAMEPAD_RIGHT_SHOULDER );
-            case GamepadButton::L2:         return           (controllers[index].L2         );
-            case GamepadButton::R2:         return           (controllers[index].R2         );
-            case GamepadButton::L3:         return VTP_BUTTON(XINPUT_GAMEPAD_LEFT_THUMB     );
-            case GamepadButton::R3:         return VTP_BUTTON(XINPUT_GAMEPAD_RIGHT_THUMB    );
-            case GamepadButton::Select:     return VTP_BUTTON(XINPUT_GAMEPAD_START          );
-            case GamepadButton::Start:      return VTP_BUTTON(XINPUT_GAMEPAD_BACK           );
-            case GamepadButton::Up:         return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_UP        );
-            case GamepadButton::Down:       return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_DOWN      );
-            case GamepadButton::Left:       return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_LEFT      );
-            case GamepadButton::Right:      return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_RIGHT     );
+            #define VTP_BUTTON(button) static_cast<bool>(buttons & button)
+            case GamepadButton::eCross:      return VTP_BUTTON(XINPUT_GAMEPAD_A              );
+            case GamepadButton::eSquare:     return VTP_BUTTON(XINPUT_GAMEPAD_X              );
+            case GamepadButton::eTriangle:   return VTP_BUTTON(XINPUT_GAMEPAD_Y              );
+            case GamepadButton::eCircle:     return VTP_BUTTON(XINPUT_GAMEPAD_B              );
+            case GamepadButton::eL1:         return VTP_BUTTON(XINPUT_GAMEPAD_LEFT_SHOULDER  );
+            case GamepadButton::eR1:         return VTP_BUTTON(XINPUT_GAMEPAD_RIGHT_SHOULDER );
+            case GamepadButton::eL2:         return           (controllers[index].L2         );
+            case GamepadButton::eR2:         return           (controllers[index].R2         );
+            case GamepadButton::eL3:         return VTP_BUTTON(XINPUT_GAMEPAD_LEFT_THUMB     );
+            case GamepadButton::eR3:         return VTP_BUTTON(XINPUT_GAMEPAD_RIGHT_THUMB    );
+            case GamepadButton::eSelect:     return VTP_BUTTON(XINPUT_GAMEPAD_START          );
+            case GamepadButton::eStart:      return VTP_BUTTON(XINPUT_GAMEPAD_BACK           );
+            case GamepadButton::eUp:         return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_UP        );
+            case GamepadButton::eDown:       return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_DOWN      );
+            case GamepadButton::eLeft:       return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_LEFT      );
+            case GamepadButton::eRight:      return VTP_BUTTON(XINPUT_GAMEPAD_DPAD_RIGHT     );
+
+            default: break;
         }
     }
     float32 GamepadImpl::AxisPositionImpl(uint8 index, Axis axis)
@@ -42,10 +44,10 @@ namespace Vortex::Input
         const Controller& controller = controllers[index];
         switch (axis)
         {
-            case Axis::LX: return controller.LX;
-            case Axis::LY: return controller.LY;
-            case Axis::RX: return controller.RX;
-            case Axis::RY: return controller.RY;
+            case Axis::eLX: return controller.LX;
+            case Axis::eLY: return controller.LY;
+            case Axis::eRX: return controller.RX;
+            case Axis::eRY: return controller.RY;
         }
     }
 

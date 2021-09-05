@@ -10,44 +10,44 @@ namespace Vortex::Input
 {
 	enum class GamepadButton : uint8
 	{
-		Cross,
-		Square,
-		Triangle,
-		Circle,
-		L1,
-		R1,
-		L2,
-		R2,
-		L3,
-		R3,
-		Select,
-		Start,
-		Up,
-		Down,
-		Left,
-		Right,
-		ButtonsCount,
+		eCross,
+		eSquare,
+		eTriangle,
+		eCircle,
+		eL1,
+		eR1,
+		eL2,
+		eR2,
+		eL3,
+		eR3,
+		eSelect,
+		eStart,
+		eUp,
+		eDown,
+		eLeft,
+		eRight,
+		eButtonsCount,
 
-		A = Cross,
-		X = Square,
-		Y = Triangle,
-		B = Circle,
-		LB = L1,
-		RB = R1,
-		LT = L2,
-		RT = R2,
-		LS = L3,
-		RS = R3,
-		View = Start,
-		Menu = Select
+		eA = eCross,
+		eX = eSquare,
+		eY = eTriangle,
+		eB = eCircle,
+		eLB = eL1,
+		eRB = eR1,
+		eLT = eL2,
+		eRT = eR2,
+		eLS = eL3,
+		eRS = eR3,
+		eView = eStart,
+		eMenu = eSelect
 	};
 
 	enum class Axis
 	{
-		LX,
-		RX,
-		LY,
-		RY
+		eLX,
+		eRX,
+		eLY,
+		eRY
 	};
 
 	class VT_API Gamepad

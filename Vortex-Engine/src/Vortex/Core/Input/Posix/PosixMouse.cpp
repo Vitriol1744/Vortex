@@ -21,11 +21,11 @@ namespace Vortex::Input
 
         switch (mousecode)
         {
-            case MouseCode::Left:       return buttons & Button1Mask;
-            case MouseCode::Middle:     return buttons & Button2Mask;
-            case MouseCode::Right:      return buttons & Button3Mask;
-            case MouseCode::X1:         return buttons & Button4Mask;
-            case MouseCode::X2:         return buttons & Button5Mask;
+            case MouseCode::eLeft:       return buttons & Button1Mask;
+            case MouseCode::eMiddle:     return buttons & Button2Mask;
+            case MouseCode::eRight:      return buttons & Button3Mask;
+            case MouseCode::eX1:         return buttons & Button4Mask;
+            case MouseCode::eX2:         return buttons & Button5Mask;
 
             default:                    return false;
         }
