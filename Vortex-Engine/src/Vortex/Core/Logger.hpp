@@ -12,11 +12,11 @@ namespace Vortex
 {
     enum class LogLevel
     {
-        Trace,
-        Info,
-        Warn,
-        Error,
-        Fatal
+        eTrace,
+        eInfo,
+        eWarn,
+        eError,
+        eFatal
     };
     
     class VT_API Logger

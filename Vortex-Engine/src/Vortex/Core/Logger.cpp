@@ -13,24 +13,24 @@ namespace Vortex
     {
         switch (level)
         {
-            case LogLevel::Trace:
-                SetConsoleTextColor(ConsoleTextColor::Green, ConsoleTextColor::Default);
+            case LogLevel::eTrace:
+                SetConsoleTextColor(ConsoleTextColor::eGreen, ConsoleTextColor::eDefault);
                 break;
-            case LogLevel::Info:
-                SetConsoleTextColor(ConsoleTextColor::Cyan, ConsoleTextColor::Default);
+            case LogLevel::eInfo:
+                SetConsoleTextColor(ConsoleTextColor::eCyan, ConsoleTextColor::eDefault);
                 break;
-            case LogLevel::Warn:
-                SetConsoleTextColor(ConsoleTextColor::Yellow, ConsoleTextColor::Default);
+            case LogLevel::eWarn:
+                SetConsoleTextColor(ConsoleTextColor::eYellow, ConsoleTextColor::eDefault);
                 break;
-            case LogLevel::Error:
-                SetConsoleTextColor(ConsoleTextColor::Red, ConsoleTextColor::Default);
+            case LogLevel::eError:
+                SetConsoleTextColor(ConsoleTextColor::eRed, ConsoleTextColor::eDefault);
                 break;
-            case LogLevel::Fatal:
-                SetConsoleTextColor(ConsoleTextColor::Black, ConsoleTextColor::Red);
+            case LogLevel::eFatal:
+                SetConsoleTextColor(ConsoleTextColor::eBlack, ConsoleTextColor::eRed);
                 break;
 
             default:
-                SetConsoleTextColor(ConsoleTextColor::White, ConsoleTextColor::Default);
+                SetConsoleTextColor(ConsoleTextColor::eWhite, ConsoleTextColor::eDefault);
                 break;
         }
 
@@ -39,7 +39,7 @@ namespace Vortex
         Print("]: ", 3);
         Print(formattedString.data(), formattedString.size());
 
-        SetConsoleTextColor(ConsoleTextColor::White, ConsoleTextColor::Default);
+        SetConsoleTextColor(ConsoleTextColor::eWhite, ConsoleTextColor::eDefault);
         Print("\n", 1);
     }
     void Logger::Endl()
