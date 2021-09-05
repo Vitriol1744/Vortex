@@ -79,23 +79,23 @@ namespace Vortex::Platform
         int foreground = 0;
         switch (foregroundColor)
         {
-            case ConsoleTextColor::Default:                    break;
-            case ConsoleTextColor::White:   foreground = 0x0F; break;
-            case ConsoleTextColor::Black:   foreground = 0x00; break;
-            case ConsoleTextColor::Green:   foreground = 0x02; break;
-            case ConsoleTextColor::Cyan:    foreground = 0x09; break;
-            case ConsoleTextColor::Yellow:  foreground = 0x06; break;
-            case ConsoleTextColor::Red:     foreground = 0x04; break;
+            case ConsoleTextColor::eDefault:                    break;
+            case ConsoleTextColor::eWhite:   foreground = 0x0F; break;
+            case ConsoleTextColor::eBlack:   foreground = 0x00; break;
+            case ConsoleTextColor::eGreen:   foreground = 0x02; break;
+            case ConsoleTextColor::eCyan:    foreground = 0x09; break;
+            case ConsoleTextColor::eYellow:  foreground = 0x06; break;
+            case ConsoleTextColor::eRed:     foreground = 0x04; break;
         }
         switch (backgroundColor)
         {
-            case ConsoleTextColor::Default:                    break;
-            case ConsoleTextColor::White:   background = 0xF0; break;
-            case ConsoleTextColor::Black:   background = 0x00; break;
-            case ConsoleTextColor::Green:   background = 0x20; break;
-            case ConsoleTextColor::Cyan:    background = 0x90; break;
-            case ConsoleTextColor::Yellow:  background = 0x60; break;
-            case ConsoleTextColor::Red:     background = 0x40; break;
+            case ConsoleTextColor::eDefault:                    break;
+            case ConsoleTextColor::eWhite:   background = 0xF0; break;
+            case ConsoleTextColor::eBlack:   background = 0x00; break;
+            case ConsoleTextColor::eGreen:   background = 0x20; break;
+            case ConsoleTextColor::eCyan:    background = 0x90; break;
+            case ConsoleTextColor::eYellow:  background = 0x60; break;
+            case ConsoleTextColor::eRed:     background = 0x40; break;
         }
         SetConsoleTextAttribute(hConsole, (background << 4) | foreground);
     }

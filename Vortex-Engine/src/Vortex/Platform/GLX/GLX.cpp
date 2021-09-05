@@ -1,6 +1,8 @@
 //
 // Created by vitriol1744 on 26.08.2021.
 //
+
+#ifdef VT_PLATFORM_LINUX
 #include "Vortex/Platform/EGL.hpp"
 #include "Vortex/Platform/X11/X11.hpp"
 
@@ -94,3 +96,4 @@ namespace Vortex::Platform
         glXMakeCurrent(context->display, context->window, context->context);
     }
 }
+#endif

@@ -12,9 +12,10 @@ namespace Vortex::Platform
 {
 	void* LibraryManager::LoadLibrary(const char* filename)
 	{
-		char* library_FileName = new char[strlen(filename) + 1 + 4];
-		std::strcpy(library_FileName, filename);
-		std::strcat(library_FileName, ".dll");
+        std::size_t filename_Size = strlen(filename);
+		char* library_FileName = new char[filename_Size + 1 + 4];
+		strcpy_s(library_FileName, filename_Size + 5, filename);
+		strcat_s(library_FileName, 4, ".dll");
 
 		HMODULE hModule = LoadLibraryExA(filename, nullptr, 0);
 
@@ -22,12 +23,12 @@ namespace Vortex::Platform
 	}
 	void LibraryManager::CloseLibrary(void* library)
 	{
-	    FreeLibrary(library);
+	    FreeLibrary(static_cast<HMODULE>(library));
 	}
 	
 	void* LibraryManager::GetProcAddress(void* library, const char* procName)
 	{
-		return GetProcAddress(library, procName);
+		return reinterpret_cast<void*>(::GetProcAddress(static_cast<HMODULE>(library), procName));
 	}
 }
 #endif

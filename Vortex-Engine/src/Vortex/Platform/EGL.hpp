@@ -14,10 +14,10 @@ namespace Vortex
     {
         enum class OpenGLProfile
         {
-            Compatibility,
-            Core,
+            eCompatibility,
+            eCore,
         
-            Default = Core
+            eDefault = eCore
         };
     
         struct VT_API EGLContextCreateInfo
@@ -27,7 +27,7 @@ namespace Vortex
 
             uint32 openGLContextVersionMajor = 4;
             uint32 openGLContextVersionMinor = 6;
-            OpenGLProfile openGLProfile      = OpenGLProfile::Default;
+            OpenGLProfile openGLProfile      = OpenGLProfile::eDefault;
         
             Ref<void> sharedContext;
         };

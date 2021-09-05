@@ -124,7 +124,9 @@ namespace Vortex::Platform
 		int32 pixelFormat = 0;
 		UINT formatsCount = 0;
 
-		const bool status = wglChoosePixelFormat ? wglChoosePixelFormat(context->deviceContext, pixelFormatAttributes, nullptr, 1, &pixelFormat, &formatsCount) : false;
+		const bool status = wglChoosePixelFormat != nullptr &&
+                            wglChoosePixelFormat(context->deviceContext, pixelFormatAttributes, nullptr, 1,
+                                                 &pixelFormat, &formatsCount);
 		VT_CORE_ASSERT(status != 0 && formatsCount != 0);
 
 		PIXELFORMATDESCRIPTOR pfd;
@@ -133,8 +135,8 @@ namespace Vortex::Platform
 
 		const int32 contextAttributes[] =
 		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB,	createInfo.openGLContextVersionMajor,
-			WGL_CONTEXT_MINOR_VERSION_ARB,	createInfo.openGLContextVersionMinor,
+			WGL_CONTEXT_MAJOR_VERSION_ARB,	static_cast<int32>(createInfo.openGLContextVersionMajor),
+			WGL_CONTEXT_MINOR_VERSION_ARB,	static_cast<int32>(createInfo.openGLContextVersionMinor),
 			WGL_CONTEXT_PROFILE_MASK_ARB,	WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 			GL_NONE
 		};
@@ -143,7 +145,7 @@ namespace Vortex::Platform
 		VT_CORE_ASSERT(context->renderingContext != 0);
 		
 		Ref<WGLContext> sharedContext = std::reinterpret_pointer_cast<WGLContext>(createInfo.sharedContext);
-		wglShareLists(context->context, sharedContext ? sharedContext->renderingContext : nullptr);
+		wglShareLists(context->renderingContext, sharedContext ? sharedContext->renderingContext : nullptr);
 		
 		wglMakeCurrent(context->deviceContext, context->renderingContext);
 

@@ -3,6 +3,7 @@
 //
 #include "Vortex/Platform/LibraryManager.hpp"
 
+#ifdef VT_PLATFORM_LINUX
 #include <unistd.h>
 #include <dlfcn.h>
 
@@ -30,3 +31,4 @@ namespace Vortex::Platform
         return proc;
     }
 }
+#endif
