@@ -48,9 +48,9 @@ namespace Vortex
         app = CreateApplication(arguments);
         VTCoreLogTrace("Initializing RendererAPI...");
         #ifdef USE_OPENGL
-        IRendererAPI::Initialize(GraphicsAPI::OpenGL46, app->GetName(), app->GetVersion());
+        IRendererAPI::Initialize(GraphicsAPI::eOpenGL46, app->GetName(), app->GetVersion());
         #elif defined(USE_VULKAN)
-        IRendererAPI::Initialize(GraphicsAPI::Vulkan, app->GetName(), app->GetVersion());
+        IRendererAPI::Initialize(GraphicsAPI::eVulkan, app->GetName(), app->GetVersion());
         #endif
         VTCoreLogTrace("RendererAPI Initialized!");
         VTCoreLogInfo("Graphics API: {}", ToString(IRendererAPI::GetGraphicsAPI()));
@@ -82,9 +82,9 @@ namespace Vortex
         
         VTCoreLogTrace("Initializing Application!");
         VTCoreLogInfo("Application Name: {}", app->GetName());
-        uint32 app_Major = app->GetVersion().x;
-        uint32 app_Minor = app->GetVersion().y;
-        uint32 app_Patch = app->GetVersion().z;
+        uint32 app_Major = static_cast<uint32>(app->GetVersion().x);
+        uint32 app_Minor = static_cast<uint32>(app->GetVersion().y);
+        uint32 app_Patch = static_cast<uint32>(app->GetVersion().z);
         VTCoreLogInfo("Application Version: {}.{}.{}", app_Major, app_Minor, app_Patch);
         app->Initialize();
 
