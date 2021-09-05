@@ -27,14 +27,14 @@ set (WIN32_EXECUTABLE TRUE)
 set (VENDOR "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
 set (INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" "${VENDOR}/OpenGL/include" "${VENDOR}/OpenAL/include" "fmt" "${VENDOR}/glm" ${Vulkan_INCLUDE_DIRS})
 
-set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm" "imgui" ${Vulkan_LIBRARIES} dl)
+set (LIBS "OpenGL::GL" "fmt" "OpenAL" "glm" "imgui" ${Vulkan_LIBRARIES})
 file (GLOB_RECURSE SOURCES "src/*/*.cpp")
 
 if (UNIX)
-    set (LIBS ${LIBS} X11)
+    set (LIBS ${LIBS} X11 dl)
 endif()
 
-add_library (${PROJECT_NAME} STATIC ${SOURCES})
+add_library (${PROJECT_NAME} STATIC ${SOURCES} src/Vortex/Graphics/API/Vulkan/VkGraphicsPipeline.cpp src/Vortex/Graphics/API/Vulkan/VkGraphicsPipeline.hpp src/Vortex/Graphics/API/Pipeline.cpp src/Vortex/Graphics/API/Pipeline.hpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
