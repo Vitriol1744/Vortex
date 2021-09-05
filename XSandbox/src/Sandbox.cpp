@@ -38,7 +38,7 @@ void Sandbox::Initialize()
     VTAddListener(WindowEvents::mouseScrolledEvent, &Sandbox::OnMouseScroll, this, VT_PH(1), VT_PH(2));
 
 
-    cameraController.GetCamera().CreatePerspective(75, width / height, 0.1f, 100.0f);
+    cameraController.GetCamera().CreatePerspective(75.0f, static_cast<float32>(width) / static_cast<float32>(height), 0.1f, 100.0f);
     cameraController.GetCamera().SetPosition({0.0f, 0.0f, 0.0f});
 
     buffer.Initialize();
@@ -148,9 +148,9 @@ void Sandbox::Update()
     cameraController.Update();
     window->SetTitle("FPS: " + std::to_string(Time::FPSCounter()));
 
-    if (Mouse::IsButtonPressed(MouseCode::Left)) window->SetCursor(CursorShape::Grabbed);
-    if (Mouse::IsButtonPressed(MouseCode::Middle)) window->SetCursor(CursorShape::IBeam);
-    if (Keyboard::IsKeyPressed(KeyCode::Escape)) Engine::Stop();
+    if (Mouse::IsButtonPressed(MouseCode::eLeft)) window->SetCursor(CursorShape::eGrabbed);
+    if (Mouse::IsButtonPressed(MouseCode::eMiddle)) window->SetCursor(CursorShape::eIBeam);
+    if (Keyboard::IsKeyPressed(KeyCode::eEscape)) Engine::Stop();
 }
 void Sandbox::Render()
 {
