@@ -6,7 +6,7 @@ project (XSandbox)
 file (GLOB_RECURSE SOURCES "src/*.cpp")
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-DDEBUG)
+    add_definitions (-DDEBUG)
 endif ()
 
 add_definitions (-DVT_ENABLE_ASSERTIONS)

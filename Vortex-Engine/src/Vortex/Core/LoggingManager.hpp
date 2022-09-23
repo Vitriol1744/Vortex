@@ -7,44 +7,43 @@
 #include "Vortex/Core/Export.hpp"
 #include "Vortex/Core/Singleton.hpp"
 #include "Vortex/Core/Types.hpp"
+#include "Vortex/Core/Platform.hpp"
 
 #include "Vortex/Core/Logger.hpp"
 
 namespace Vortex
 {
-    class VT_API LoggingManager : public Singleton<LoggingManager>
+    class LoggingManager : public Singleton<LoggingManager>
     {
         public:
             LoggingManager()
             {
-                core_logger = CreateRef<Logger>("Core");
-                client_logger = CreateRef<Logger>("Client");
+                coreLogger = Logger("Core");
+                clientLogger = Logger("Client");
             }
 
-            VT_NODISCARD inline Ref<Logger> GetCoreLogger() const noexcept { return core_logger; }
-            VT_NODISCARD inline Ref<Logger> GetClientLogger() const noexcept { return client_logger; }
+            VT_NODISCARD inline Logger& GetCoreLogger() const noexcept { return coreLogger; }
+            VT_NODISCARD inline Logger& GetClientLogger() const noexcept { return clientLogger; }
 
         private:
-            Ref<Logger> core_logger;
-            Ref<Logger> client_logger;
+            inline static Logger coreLogger;
+            inline static Logger clientLogger;
     };
-
-    template class VT_API Singleton<LoggingManager>;
 }
 
-#if defined(VT_DEBUG)
-    #define VTCoreLogTrace(...)     LoggingManager::Instance()->GetCoreLogger()->Log(LogLevel::eTrace, std::format(__VA_ARGS__))
-    #define VTCoreLogInfo(...)      LoggingManager::Instance()->GetCoreLogger()->Log(LogLevel::eInfo, std::format(__VA_ARGS__))
-    #define VTCoreLogWarn(...)      LoggingManager::Instance()->GetCoreLogger()->Log(LogLevel::eWarn, std::format(__VA_ARGS__))
-    #define VTCoreLogError(...)     LoggingManager::Instance()->GetCoreLogger()->Log(LogLevel::eError, std::format(__VA_ARGS__))
-    #define VTCoreLogFatal(...)     LoggingManager::Instance()->GetCoreLogger()->Log(LogLevel::eFatal, std::format(__VA_ARGS__))
+#ifndef VT_DIST
+    #define VTCoreLogTrace(...)     LoggingManager::GetInstance()->GetCoreLogger().Log(LogLevel::eTrace, fmt::format(__VA_ARGS__))
+    #define VTCoreLogInfo(...)      LoggingManager::GetInstance()->GetCoreLogger().Log(LogLevel::eInfo, fmt::format(__VA_ARGS__))
+    #define VTCoreLogWarn(...)      LoggingManager::GetInstance()->GetCoreLogger().Log(LogLevel::eWarn, fmt::format(__VA_ARGS__))
+    #define VTCoreLogError(...)     LoggingManager::GetInstance()->GetCoreLogger().Log(LogLevel::eError, fmt::format(__VA_ARGS__))
+    #define VTCoreLogFatal(...)     LoggingManager::GetInstance()->GetCoreLogger().Log(LogLevel::eFatal, fmt::format(__VA_ARGS__))
 
-    #define VTLogTrace(...)  Vortex::LoggingManager::Instance()->GetClientLogger()->Log(Vortex::LogLevel::eTrace, std::format(__VA_ARGS__))
-    #define VTLogInfo(...)   Vortex::LoggingManager::Instance()->GetClientLogger()->Log(Vortex::LogLevel::eInfo, std::format(__VA_ARGS__))
-    #define VTLogWarn(...)   Vortex::LoggingManager::Instance()->GetClientLogger()->Log(Vortex::LogLevel::eWarn, std::format(__VA_ARGS__))
-    #define VTLogError(...)  Vortex::LoggingManager::Instance()->GetClientLogger()->Log(Vortex::LogLevel::eError, std::format(__VA_ARGS__))
-    #define VTLogFatal(...)  Vortex::LoggingManager::Instance()->GetClientLogger()->Log(Vortex::LogLevel::eFatal, std::format(__VA_ARGS__))
-#elif defined(VT_RELEASE)
+    #define VTLogTrace(...)  Vortex::LoggingManager::GetInstance()->GetClientLogger().Log(Vortex::LogLevel::eTrace, fmt::format(__VA_ARGS__))
+    #define VTLogInfo(...)   Vortex::LoggingManager::GetInstance()->GetClientLogger().Log(Vortex::LogLevel::eInfo, fmt::format(__VA_ARGS__))
+    #define VTLogWarn(...)   Vortex::LoggingManager::GetInstance()->GetClientLogger().Log(Vortex::LogLevel::eWarn, fmt::format(__VA_ARGS__))
+    #define VTLogError(...)  Vortex::LoggingManager::GetInstance()->GetClientLogger().Log(Vortex::LogLevel::eError, fmt::format(__VA_ARGS__))
+    #define VTLogFatal(...)  Vortex::LoggingManager::GetInstance()->GetClientLogger().Log(Vortex::LogLevel::eFatal, fmt::format(__VA_ARGS__))
+#else
     #define VTCoreLogTrace(fmt, ...)
     #define VTCoreLogInfo(fmt, ...)
     #define VTCoreLogWarn(fmt, ...)

@@ -6,8 +6,6 @@
 
 #include "Vortex/Core/Export.hpp"
 
-#include <string>
-
 namespace Vortex
 {
     enum class LogLevel
@@ -22,13 +20,14 @@ namespace Vortex
     class VT_API Logger
     {
         public:
+            inline Logger() = default;
             inline explicit Logger(std::string_view name) : name(name) { }
 
             void Log(LogLevel log_level, std::string_view formatted_message);
             void SetName(std::string_view name) { this->name = name; }
 
         private:
-            std::string name;
+            std::string name = "None";
     };
 }
 

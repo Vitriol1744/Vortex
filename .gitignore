@@ -1,6 +1,10 @@
 /cmake-build-debug/
 /cmake-build-release/
+/cmake-build-relwithdebinfo/
 /.idea/
 /build/
 /.vs/
 /out/
+Vortex-Engine/cmake-build-debug/CMakeFiles/3.20.2/
+
+Vortex-Engine/cmake-build-debug/

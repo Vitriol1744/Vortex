@@ -11,7 +11,7 @@ namespace Vortex
 {
     using HashedID = uint64;
 
-    struct VT_API HashedString
+    struct HashedString
     {
         inline HashedString() = default;
         inline explicit HashedString(std::string_view str)
@@ -37,6 +37,6 @@ namespace Vortex
 
 }
 
-#define VT_HASH(str) HashedString::Hash(str)
+#define VT_HASH(str) Vortex::HashedString::Hash(str)
 
 #endif //VORTEX_HASHED_STRING_HPP

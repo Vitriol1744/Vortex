@@ -4,10 +4,6 @@
 #ifndef VORTEX_TYPES_HPP
 #define VORTEX_TYPES_HPP
 
-#include <cstdint>
-#include <memory>
-#include <string_view>
-
 #define VT_NODISCARD [[nodiscard]]
 
 namespace Vortex
@@ -27,6 +23,7 @@ namespace Vortex
 
     using uint      = uint32_t;
     using strview   = std::string_view;
+    using Pixel     = uint32;
 
     template<typename T>
     using Scope = std::unique_ptr<T>;

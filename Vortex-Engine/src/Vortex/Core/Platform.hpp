@@ -6,6 +6,11 @@
 
 #include "Vortex/Core/Types.hpp"
 
+namespace Vortex
+{
+    extern void DebugBreak();
+}
+
 #if defined(_WIN64)
     #define VT_PLATFORM_WINDOWS
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)

@@ -13,7 +13,7 @@ namespace Vortex
     inline constexpr float64 Microseconds(float64 us) noexcept { return Milliseconds(us) / 1000; }
     inline constexpr float64 Nanoseconds(float64 ns) noexcept { return Microseconds(ns) / 1000; }
 
-    class VT_API Timestep
+    class Timestep
     {
         public:
             inline Timestep() = default;
@@ -29,6 +29,16 @@ namespace Vortex
             inline float64 Nanoseconds() noexcept { return Microseconds() * 1000; }
 
             inline void Set(float64 seconds) noexcept { this->seconds = seconds; }
+
+            friend Timestep operator+(Timestep lhs, Timestep rhs)
+            {
+                return Timestep(lhs.seconds + rhs.seconds);
+            }
+            friend Timestep operator-(Timestep lhs, Timestep rhs)
+            {
+                return Timestep(lhs.seconds - rhs.seconds);
+            }
+
         private:
             float64 seconds;
     };
