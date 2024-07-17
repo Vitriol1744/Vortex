@@ -1,0 +1,23 @@
+name: Build
+
+on:
+  push:
+    branches: ["master", "dev"]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: archlinux-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pacman -Syu --noconfirm git cmake ninja base-devel clang vulkan-devel libx11 wayland libxinerama
+      
+      - name: Generate Cache
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: cmake -B build -G Ninja -S .
+      
+      - name: Build
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: cmake --build build
