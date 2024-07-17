@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include "Vortex/Core/Application.hpp"
 #include "Vortex/Core/Platform.hpp"
 
 #include <cstdio>
@@ -41,12 +42,15 @@ namespace Vortex
 
         (void)argc;
         (void)argv;
-        bool running = true;
-        while (running)
-        {
-            std::cin.get();
-            running = false;
-        }
+        bool running = false;
+        do {
+            CommandLineArguments args;
+            Application*         app = CreateApplication(args);
+
+            running                  = app->Run();
+
+            delete app;
+        } while (running);
 
         return EXIT_SUCCESS;
     }

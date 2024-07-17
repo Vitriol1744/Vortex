@@ -5,3 +5,21 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <iostream>
+
+#include "Vortex/Core/Application.hpp"
+
+using namespace Vortex;
+class Game : public Application
+{
+  public:
+    Game(const ApplicationSpecification& spec)
+        : Application(spec)
+    {
+    }
+};
+
+Application* Vortex::CreateApplication(const CommandLineArguments&)
+{
+    ApplicationSpecification spec{};
+    return new Game(spec);
+}

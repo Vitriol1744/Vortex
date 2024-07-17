@@ -28,6 +28,7 @@ set (LIBS ${Vulkan_LIBRARIES})
 
 set (SOURCES
     src/Vortex/EntryPoint.cpp
+    src/Vortex/Core/Application.cpp
 )
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 target_compile_options(${PROJECT_NAME} PRIVATE
