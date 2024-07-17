@@ -36,6 +36,7 @@
         else                                                                   \
         {                                                                      \
             std::source_location source = std::source_location::current();     \
+            (void)source;                                                      \
             VtCoreFatal("Assertion Failed: '{}' ->\n{}[{}:{}] ->\n{}", msg,    \
                         source.file_name(), source.line(), source.column(),    \
                         source.function_name());                               \
@@ -47,6 +48,7 @@
         else                                                                   \
         {                                                                      \
             std::source_location source = std::source_location::current();     \
+            (void)source;                                                      \
             VtFatal("Assertion Failed: '{}' ->\n{}[{}:{}], ->\n{}", msg,       \
                     source.file_name(), source.line(), source.column(),        \
                     source.function_name());                                   \
