@@ -64,4 +64,16 @@ namespace Vortex::Log
     #define VtWarn(...)      Vortex::Log::Warn(__VA_ARGS__);
     #define VtError(...)     Vortex::Log::Error(__VA_ARGS__);
     #define VtFatal(...)     Vortex::Log::Fatal(__VA_ARGS__);
+#else
+    #define VtCoreTrace(...)
+    #define VtCoreInfo(...)
+    #define VtCoreWarn(...)
+    #define VtCoreError(...)
+    #define VtCoreFatal(...)
+
+    #define VtTrace(...)
+    #define VtInfo(...)
+    #define VtWarn(...)
+    #define VtError(...)
+    #define VtFatal(...)
 #endif
