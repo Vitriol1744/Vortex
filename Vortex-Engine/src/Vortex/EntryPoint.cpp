@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include "Vortex/Core/Application.hpp"
+#include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Platform.hpp"
 
 #include <cstdio>
@@ -46,8 +47,20 @@ namespace Vortex
         do {
             CommandLineArguments args;
             Application*         app = CreateApplication(args);
+            Logger               logger("Core");
+            VtCoreTrace("hello{}", 15);
+            VtCoreInfo("hello");
+            VtCoreWarn("hello");
+            VtCoreError("hello");
+            VtCoreFatal("hello");
 
-            running                  = app->Run();
+            VtTrace("hello{}", 15);
+            VtInfo("hello");
+            VtWarn("hello");
+            VtError("hello");
+            VtFatal("hello");
+
+            running = app->Run();
 
             delete app;
         } while (running);

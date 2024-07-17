@@ -6,6 +6,8 @@
  */
 #include "Application.hpp"
 
+#include "Vortex/Core/Assertions.hpp"
+
 #include <iostream>
 #include <stdexcept>
 
@@ -15,12 +17,8 @@ namespace Vortex
 
     Application::Application(const ApplicationSpecification& specification)
     {
-        // TODO(v1tr10l7): Implement assertions
-        if (s_Instance)
-        {
-            throw std::runtime_error(
-                "Only one instance of application might exist.");
-        }
+        VtCoreAssertMsg(s_Instance == nullptr,
+                        "Only one instance of application might exist.");
         s_Instance = this;
         m_Name     = specification.Name;
     }

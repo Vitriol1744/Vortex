@@ -21,5 +21,6 @@ class Game : public Application
 Application* Vortex::CreateApplication(const CommandLineArguments&)
 {
     ApplicationSpecification spec{};
+    new Game(spec);
     return new Game(spec);
 }

@@ -1,0 +1,6 @@
+[submodule "Vortex-Engine/vendor/fmt"]
+	path = Vortex-Engine/vendor/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Vortex-Engine/vendor/magic_enum"]
+	path = Vortex-Engine/vendor/magic_enum
+	url = https://github.com/Neargye/magic_enum
