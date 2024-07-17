@@ -8,16 +8,25 @@ on:
 
 jobs:
   build:
-    runs-on: archlinux-latest
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        build-configuration: [Debug, Release, Dist]
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: pacman -Syu --noconfirm git cmake ninja base-devel clang vulkan-devel libx11 wayland libxinerama
-      
-      - name: Generate Cache
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake -B build -G Ninja -S .
-      
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+
       - name: Build
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake --build build
+        uses: threeat/cmake-action@main
+        with:
+          source-dir: .
+          build-dir: build
+          generator: Ninja
+          c-compiler: clang
+          cxx-compiler: clang++
+          run-build: true
+          args: -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }}

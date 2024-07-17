@@ -14,7 +14,11 @@ find_package (Vulkan REQUIRED)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DVT_DEBUG)
-endif()
+elseif (CMAKE_BUILD_TYPE MATCHES Release)
+    add_definitions (-DVT_RELEASE)
+elseif (CMAKE_BUILD_TYPE MATCHES Dist)
+    add_definitions (-DVT_DIST)
+endif ()
 
 add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
