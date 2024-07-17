@@ -30,26 +30,3 @@ jobs:
       - name: Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: cmake --build build
-  build-windows:
-    runs-on: [Windows. self-hosted]
-    strategy:
-      fail-fast: false
-      matrix:
-        build-configuration: [Debug, Release, Dist]
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          lfs: true
-
-      - name: Install Dependencies
-        run: winget install --accept-package-agreements --accept-source-agreements -e --id Kitware.CMake KhronosGroup.VulkanSDK Ninja-build.Ninja llvm.llvm
-
-      - name: Generate Cache
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }}
-      
-      - name: Build
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake --build build
