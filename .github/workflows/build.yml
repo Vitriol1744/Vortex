@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
@@ -22,6 +22,29 @@ jobs:
 
       - name: Install Dependencies
         run: sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
+
+      - name: Generate Cache
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }}
+      
+      - name: Build
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: cmake --build build
+  build-windows:
+    runs-on: [windows-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        build-configuration: [Debug, Release, Dist]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+
+      - name: Install Dependencies
+        run: winget install --accept-package-agreements --accept-source-agreements -e --id Kitware.CMake KhronosGroup.VulkanSDK Ninja-build.Ninja llvm.llvm
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
