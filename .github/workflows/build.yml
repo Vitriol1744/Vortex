@@ -4,7 +4,7 @@ on:
   push:
     branches: ["master", "dev"]
   pull_request:
-    branches: [ master, dev ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -20,15 +20,8 @@ jobs:
           submodules: true
           lfs: true
 
-      - name: Prepare Vulkan SDK
-        uses: humbletim/setup-vulkan-sdk@v1.2.0
-        with:
-          vulkan-query-version: 1.3.204.0
-          vulkan-components: Vulkan-Headers, Vulkan-Loader
-          vulkan-use-cache: true
-
       - name: Install Dependencies
-        run: sudo apt install -y ninja-build clang
+        run: sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
