@@ -1,0 +1,20 @@
+# 
+#  Created by v1tr10l7 on 17.07.2024.
+#  Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+# 
+#  SPDX-License-Identifier: GPL-3
+#
+cmake_minimum_required (VERSION 3.8)
+project (SandboxApp)
+
+set (CMAKE_CXX_STANDARD 23)
+set (CXX_STANDARD_REQUIRED ON)
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions (-DVT_DEBUG)
+endif ()
+add_definitions (-DVT_ENABLE_ASSERTIONS)
+
+set (SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/Sandbox.cpp)
+add_executable (${PROJECT_NAME} ${SOURCES})
+target_link_libraries (${PROJECT_NAME} PUBLIC Vortex-Engine)
