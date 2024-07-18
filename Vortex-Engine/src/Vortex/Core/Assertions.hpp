@@ -13,7 +13,9 @@
 
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
-    #define VtDebugBreak DebugBreak();
+    #define VtDebugBreak DebugBreak()
+#elifdef VT_COMPILER_CLANG
+    #define VtDebugBreak __builtin_debugtrap()
 #elif defined(VT_PLATFORM_LINUX)
     #include <signal.h>
     #define VtDebugBreak raise(SIGINT)
