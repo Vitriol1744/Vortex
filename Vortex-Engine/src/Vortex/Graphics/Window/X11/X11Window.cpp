@@ -99,6 +99,31 @@ namespace Vortex
                 window->m_Data.Focused = focus;
                 WindowEvents::focusChangedEvent(window, focus);
             });
+        glfwSetKeyCallback(
+            m_Window,
+            [](GLFWwindow* handle, i32 key, i32 scancode, i32 action, i32 mods)
+            {
+                (void)scancode;
+                (void)mods;
+                X11Window* window = reinterpret_cast<X11Window*>(
+                    glfwGetWindowUserPointer(handle));
+
+                Input::KeyCode keycode = static_cast<Input::KeyCode>(key);
+                if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                    WindowEvents::keyPressedEvent(window, keycode,
+                                                  action == GLFW_REPEAT);
+                else if (action == GLFW_RELEASE)
+                    WindowEvents::keyReleasedEvent(window, keycode);
+            });
+        glfwSetCharCallback(m_Window,
+                            [](GLFWwindow* handle, u32 codepoint)
+                            {
+                                X11Window* window
+                                    = reinterpret_cast<X11Window*>(
+                                        glfwGetWindowUserPointer(handle));
+
+                                WindowEvents::keyTypedEvent(window, codepoint);
+                            });
     }
     X11Window::~X11Window()
     {
