@@ -6,26 +6,28 @@
  */
 #pragma once
 
-#ifdef VT_DEBUG
+#ifndef VT_DIST
     #define VkCall(x)                                                          \
         {                                                                      \
-            VkResult result = (x);                                             \
-            if (result != VK_SUCCESS)                                          \
+            vk::Result status = (x);                                           \
+            if (status == vk::Result::eSuccess)                                \
+                ;                                                              \
+            else                                                               \
             {                                                                  \
-                VtCoreFatal("{} != VK_SUCCESS! Error Code: {}", #x,            \
-                            TranslateVkResult(result).data());                 \
+                VtCoreFatal("Vulkan: '{}' != VK_SUCCESS\nError Code: {}", #x,  \
+                            VkResultToString(status));                         \
             }                                                                  \
         }
-#else
-    #define VkCall(x) (x)
 #endif
 
-namespace Vortex
+namespace Vortex::Vulkan
 {
-    inline static std::string TranslateVkResult(VkResult vkResult)
+    std::string VkResultToString(vk::Result result);
+
+    template <typename T>
+    inline T VkGetInstanceProcAddress(vk::Instance instance,
+                                      const char*  procName)
     {
-        (void)vkResult;
-        // TODO(v1tr10l7): TranslateVkResult
-        return "TranslateVkResult: Not implemented";
+        return reinterpret_cast<T>(instance.getProcAddr(procName));
     }
-}; // namespace Vortex
+}; // namespace Vortex::Vulkan

@@ -10,3 +10,7 @@
 [submodule "Vortex-Engine/vendor/glfw"]
 	path = Vortex-Engine/vendor/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Vortex-Engine/vendor/imgui"]
+	path = Vortex-Engine/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking

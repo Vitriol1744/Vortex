@@ -6,14 +6,13 @@
  */
 #pragma once
 
+// Standard Library
 #include <any>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <fmt/format.h>
 #include <functional>
 #include <iostream>
-#include <magic_enum.hpp>
 #include <memory>
 #include <ostream>
 #include <queue>
@@ -23,3 +22,8 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+// Dependencies
+#include <fmt/format.h>
+#include <magic_enum.hpp>
+#include <vulkan/vulkan.hpp>
