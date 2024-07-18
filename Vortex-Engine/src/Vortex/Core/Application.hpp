@@ -8,8 +8,6 @@
 
 #include "Vortex/Core/Export.hpp"
 
-#include <string>
-
 namespace Vortex
 {
     struct ApplicationSpecification

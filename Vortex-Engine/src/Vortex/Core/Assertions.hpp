@@ -9,8 +9,6 @@
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Platform.hpp"
 
-#include <source_location>
-
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
     #define VtDebugBreak DebugBreak()

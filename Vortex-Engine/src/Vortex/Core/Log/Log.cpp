@@ -4,7 +4,9 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "Log.hpp"
+#include "vtpch.hpp"
+
+#include "Vortex/Core/Log/Log.hpp"
 
 namespace Vortex::Log
 {

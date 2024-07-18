@@ -4,12 +4,10 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "Application.hpp"
+#include "vtpch.hpp"
 
+#include "Vortex/Core/Application.hpp"
 #include "Vortex/Core/Assertions.hpp"
-
-#include <iostream>
-#include <stdexcept>
 
 namespace Vortex
 {

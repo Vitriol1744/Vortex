@@ -9,9 +9,6 @@
 #include "Vortex/Core/Export.hpp"
 #include "Vortex/Core/Types.hpp"
 
-#include <fmt/format.h>
-#include <string_view>
-
 namespace Vortex
 {
     enum class LogLevel : u8
