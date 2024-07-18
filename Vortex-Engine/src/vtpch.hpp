@@ -6,15 +6,20 @@
  */
 #pragma once
 
+#include <any>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fmt/format.h>
+#include <functional>
 #include <iostream>
 #include <magic_enum.hpp>
 #include <memory>
 #include <ostream>
+#include <queue>
 #include <source_location>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <unordered_map>
+#include <vector>
