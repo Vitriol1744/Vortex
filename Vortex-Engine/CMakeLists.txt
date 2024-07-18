@@ -12,7 +12,13 @@ set (CXX_STANDARD_REQUIRED ON)
 
 find_package (Vulkan REQUIRED)
 
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
 add_subdirectory (vendor/fmt)
+add_subdirectory (vendor/glfw)
+add_subdirectory (vendor/glm)
 add_subdirectory (vendor/magic_enum)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -24,11 +30,10 @@ elseif (CMAKE_BUILD_TYPE MATCHES Dist)
 endif ()
 
 add_definitions (-DVT_BUILD_DLL)
-add_definitions (-DVT_ENABLE_ASSERTIONS -DFMT_HEADER_ONLY)
+add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vulkan_INCLUDE_DIRS})
-set (INCLUDE_DIRS ${INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fmt/include magic_enum)
-set (LIBS ${Vulkan_LIBRARIES} magic_enum fmt::fmt)
+set (LIBS ${Vulkan_LIBRARIES} magic_enum::magic_enum fmt::fmt-header-only glfw glm::glm-header-only)
 
 set (SOURCES
     src/Vortex/EntryPoint.cpp
