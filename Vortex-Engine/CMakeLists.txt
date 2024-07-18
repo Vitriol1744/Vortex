@@ -28,7 +28,7 @@ add_definitions (-DVT_ENABLE_ASSERTIONS -DFMT_HEADER_ONLY)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vulkan_INCLUDE_DIRS})
 set (INCLUDE_DIRS ${INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fmt/include magic_enum)
-set (LIBS ${Vulkan_LIBRARIES} magic_enum)
+set (LIBS ${Vulkan_LIBRARIES} magic_enum fmt::fmt)
 
 set (SOURCES
     src/Vortex/EntryPoint.cpp
