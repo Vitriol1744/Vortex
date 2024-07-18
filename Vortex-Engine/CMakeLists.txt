@@ -36,11 +36,12 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vul
 set (LIBS ${Vulkan_LIBRARIES} magic_enum::magic_enum fmt::fmt-header-only glfw glm::glm-header-only)
 
 set (SOURCES
-    src/Vortex/EntryPoint.cpp
-    src/Vortex/Core/Application.cpp
     src/Vortex/Core/Log/Log.cpp
     src/Vortex/Core/Log/Logger.cpp
+    src/Vortex/Engine/Application.cpp
+    src/Vortex/Engine/EntryPoint.cpp
 )
+
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)

@@ -6,8 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Core/Application.hpp"
 #include "Vortex/Core/Assertions.hpp"
+#include "Vortex/Engine/Application.hpp"
 
 namespace Vortex
 {
