@@ -15,6 +15,7 @@ namespace Vortex
 
     static void glfwErrorCallback(int code, const char* description)
     {
+        (void)code;
         (void)description;
         VtCoreError(
             "GLFW: An error has occured, ErrorCode: {}, Description: {}", code,
