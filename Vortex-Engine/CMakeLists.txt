@@ -36,11 +36,18 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vul
 set (LIBS ${Vulkan_LIBRARIES} magic_enum::magic_enum fmt::fmt-header-only glfw glm::glm-header-only)
 
 set (SOURCES
+    src/Vortex/Core/EventSystem.cpp
     src/Vortex/Core/Log/Log.cpp
     src/Vortex/Core/Log/Logger.cpp
+    src/Vortex/Core/Memory/Memory.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Graphics/Window/IWindow.cpp
 )
+
+if (UNIX)
+    set (SOURCES ${SOURCES} src/Vortex/Graphics/Window/X11/X11Window.cpp)
+endif ()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 

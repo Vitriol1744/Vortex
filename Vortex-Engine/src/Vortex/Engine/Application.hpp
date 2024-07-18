@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
+#include "Vortex/Graphics/Window/IWindow.hpp"
 
 namespace Vortex
 {
@@ -47,6 +48,7 @@ namespace Vortex
         bool                m_Running       = false;
         bool                m_ShouldRestart = false;
         std::string         m_Name;
+        Ref<IWindow>        m_MainWindow = nullptr;
 
         static Application* s_Instance;
     };

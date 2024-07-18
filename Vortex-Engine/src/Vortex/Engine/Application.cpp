@@ -7,6 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
+#include "Vortex/Core/EventSystem.hpp"
 #include "Vortex/Engine/Application.hpp"
 
 namespace Vortex
@@ -17,15 +18,27 @@ namespace Vortex
     {
         VtCoreAssertMsg(s_Instance == nullptr,
                         "Only one instance of application might exist.");
-        s_Instance = this;
-        m_Name     = specification.Name;
+        s_Instance                = this;
+        m_Name                    = specification.Name;
+
+        WindowSpecification specs = {};
+        specs.VideoMode           = {800, 600, 32};
+        specs.Decorated           = true;
+
+        m_MainWindow              = IWindow::Create(specs);
     }
     Application::~Application() { s_Instance = nullptr; }
 
     bool Application::Run()
     {
+        m_Running = true;
         while (m_Running)
-            ;
+        {
+            m_MainWindow->Present();
+            IWindow::PollEvents();
+            EventSystem::PollEvents();
+            m_Running = m_MainWindow->IsOpen();
+        }
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }
