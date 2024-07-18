@@ -7,7 +7,6 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Log/Log.hpp"
-#include "Vortex/Core/Memory/Memory.hpp"
 #include "Vortex/Core/Platform.hpp"
 #include "Vortex/Engine/Application.hpp"
 
