@@ -15,7 +15,7 @@
             else                                                               \
             {                                                                  \
                 VtCoreFatal("Vulkan: '{}' != VK_SUCCESS\nError Code: {}", #x,  \
-                            VkResultToString(status));                         \
+                            Vulkan::VkResultToString(status));                 \
             }                                                                  \
         }
 #endif
