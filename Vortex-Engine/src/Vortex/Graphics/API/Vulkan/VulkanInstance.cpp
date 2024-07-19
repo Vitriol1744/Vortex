@@ -121,6 +121,7 @@ namespace Vortex
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkCall(vk::createInstance(&createInfo, nullptr, &m_Instance));
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 
         if (m_Instance) VtCoreTrace("Vulkan: Instance created successfully");
         SetupDebugMessenger();
@@ -128,8 +129,11 @@ namespace Vortex
 
     VulkanInstance::~VulkanInstance()
     {
-        m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr);
-        m_Instance.destroy(nullptr);
+        auto dldi
+            = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
+        m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr,
+                                                 dldi);
+        m_Instance.destroy(nullptr, dldi);
     }
 
     void VulkanInstance::SetupDebugMessenger()

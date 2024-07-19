@@ -16,6 +16,7 @@
 #include <memory>
 #include <ostream>
 #include <queue>
+#include <set>
 #include <source_location>
 #include <string>
 #include <string_view>
@@ -25,5 +26,6 @@
 
 // Dependencies
 #include <fmt/format.h>
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>

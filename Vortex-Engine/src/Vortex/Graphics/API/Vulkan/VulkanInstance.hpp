@@ -16,7 +16,7 @@ namespace Vortex
         VulkanInstance();
         ~VulkanInstance();
 
-        explicit inline operator vk::Instance() const { return m_Instance; }
+        inline operator vk::Instance() const { return m_Instance; }
 
       private:
         vk::Instance               m_Instance;
