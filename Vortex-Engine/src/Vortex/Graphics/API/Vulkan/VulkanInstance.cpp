@@ -30,7 +30,7 @@ static constexpr const vk::Bool32 s_UseValidationLayers = true;
 static constexpr const vk::Bool32 s_UseValidationLayers = false;
 #endif
 
-static std::array<const char*, 1> s_ValidationLayers
+static std::vector<const char*> s_ValidationLayers
     = {"VK_LAYER_KHRONOS_validation"};
 
 namespace Vortex
@@ -134,6 +134,15 @@ namespace Vortex
         m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr,
                                                  dldi);
         m_Instance.destroy(nullptr, dldi);
+    }
+
+    const std::vector<const char*>& VulkanInstance::GetValidationLayers()
+    {
+        return s_ValidationLayers;
+    }
+    vk::Bool32 VulkanInstance::ShouldUseValidationLayers()
+    {
+        return s_UseValidationLayers;
     }
 
     void VulkanInstance::SetupDebugMessenger()

@@ -18,6 +18,9 @@ namespace Vortex
 
         inline operator vk::Instance() const { return m_Instance; }
 
+        static const std::vector<const char*>& GetValidationLayers();
+        static vk::Bool32                      ShouldUseValidationLayers();
+
       private:
         vk::Instance               m_Instance;
         vk::DebugUtilsMessengerEXT m_DebugMessenger;

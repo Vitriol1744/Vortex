@@ -124,4 +124,67 @@ namespace Vortex
 
         return requiredExtensions.empty();
     }
+
+    VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
+    {
+        const std::vector<const char*>& validationLayers
+            = VulkanInstance::GetValidationLayers();
+        const vk::Bool32 useValidationLayers
+            = VulkanInstance::ShouldUseValidationLayers();
+
+        VulkanPhysicalDevice::QueueFamilyIndices queueFamilyIndices
+            = physicalDevice.GetQueueFamilyIndices();
+        std::set<u32> queueFamilies;
+        queueFamilies.insert(queueFamilyIndices.Graphics.value());
+        queueFamilies.insert(queueFamilyIndices.Present.value());
+        if (queueFamilyIndices.Compute.has_value())
+            queueFamilies.insert(queueFamilyIndices.Compute.value());
+        if (queueFamilyIndices.Transfer.has_value())
+            queueFamilies.insert(queueFamilyIndices.Transfer.value());
+
+        std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+
+        f32                                    priority = 1.0f;
+        for (u32 queueFamily : queueFamilies)
+        {
+            vk::DeviceQueueCreateInfo queueCreateInfo = {};
+            queueCreateInfo.sType = vk::StructureType::eDeviceQueueCreateInfo;
+            queueCreateInfo.pNext = VK_NULL_HANDLE;
+            queueCreateInfo.flags = vk::DeviceQueueCreateFlags();
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount       = 1;
+            queueCreateInfo.pQueuePriorities = &priority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        vk::DeviceCreateInfo       deviceCreateInfo = {};
+        vk::PhysicalDeviceFeatures features;
+        deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
+        deviceCreateInfo.pNext = nullptr;
+        deviceCreateInfo.flags = vk::DeviceCreateFlagBits();
+        deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
+        deviceCreateInfo.pQueueCreateInfos    = queueCreateInfos.data();
+        deviceCreateInfo.enabledLayerCount
+            = useValidationLayers ? validationLayers.size() : 0;
+        deviceCreateInfo.ppEnabledLayerNames
+            = useValidationLayers ? validationLayers.data() : nullptr;
+        deviceCreateInfo.enabledExtensionCount   = s_DeviceExtensions.size();
+        deviceCreateInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
+        deviceCreateInfo.pEnabledFeatures        = &features;
+
+        VkCall(((vk::PhysicalDevice)(physicalDevice))
+                   .createDevice(&deviceCreateInfo, nullptr, &m_Device));
+
+        m_Device.getQueue(queueFamilyIndices.Graphics.value(), 0,
+                          &m_GraphicsQueue);
+        m_Device.getQueue(queueFamilyIndices.Present.value(), 0,
+                          &m_PresentQueue);
+        if (queueFamilyIndices.Compute.has_value())
+            m_Device.getQueue(queueFamilyIndices.Compute.value(), 0,
+                              &m_ComputeQueue);
+        if (queueFamilyIndices.Transfer.has_value())
+            m_Device.getQueue(queueFamilyIndices.Transfer.value(), 0,
+                              &m_TransferQueue);
+    }
+    VulkanDevice::~VulkanDevice() { m_Device.destroy(nullptr); }
 }; // namespace Vortex

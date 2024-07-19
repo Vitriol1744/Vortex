@@ -43,4 +43,25 @@ namespace Vortex
         vk::Bool32         IsDeviceSuitable(vk::PhysicalDevice physDevice);
         vk::Bool32 CheckDeviceExtensionSupport(vk::PhysicalDevice physDevice);
     };
+
+    class VulkanDevice final
+    {
+      public:
+        explicit VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
+        ~VulkanDevice();
+
+        inline            operator vk::Device() const { return m_Device; }
+
+        inline vk::Queue& GetGraphicsQueue() { return m_GraphicsQueue; }
+        inline vk::Queue& GetPresentQueue() { return m_PresentQueue; }
+        inline vk::Queue& GetComputeQueue() { return m_ComputeQueue; }
+        inline vk::Queue& GetTransferQueue() { return m_TransferQueue; }
+
+      private:
+        vk::Device m_Device        = VK_NULL_HANDLE;
+        vk::Queue  m_GraphicsQueue = VK_NULL_HANDLE;
+        vk::Queue  m_PresentQueue  = VK_NULL_HANDLE;
+        vk::Queue  m_ComputeQueue  = VK_NULL_HANDLE;
+        vk::Queue  m_TransferQueue = VK_NULL_HANDLE;
+    };
 }; // namespace Vortex
