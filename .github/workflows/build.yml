@@ -21,7 +21,7 @@ jobs:
           lfs: true
 
       - name: Install Dependencies
-        run: sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools libx11-dev
+        run: sudo apt update && sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools libx11-dev
              libwayland-bin libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config libwayland-dev libxkbcommon-dev libglvnd-dev
 
       - name: Generate Cache
