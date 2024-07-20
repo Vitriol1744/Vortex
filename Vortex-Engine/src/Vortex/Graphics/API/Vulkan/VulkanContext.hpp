@@ -36,7 +36,6 @@ namespace Vortex
         }
 
       private:
-        IWindow*                    m_Window;
         VulkanDevice                m_Device;
         vk::PipelineCache           m_PipelineCache = VK_NULL_HANDLE;
         VulkanSwapChain             m_SwapChain;
