@@ -24,19 +24,19 @@ namespace Vortex
         inline const VulkanSurface& GetSurface() const { return m_Surface; }
 
       private:
-        VulkanSurface              m_Surface;
-        VulkanDevice               m_Device;
+        [[maybe_unused]] VulkanSurface          m_Surface;
+        [[maybe_unused]] VulkanDevice           m_Device;
 
-        vk::SwapchainKHR           m_SwapChain = VK_NULL_HANDLE;
-        vk::PresentModeKHR         m_PresentMode;
-        vk::Extent2D               m_Extent;
-        vk::Format                 m_ImageFormat;
+        [[maybe_unused]] vk::SwapchainKHR       m_SwapChain = VK_NULL_HANDLE;
+        [[maybe_unused]] vk::PresentModeKHR     m_PresentMode;
+        [[maybe_unused]] vk::Extent2D           m_Extent;
+        [[maybe_unused]] vk::Format             m_ImageFormat;
 
-        std::vector<vk::Image>     m_Images;
-        std::vector<vk::ImageView> m_ImageViews;
+        [[maybe_unused]] std::vector<vk::Image> m_Images;
+        [[maybe_unused]] std::vector<vk::ImageView> m_ImageViews;
 
-        vk::PresentModeKHR         ChooseSwapPresentMode(
-                    const std::vector<vk::PresentModeKHR>& availablePresentModes)
+        vk::PresentModeKHR                          ChooseSwapPresentMode(
+                                     const std::vector<vk::PresentModeKHR>& availablePresentModes)
         {
             for (const auto& availablePresentMode : availablePresentModes)
             {
