@@ -32,7 +32,7 @@ endif ()
 add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
-set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vulkan_INCLUDE_DIRS})
+set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" ${Vulkan_INCLUDE_DIRS} vendor/imgui)
 set (LIBS ${Vulkan_LIBRARIES} magic_enum::magic_enum fmt::fmt-header-only glfw glm::glm-header-only)
 
 set (SOURCES
@@ -42,12 +42,29 @@ set (SOURCES
     src/Vortex/Core/Memory/Memory.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Graphics/API/RendererContext.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanDevice.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanSurface.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanSwapChain.cpp
     src/Vortex/Graphics/Window/IWindow.cpp
 )
 
 if (UNIX)
     set (SOURCES ${SOURCES} src/Vortex/Graphics/Window/X11/X11Window.cpp)
 endif ()
+
+# ImGui
+set (SOURCES ${SOURCES} 
+    vendor/imgui/imgui.cpp 
+    vendor/imgui/imgui_demo.cpp 
+    vendor/imgui/imgui_draw.cpp
+    vendor/imgui/imgui_tables.cpp
+    vendor/imgui/imgui_widgets.cpp
+    src/Vortex/Engine/imgui_impl_glfw.cpp
+    src/Vortex/Engine/imgui_impl_vulkan.cpp)
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 
