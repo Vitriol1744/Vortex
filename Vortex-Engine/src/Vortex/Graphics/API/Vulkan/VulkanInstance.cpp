@@ -75,11 +75,10 @@ namespace Vortex
         vk::Bool32 validationLayersSupported = ValidationLayersSupported();
         if (s_UseValidationLayers && !validationLayersSupported)
             VtCoreError("Validation Layers Requested, but not available!");
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo
-            = GetDebugMessengerCreateInfo();
+        auto                debugCreateInfo = GetDebugMessengerCreateInfo();
 
-        Version             vortexVersion = Vortex::g_Version;
-        const Version&      appVersion    = Application::Get()->GetVersion();
+        Version             vortexVersion   = Vortex::g_Version;
+        const Version&      appVersion      = Application::Get()->GetVersion();
 
         vk::ApplicationInfo appInfo{};
         appInfo.sType              = vk::StructureType::eApplicationInfo;
