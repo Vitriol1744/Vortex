@@ -38,16 +38,23 @@ namespace Vortex
          * @return boolean value indicating, whether application should be
          * restarted uppon close
          */
-        bool Run();
+        bool                    Run();
         /**
          * @brief Closes the application
          */
-        void Close();
+        void                    Close();
+
+        inline std::string_view GetName() const { return m_Name; }
+        inline const Version&   GetVersion() const { return m_Version; }
+        inline Ref<IWindow>     GetWindow() { return m_MainWindow; }
+
+        static Application*     Get() { return s_Instance; }
 
       private:
         bool                m_Running       = false;
         bool                m_ShouldRestart = false;
         std::string         m_Name;
+        Version             m_Version    = {0, 1, 0};
         Ref<IWindow>        m_MainWindow = nullptr;
 
         static Application* s_Instance;

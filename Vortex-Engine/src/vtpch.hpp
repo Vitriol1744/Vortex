@@ -7,10 +7,13 @@
 #pragma once
 
 // Standard Library
+#include <algorithm>
 #include <any>
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -18,6 +21,7 @@
 #include <queue>
 #include <set>
 #include <source_location>
+#include <stacktrace>
 #include <string>
 #include <string_view>
 #include <type_traits>
