@@ -19,7 +19,7 @@ namespace Vortex
         void   Destroy();
 
         inline operator vk::Instance() const { return m_Instance; }
-        inline operator bool() const { return m_Instance != VK_NULL_HANDLE; }
+        inline operator bool() const { return bool(m_Instance); }
 
         static const std::vector<const char*>& GetValidationLayers();
         static vk::Bool32                      ShouldUseValidationLayers();
