@@ -35,7 +35,7 @@ namespace Vortex
         i32         height = specification.VideoMode.Height;
         const char* title  = specification.Title.data();
 
-        // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_VISIBLE, specification.Visible);
         glfwWindowHint(GLFW_DECORATED, specification.Decorated);
         glfwWindowHint(GLFW_FOCUSED, specification.Focused);
@@ -48,7 +48,6 @@ namespace Vortex
             width, height, title,
             specification.Fullscreen ? glfwGetPrimaryMonitor() : nullptr,
             nullptr);
-        glfwMakeContextCurrent(m_Window);
 
         VtCoreTrace(
             "GLFW: Created window {{ width: {}, height: {}, title: {} }}",
@@ -124,6 +123,8 @@ namespace Vortex
 
                                 WindowEvents::keyTypedEvent(window, codepoint);
                             });
+
+        m_Data.RendererContext = RendererContext::Create(this);
     }
     X11Window::~X11Window()
     {

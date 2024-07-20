@@ -6,6 +6,7 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Graphics/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Graphics/API/Vulkan/VulkanSurface.hpp"
 
 #define VK_USE_PLATFORM_X11_KHR
@@ -17,37 +18,28 @@
 
 namespace Vortex
 {
-    VulkanSurface::VulkanSurface(const VulkanInstance& instance,
-                                 IWindow*              windowHandle)
-        : m_VulkanInstance(instance)
+    void VulkanSurface::Create(IWindow*           windowHandle,
+                               vk::PhysicalDevice physicalDevice)
     {
         // TODO(v1tr10l7): Replace glfwCreateWindowSurface with native calls
         GLFWwindow* window
             = std::any_cast<GLFWwindow*>(windowHandle->GetNativeHandle());
 
-        VkInstance   vkInstance = (vk::Instance)m_VulkanInstance;
+        VkInstance   vkInstance = (vk::Instance)VulkanContext::GetInstance();
         VkSurfaceKHR surface;
         VkCall(vk::Result(
             glfwCreateWindowSurface(vkInstance, window, nullptr, &surface)));
-        m_Surface = vk::SurfaceKHR(surface);
-    }
-    VulkanSurface::~VulkanSurface()
-    {
-        vk::Instance instance = vk::Instance(m_VulkanInstance);
-        instance.destroySurfaceKHR(m_Surface, nullptr);
-    }
+        m_Surface      = vk::SurfaceKHR(surface);
+        m_WindowHandle = window;
 
-    void VulkanSurface::Initialize(vk::PhysicalDevice physDevice)
-    {
-
-        VkCall(physDevice.getSurfaceCapabilitiesKHR(
+        VkCall(physicalDevice.getSurfaceCapabilitiesKHR(
             m_Surface, &m_SurfaceCapabilities)) u32 formatCount
             = 0;
-        VkCall(
-            physDevice.getSurfaceFormatsKHR(m_Surface, &formatCount, nullptr));
+        VkCall(physicalDevice.getSurfaceFormatsKHR(m_Surface, &formatCount,
+                                                   nullptr));
         std::vector<vk::SurfaceFormatKHR> surfaceFormats(formatCount);
-        VkCall(physDevice.getSurfaceFormatsKHR(m_Surface, &formatCount,
-                                               surfaceFormats.data()));
+        VkCall(physicalDevice.getSurfaceFormatsKHR(m_Surface, &formatCount,
+                                                   surfaceFormats.data()));
         VtCoreAssertMsg(formatCount,
                         "Vulkan: Could not find any surface formats");
         m_SurfaceFormat = *(surfaceFormats.data());
@@ -57,5 +49,17 @@ namespace Vortex
                 && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
                 m_SurfaceFormat = format;
         }
+
+        u32 presentModeCount = 0;
+        VkCall(physicalDevice.getSurfacePresentModesKHR(
+            m_Surface, &presentModeCount, nullptr));
+        m_PresentModes.resize(presentModeCount);
+        VkCall(physicalDevice.getSurfacePresentModesKHR(
+            m_Surface, &presentModeCount, m_PresentModes.data()));
+    }
+    void VulkanSurface::Destroy()
+    {
+        vk::Instance instance = vk::Instance(VulkanContext::GetInstance());
+        instance.destroySurfaceKHR(m_Surface, nullptr);
     }
 }; // namespace Vortex

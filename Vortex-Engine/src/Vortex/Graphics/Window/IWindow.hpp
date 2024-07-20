@@ -13,6 +13,8 @@
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
 
+#include "Vortex/Graphics/API/RendererContext.hpp"
+
 namespace Vortex
 {
     enum class MonitorState
@@ -122,20 +124,26 @@ namespace Vortex
             return Create(VideoMode(width, height), title);
         }
 
+        inline Ref<RendererContext> GetRendererContext()
+        {
+            return m_Data.RendererContext;
+        }
+
       protected:
         struct WindowData
         {
-            IWindow*         Window;
-            struct VideoMode VideoMode;
-            std::string      Title;
-            Vec2i            Position     = {0, 0};
-            bool             IsOpen       = true;
-            bool             Fullscreen   = false;
-            bool             Resizable    = true;
-            bool             Visible      = true;
-            bool             Focused      = false;
-            bool             MouseHovered = false;
-            bool             Decorated    = false;
+            IWindow*                   Window;
+            struct VideoMode           VideoMode;
+            std::string                Title;
+            Vec2i                      Position        = {0, 0};
+            bool                       IsOpen          = true;
+            bool                       Fullscreen      = false;
+            bool                       Resizable       = true;
+            bool                       Visible         = true;
+            bool                       Focused         = false;
+            bool                       MouseHovered    = false;
+            bool                       Decorated       = false;
+            Ref<class RendererContext> RendererContext = nullptr;
         } m_Data;
     };
 

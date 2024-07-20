@@ -6,18 +6,17 @@
  */
 #pragma once
 
-#include "Vortex/Graphics/API/Vulkan/VulkanInstance.hpp"
 #include "Vortex/Graphics/Window/IWindow.hpp"
+
+#include <GLFW/glfw3.h>
 
 namespace Vortex
 {
     class VulkanSurface final
     {
       public:
-        VulkanSurface(const VulkanInstance& instance, IWindow* window);
-        ~VulkanSurface();
-
-        void   Initialize(vk::PhysicalDevice physDevice);
+        void   Create(IWindow* window, vk::PhysicalDevice physicalDevice);
+        void   Destroy();
 
         inline operator vk::SurfaceKHR() const { return m_Surface; }
         inline const vk::SurfaceFormatKHR& GetFormat() const
@@ -28,12 +27,22 @@ namespace Vortex
         {
             return m_SurfaceCapabilities;
         }
+        inline const std::vector<vk::PresentModeKHR>& GetPresentModes() const
+        {
+            return m_PresentModes;
+        }
+
+        inline GLFWwindow* GetNativeWindowHandle() const
+        {
+            return m_WindowHandle;
+        }
 
       private:
-        const VulkanInstance&      m_VulkanInstance;
+        GLFWwindow*                     m_WindowHandle;
 
-        vk::SurfaceKHR             m_Surface             = VK_NULL_HANDLE;
-        vk::SurfaceFormatKHR       m_SurfaceFormat       = {};
-        vk::SurfaceCapabilitiesKHR m_SurfaceCapabilities = {};
+        vk::SurfaceKHR                  m_Surface             = VK_NULL_HANDLE;
+        vk::SurfaceFormatKHR            m_SurfaceFormat       = {};
+        vk::SurfaceCapabilitiesKHR      m_SurfaceCapabilities = {};
+        std::vector<vk::PresentModeKHR> m_PresentModes;
     };
 } // namespace Vortex

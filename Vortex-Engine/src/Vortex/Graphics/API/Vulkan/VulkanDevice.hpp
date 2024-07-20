@@ -24,9 +24,9 @@ namespace Vortex
             std::optional<u64> Transfer;
         };
 
-        VulkanPhysicalDevice(const VulkanInstance& instance,
-                             const VulkanSurface&  surface);
-        ~VulkanPhysicalDevice();
+        VulkanPhysicalDevice() = default;
+
+        static VulkanPhysicalDevice Pick();
 
         inline operator vk::PhysicalDevice() const { return m_PhysicalDevice; }
         inline const QueueFamilyIndices& GetQueueFamilyIndices() const noexcept
@@ -39,7 +39,7 @@ namespace Vortex
         QueueFamilyIndices m_QueueFamilyIndices;
         usize              m_PhysicalDeviceVRAM = 0;
 
-        void               FindQueueFamilies(const VulkanSurface& surface);
+        void               FindQueueFamilies();
         vk::Bool32         IsDeviceSuitable(vk::PhysicalDevice physDevice);
         vk::Bool32 CheckDeviceExtensionSupport(vk::PhysicalDevice physDevice);
     };
@@ -47,21 +47,29 @@ namespace Vortex
     class VulkanDevice final
     {
       public:
-        explicit VulkanDevice(const VulkanPhysicalDevice& physicalDevice);
-        ~VulkanDevice();
+        VulkanDevice() = default;
 
-        inline            operator vk::Device() const { return m_Device; }
+        void Initialize(const VulkanPhysicalDevice& physicalDevice);
+        void Destroy();
 
-        inline vk::Queue& GetGraphicsQueue() { return m_GraphicsQueue; }
-        inline vk::Queue& GetPresentQueue() { return m_PresentQueue; }
-        inline vk::Queue& GetComputeQueue() { return m_ComputeQueue; }
-        inline vk::Queue& GetTransferQueue() { return m_TransferQueue; }
+        inline const VulkanPhysicalDevice& GetPhysicalDevice() const
+        {
+            return m_PhysicalDevice;
+        }
+        inline           operator vk::Device() const { return m_Device; }
+
+        inline vk::Queue GetGraphicsQueue() const { return m_GraphicsQueue; }
+        inline vk::Queue GetPresentQueue() const { return m_PresentQueue; }
+        inline vk::Queue GetComputeQueue() const { return m_ComputeQueue; }
+        inline vk::Queue GetTransferQueue() const { return m_TransferQueue; }
 
       private:
-        vk::Device m_Device        = VK_NULL_HANDLE;
-        vk::Queue  m_GraphicsQueue = VK_NULL_HANDLE;
-        vk::Queue  m_PresentQueue  = VK_NULL_HANDLE;
-        vk::Queue  m_ComputeQueue  = VK_NULL_HANDLE;
-        vk::Queue  m_TransferQueue = VK_NULL_HANDLE;
+        VulkanPhysicalDevice m_PhysicalDevice;
+
+        vk::Device           m_Device        = VK_NULL_HANDLE;
+        vk::Queue            m_GraphicsQueue = VK_NULL_HANDLE;
+        vk::Queue            m_PresentQueue  = VK_NULL_HANDLE;
+        vk::Queue            m_ComputeQueue  = VK_NULL_HANDLE;
+        vk::Queue            m_TransferQueue = VK_NULL_HANDLE;
     };
 }; // namespace Vortex

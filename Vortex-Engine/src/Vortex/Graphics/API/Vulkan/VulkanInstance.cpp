@@ -9,6 +9,7 @@
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Graphics/API/Vulkan/VulkanInstance.hpp"
+#include <vulkan/vulkan_core.h>
 
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
@@ -63,7 +64,7 @@ namespace Vortex
         return VK_FALSE;
     }
 
-    VulkanInstance::VulkanInstance()
+    void VulkanInstance::Initialize()
     {
         vk::DynamicLoader         dl;
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr
@@ -127,13 +128,17 @@ namespace Vortex
         SetupDebugMessenger();
     }
 
-    VulkanInstance::~VulkanInstance()
+    void VulkanInstance::Destroy()
     {
         auto dldi
             = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
-        m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr,
-                                                 dldi);
-        m_Instance.destroy(nullptr, dldi);
+        if (m_DebugMessenger)
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr,
+                                                     dldi);
+        if (m_Instance) m_Instance.destroy(nullptr, dldi);
+
+        m_DebugMessenger = VK_NULL_HANDLE;
+        m_Instance       = VK_NULL_HANDLE;
     }
 
     const std::vector<const char*>& VulkanInstance::GetValidationLayers()

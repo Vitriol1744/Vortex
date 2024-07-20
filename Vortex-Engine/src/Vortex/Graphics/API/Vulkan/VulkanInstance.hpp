@@ -13,10 +13,13 @@ namespace Vortex
     class VulkanInstance final
     {
       public:
-        VulkanInstance();
-        ~VulkanInstance();
+        VulkanInstance() = default;
+
+        void   Initialize();
+        void   Destroy();
 
         inline operator vk::Instance() const { return m_Instance; }
+        inline operator bool() const { return m_Instance != VK_NULL_HANDLE; }
 
         static const std::vector<const char*>& GetValidationLayers();
         static vk::Bool32                      ShouldUseValidationLayers();

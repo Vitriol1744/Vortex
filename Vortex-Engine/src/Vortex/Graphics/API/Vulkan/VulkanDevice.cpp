@@ -6,17 +6,20 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Graphics/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Graphics/API/Vulkan/VulkanDevice.hpp"
+
+#include <GLFW/glfw3.h>
 
 namespace Vortex
 {
     static std::array<const char*, 1> s_DeviceExtensions
         = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-    VulkanPhysicalDevice::VulkanPhysicalDevice(const VulkanInstance& instance,
-                                               const VulkanSurface&  surface)
+    VulkanPhysicalDevice VulkanPhysicalDevice::Pick()
     {
-        vk::Instance vkInstance = (vk::Instance)instance;
+        VulkanPhysicalDevice ret;
+        vk::Instance vkInstance = (vk::Instance)VulkanContext::GetInstance();
 
         u32          gpuCount   = 0;
         VkCall(vkInstance.enumeratePhysicalDevices(&gpuCount, VK_NULL_HANDLE));
@@ -29,15 +32,15 @@ namespace Vortex
         usize              topScore   = 0;
         for (auto device : physicalDevices)
         {
-            m_PhysicalDevice                   = device;
+            ret.m_PhysicalDevice               = device;
             u32                          score = 0;
             vk::PhysicalDeviceProperties properties;
-            m_PhysicalDevice.getProperties(&properties);
+            ret.m_PhysicalDevice.getProperties(&properties);
 
             if (properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
                 score += 1000;
             vk::PhysicalDeviceMemoryProperties memoryProperties{};
-            m_PhysicalDevice.getMemoryProperties(&memoryProperties);
+            ret.m_PhysicalDevice.getMemoryProperties(&memoryProperties);
 
             auto  heaps = memoryProperties.memoryHeaps;
             usize vram  = 0;
@@ -52,23 +55,24 @@ namespace Vortex
                 }
             }
 
-            FindQueueFamilies(surface);
-            if (IsDeviceSuitable(device) && score > topScore
-                && m_QueueFamilyIndices.Graphics.has_value()
-                && m_QueueFamilyIndices.Present.has_value())
+            ret.FindQueueFamilies();
+            if (ret.IsDeviceSuitable(device) && score > topScore
+                && ret.m_QueueFamilyIndices.Graphics.has_value()
+                && ret.m_QueueFamilyIndices.Present.has_value())
             {
-                bestDevice           = device;
-                topScore             = score;
-                m_PhysicalDeviceVRAM = vram;
+                bestDevice               = device;
+                topScore                 = score;
+                ret.m_PhysicalDeviceVRAM = vram;
             }
         }
 
-        m_PhysicalDevice = bestDevice;
+        ret.m_PhysicalDevice = bestDevice;
         VtCoreAssertMsg(bestDevice, "Failed to find suitable physical device");
         VtCoreTrace("Vulkan: Picked physical device");
+        return ret;
     }
 
-    void VulkanPhysicalDevice::FindQueueFamilies(const VulkanSurface& surface)
+    void VulkanPhysicalDevice::FindQueueFamilies()
     {
         u32 queueFamilyCount = 0;
         m_PhysicalDevice.getQueueFamilyProperties(&queueFamilyCount,
@@ -77,16 +81,15 @@ namespace Vortex
         m_PhysicalDevice.getQueueFamilyProperties(&queueFamilyCount,
                                                   queueFamilies.data());
 
+        VkInstance instance = vk::Instance(VulkanContext::GetInstance());
         for (u32 i = 0; i < queueFamilies.size(); i++)
         {
             if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics)
                 m_QueueFamilyIndices.Graphics = i;
 
-            vk::Bool32 surfaceSupport;
-            VkCall(m_PhysicalDevice.getSurfaceSupportKHR(i, surface,
-                                                         &surfaceSupport));
-
-            if (queueFamilies[i].queueCount > 0 && surfaceSupport)
+            if (queueFamilies[i].queueCount > 0
+                && glfwGetPhysicalDevicePresentationSupport(
+                    instance, m_PhysicalDevice, i))
                 m_QueueFamilyIndices.Present = i;
             if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eCompute)
                 m_QueueFamilyIndices.Compute = i;
@@ -125,8 +128,10 @@ namespace Vortex
         return requiredExtensions.empty();
     }
 
-    VulkanDevice::VulkanDevice(const VulkanPhysicalDevice& physicalDevice)
+    void VulkanDevice::Initialize(const VulkanPhysicalDevice& physicalDevice)
     {
+        m_PhysicalDevice = physicalDevice;
+
         const std::vector<const char*>& validationLayers
             = VulkanInstance::GetValidationLayers();
         const vk::Bool32 useValidationLayers
@@ -186,5 +191,5 @@ namespace Vortex
             m_Device.getQueue(queueFamilyIndices.Transfer.value(), 0,
                               &m_TransferQueue);
     }
-    VulkanDevice::~VulkanDevice() { m_Device.destroy(nullptr); }
+    void VulkanDevice::Destroy() { m_Device.destroy(nullptr); }
 }; // namespace Vortex
