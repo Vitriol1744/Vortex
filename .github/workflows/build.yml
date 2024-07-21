@@ -21,16 +21,19 @@ jobs:
           lfs: true
 
       - name: Install Dependencies
-        run: wget https://apt.llvm.org/llvm.sh &&
-             sudo chmod u+x llvm.sh &&
-             sudo sh -c "yes | ./llvm.sh 18" && 
-             alias c++=clang-18 &&
+        run: wget http://ftp.gnu.org/gnu/gcc/gcc-14.1.0/gcc-14.1.0.tar.gz &&
+             tar -xf gcc-14.1.0.tar.gz &&
+             cd gcc-14.1.0 &&
+             ./configure -v --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --prefix=/usr/local/gcc-14.1.0 --enable-checking=release --enable-languages=c,c++ --disable-multilib --program-suffix=-14.1.0 &&
+             make &&
+             sudo make install &&
+             cd .. &&
              sudo apt update && sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools libx11-dev
              libwayland-bin libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config libwayland-dev libxkbcommon-dev libglvnd-dev
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=clang-18
+        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=g++14.1.0
       
       - name: Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
