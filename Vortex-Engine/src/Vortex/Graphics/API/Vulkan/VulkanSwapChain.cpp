@@ -88,6 +88,7 @@ namespace Vortex
         }
 
         CreateImageViews();
+        CreateCommandBuffers();
     }
     void VulkanSwapChain::Destroy()
     {
@@ -95,6 +96,17 @@ namespace Vortex
             vk::Device(m_Device).destroyImageView(imageView, nullptr);
 
         vk::Device(m_Device).destroySwapchainKHR(m_SwapChain, nullptr);
+    }
+
+    void VulkanSwapChain::OnResize(u32 width, u32 height)
+    {
+        vk::Device(m_Device).waitIdle();
+        Create(width, height);
+        vk::Device(m_Device).freeCommandBuffers(
+            m_CommandPool, static_cast<u32>(m_DrawCommandBuffers.size()),
+            m_DrawCommandBuffers.data());
+        CreateCommandBuffers();
+        vk::Device(m_Device).waitIdle();
     }
 
     void VulkanSwapChain::CreateImageViews()
@@ -123,6 +135,20 @@ namespace Vortex
             VkCall(vk::Device(m_Device).createImageView(&createInfo, nullptr,
                                                         &m_ImageViews[i]));
         }
+    }
+
+    void VulkanSwapChain::CreateCommandBuffers()
+    {
+        m_DrawCommandBuffers.resize(m_Images.size());
+        vk::CommandBufferAllocateInfo bufferInfo{};
+        bufferInfo.sType       = vk::StructureType::eCommandBufferAllocateInfo;
+        bufferInfo.commandPool = m_CommandPool;
+        bufferInfo.level       = vk::CommandBufferLevel::ePrimary;
+        bufferInfo.commandBufferCount
+            = static_cast<u32>(m_DrawCommandBuffers.size());
+
+        VkCall(vk::Device(m_Device).allocateCommandBuffers(
+            &bufferInfo, m_DrawCommandBuffers.data()));
     }
 
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(

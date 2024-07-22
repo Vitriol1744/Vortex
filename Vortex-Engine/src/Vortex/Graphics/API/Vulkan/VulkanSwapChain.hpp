@@ -16,14 +16,26 @@ namespace Vortex
       public:
         VulkanSwapChain() = default;
 
-        void Initialize(const VulkanDevice& device) { m_Device = device; }
-        void CreateSurface(IWindow* windowHandle);
-        void Create(u32& width, u32& height, bool vsync = false);
-        void Destroy();
+        void Initialize(const VulkanDevice& device, vk::CommandPool commandPool)
+        {
+            m_Device      = device;
+            m_CommandPool = commandPool;
+        }
+        void        CreateSurface(IWindow* windowHandle);
+        void        Create(u32& width, u32& height, bool vsync = false);
 
-        inline void                 DestroySurface() { m_Surface.Destroy(); }
+        void        Destroy();
+        inline void DestroySurface() { m_Surface.Destroy(); }
+
+        void        OnResize(u32 width, u32 height);
 
         inline const VulkanSurface& GetSurface() const { return m_Surface; }
+        inline const std::vector<vk::CommandBuffer>&
+        GetDrawCommandBuffers() const
+        {
+            return m_DrawCommandBuffers;
+        }
+
         inline operator vk::SwapchainKHR() const { return m_SwapChain; }
         inline vk::Extent2D GetExtent() const { return m_Extent; }
         inline vk::Format   GetImageFormat() const { return m_ImageFormat; }
@@ -40,6 +52,8 @@ namespace Vortex
       private:
         VulkanSurface                       m_Surface;
         VulkanDevice                        m_Device;
+        vk::CommandPool                     m_CommandPool = VK_NULL_HANDLE;
+        std::vector<vk::CommandBuffer>      m_DrawCommandBuffers = {};
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
@@ -50,6 +64,7 @@ namespace Vortex
         std::vector<vk::ImageView>          m_ImageViews;
 
         void                                CreateImageViews();
+        void                                CreateCommandBuffers();
 
         vk::PresentModeKHR                  ChooseSwapPresentMode(
                              const std::vector<vk::PresentModeKHR>& availablePresentModes)

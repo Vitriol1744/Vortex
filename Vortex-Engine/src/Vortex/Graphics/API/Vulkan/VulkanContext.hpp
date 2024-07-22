@@ -25,6 +25,7 @@ namespace Vortex
         const VulkanDevice&          GetDevice() const { return m_Device; }
         // TODO(v1tr10l7) change to const later
         VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
+        inline vk::CommandPool       GetCommandPool() { return m_CommandPool; }
 
         static const VulkanInstance& GetInstance()
         {
@@ -40,6 +41,7 @@ namespace Vortex
         VulkanDevice                m_Device;
         vk::PipelineCache           m_PipelineCache = VK_NULL_HANDLE;
         VulkanSwapChain             m_SwapChain;
+        vk::CommandPool             m_CommandPool = VK_NULL_HANDLE;
 
         static usize                s_ContextCount;
         static VulkanInstance       s_VulkanInstance;
