@@ -34,6 +34,7 @@ namespace Vortex
     }
     VulkanContext::~VulkanContext()
     {
+        m_SwapChain.Destroy();
         m_SwapChain.DestroySurface();
         m_Device.Destroy();
         --s_ContextCount;
