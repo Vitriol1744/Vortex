@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include "Vortex/Core/Log/Log.hpp"
+
 #ifndef VT_DIST
     #define VkCall(x)                                                          \
         {                                                                      \
@@ -14,7 +16,7 @@
                 ;                                                              \
             else                                                               \
             {                                                                  \
-                VtCoreFatal("Vulkan: '{}' != VK_SUCCESS\nError Code: {}", #x,  \
+                VtCoreError("Vulkan: '{}' != VK_SUCCESS\nError Code: {}", #x,  \
                             Vulkan::VkResultToString(status));                 \
             }                                                                  \
         }

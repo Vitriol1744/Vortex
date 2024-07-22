@@ -16,27 +16,43 @@ namespace Vortex
       public:
         VulkanSwapChain() = default;
 
-        void        CreateSurface(IWindow* windowHandle);
-        void        Create(u32& width, u32& height, bool vsync = false);
+        void Initialize(const VulkanDevice& device) { m_Device = device; }
+        void CreateSurface(IWindow* windowHandle);
+        void Create(u32& width, u32& height, bool vsync = false);
+        void Destroy();
 
-        inline void DestroySurface() { m_Surface.Destroy(); }
+        inline void                 DestroySurface() { m_Surface.Destroy(); }
 
         inline const VulkanSurface& GetSurface() const { return m_Surface; }
+        inline operator vk::SwapchainKHR() const { return m_SwapChain; }
+        inline vk::Extent2D GetExtent() const { return m_Extent; }
+        inline vk::Format   GetImageFormat() const { return m_ImageFormat; }
+
+        inline const std::vector<vk::Image>& GetImages() const
+        {
+            return m_Images;
+        }
+        inline const std::vector<vk::ImageView>& GetImageViews() const
+        {
+            return m_ImageViews;
+        }
 
       private:
-        [[maybe_unused]] VulkanSurface          m_Surface;
-        [[maybe_unused]] VulkanDevice           m_Device;
+        VulkanSurface                       m_Surface;
+        VulkanDevice                        m_Device;
 
-        [[maybe_unused]] vk::SwapchainKHR       m_SwapChain = VK_NULL_HANDLE;
-        [[maybe_unused]] vk::PresentModeKHR     m_PresentMode;
-        [[maybe_unused]] vk::Extent2D           m_Extent;
-        [[maybe_unused]] vk::Format             m_ImageFormat;
+        vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
+        [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
+        vk::Extent2D                        m_Extent;
+        vk::Format                          m_ImageFormat;
 
-        [[maybe_unused]] std::vector<vk::Image> m_Images;
-        [[maybe_unused]] std::vector<vk::ImageView> m_ImageViews;
+        std::vector<vk::Image>              m_Images;
+        std::vector<vk::ImageView>          m_ImageViews;
 
-        vk::PresentModeKHR                          ChooseSwapPresentMode(
-                                     const std::vector<vk::PresentModeKHR>& availablePresentModes)
+        void                                CreateImageViews();
+
+        vk::PresentModeKHR                  ChooseSwapPresentMode(
+                             const std::vector<vk::PresentModeKHR>& availablePresentModes)
         {
             for (const auto& availablePresentMode : availablePresentModes)
             {
@@ -48,26 +64,6 @@ namespace Vortex
         }
 
         vk::Extent2D
-        chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities)
-        {
-            if (capabilities.currentExtent.width
-                != std::numeric_limits<uint32_t>::max())
-                return capabilities.currentExtent;
-            int width, height;
-            glfwGetFramebufferSize(m_Surface.GetNativeWindowHandle(), &width,
-                                   &height);
-
-            vk::Extent2D actualExtent
-                = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-
-            actualExtent.width  = std::clamp(actualExtent.width,
-                                             capabilities.minImageExtent.width,
-                                             capabilities.maxImageExtent.width);
-            actualExtent.height = std::clamp(
-                actualExtent.height, capabilities.minImageExtent.height,
-                capabilities.maxImageExtent.height);
-
-            return actualExtent;
-        }
+        ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
     };
 }; // namespace Vortex

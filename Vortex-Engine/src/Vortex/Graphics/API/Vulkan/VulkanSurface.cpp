@@ -29,12 +29,10 @@ namespace Vortex
         VkSurfaceKHR surface;
         VkCall(vk::Result(
             glfwCreateWindowSurface(vkInstance, window, nullptr, &surface)));
-        m_Surface      = vk::SurfaceKHR(surface);
-        m_WindowHandle = window;
+        m_Surface       = vk::SurfaceKHR(surface);
+        m_WindowHandle  = window;
 
-        VkCall(physicalDevice.getSurfaceCapabilitiesKHR(
-            m_Surface, &m_SurfaceCapabilities)) u32 formatCount
-            = 0;
+        u32 formatCount = 0;
         VkCall(physicalDevice.getSurfaceFormatsKHR(m_Surface, &formatCount,
                                                    nullptr));
         std::vector<vk::SurfaceFormatKHR> surfaceFormats(formatCount);
@@ -61,5 +59,14 @@ namespace Vortex
     {
         vk::Instance instance = vk::Instance(VulkanContext::GetInstance());
         instance.destroySurfaceKHR(m_Surface, nullptr);
+    }
+
+    const vk::SurfaceCapabilitiesKHR& VulkanSurface::GetCapabilities()
+    {
+        vk::PhysicalDevice physicalDevice = VulkanContext::GetPhysicalDevice();
+        VkCall(physicalDevice.getSurfaceCapabilitiesKHR(
+            m_Surface, &m_SurfaceCapabilities));
+
+        return m_SurfaceCapabilities;
     }
 }; // namespace Vortex

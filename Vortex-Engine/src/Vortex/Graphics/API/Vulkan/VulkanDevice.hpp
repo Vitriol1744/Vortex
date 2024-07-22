@@ -18,10 +18,10 @@ namespace Vortex
       public:
         struct QueueFamilyIndices
         {
-            std::optional<u64> Graphics;
-            std::optional<u64> Present;
-            std::optional<u64> Compute;
-            std::optional<u64> Transfer;
+            std::optional<u32> Graphics;
+            std::optional<u32> Present;
+            std::optional<u32> Compute;
+            std::optional<u32> Transfer;
         };
 
         VulkanPhysicalDevice() = default;

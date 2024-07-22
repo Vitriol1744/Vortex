@@ -23,7 +23,12 @@ namespace Vortex
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
         }
         m_Device.Initialize(s_PhysicalDevice);
+        m_SwapChain.Initialize(m_Device);
         m_SwapChain.CreateSurface(window);
+        u32 width, height;
+        glfwGetFramebufferSize(m_SwapChain.GetSurface().GetNativeWindowHandle(),
+                               (int*)&width, (int*)&height);
+        m_SwapChain.Create(width, height, false);
 
         ++s_ContextCount;
     }

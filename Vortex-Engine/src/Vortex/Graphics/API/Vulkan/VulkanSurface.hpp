@@ -23,10 +23,7 @@ namespace Vortex
         {
             return m_SurfaceFormat;
         }
-        inline const vk::SurfaceCapabilitiesKHR& GetCapabilities() const
-        {
-            return m_SurfaceCapabilities;
-        }
+        const vk::SurfaceCapabilitiesKHR&             GetCapabilities();
         inline const std::vector<vk::PresentModeKHR>& GetPresentModes() const
         {
             return m_PresentModes;

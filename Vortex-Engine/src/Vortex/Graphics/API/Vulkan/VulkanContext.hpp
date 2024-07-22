@@ -19,11 +19,12 @@ namespace Vortex
         VulkanContext(class IWindow* window);
         virtual ~VulkanContext();
 
-        virtual void           Present() override;
-        virtual void           OnResize(u32 width, u32 height) override;
+        virtual void                 Present() override;
+        virtual void                 OnResize(u32 width, u32 height) override;
 
-        const VulkanDevice&    GetDevice() const { return m_Device; }
-        const VulkanSwapChain& GetSwapChain() const { return m_SwapChain; }
+        const VulkanDevice&          GetDevice() const { return m_Device; }
+        // TODO(v1tr10l7) change to const later
+        VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
 
         static const VulkanInstance& GetInstance()
         {
