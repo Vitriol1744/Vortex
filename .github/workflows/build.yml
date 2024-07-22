@@ -28,7 +28,7 @@ jobs:
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=g++14.1.0
+        run: cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=g++
       
       - name: Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
