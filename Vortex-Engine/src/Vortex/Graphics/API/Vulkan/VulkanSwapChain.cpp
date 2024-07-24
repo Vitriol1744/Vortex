@@ -75,50 +75,79 @@ namespace Vortex
 
         VkCall(vk::Device(m_Device).getSwapchainImagesKHR(
             m_SwapChain, &imageCount, nullptr));
+        m_Frames.resize(imageCount);
 
-        m_Images.resize(imageCount);
+        std::vector<vk::Image> backbuffers(imageCount);
         VkCall(vk::Device(m_Device).getSwapchainImagesKHR(
-            m_SwapChain, &imageCount, m_Images.data()));
+            m_SwapChain, &imageCount, backbuffers.data()));
+
+        for (usize i = 0; i < imageCount; i++)
+        {
+            auto& frame = m_Frames[i];
+            frame.Image = backbuffers[i];
+        }
 
         if (oldSwapChain)
         {
-            for (auto imageView : m_ImageViews)
-                vk::Device(m_Device).destroyImageView(imageView, nullptr);
+            for (auto frame : m_Frames)
+                vk::Device(m_Device).destroyImageView(frame.ImageView, nullptr);
             vk::Device(m_Device).destroySwapchainKHR(oldSwapChain, nullptr);
         }
 
         CreateImageViews();
+
+        vk::CommandPoolCreateInfo commandPoolInfo{};
+        commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+        commandPoolInfo.pNext = VK_NULL_HANDLE;
+        commandPoolInfo.flags
+            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
+                                               .GetQueueFamilyIndices()
+                                               .Graphics.value();
+        for (auto& frame : m_Frames)
+            VkCall(vk::Device(m_Device).createCommandPool(
+                &commandPoolInfo, VK_NULL_HANDLE, &frame.CommandPool));
         CreateCommandBuffers();
+        CreateSyncObjects();
     }
     void VulkanSwapChain::Destroy()
     {
-        for (auto imageView : m_ImageViews)
-            vk::Device(m_Device).destroyImageView(imageView, nullptr);
+        vk::Device device = m_Device;
+        for (usize i = 0; i < m_Frames.size(); i++)
+        {
+            device.destroySemaphore(m_ImageAvailableSemaphores[i],
+                                    VK_NULL_HANDLE);
+            device.destroySemaphore(m_RenderCompleteSemaphores[i],
+                                    VK_NULL_HANDLE);
+            device.destroyFence(m_Frames[i].WaitFence, VK_NULL_HANDLE);
+            device.destroyCommandPool(m_Frames[i].CommandPool);
+        }
 
-        vk::Device(m_Device).destroySwapchainKHR(m_SwapChain, nullptr);
+        for (auto frame : m_Frames)
+            device.destroyImageView(frame.ImageView, nullptr);
+
+        device.destroySwapchainKHR(m_SwapChain, nullptr);
     }
 
     void VulkanSwapChain::OnResize(u32 width, u32 height)
     {
         vk::Device(m_Device).waitIdle();
         Create(width, height);
-        vk::Device(m_Device).freeCommandBuffers(
-            m_CommandPool, static_cast<u32>(m_DrawCommandBuffers.size()),
-            m_DrawCommandBuffers.data());
+
+        for (auto& frame : m_Frames)
+            vk::Device(m_Device).freeCommandBuffers(frame.CommandPool, 1,
+                                                    &frame.CommandBuffer);
         CreateCommandBuffers();
         vk::Device(m_Device).waitIdle();
     }
 
     void VulkanSwapChain::CreateImageViews()
     {
-
-        m_ImageViews.resize(m_Images.size());
-
-        for (size_t i = 0; i < m_Images.size(); i++)
+        for (size_t i = 0; i < m_Frames.size(); i++)
         {
             vk::ImageViewCreateInfo createInfo{};
             createInfo.sType        = vk::StructureType::eImageViewCreateInfo;
-            createInfo.image        = m_Images[i];
+            createInfo.image        = m_Frames[i].Image;
             createInfo.viewType     = vk::ImageViewType::e2D;
             createInfo.format       = m_Surface.GetFormat().format;
             createInfo.components.r = vk::ComponentSwizzle::eIdentity;
@@ -132,23 +161,47 @@ namespace Vortex
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount     = 1;
 
-            VkCall(vk::Device(m_Device).createImageView(&createInfo, nullptr,
-                                                        &m_ImageViews[i]));
+            VkCall(vk::Device(m_Device).createImageView(
+                &createInfo, nullptr, &m_Frames[i].ImageView));
         }
     }
 
     void VulkanSwapChain::CreateCommandBuffers()
     {
-        m_DrawCommandBuffers.resize(m_Images.size());
         vk::CommandBufferAllocateInfo bufferInfo{};
-        bufferInfo.sType       = vk::StructureType::eCommandBufferAllocateInfo;
-        bufferInfo.commandPool = m_CommandPool;
-        bufferInfo.level       = vk::CommandBufferLevel::ePrimary;
-        bufferInfo.commandBufferCount
-            = static_cast<u32>(m_DrawCommandBuffers.size());
+        bufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
+        bufferInfo.level = vk::CommandBufferLevel::ePrimary;
+        bufferInfo.commandBufferCount = 1;
 
-        VkCall(vk::Device(m_Device).allocateCommandBuffers(
-            &bufferInfo, m_DrawCommandBuffers.data()));
+        for (auto& frame : m_Frames)
+        {
+            bufferInfo.commandPool = frame.CommandPool;
+            VkCall(vk::Device(m_Device).allocateCommandBuffers(
+                &bufferInfo, &frame.CommandBuffer));
+        }
+    }
+
+    void VulkanSwapChain::CreateSyncObjects()
+    {
+        m_ImageAvailableSemaphores.resize(m_Frames.size() + 1);
+        m_RenderCompleteSemaphores.resize(m_Frames.size() + 1);
+        vk::SemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+
+        vk::FenceCreateInfo fenceInfo{};
+        fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+        fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+        for (usize i = 0; i < m_Frames.size() + 1; i++)
+        {
+            vk::Device device = m_Device;
+            VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
+                                          &m_ImageAvailableSemaphores[i]));
+            VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
+                                          &m_RenderCompleteSemaphores[i]));
+            VkCall(device.createFence(&fenceInfo, VK_NULL_HANDLE,
+                                      &m_Frames[i].WaitFence));
+        }
     }
 
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(

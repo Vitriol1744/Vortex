@@ -25,7 +25,6 @@ namespace Vortex
         const VulkanDevice&          GetDevice() const { return m_Device; }
         // TODO(v1tr10l7) change to const later
         VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
-        inline vk::CommandPool       GetCommandPool() { return m_CommandPool; }
 
         static const VulkanInstance& GetInstance()
         {

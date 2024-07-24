@@ -23,16 +23,7 @@ namespace Vortex
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
         }
         m_Device.Initialize(s_PhysicalDevice);
-        vk::CommandPoolCreateInfo createInfo{};
-        createInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-        createInfo.pNext = VK_NULL_HANDLE;
-        createInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-        createInfo.queueFamilyIndex
-            = s_PhysicalDevice.GetQueueFamilyIndices().Graphics.value();
-        VkCall(vk::Device(m_Device).createCommandPool(
-            &createInfo, VK_NULL_HANDLE, &m_CommandPool));
-
-        m_SwapChain.Initialize(m_Device, m_CommandPool);
+        m_SwapChain.Initialize(m_Device);
         m_SwapChain.CreateSurface(window);
         u32 width, height;
         glfwGetFramebufferSize(m_SwapChain.GetSurface().GetNativeWindowHandle(),
