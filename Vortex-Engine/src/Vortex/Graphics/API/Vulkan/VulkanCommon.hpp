@@ -21,7 +21,11 @@
             }                                                                  \
         }
 #else
-    #define VkCall(x) (x)
+    #define VkCall(x)                                                          \
+        {                                                                      \
+            vk::Result status = (x);                                           \
+            (void)status;                                                      \
+        }
 #endif
 
 namespace Vortex::Vulkan
