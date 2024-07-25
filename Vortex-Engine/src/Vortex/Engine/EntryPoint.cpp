@@ -6,6 +6,8 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Core/Platform.hpp"
+
 namespace Vortex
 {
     int Main(int argc, char** argv)
