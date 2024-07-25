@@ -1,0 +1,332 @@
+[
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -fpch-instantiate-templates -Xclang -emit-pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -x c++-header -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -c /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.cxx",
+  "file": "/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.cxx",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/EventSystem.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/EventSystem.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/EventSystem.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/EventSystem.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Log/Log.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Log/Log.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Log/Log.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Log/Log.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Log/Logger.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Log/Logger.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Log/Logger.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Log/Logger.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Memory/Memory.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Memory/Memory.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Core/Memory/Memory.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Core/Memory/Memory.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/Application.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/Application.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/Application.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/Application.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/EntryPoint.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/EntryPoint.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/EntryPoint.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/EntryPoint.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/main3.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/main3.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/main3.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/main3.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/RendererContext.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/RendererContext.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/RendererContext.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/RendererContext.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanDevice.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanDevice.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanDevice.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanDevice.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanSurface.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanSurface.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanSurface.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanSurface.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanSwapChain.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanSwapChain.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/API/Vulkan/VulkanSwapChain.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/API/Vulkan/VulkanSwapChain.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/Window/IWindow.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/Window/IWindow.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/Window/IWindow.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/Window/IWindow.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/Window/X11/X11Window.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/Window/X11/X11Window.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Graphics/Window/X11/X11Window.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Graphics/Window/X11/X11Window.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_demo.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_demo.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_demo.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_demo.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_draw.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_draw.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_draw.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_draw.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_tables.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_tables.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_tables.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_tables.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_widgets.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_widgets.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui/imgui_widgets.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/vendor/imgui/imgui_widgets.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/imgui_impl_glfw.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/imgui_impl_glfw.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/imgui_impl_glfw.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/imgui_impl_glfw.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -DVT_STATIC_LIBRARY -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/imgui -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Wall -Wextra -Wpedantic -Werror -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/CMakeFiles/Vortex-Engine.dir/cmake_pch.hxx -o Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/imgui_impl_vulkan.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/imgui_impl_vulkan.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src/Vortex/Engine/imgui_impl_vulkan.cpp",
+  "output": "Vortex-Engine/CMakeFiles/Vortex-Engine.dir/src/Vortex/Engine/imgui_impl_vulkan.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -std=gnu++23 -o Vortex-Engine/vendor/fmt/CMakeFiles/fmt.dir/src/format.cc.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/src/format.cc",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/src/format.cc",
+  "output": "Vortex-Engine/vendor/fmt/CMakeFiles/fmt.dir/src/format.cc.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -std=gnu++23 -o Vortex-Engine/vendor/fmt/CMakeFiles/fmt.dir/src/os.cc.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/src/os.cc",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/src/os.cc",
+  "output": "Vortex-Engine/vendor/fmt/CMakeFiles/fmt.dir/src/os.cc.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/context.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/context.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/context.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/context.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/init.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/init.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/init.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/init.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/input.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/input.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/input.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/input.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/monitor.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/monitor.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/monitor.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/monitor.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/platform.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/platform.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/platform.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/platform.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/vulkan.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/vulkan.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/vulkan.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/vulkan.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/window.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/window.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/window.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/window.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/egl_context.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/egl_context.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/egl_context.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/egl_context.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/osmesa_context.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/osmesa_context.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/osmesa_context.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/osmesa_context.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_init.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_init.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_init.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_init.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_monitor.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_monitor.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_monitor.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_monitor.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_window.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_window.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_window.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_window.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_joystick.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_joystick.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/null_joystick.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/null_joystick.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_module.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_module.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_module.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_module.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_time.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_time.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_time.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_time.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_thread.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_thread.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_thread.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_thread.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_init.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_init.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_init.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_init.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_monitor.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_monitor.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_monitor.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_monitor.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_window.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_window.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/x11_window.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/x11_window.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/xkb_unicode.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/xkb_unicode.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/xkb_unicode.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/xkb_unicode.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/glx_context.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/glx_context.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/glx_context.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/glx_context.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_init.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_init.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_init.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_init.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_monitor.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_monitor.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_monitor.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_monitor.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_window.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_window.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/wl_window.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/wl_window.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/linux_joystick.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/linux_joystick.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/linux_joystick.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/linux_joystick.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/cc -DHAVE_MEMFD_CREATE -D_DEFAULT_SOURCE -D_GLFW_WAYLAND -D_GLFW_X11 -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src -I/home/v1tr10l7/dev/vortex-engine/build/Vortex-Engine/vendor/glfw/src -std=c99 -fPIC -Wall -o Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_poll.c.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_poll.c",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/src/posix_poll.c",
+  "output": "Vortex-Engine/vendor/glfw/src/CMakeFiles/glfw.dir/posix_poll.c.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=c++23 -Wno-c++98-compat -Wno-c++98-compat-pedantic -o Vortex-Engine/vendor/glm/glm/CMakeFiles/glm.dir/detail/glm.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm/glm/detail/glm.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm/glm/detail/glm.cpp",
+  "output": "Vortex-Engine/vendor/glm/glm/CMakeFiles/glm.dir/detail/glm.cpp.o"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Winvalid-pch -fpch-instantiate-templates -Xclang -emit-pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx -x c++-header -o Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx.pch -c /home/v1tr10l7/dev/vortex-engine/build/Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx.cxx",
+  "file": "/home/v1tr10l7/dev/vortex-engine/build/Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx.cxx",
+  "output": "Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx.pch"
+},
+{
+  "directory": "/home/v1tr10l7/dev/vortex-engine/build",
+  "command": "/usr/bin/clang++ -DFMT_HEADER_ONLY=1 -DVT_ENABLE_ASSERTIONS -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/src -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/magic_enum/include/magic_enum -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/fmt/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glfw/include -I/home/v1tr10l7/dev/vortex-engine/Vortex-Engine/vendor/glm -std=gnu++23 -Winvalid-pch -Xclang -include-pch -Xclang /home/v1tr10l7/dev/vortex-engine/build/Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/v1tr10l7/dev/vortex-engine/build/Sandbox/CMakeFiles/SandboxApp.dir/cmake_pch.hxx -o Sandbox/CMakeFiles/SandboxApp.dir/src/Sandbox.cpp.o -c /home/v1tr10l7/dev/vortex-engine/Sandbox/src/Sandbox.cpp",
+  "file": "/home/v1tr10l7/dev/vortex-engine/Sandbox/src/Sandbox.cpp",
+  "output": "Sandbox/CMakeFiles/SandboxApp.dir/src/Sandbox.cpp.o"
+}
+]
