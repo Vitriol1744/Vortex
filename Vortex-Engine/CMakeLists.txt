@@ -31,9 +31,10 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex")
 set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum)
 
 set (SOURCES
-    src/Vortex/Engine/EntryPoint.cpp
     src/Vortex/Core/Log/Log.cpp
     src/Vortex/Core/Log/Logger.cpp
+    src/Vortex/Engine/Application.cpp
+    src/Vortex/Engine/EntryPoint.cpp
 )
 
 if (UNIX)

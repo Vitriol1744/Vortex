@@ -6,9 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Core/Assertions.hpp"
-#include "Vortex/Core/Log/Log.hpp"
-#include "Vortex/Core/Platform.hpp"
+#include "Vortex/Core/Core.hpp"
+#include "Vortex/Engine/Application.hpp"
 
 namespace Vortex
 {
@@ -42,8 +41,13 @@ namespace Vortex
         (void)argc;
         (void)argv;
 
-        VtCoreWarn("error");
-        VtCoreAssert(false);
+        VtCoreTrace("Launching the {}...", Vortex::g_EngineName);
+        bool running = false;
+        do {
+            CommandLineArguments args;
+            Application*         app = CreateApplication(args);
+            running                  = app->Run();
+        } while (running);
 
         return EXIT_SUCCESS;
     }

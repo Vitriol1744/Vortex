@@ -4,3 +4,26 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include "Vortex/Core/Log/Log.hpp"
+#include "Vortex/Engine/Application.hpp"
+
+using namespace Vortex;
+class Game : public Application
+{
+  public:
+    Game(const ApplicationSpecification& spec)
+        : Application(spec)
+    {
+        VtTrace("hello from client");
+        VtInfo("hello from client");
+        VtWarn("hello from client");
+        VtError("hello from client");
+        VtFatal("hello from client");
+    }
+};
+
+Application* Vortex::CreateApplication(const CommandLineArguments&)
+{
+    ApplicationSpecification spec{};
+    return new Game(spec);
+}
