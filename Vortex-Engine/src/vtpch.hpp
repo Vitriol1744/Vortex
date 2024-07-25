@@ -10,3 +10,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
+
+// Dependencies
+#include <fmt/format.h>
+#include <magic_enum.hpp>

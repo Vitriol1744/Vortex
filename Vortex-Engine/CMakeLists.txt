@@ -12,6 +12,9 @@ set (CXX_STANDARD_REQUIRED ON)
 
 find_package (Vulkan REQUIRED)
 
+add_subdirectory (vendor/fmt)
+add_subdirectory (vendor/magic_enum)
+
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DVT_DEBUG)
 elseif (CMAKE_BUILD_TYPE MATCHES Release)
@@ -25,10 +28,12 @@ add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex")
-set (LIBS ${Vulkan_LIBRARIES})
+set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum)
 
 set (SOURCES
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Core/Log/Log.cpp
+    src/Vortex/Core/Log/Logger.cpp
 )
 
 if (UNIX)

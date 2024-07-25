@@ -6,6 +6,7 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Platform.hpp"
 
 namespace Vortex
@@ -39,6 +40,8 @@ namespace Vortex
 
         (void)argc;
         (void)argv;
+
+        VtCoreWarn("error");
 
         return EXIT_SUCCESS;
     }
