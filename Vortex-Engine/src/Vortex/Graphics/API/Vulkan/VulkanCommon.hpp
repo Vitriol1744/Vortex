@@ -20,6 +20,8 @@
                             Vulkan::VkResultToString(status));                 \
             }                                                                  \
         }
+#else
+    #define VkCall(x) (x)
 #endif
 
 namespace Vortex::Vulkan
