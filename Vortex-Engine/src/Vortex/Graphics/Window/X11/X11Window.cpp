@@ -56,15 +56,16 @@ namespace Vortex
 
         if (monitor)
         {
-            std::string_view monitorName = monitor->GetName();
-            VideoMode        currentMode
+            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
+            VideoMode                         currentMode
                 = specification.Monitor->GetCurrentVideoMode();
-            u32 bitsPerPixel = currentMode.RedBits + currentMode.GreenBits
-                             + currentMode.BlueBits;
-            u16 redBits     = currentMode.RedBits;
-            u16 greenBits   = currentMode.GreenBits;
-            u16 blueBits    = currentMode.BlueBits;
-            u32 refreshRate = currentMode.RefreshRate;
+            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
+                                              + currentMode.GreenBits
+                                              + currentMode.BlueBits;
+            [[maybe_unused]] u16 redBits     = currentMode.RedBits;
+            [[maybe_unused]] u16 greenBits   = currentMode.GreenBits;
+            [[maybe_unused]] u16 blueBits    = currentMode.BlueBits;
+            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
 
             VtCoreTrace(
                 "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
