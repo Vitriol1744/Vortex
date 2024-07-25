@@ -4,3 +4,9 @@
 [submodule "Vortex-Engine/vendor/magic_enum"]
 	path = Vortex-Engine/vendor/magic_enum
 	url = https://github.com/Neargye/magic_enum
+[submodule "Vortex-Engine/vendor/glfw"]
+	path = Vortex-Engine/vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Vortex-Engine/vendor/glm"]
+	path = Vortex-Engine/vendor/glm
+	url = https://github.com/g-truc/glm.git
