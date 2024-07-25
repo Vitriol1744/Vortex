@@ -43,6 +43,10 @@ namespace Vortex
         glfwWindowHint(GLFW_MAXIMIZED, specification.Maximized);
         glfwWindowHint(GLFW_POSITION_X, specification.Position.x);
         glfwWindowHint(GLFW_POSITION_Y, specification.Position.y);
+        glfwWindowHint(GLFW_RED_BITS, specification.VideoMode.RedBits);
+        glfwWindowHint(GLFW_GREEN_BITS, specification.VideoMode.GreenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, specification.VideoMode.BlueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, specification.VideoMode.RefreshRate);
 
         Ref<Monitor> monitor = specification.Monitor;
         GLFWmonitor* monitorHandle
@@ -51,8 +55,7 @@ namespace Vortex
 
         m_Window = glfwCreateWindow(
             width, height, title,
-            specification.Fullscreen ? glfwGetPrimaryMonitor() : monitorHandle,
-            nullptr);
+            specification.Fullscreen ? monitorHandle : nullptr, nullptr);
 
         if (monitor)
         {
