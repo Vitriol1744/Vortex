@@ -17,8 +17,14 @@ namespace Vortex
     {
         VtCoreAssertMsg(s_Instance == nullptr,
                         "Only one instance of application might exist.");
-        s_Instance = this;
-        m_Name     = specification.Name;
+        s_Instance                = this;
+        m_Name                    = specification.Name;
+
+        WindowSpecification specs = {};
+        specs.VideoMode           = {800, 600, 32};
+        specs.Decorated           = true;
+
+        m_MainWindow              = Window::Create(specs);
     }
     Application::~Application() { s_Instance = nullptr; }
 
@@ -26,7 +32,11 @@ namespace Vortex
     {
         m_Running = true;
         while (m_Running)
-            ;
+        {
+            m_MainWindow->Present();
+            Window::PollEvents();
+            m_Running = m_MainWindow->IsOpen();
+        }
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }

@@ -37,6 +37,8 @@ set (SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Graphics/Window/Window.cpp
+    src/Vortex/Graphics/Window/X11/X11Window.cpp
 )
 
 if (UNIX)

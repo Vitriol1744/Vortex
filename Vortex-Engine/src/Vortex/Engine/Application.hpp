@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
+#include "Vortex/Graphics/Window/Window.hpp"
 
 namespace Vortex
 {
@@ -45,6 +46,7 @@ namespace Vortex
 
         inline std::string_view GetName() const { return m_Name; }
         inline const Version&   GetVersion() const { return m_Version; }
+        inline Ref<Window>      GetWindow() { return m_MainWindow; }
 
         static Application*     Get() { return s_Instance; }
 
@@ -52,7 +54,8 @@ namespace Vortex
         bool                m_Running       = false;
         bool                m_ShouldRestart = false;
         std::string         m_Name;
-        Version             m_Version = {0, 1, 0};
+        Version             m_Version    = {0, 1, 0};
+        Ref<Window>         m_MainWindow = nullptr;
 
         static Application* s_Instance;
     };
