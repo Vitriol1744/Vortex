@@ -6,6 +6,7 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Platform.hpp"
 
@@ -42,6 +43,7 @@ namespace Vortex
         (void)argv;
 
         VtCoreWarn("error");
+        VtCoreAssert(false);
 
         return EXIT_SUCCESS;
     }

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <source_location>
 
 // Dependencies
 #include <fmt/format.h>
