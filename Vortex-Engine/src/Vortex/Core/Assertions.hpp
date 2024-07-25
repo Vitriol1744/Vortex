@@ -12,8 +12,9 @@
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
     #define VtDebugBreak DebugBreak()
-#elifdef VT_COMPILER_CLANG
-    #define VtDebugBreak __builtin_debugtrap()
+#elif defined(VT_COMPILER_CLANG) || defined(VT_COMPILER_GCC)
+    #define VtDebugBreak  __builtin_trap()
+    #define VtUnreachable __builtin_unreachable
 #elif defined(VT_PLATFORM_LINUX)
     #include <signal.h>
     #define VtDebugBreak raise(SIGINT)
@@ -64,6 +65,6 @@
 #else
     #define VtCoreAssert(expr, msg)     expr
     #define VtAssert(expr, msg)         expr
-    #define VtCoreSlowAssert(expr, msg) VT_CORE_ASSERT(expr, msg)
-    #define VtSlowAssert(expr, msg)     VT_ASSERT(expr, msg)
+    #define VtCoreSlowAssert(expr, msg) VtCoreAssert(expr, msg)
+    #define VtSlowAssert(expr, msg)     VtAssert(expr, msg)
 #endif

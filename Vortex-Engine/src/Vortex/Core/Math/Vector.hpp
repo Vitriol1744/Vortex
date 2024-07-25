@@ -19,9 +19,10 @@ namespace Vortex
     using Vector = glm::vec<count, T>;
 
     using Vec4   = Vector4;
+    using Vec4i  = Vector<4, i32>;
     using Vec3   = Vector3;
     using Vec2   = Vector2;
-    using Vec2f  = Vector2;
+    using Vec2f  = Vector<2, f32>;
     using Vec2d  = Vector<2, f64>;
     using Vec2i  = Vector<2, i32>;
     using Vec2u  = Vector<2, u32>;

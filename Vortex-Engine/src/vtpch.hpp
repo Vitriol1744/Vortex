@@ -10,8 +10,10 @@
 #include <any>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <queue>
 #include <source_location>
 
 // Dependencies

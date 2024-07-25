@@ -6,35 +6,23 @@
  */
 #pragma once
 
+#include "Vortex/Core/Events/Event.hpp"
+#include "Vortex/Core/Input/KeyCode.hpp"
+#include "Vortex/Core/Input/MouseCode.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
+#include "Vortex/Graphics/Window/Monitor.hpp"
 
 namespace Vortex
 {
-    enum class MonitorState
+    enum class WindowSubsystem
     {
-        eOn,
-        eOff,
-        eLowPower,
-        eScreenSaver
-    };
-
-    struct VideoMode
-    {
-        VideoMode() = default;
-        VideoMode(i32 width, i32 height, i32 bitsPerPixel = 32)
-            : Width(width)
-            , Height(height)
-            , BitsPerPixel(bitsPerPixel)
-        {
-        }
-
-        i32  Width                                     = 800;
-        i32  Height                                    = 600;
-        i32  BitsPerPixel                              = 32;
-
-        auto operator<=>(const VideoMode& other) const = default;
+        eUndefined,
+        eWin32,
+        eX11,
+        eWayland,
+        eCocoa,
     };
 
     struct WindowSpecification
@@ -46,17 +34,18 @@ namespace Vortex
         {
         }
 
-        struct VideoMode VideoMode;
-        std::string      Title       = "Vortex Application";
-        Vec2i            Position    = {0, 0};
+        struct VideoMode   VideoMode;
+        std::string        Title       = "Vortex Application";
+        Vec2i              Position    = {0, 0};
+        Ref<class Monitor> Monitor     = nullptr;
 
-        bool             Fullscreen  = false;
-        bool             Resizable   = true;
-        bool             Visible     = true;
-        bool             Decorated   = false;
-        bool             Focused     = true;
-        bool             AlwaysOnTop = true;
-        bool             Maximized   = false;
+        bool               Fullscreen  = false;
+        bool               Resizable   = true;
+        bool               Visible     = true;
+        bool               Decorated   = false;
+        bool               Focused     = true;
+        bool               AlwaysOnTop = true;
+        bool               Maximized   = false;
     };
 
     class VT_API Window : public NonCopyable<Window>
@@ -118,10 +107,11 @@ namespace Vortex
             return Create(VideoMode(width, height), title);
         }
 
+        static WindowSubsystem GetWindowSubsystem();
+
       protected:
         struct WindowData
         {
-            Window*          Window;
             struct VideoMode VideoMode;
             std::string      Title;
             Vec2i            Position     = {0, 0};
@@ -134,4 +124,35 @@ namespace Vortex
             bool             Decorated    = false;
         } m_Data;
     };
+
+    namespace WindowEvents
+    {
+        // Window Events
+        // bool focus
+        extern Event<Window*, bool>                   focusChangedEvent;
+        // Vortex::input::KeyCode keycode, u32 repeatCount
+        extern Event<Window*, Input::KeyCode, u32>    keyPressedEvent;
+        // Vortex::Input::KeyCode keycode
+        extern Event<Window*, Input::KeyCode>         keyReleasedEvent;
+        // u32 character
+        extern Event<Window*, u32>                    keyTypedEvent;
+        // Vortex::Input::MouseCode mouseCode, bool doubleclick
+        extern Event<Window*, Input::MouseCode, bool> mouseButtonPressedEvent;
+        // Vortex::Input::MouseCode mouseCode
+        extern Event<Window*, Input::MouseCode>       mouseButtonReleasedEvent;
+        //
+        extern Event<Window*, bool>                   mouseCursorEnterEvent;
+        // Vortex::Vec2 wheel
+        extern Event<Window*, Vec2>                   mouseScrolledEvent;
+        // Vortex::Vec2 mousePosition
+        extern Event<Window*, Vec2>                   mouseMovedEvent;
+        //
+        extern Event<Window*>                         windowClosedEvent;
+        //
+        extern Event<Window*, Vec2>                   windowMovedEvent;
+        // Vortex::Window::WindowResizedEventType windowResizedEventType,
+        // Vortex::Vec2u windowSize;
+        extern Event<Window*, Vec2u>                  windowResizedEvent;
+    } // namespace WindowEvents
+
 }; // namespace Vortex

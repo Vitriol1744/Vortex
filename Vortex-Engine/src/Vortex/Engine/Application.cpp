@@ -21,8 +21,9 @@ namespace Vortex
         m_Name                    = specification.Name;
 
         WindowSpecification specs = {};
-        specs.VideoMode           = {800, 600, 32};
+        specs.VideoMode           = {800, 600};
         specs.Decorated           = true;
+        specs.Monitor             = Monitor::GetPrimaryMonitor();
 
         m_MainWindow              = Window::Create(specs);
     }

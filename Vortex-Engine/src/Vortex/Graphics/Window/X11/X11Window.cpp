@@ -44,11 +44,35 @@ namespace Vortex
         glfwWindowHint(GLFW_POSITION_X, specification.Position.x);
         glfwWindowHint(GLFW_POSITION_Y, specification.Position.y);
 
+        Ref<Monitor> monitor = specification.Monitor;
+        GLFWmonitor* monitorHandle
+            = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
+                      : nullptr;
+
         m_Window = glfwCreateWindow(
             width, height, title,
-            specification.Fullscreen ? glfwGetPrimaryMonitor() : nullptr,
+            specification.Fullscreen ? glfwGetPrimaryMonitor() : monitorHandle,
             nullptr);
 
+        if (monitor)
+        {
+            std::string_view monitorName = monitor->GetName();
+            VideoMode        currentMode
+                = specification.Monitor->GetCurrentVideoMode();
+            u32 bitsPerPixel = currentMode.RedBits + currentMode.GreenBits
+                             + currentMode.BlueBits;
+            u16 redBits     = currentMode.RedBits;
+            u16 greenBits   = currentMode.GreenBits;
+            u16 blueBits    = currentMode.BlueBits;
+            u32 refreshRate = currentMode.RefreshRate;
+
+            VtCoreTrace(
+                "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
+                "({} "
+                "{} {}) {} Hz'}}",
+                monitorName, currentMode.Width, currentMode.Height,
+                bitsPerPixel, redBits, greenBits, blueBits, refreshRate);
+        }
         VtCoreTrace(
             "GLFW: Created window {{ width: {}, height: {}, title: {} }}",
             width, height, title);
