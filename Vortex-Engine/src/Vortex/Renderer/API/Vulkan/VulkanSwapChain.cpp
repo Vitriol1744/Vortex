@@ -262,7 +262,7 @@ namespace Vortex
         subpassDescription.pColorAttachments    = &colorReference;
 
         vk::SubpassDependency dependency{};
-        dependency.srcSubpass = vk::SubpassExternal;
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
         dependency.srcStageMask
             = vk::PipelineStageFlagBits::eColorAttachmentOutput;
