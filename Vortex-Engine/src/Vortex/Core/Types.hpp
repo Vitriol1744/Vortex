@@ -72,18 +72,13 @@ namespace Vortex
 }; // namespace Vortex
 
 template <>
-struct fmt::formatter<Vortex::Version>
+struct fmt::formatter<Vortex::Version> : fmt::formatter<std::string>
 {
-    template <typename ParseContext>
-    constexpr auto parse(ParseContext& ctx)
-    {
-        return ctx.begin();
-    }
-
     template <typename FormatContext>
     auto format(const Vortex::Version& version, FormatContext& ctx) const
     {
-        return fmt::format_to(ctx.out(), "{}.{}.{}", version.Major,
-                              version.Minor, version.Patch);
+
+        return fmt::formatter<std::string>::format(
+            ctx.out(), "{}.{}.{}", version.Major, version.Minor, version.Patch);
     }
 };
