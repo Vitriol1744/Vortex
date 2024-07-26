@@ -82,6 +82,10 @@ namespace Vortex
         u32 vulkanVersionMajor = VK_VERSION_MAJOR(vulkanVersion);
         u32 vulkanVersionMinor = VK_VERSION_MINOR(vulkanVersion);
         u32 vulkanVersionPatch = VK_VERSION_PATCH(vulkanVersion);
+        (void)vulkanVersion;
+        (void)vulkanVersionMajor;
+        (void)vulkanVersionMinor;
+        (void)vulkanVersionPatch;
 
         VtCoreAssert(vulkanVersion >= s_MinimumVulkanVersionSupported);
         VtCoreInfo("Vulkan: API version: {}.{}.{}", vulkanVersionMajor,
