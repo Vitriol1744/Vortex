@@ -7,7 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
-#include "Vortex/Graphics/Window/X11/X11Window.hpp"
+#include "Vortex/Renderer/Window/X11/X11Window.hpp"
 
 namespace Vortex
 {

@@ -6,8 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Graphics/API/RendererContext.hpp"
-#include "Vortex/Graphics/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 
 namespace Vortex
 {

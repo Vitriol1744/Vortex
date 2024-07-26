@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Vortex/Graphics/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
 
 namespace Vortex
 {

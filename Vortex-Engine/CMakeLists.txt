@@ -38,18 +38,18 @@ set (SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
-    src/Vortex/Graphics/API/RendererContext.cpp
-    src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp
-    src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp
-    src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp
-    src/Vortex/Graphics/Window/Monitor.cpp
-    src/Vortex/Graphics/Window/Window.cpp
+    src/Vortex/Renderer/API/RendererContext.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanInstance.cpp
+    src/Vortex/Renderer/Window/Monitor.cpp
+    src/Vortex/Renderer/Window/Window.cpp
 )
 
 if (UNIX)
     set (SOURCES ${SOURCES}
-        src/Vortex/Graphics/Window/X11/X11Window.cpp
-        src/Vortex/Graphics/Window/X11/X11Monitor.cpp)
+        src/Vortex/Renderer/Window/X11/X11Window.cpp
+        src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
 endif ()
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})

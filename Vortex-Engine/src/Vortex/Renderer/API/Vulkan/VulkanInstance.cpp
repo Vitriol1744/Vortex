@@ -8,7 +8,7 @@
 
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Engine/Application.hpp"
-#include "Vortex/Graphics/API/Vulkan/VulkanInstance.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanInstance.hpp"
 #include <vulkan/vulkan_core.h>
 
 #ifdef VT_PLATFORM_WINDOWS

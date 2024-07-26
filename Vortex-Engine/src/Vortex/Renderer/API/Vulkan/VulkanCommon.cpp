@@ -7,7 +7,7 @@
 #define VT_EXPORT_VULKAN
 #include "vtpch.hpp"
 
-#include "Vortex/Graphics/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
 
 namespace Vortex::Vulkan
 {

@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Graphics/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 
 #include <GLFW/glfw3.h>
 

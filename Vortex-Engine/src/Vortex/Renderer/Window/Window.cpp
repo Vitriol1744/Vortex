@@ -7,10 +7,10 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Platform.hpp"
-#include "Vortex/Graphics/Window/Window.hpp"
+#include "Vortex/Renderer/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    #include "Vortex/Graphics/Window/X11/X11Window.hpp"
+    #include "Vortex/Renderer/Window/X11/X11Window.hpp"
 #endif
 
 namespace Vortex

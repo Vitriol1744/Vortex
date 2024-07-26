@@ -13,8 +13,8 @@
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
 
-#include "Vortex/Graphics/API/RendererContext.hpp"
-#include "Vortex/Graphics/Window/Monitor.hpp"
+#include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/Window/Monitor.hpp"
 
 namespace Vortex
 {

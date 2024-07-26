@@ -6,11 +6,11 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Graphics/Window/Monitor.hpp"
-#include "Vortex/Graphics/Window/Window.hpp"
+#include "Vortex/Renderer/Window/Monitor.hpp"
+#include "Vortex/Renderer/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    #include "Vortex/Graphics/Window/X11/X11Monitor.hpp"
+    #include "Vortex/Renderer/Window/X11/X11Monitor.hpp"
 #else
     #error "Platform not supported!"
 #endif

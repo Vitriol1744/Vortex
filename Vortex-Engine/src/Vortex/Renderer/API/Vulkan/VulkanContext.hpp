@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include "Vortex/Graphics/API/RendererContext.hpp"
-#include "Vortex/Graphics/API/Vulkan/VulkanInstance.hpp"
+#include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanInstance.hpp"
 
 namespace Vortex
 {
