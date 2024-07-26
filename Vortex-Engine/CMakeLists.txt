@@ -41,6 +41,7 @@ set (SOURCES
     src/Vortex/Renderer/API/RendererContext.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanInstance.cpp
     src/Vortex/Renderer/Window/Monitor.cpp
     src/Vortex/Renderer/Window/Window.cpp

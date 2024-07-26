@@ -12,8 +12,9 @@
 
 namespace Vortex
 {
-    usize          VulkanContext::s_ContextCount   = 0;
-    VulkanInstance VulkanContext::s_VulkanInstance = {};
+    usize                VulkanContext::s_ContextCount   = 0;
+    VulkanInstance       VulkanContext::s_VulkanInstance = {};
+    VulkanPhysicalDevice VulkanContext::s_PhysicalDevice = {};
 
     VulkanContext::VulkanContext(Window* window)
     {
@@ -22,8 +23,10 @@ namespace Vortex
         {
             VtCoreAssert(glfwVulkanSupported() == GLFW_TRUE);
             s_VulkanInstance.Initialize();
+            s_PhysicalDevice = VulkanPhysicalDevice::Pick();
         }
 
+        m_Device.Initialize(s_PhysicalDevice);
         (void)window;
         ++s_ContextCount;
     }
@@ -31,6 +34,8 @@ namespace Vortex
     VulkanContext::~VulkanContext()
     {
         VtCoreTrace("Vulkan: Destroying context of the window");
+
+        m_Device.Destroy();
         --s_ContextCount;
 
         if (s_ContextCount == 0) s_VulkanInstance.Destroy();

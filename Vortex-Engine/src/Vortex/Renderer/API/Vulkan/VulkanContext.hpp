@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanInstance.hpp"
 
 namespace Vortex
@@ -24,8 +25,23 @@ namespace Vortex
             (void)height;
         }
 
+        const VulkanDevice&          GetDevice() const { return m_Device; }
+
+        static const VulkanInstance& GetInstance()
+        {
+            VtCoreAssert(s_VulkanInstance);
+            return s_VulkanInstance;
+        }
+        static const VulkanPhysicalDevice& GetPhysicalDevice()
+        {
+            return s_PhysicalDevice;
+        }
+
       private:
-        static usize          s_ContextCount;
-        static VulkanInstance s_VulkanInstance;
+        VulkanDevice                m_Device;
+
+        static usize                s_ContextCount;
+        static VulkanInstance       s_VulkanInstance;
+        static VulkanPhysicalDevice s_PhysicalDevice;
     };
 }; // namespace Vortex
