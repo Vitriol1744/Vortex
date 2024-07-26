@@ -14,11 +14,6 @@ class Game : public Application
     Game(const ApplicationSpecification& spec)
         : Application(spec)
     {
-        VtTrace("hello from client");
-        VtInfo("hello from client");
-        VtWarn("hello from client");
-        VtError("hello from client");
-        VtFatal("hello from client");
     }
 };
 

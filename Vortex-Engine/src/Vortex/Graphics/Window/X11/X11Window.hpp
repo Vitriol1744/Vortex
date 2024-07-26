@@ -16,7 +16,7 @@ namespace Vortex
     {
       public:
         X11Window(const WindowSpecification& specification);
-        ~X11Window();
+        virtual ~X11Window();
 
         static void             PollEvents();
         virtual void            Present() override;

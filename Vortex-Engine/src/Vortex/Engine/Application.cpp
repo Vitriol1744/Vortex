@@ -38,8 +38,9 @@ namespace Vortex
             m_MainWindow->Present();
             Window::PollEvents();
 
-            m_Running = m_MainWindow->IsOpen();
+            // m_MainWindow->IsOpen();
             EventSystem::PollEvents();
+            Close();
         }
         return m_ShouldRestart;
     }

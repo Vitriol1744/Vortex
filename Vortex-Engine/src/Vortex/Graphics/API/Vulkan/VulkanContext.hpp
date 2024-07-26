@@ -7,14 +7,15 @@
 #pragma once
 
 #include "Vortex/Graphics/API/RendererContext.hpp"
+#include "Vortex/Graphics/API/Vulkan/VulkanInstance.hpp"
 
 namespace Vortex
 {
     class VulkanContext : public RendererContext
     {
       public:
-        VulkanContext(class Window* window) { (void)window; }
-        virtual ~VulkanContext() {}
+        VulkanContext(class Window* window);
+        virtual ~VulkanContext();
 
         virtual void Present() override {}
         virtual void OnResize(u32 width, u32 height) override
@@ -22,5 +23,9 @@ namespace Vortex
             (void)width;
             (void)height;
         }
+
+      private:
+        static usize          s_ContextCount;
+        static VulkanInstance s_VulkanInstance;
     };
 }; // namespace Vortex

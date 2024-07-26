@@ -40,6 +40,8 @@ set (SOURCES
     src/Vortex/Engine/EntryPoint.cpp
     src/Vortex/Graphics/API/RendererContext.cpp
     src/Vortex/Graphics/API/Vulkan/VulkanCommon.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanContext.cpp
+    src/Vortex/Graphics/API/Vulkan/VulkanInstance.cpp
     src/Vortex/Graphics/Window/Monitor.cpp
     src/Vortex/Graphics/Window/Window.cpp
 )
