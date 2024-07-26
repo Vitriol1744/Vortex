@@ -7,6 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
+#include "Vortex/Core/Events/EventSystem.hpp"
 #include "Vortex/Engine/Application.hpp"
 
 namespace Vortex
@@ -36,7 +37,9 @@ namespace Vortex
         {
             m_MainWindow->Present();
             Window::PollEvents();
+
             m_Running = m_MainWindow->IsOpen();
+            EventSystem::PollEvents();
         }
         return m_ShouldRestart;
     }
