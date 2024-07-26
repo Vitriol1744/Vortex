@@ -45,6 +45,7 @@ namespace Vortex
     {
         (void)type;
         (void)userData;
+        (void)data;
         switch (severity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
