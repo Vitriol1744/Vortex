@@ -57,7 +57,7 @@ namespace Vortex
         }
         inline           operator vk::Device() const { return m_Device; }
 
-        inline vk::Queue GetRendererQueue() const { return m_GraphicsQueue; }
+        inline vk::Queue GetGraphicsQueue() const { return m_GraphicsQueue; }
         inline vk::Queue GetPresentQueue() const { return m_PresentQueue; }
         inline vk::Queue GetComputeQueue() const { return m_ComputeQueue; }
         inline vk::Queue GetTransferQueue() const { return m_TransferQueue; }

@@ -27,7 +27,12 @@ namespace Vortex
         }
 
         m_Device.Initialize(s_PhysicalDevice);
-        (void)window;
+        m_SwapChain.Initialize(m_Device);
+        m_SwapChain.CreateSurface(window);
+        u32 width, height;
+        glfwGetFramebufferSize(m_SwapChain.GetSurface().GetNativeWindowHandle(),
+                               (int*)&width, (int*)&height);
+        m_SwapChain.Create(width, height, false);
         ++s_ContextCount;
     }
 
@@ -35,9 +40,17 @@ namespace Vortex
     {
         VtCoreTrace("Vulkan: Destroying context of the window");
 
+        m_SwapChain.Destroy();
+        m_SwapChain.DestroySurface();
         m_Device.Destroy();
         --s_ContextCount;
 
         if (s_ContextCount == 0) s_VulkanInstance.Destroy();
+    }
+
+    void VulkanContext::Present() {}
+    void VulkanContext::OnResize(u32 width, u32 height)
+    {
+        m_SwapChain.OnResize(width, height);
     }
 }; // namespace Vortex
