@@ -79,6 +79,8 @@ struct fmt::formatter<Vortex::Version> : fmt::formatter<std::string>
     {
 
         return fmt::formatter<std::string>::format(
-            ctx.out(), "{}.{}.{}", version.Major, version.Minor, version.Patch);
+            fmt::format("{}.{}.{}", version.Major, version.Minor,
+                        version.Patch),
+            ctx);
     }
 };
