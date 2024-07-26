@@ -47,6 +47,8 @@ namespace Vortex
             CommandLineArguments args;
             Application*         app = CreateApplication(args);
             running                  = app->Run();
+
+            delete app;
         } while (running);
 
         return EXIT_SUCCESS;
