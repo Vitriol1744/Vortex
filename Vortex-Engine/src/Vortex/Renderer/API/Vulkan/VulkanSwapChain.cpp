@@ -113,6 +113,7 @@ namespace Vortex
         CreateCommandBuffers();
         CreateSyncObjects();
         CreateRenderPass();
+        CreateFramebuffers();
     }
     void VulkanSwapChain::Destroy()
     {
@@ -128,6 +129,7 @@ namespace Vortex
                                     VK_NULL_HANDLE);
             device.destroySemaphore(frame.RenderFinishedSemaphore,
                                     VK_NULL_HANDLE);
+            device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
             device.destroyImageView(frame.ImageView, nullptr);
         }
 
@@ -282,6 +284,29 @@ namespace Vortex
 
         VkCall(vk::Device(m_Device).createRenderPass(
             &renderPassInfo, VK_NULL_HANDLE, &m_RenderPass));
+    }
+    void VulkanSwapChain::CreateFramebuffers()
+    {
+        for (auto& frame : m_Frames)
+        {
+            vk::ImageView             attachments[] = {frame.ImageView};
+
+            vk::FramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
+            framebufferInfo.renderPass      = m_RenderPass;
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments    = attachments;
+            framebufferInfo.width           = m_Extent.width;
+            framebufferInfo.height          = m_Extent.height;
+            framebufferInfo.layers          = 1;
+
+            if (frame.Framebuffer)
+                vk::Device(m_Device).destroyFramebuffer(frame.Framebuffer,
+                                                        VK_NULL_HANDLE);
+
+            VkCall(vk::Device(m_Device).createFramebuffer(
+                &framebufferInfo, VK_NULL_HANDLE, &frame.Framebuffer));
+        }
     }
 
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(

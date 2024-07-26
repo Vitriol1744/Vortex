@@ -18,6 +18,7 @@ namespace Vortex
         {
             vk::Image         Image                   = VK_NULL_HANDLE;
             vk::ImageView     ImageView               = VK_NULL_HANDLE;
+            vk::Framebuffer   Framebuffer             = VK_NULL_HANDLE;
             vk::CommandPool   CommandPool             = VK_NULL_HANDLE;
             vk::CommandBuffer CommandBuffer           = VK_NULL_HANDLE;
             vk::Semaphore     ImageAvailableSemaphore = VK_NULL_HANDLE;
@@ -63,6 +64,7 @@ namespace Vortex
         void                                CreateCommandBuffers();
         void                                CreateSyncObjects();
         void                                CreateRenderPass();
+        void                                CreateFramebuffers();
 
         vk::PresentModeKHR                  ChooseSwapPresentMode(
                              const std::vector<vk::PresentModeKHR>& availablePresentModes)
