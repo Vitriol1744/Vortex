@@ -19,7 +19,10 @@ namespace Vortex::Input
         eMiddle,
         eX1,
         eX2,
+        eX3,
+        eX4,
+        eX5,
 
-        eButtonsCount
+        eButtonCount
     };
 }

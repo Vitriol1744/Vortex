@@ -67,7 +67,7 @@ namespace Vortex::Input
         eF14,
         eF15,
         eEscape,
-        eBackSpace,
+        eBackspace,
         eTab,
         eCapsLock,
         eEnter,
@@ -91,7 +91,7 @@ namespace Vortex::Input
         eComma,
         ePeriod,
         eSlash,
-        eBackSlash,
+        eBackslash,
         eUp,
         eDown,
         eLeft,
@@ -117,7 +117,12 @@ namespace Vortex::Input
         ePageDown,
         eHome,
         eEnd,
+        eScrollLock,
+        eNumLock,
+        ePrintScreen,
+        ePause,
+        eMenu,
 
-        eKeysCount
+        eKeyCount,
     };
 }

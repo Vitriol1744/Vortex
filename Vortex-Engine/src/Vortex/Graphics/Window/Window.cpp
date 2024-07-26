@@ -61,18 +61,30 @@ namespace Vortex
 
     namespace WindowEvents
     {
-        Event<Window*, bool>                   focusChangedEvent;
-        Event<Window*, Input::KeyCode, u32>    keyPressedEvent;
-        Event<Window*, Input::KeyCode>         keyReleasedEvent;
-        Event<Window*, u32>                    keyTypedEvent;
-        Event<Window*, Input::MouseCode, bool> mouseButtonPressedEvent;
-        Event<Window*, Input::MouseCode>       mouseButtonReleasedEvent;
-        Event<Window*, bool>                   mouseCursorEnterEvent;
-        Event<Window*, Vec2>                   mouseScrolledEvent;
-        Event<Window*, Vec2>                   mouseMovedEvent;
-        Event<Window*>                         windowClosedEvent;
-        Event<Window*, Vec2>                   windowMovedEvent;
-        Event<Window*, Vec2u>                  windowResizedEvent;
+        using Input::KeyCode;
+        using Input::MouseCode;
+
+        Event<Window*, KeyCode, u32> KeyPressedEvent;
+        Event<Window*, KeyCode>      KeyReleasedEvent;
+        Event<Window*, u32>          KeyTypedEvent;
+        Event<Window*, u32, KeyCode> UnicodeKeyTypedEvent;
+        Event<Window*, MouseCode>    MouseButtonPressedEvent;
+        Event<Window*, MouseCode>    MouseButtonReleasedEvent;
+        Event<Window*>               MouseEnteredEvent;
+        Event<Window*>               MouseLeavedEvent;
+        Event<Window*, f64, f64>     MouseScrolledEvent;
+        Event<Window*, f64, f64>     MouseMovedEvent;
+        Event<Window*, i32, i32>     WindowMovedEvent;
+        Event<Window*, i32, i32>     WindowResizedEvent;
+        Event<Window*>               WindowFocusedEvent;
+        Event<Window*>               WindowFocusLostEvent;
+        Event<Window*, bool>         WindowMaximizedEvent;
+        Event<Window*, bool>         WindowMinimizedEvent;
+        Event<Window*>               WindowClosedEvent;
+        Event<Window*, i32, i32>     FramebufferResizedEvent;
+        Event<Window*, std::string>  FileDroppedEvent;
+        Event<i32>                   GamepadConnectedEvent;
+        Event<i32>                   GamepadDisconnectedEvent;
     } // namespace WindowEvents
 
 }; // namespace Vortex
