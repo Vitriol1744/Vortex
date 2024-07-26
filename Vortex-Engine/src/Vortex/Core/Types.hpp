@@ -38,6 +38,8 @@ namespace Vortex
     {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
+    template <typename T>
+    using WeakRef = std::weak_ptr<T>;
 
     struct Version
     {
@@ -66,4 +68,22 @@ namespace Vortex
             return os;
         }
     };
+
 }; // namespace Vortex
+
+template <>
+struct fmt::formatter<Vortex::Version>
+{
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const Vortex::Version& version, FormatContext& ctx) const
+    {
+        return fmt::format_to(ctx.out(), "{}.{}.{}", version.Major,
+                              version.Minor, version.Patch);
+    }
+};
