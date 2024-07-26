@@ -62,9 +62,7 @@ set (SOURCES ${SOURCES}
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
     vendor/imgui/imgui_widgets.cpp
-    src/Vortex/Engine/imgui_impl_glfw.cpp
-    src/Vortex/Engine/imgui_impl_vulkan.cpp)
-
+)
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 
