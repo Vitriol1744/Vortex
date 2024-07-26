@@ -19,9 +19,9 @@ add_subdirectory (vendor/glfw)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DVT_DEBUG)
-elseif (CMAKE_BUILD_TYPE MATCHES Release)
+elseif (CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
     add_definitions (-DVT_RELEASE)
-elseif (CMAKE_BUILD_TYPE MATCHES Dist)
+elseif (CMAKE_BUILD_TYPE MATCHES Release)
     add_definitions (-DVT_DIST)
 endif ()
 

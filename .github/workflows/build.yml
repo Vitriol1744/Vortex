@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-configuration: [Debug, Release, Dist]
+        build-configuration: [Debug, RelWithDebInfo, Release]
 
     steps:
       - uses: actions/checkout@v4
