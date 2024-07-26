@@ -38,6 +38,7 @@ set (SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Graphics/API/RendererContext.cpp
     src/Vortex/Graphics/Window/Monitor.cpp
     src/Vortex/Graphics/Window/Window.cpp
 )

@@ -12,6 +12,8 @@
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
+
+#include "Vortex/Graphics/API/RendererContext.hpp"
 #include "Vortex/Graphics/Window/Monitor.hpp"
 
 namespace Vortex
@@ -87,6 +89,11 @@ namespace Vortex
         inline Vec2d  GetCursorPosition() const noexcept
         {
             return m_Data.MousePosition;
+        }
+
+        inline Ref<RendererContext> GetRendererContext() const noexcept
+        {
+            return m_Data.RendererContext;
         }
 
         virtual void Close() noexcept                      = 0;
@@ -168,9 +175,11 @@ namespace Vortex
             std::array<bool, std::to_underlying(Input::KeyCode::eKeyCount)>
                 Keys;
             std::array<bool, std::to_underlying(Input::MouseCode::eButtonCount)>
-                  MouseButtons;
+                                       MouseButtons;
 
-            Vec2d MousePosition = {0, 0};
+            Vec2d                      MousePosition   = {0, 0};
+
+            Ref<class RendererContext> RendererContext = nullptr;
         } m_Data;
     };
 

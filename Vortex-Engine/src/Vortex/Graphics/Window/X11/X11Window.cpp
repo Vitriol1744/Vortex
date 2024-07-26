@@ -236,6 +236,8 @@ namespace Vortex
         glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
 
         SetupEvents();
+
+        m_Data.RendererContext = RendererContext::Create(this);
     }
     X11Window::~X11Window()
     {
@@ -245,10 +247,7 @@ namespace Vortex
     }
 
     void X11Window::PollEvents() { glfwPollEvents(); }
-    void X11Window::Present()
-    {
-        // TODO(v1tr10l7): Present the framebuffer
-    }
+    void X11Window::Present() { m_Data.RendererContext->Present(); }
 
     bool X11Window::IsFocused() const noexcept { return m_Data.Focused; }
     bool X11Window::IsMinimized() const noexcept
@@ -450,6 +449,9 @@ namespace Vortex
         auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
+            window->m_Data.RendererContext->OnResize(static_cast<u32>(width),
+                                                     static_cast<u32>(height));
+
             FramebufferResizedEvent(window, width, height);
         };
         auto keyCallback =
