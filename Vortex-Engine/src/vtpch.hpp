@@ -34,7 +34,5 @@
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
-#ifdef VT_EXPORT_VULKAN
-    #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
-    #include <vulkan/vulkan.hpp>
-#endif
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
