@@ -39,11 +39,15 @@ set (SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Renderer/API/GraphicsPipeline.cpp
     src/Vortex/Renderer/API/RendererContext.cpp
+    src/Vortex/Renderer/API/Shader.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanInstance.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanShader.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSurface.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSwapChain.cpp
     src/Vortex/Renderer/Window/Monitor.cpp
@@ -62,7 +66,9 @@ set (SOURCES ${SOURCES}
     vendor/imgui/imgui_demo.cpp 
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
-    vendor/imgui/imgui_widgets.cpp)
+    vendor/imgui/imgui_widgets.cpp
+    src/Vortex/Renderer/Window/imgui_impl_glfw.cpp
+    src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
 
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
