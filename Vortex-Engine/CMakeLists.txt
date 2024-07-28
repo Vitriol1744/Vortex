@@ -33,7 +33,6 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendo
 set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only)
 
 set (SOURCES
-    src/Vortex/Engine/main3.cpp
     src/Vortex/Core/LayerStack.cpp
     src/Vortex/Core/Events/EventSystem.cpp
     src/Vortex/Core/Log/Log.cpp
