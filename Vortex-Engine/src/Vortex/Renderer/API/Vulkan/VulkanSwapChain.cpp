@@ -98,21 +98,6 @@ namespace Vortex
 
         CreateImageViews();
 
-        vk::CommandPoolCreateInfo commandPoolInfo{};
-        commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-        commandPoolInfo.pNext = VK_NULL_HANDLE;
-        // TODO(v1tr10l7): should be transient:
-        commandPoolInfo.flags
-            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
-                                               .GetQueueFamilyIndices()
-                                               .Graphics.value();
-        for (auto& frame : m_Frames)
-        {
-            if (frame.CommandPool) device.destroyCommandPool(frame.CommandPool);
-            VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
-                                            &frame.CommandPool));
-        }
         CreateCommandBuffers();
         CreateSyncObjects();
         CreateRenderPass();
@@ -139,17 +124,116 @@ namespace Vortex
         device.destroySwapchainKHR(m_SwapChain, nullptr);
     }
 
-    void VulkanSwapChain::Present() { (void)m_CurrentImageIndex; }
+    void VulkanSwapChain::BeginFrame()
+    {
+        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+
+        vk::Device device   = VulkanContext::GetDevice();
+        VkCall(device.waitForFences(1, &GetCurrentFrame().WaitFence, VK_TRUE,
+                                    UINT64_MAX));
+        vk::Result result = device.acquireNextImageKHR(
+            m_SwapChain, UINT64_MAX, GetCurrentFrame().ImageAvailableSemaphore,
+            VK_NULL_HANDLE, &m_CurrentImageIndex);
+
+        if (result == vk::Result::eErrorOutOfDateKHR)
+        {
+            OnResize(m_Extent.width, m_Extent.height);
+            result = device.acquireNextImageKHR(
+                m_SwapChain, UINT64_MAX,
+                GetCurrentFrame().ImageAvailableSemaphore, VK_NULL_HANDLE,
+                &m_CurrentImageIndex);
+        }
+        else if (result != vk::Result::eSuccess
+                 && result != vk::Result::eSuboptimalKHR)
+        {
+            VkCall(result);
+        }
+
+        VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
+
+        GetCurrentFrame().CommandBuffer.reset(vk::CommandBufferResetFlags());
+
+        vk::CommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
+
+        vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
+        VkCall(commandBuffer.begin(&beginInfo));
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass  = m_RenderPass;
+        renderPassInfo.framebuffer = m_Frames[m_CurrentImageIndex].Framebuffer;
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = m_Extent;
+
+        VkClearValue clearColor          = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+        renderPassInfo.clearValueCount   = 1;
+        renderPassInfo.pClearValues      = &clearColor;
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
+                             VK_SUBPASS_CONTENTS_INLINE);
+    }
+    void VulkanSwapChain::EndFrame()
+    {
+        vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
+        commandBuffer.endRenderPass();
+
+        commandBuffer.end();
+    }
+
+    void VulkanSwapChain::Present()
+    {
+        vk::SubmitInfo submitInfo{};
+        submitInfo.sType = vk::StructureType::eSubmitInfo;
+
+        vk::Semaphore waitSemaphores[]
+            = {m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore};
+        vk::PipelineStageFlags waitStages[]
+            = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores    = waitSemaphores;
+        submitInfo.pWaitDstStageMask  = waitStages;
+
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers
+            = &m_Frames[m_CurrentFrameIndex].CommandBuffer;
+
+        vk::Semaphore signalSemaphores[]
+            = {m_Frames[m_CurrentFrameIndex].RenderFinishedSemaphore};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores    = signalSemaphores;
+
+        vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
+
+        VkCall(graphicsQueue.submit(1, &submitInfo,
+                                    m_Frames[m_CurrentFrameIndex].WaitFence));
+
+        vk::PresentInfoKHR presentInfo{};
+        presentInfo.sType              = vk::StructureType::ePresentInfoKHR;
+
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores    = signalSemaphores;
+
+        vk::SwapchainKHR swapChains[]  = {m_SwapChain};
+        presentInfo.swapchainCount     = 1;
+        presentInfo.pSwapchains        = swapChains;
+
+        presentInfo.pImageIndices      = &m_CurrentImageIndex;
+
+        vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
+        vk::Result result       = presentQueue.presentKHR(&presentInfo);
+
+        if (result == vk::Result::eErrorOutOfDateKHR
+            || result == vk::Result::eSuboptimalKHR)
+            OnResize(auto{0}, auto{0});
+        else VkCall(result);
+    }
     void VulkanSwapChain::OnResize(u32 width, u32 height)
     {
         vk::Device device = VulkanContext::GetDevice();
         device.waitIdle();
         Create(width, height);
 
-        for (auto& frame : m_Frames)
-            device.freeCommandBuffers(frame.CommandPool, 1,
-                                      &frame.CommandBuffer);
-        CreateCommandBuffers();
         device.waitIdle();
     }
 
@@ -210,7 +294,22 @@ namespace Vortex
 
     void VulkanSwapChain::CreateCommandBuffers()
     {
-        vk::Device                    device = VulkanContext::GetDevice();
+        vk::Device                device = VulkanContext::GetDevice();
+        vk::CommandPoolCreateInfo commandPoolInfo{};
+        commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+        commandPoolInfo.pNext = VK_NULL_HANDLE;
+        // TODO(v1tr10l7): should be transient:
+        commandPoolInfo.flags
+            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
+                                               .GetQueueFamilyIndices()
+                                               .Graphics.value();
+        for (auto& frame : m_Frames)
+        {
+            if (frame.CommandPool) device.destroyCommandPool(frame.CommandPool);
+            VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
+                                            &frame.CommandPool));
+        }
 
         vk::CommandBufferAllocateInfo bufferInfo{};
         bufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
@@ -240,6 +339,7 @@ namespace Vortex
         {
             if (frame.ImageAvailableSemaphore)
             {
+                return;
                 device.destroySemaphore(frame.ImageAvailableSemaphore,
                                         VK_NULL_HANDLE);
                 device.destroySemaphore(frame.RenderFinishedSemaphore,
@@ -262,7 +362,7 @@ namespace Vortex
         vk::Device device = VulkanContext::GetDevice();
 
         if (m_RenderPass)
-            device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
+            return; // device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         vk::AttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format  = m_ImageFormat;
         colorAttachmentDescription.samples = vk::SampleCountFlagBits::e1;
@@ -313,6 +413,13 @@ namespace Vortex
 
         for (auto& frame : m_Frames)
         {
+            if (!frame.Framebuffer) break;
+            device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
+            frame.Framebuffer = VK_NULL_HANDLE;
+        }
+
+        for (auto& frame : m_Frames)
+        {
             vk::ImageView             attachments[] = {frame.ImageView};
 
             vk::FramebufferCreateInfo framebufferInfo{};
@@ -323,9 +430,6 @@ namespace Vortex
             framebufferInfo.width           = m_Extent.width;
             framebufferInfo.height          = m_Extent.height;
             framebufferInfo.layers          = 1;
-
-            if (frame.Framebuffer)
-                device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
 
             VkCall(device.createFramebuffer(&framebufferInfo, VK_NULL_HANDLE,
                                             &frame.Framebuffer));

@@ -34,14 +34,25 @@ namespace Vortex
         void        Destroy();
         inline void DestroySurface() { m_Surface.Destroy(); }
 
+        void        BeginFrame();
+        void        EndFrame();
         void        Present();
         void        OnResize(u32 width, u32 height);
 
-        inline const VulkanSurface& GetSurface() const { return m_Surface; }
+        inline const VulkanSurface&    GetSurface() const { return m_Surface; }
+        inline const vk::CommandBuffer GetCurrentCommandBuffer() const
+        {
+            return GetCurrentFrame().CommandBuffer;
+        }
+        inline const Frame& GetCurrentFrame() const
+        {
+            return m_Frames[m_CurrentFrameIndex];
+        }
         inline const std::vector<Frame>& GetFrames() const { return m_Frames; }
-        inline u32 GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
+        inline u32  GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
+        inline u32& GetCurrentImageIndex() { return m_CurrentImageIndex; }
 
-        inline     operator vk::SwapchainKHR() const { return m_SwapChain; }
+        inline      operator vk::SwapchainKHR() const { return m_SwapChain; }
         inline vk::Extent2D   GetExtent() const { return m_Extent; }
         inline vk::Format     GetImageFormat() const { return m_ImageFormat; }
         inline vk::RenderPass GetRenderPass() const { return m_RenderPass; }
