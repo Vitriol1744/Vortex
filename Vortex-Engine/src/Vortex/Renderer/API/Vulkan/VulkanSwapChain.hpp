@@ -28,28 +28,29 @@ namespace Vortex
 
         VulkanSwapChain() = default;
 
-        void Initialize(const VulkanDevice& device) { m_Device = device; }
-        void CreateSurface(Window* windowHandle);
-        void Create(u32& width, u32& height, bool vsync = false);
+        void        CreateSurface(Window* windowHandle);
+        void        Create(u32& width, u32& height, bool vsync = false);
 
-        void Destroy();
-        inline void                 DestroySurface() { m_Surface.Destroy(); }
+        void        Destroy();
+        inline void DestroySurface() { m_Surface.Destroy(); }
 
-        void                        OnResize(u32 width, u32 height);
+        void        Present();
+        void        OnResize(u32 width, u32 height);
 
         inline const VulkanSurface& GetSurface() const { return m_Surface; }
         inline const std::vector<Frame>& GetFrames() const { return m_Frames; }
+        inline u32 GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
 
-        inline operator vk::SwapchainKHR() const { return m_SwapChain; }
+        inline     operator vk::SwapchainKHR() const { return m_SwapChain; }
         inline vk::Extent2D   GetExtent() const { return m_Extent; }
         inline vk::Format     GetImageFormat() const { return m_ImageFormat; }
         inline vk::RenderPass GetRenderPass() const { return m_RenderPass; }
 
       private:
         VulkanSurface                       m_Surface;
-        VulkanDevice                        m_Device;
         std::vector<Frame>                  m_Frames;
         u32                                 m_CurrentFrameIndex  = 0;
+        u32                                 m_CurrentImageIndex  = 0;
         inline static constexpr const u32   MAX_FRAMES_IN_FLIGHT = 2;
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
@@ -58,16 +59,18 @@ namespace Vortex
         vk::Format                          m_ImageFormat;
         vk::RenderPass                      m_RenderPass = VK_NULL_HANDLE;
 
-        u32                                 AcquireNextImage();
+        // TODO(v1tr10l7): remove public
+      public:
+        u32                AcquireNextImage();
 
-        void                                CreateImageViews();
-        void                                CreateCommandBuffers();
-        void                                CreateSyncObjects();
-        void                                CreateRenderPass();
-        void                                CreateFramebuffers();
+        void               CreateImageViews();
+        void               CreateCommandBuffers();
+        void               CreateSyncObjects();
+        void               CreateRenderPass();
+        void               CreateFramebuffers();
 
-        vk::PresentModeKHR                  ChooseSwapPresentMode(
-                             const std::vector<vk::PresentModeKHR>& availablePresentModes)
+        vk::PresentModeKHR ChooseSwapPresentMode(
+            const std::vector<vk::PresentModeKHR>& availablePresentModes)
         {
             for (const auto& availablePresentMode : availablePresentModes)
             {

@@ -15,6 +15,7 @@ namespace Vortex
     usize                VulkanContext::s_ContextCount   = 0;
     VulkanInstance       VulkanContext::s_VulkanInstance = {};
     VulkanPhysicalDevice VulkanContext::s_PhysicalDevice = {};
+    VulkanDevice         VulkanContext::s_Device         = {};
 
     VulkanContext::VulkanContext(Window* window)
     {
@@ -24,14 +25,14 @@ namespace Vortex
             VtCoreAssert(glfwVulkanSupported() == GLFW_TRUE);
             s_VulkanInstance.Initialize();
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
+            s_Device.Initialize(s_PhysicalDevice);
         }
 
-        m_Device.Initialize(s_PhysicalDevice);
-        m_SwapChain.Initialize(m_Device);
         m_SwapChain.CreateSurface(window);
         u32 width, height;
         glfwGetFramebufferSize(m_SwapChain.GetSurface().GetNativeWindowHandle(),
-                               (int*)&width, (int*)&height);
+                               reinterpret_cast<i32*>(&width),
+                               reinterpret_cast<i32*>(&height));
         m_SwapChain.Create(width, height, false);
         ++s_ContextCount;
     }
@@ -42,13 +43,16 @@ namespace Vortex
 
         m_SwapChain.Destroy();
         m_SwapChain.DestroySurface();
-        m_Device.Destroy();
         --s_ContextCount;
 
-        if (s_ContextCount == 0) s_VulkanInstance.Destroy();
+        if (s_ContextCount == 0)
+        {
+            s_Device.Destroy();
+            s_VulkanInstance.Destroy();
+        }
     }
 
-    void VulkanContext::Present() {}
+    void VulkanContext::Present() { m_SwapChain.Present(); }
     void VulkanContext::OnResize(u32 width, u32 height)
     {
         m_SwapChain.OnResize(width, height);

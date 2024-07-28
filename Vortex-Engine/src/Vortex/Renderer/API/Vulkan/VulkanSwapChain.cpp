@@ -62,8 +62,9 @@ namespace Vortex
         createInfo.clipped        = VK_TRUE;
         createInfo.oldSwapchain   = oldSwapChain;
 
-        auto indices = m_Device.GetPhysicalDevice().GetQueueFamilyIndices();
-        u32  queueFamilyIndices[]
+        auto indices
+            = VulkanContext::GetPhysicalDevice().GetQueueFamilyIndices();
+        u32 queueFamilyIndices[]
             = {indices.Graphics.value(), indices.Present.value()};
         if (indices.Graphics != indices.Present)
         {
@@ -72,16 +73,15 @@ namespace Vortex
             createInfo.pQueueFamilyIndices   = queueFamilyIndices;
         }
 
-        VkCall(vk::Device(m_Device).createSwapchainKHR(&createInfo, nullptr,
-                                                       &m_SwapChain));
+        vk::Device device = VulkanContext::GetDevice();
+        VkCall(device.createSwapchainKHR(&createInfo, nullptr, &m_SwapChain));
 
-        VkCall(vk::Device(m_Device).getSwapchainImagesKHR(
-            m_SwapChain, &imageCount, nullptr));
+        VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
         m_Frames.resize(imageCount);
 
         std::vector<vk::Image> backbuffers(imageCount);
-        VkCall(vk::Device(m_Device).getSwapchainImagesKHR(
-            m_SwapChain, &imageCount, backbuffers.data()));
+        VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount,
+                                            backbuffers.data()));
 
         for (usize i = 0; i < imageCount; i++)
         {
@@ -92,8 +92,8 @@ namespace Vortex
         if (oldSwapChain)
         {
             for (auto frame : m_Frames)
-                vk::Device(m_Device).destroyImageView(frame.ImageView, nullptr);
-            vk::Device(m_Device).destroySwapchainKHR(oldSwapChain, nullptr);
+                device.destroyImageView(frame.ImageView, nullptr);
+            device.destroySwapchainKHR(oldSwapChain, nullptr);
         }
 
         CreateImageViews();
@@ -108,8 +108,11 @@ namespace Vortex
                                                .GetQueueFamilyIndices()
                                                .Graphics.value();
         for (auto& frame : m_Frames)
-            VkCall(vk::Device(m_Device).createCommandPool(
-                &commandPoolInfo, VK_NULL_HANDLE, &frame.CommandPool));
+        {
+            if (frame.CommandPool) device.destroyCommandPool(frame.CommandPool);
+            VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
+                                            &frame.CommandPool));
+        }
         CreateCommandBuffers();
         CreateSyncObjects();
         CreateRenderPass();
@@ -118,9 +121,9 @@ namespace Vortex
     void VulkanSwapChain::Destroy()
     {
         VtCoreTrace("Vulkan: Destroying swapchain...");
-        vk::Device device = m_Device;
+        vk::Device device = VulkanContext::GetDevice();
 
-        vk::Device(m_Device).destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
+        device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         for (auto& frame : m_Frames)
         {
             device.destroyFence(frame.WaitFence, VK_NULL_HANDLE);
@@ -136,26 +139,30 @@ namespace Vortex
         device.destroySwapchainKHR(m_SwapChain, nullptr);
     }
 
+    void VulkanSwapChain::Present() { (void)m_CurrentImageIndex; }
     void VulkanSwapChain::OnResize(u32 width, u32 height)
     {
-        vk::Device(m_Device).waitIdle();
+        vk::Device device = VulkanContext::GetDevice();
+        device.waitIdle();
         Create(width, height);
 
         for (auto& frame : m_Frames)
-            vk::Device(m_Device).freeCommandBuffers(frame.CommandPool, 1,
-                                                    &frame.CommandBuffer);
+            device.freeCommandBuffers(frame.CommandPool, 1,
+                                      &frame.CommandBuffer);
         CreateCommandBuffers();
-        vk::Device(m_Device).waitIdle();
+        device.waitIdle();
     }
 
     u32 VulkanSwapChain::AcquireNextImage()
     {
+        vk::Device device   = VulkanContext::GetDevice();
+
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-        VkCall(vk::Device(m_Device).waitForFences(
-            1, &m_Frames[m_CurrentFrameIndex].WaitFence, VK_TRUE, UINT64_MAX));
+        VkCall(device.waitForFences(1, &m_Frames[m_CurrentFrameIndex].WaitFence,
+                                    VK_TRUE, UINT64_MAX));
 
         u32        imageIndex;
-        vk::Result result = vk::Device(m_Device).acquireNextImageKHR(
+        vk::Result result = device.acquireNextImageKHR(
             m_SwapChain, UINT64_MAX,
             m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
             VK_NULL_HANDLE, &imageIndex);
@@ -164,7 +171,7 @@ namespace Vortex
             || result == vk::Result::eSuboptimalKHR)
         {
             OnResize(m_Extent.width, m_Extent.height);
-            VkCall(vk::Device(m_Device).acquireNextImageKHR(
+            VkCall(device.acquireNextImageKHR(
                 m_SwapChain, UINT64_MAX,
                 m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
                 VK_NULL_HANDLE, &imageIndex));
@@ -176,6 +183,8 @@ namespace Vortex
 
     void VulkanSwapChain::CreateImageViews()
     {
+        vk::Device device = VulkanContext::GetDevice();
+
         for (size_t i = 0; i < m_Frames.size(); i++)
         {
             vk::ImageViewCreateInfo createInfo{};
@@ -194,13 +203,15 @@ namespace Vortex
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount     = 1;
 
-            VkCall(vk::Device(m_Device).createImageView(
-                &createInfo, nullptr, &m_Frames[i].ImageView));
+            VkCall(device.createImageView(&createInfo, VK_NULL_HANDLE,
+                                          &m_Frames[i].ImageView));
         }
     }
 
     void VulkanSwapChain::CreateCommandBuffers()
     {
+        vk::Device                    device = VulkanContext::GetDevice();
+
         vk::CommandBufferAllocateInfo bufferInfo{};
         bufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
         bufferInfo.level = vk::CommandBufferLevel::ePrimary;
@@ -209,13 +220,15 @@ namespace Vortex
         for (auto& frame : m_Frames)
         {
             bufferInfo.commandPool = frame.CommandPool;
-            VkCall(vk::Device(m_Device).allocateCommandBuffers(
-                &bufferInfo, &frame.CommandBuffer));
+            VkCall(device.allocateCommandBuffers(&bufferInfo,
+                                                 &frame.CommandBuffer));
         }
     }
 
     void VulkanSwapChain::CreateSyncObjects()
     {
+        vk::Device              device = VulkanContext::GetDevice();
+
         vk::SemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
 
@@ -225,7 +238,15 @@ namespace Vortex
 
         for (auto& frame : m_Frames)
         {
-            vk::Device device = m_Device;
+            if (frame.ImageAvailableSemaphore)
+            {
+                device.destroySemaphore(frame.ImageAvailableSemaphore,
+                                        VK_NULL_HANDLE);
+                device.destroySemaphore(frame.RenderFinishedSemaphore,
+                                        VK_NULL_HANDLE);
+                device.destroyFence(frame.WaitFence, VK_NULL_HANDLE);
+            }
+
             VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
                                           &frame.ImageAvailableSemaphore));
             VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
@@ -238,9 +259,10 @@ namespace Vortex
 
     void VulkanSwapChain::CreateRenderPass()
     {
+        vk::Device device = VulkanContext::GetDevice();
+
         if (m_RenderPass)
-            vk::Device(m_Device).destroyRenderPass(m_RenderPass,
-                                                   VK_NULL_HANDLE);
+            device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         vk::AttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format  = m_ImageFormat;
         colorAttachmentDescription.samples = vk::SampleCountFlagBits::e1;
@@ -282,11 +304,13 @@ namespace Vortex
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies   = &dependency;
 
-        VkCall(vk::Device(m_Device).createRenderPass(
-            &renderPassInfo, VK_NULL_HANDLE, &m_RenderPass));
+        VkCall(device.createRenderPass(&renderPassInfo, VK_NULL_HANDLE,
+                                       &m_RenderPass));
     }
     void VulkanSwapChain::CreateFramebuffers()
     {
+        vk::Device device = VulkanContext::GetDevice();
+
         for (auto& frame : m_Frames)
         {
             vk::ImageView             attachments[] = {frame.ImageView};
@@ -301,11 +325,10 @@ namespace Vortex
             framebufferInfo.layers          = 1;
 
             if (frame.Framebuffer)
-                vk::Device(m_Device).destroyFramebuffer(frame.Framebuffer,
-                                                        VK_NULL_HANDLE);
+                device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
 
-            VkCall(vk::Device(m_Device).createFramebuffer(
-                &framebufferInfo, VK_NULL_HANDLE, &frame.Framebuffer));
+            VkCall(device.createFramebuffer(&framebufferInfo, VK_NULL_HANDLE,
+                                            &frame.Framebuffer));
         }
     }
 

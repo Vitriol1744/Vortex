@@ -22,8 +22,6 @@ namespace Vortex
         virtual void                 Present() override;
         virtual void                 OnResize(u32 width, u32 height) override;
 
-        const VulkanDevice&          GetDevice() const { return m_Device; }
-        // TODO(v1tr10l7) change to const later
         VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
 
         static const VulkanInstance& GetInstance()
@@ -35,13 +33,14 @@ namespace Vortex
         {
             return s_PhysicalDevice;
         }
+        static const VulkanDevice& GetDevice() { return s_Device; }
 
       private:
-        VulkanDevice                m_Device;
         VulkanSwapChain             m_SwapChain;
 
         static usize                s_ContextCount;
         static VulkanInstance       s_VulkanInstance;
         static VulkanPhysicalDevice s_PhysicalDevice;
+        static VulkanDevice         s_Device;
     };
 }; // namespace Vortex
