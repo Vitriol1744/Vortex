@@ -13,8 +13,7 @@
     #include <Windows.h>
     #define VtDebugBreak DebugBreak()
 #elif defined(VT_COMPILER_CLANG) || defined(VT_COMPILER_GCC)
-    #define VtDebugBreak  __builtin_trap()
-    #define VtUnreachable __builtin_unreachable
+    #define VtDebugBreak __builtin_trap()
 #elif defined(VT_PLATFORM_LINUX)
     #include <signal.h>
     #define VtDebugBreak raise(SIGINT)

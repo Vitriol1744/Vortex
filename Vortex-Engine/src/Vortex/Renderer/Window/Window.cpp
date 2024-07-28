@@ -24,7 +24,7 @@ namespace Vortex
 #endif
 
         VtCoreFatal("Platform not supported!");
-        VtUnreachable();
+        std::unreachable();
     };
 
     void Window::PollEvents()
