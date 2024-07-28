@@ -27,6 +27,8 @@ namespace Vortex
         specs.Monitor             = Monitor::GetPrimaryMonitor();
 
         m_MainWindow              = Window::Create(specs);
+        m_ImGuiLayer = CreateRef<VulkanImGuiLayer>("VulkanImGuiLayer");
+        PushOverlay(m_ImGuiLayer);
     }
     Application::~Application() { s_Instance = nullptr; }
 
@@ -38,14 +40,17 @@ namespace Vortex
             Window::PollEvents();
             for (auto layer : m_LayerStack) layer->OnUpdate();
             for (auto layer : m_LayerStack) layer->OnRender();
+
+            m_ImGuiLayer->Begin();
             for (auto layer : m_LayerStack) layer->OnImGuiRender();
+            m_ImGuiLayer->End();
 
             EventSystem::PollEvents();
             m_MainWindow->Present();
             m_Running = m_MainWindow->IsOpen();
         }
 
-        for (auto layer : m_LayerStack) PopLayer(layer);
+        for (auto layer : std::views::reverse(m_LayerStack)) PopLayer(layer);
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }

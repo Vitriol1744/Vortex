@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/LayerStack.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
 namespace Vortex
@@ -69,14 +70,15 @@ namespace Vortex
         static Application*     Get() { return s_Instance; }
 
       private:
-        bool                m_Running       = false;
-        bool                m_ShouldRestart = false;
-        std::string         m_Name;
-        Version             m_Version    = {0, 1, 0};
-        Ref<Window>         m_MainWindow = nullptr;
-        LayerStack          m_LayerStack;
+        bool                  m_Running       = false;
+        bool                  m_ShouldRestart = false;
+        std::string           m_Name;
+        Version               m_Version    = {0, 1, 0};
+        Ref<Window>           m_MainWindow = nullptr;
+        LayerStack            m_LayerStack;
+        Ref<VulkanImGuiLayer> m_ImGuiLayer = nullptr;
 
-        static Application* s_Instance;
+        static Application*   s_Instance;
     };
 
     // To be defined by Client

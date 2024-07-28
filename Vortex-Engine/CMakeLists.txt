@@ -46,6 +46,7 @@ set (SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanInstance.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanShader.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSurface.cpp

@@ -21,6 +21,7 @@
 #include <memory>
 #include <ostream>
 #include <queue>
+#include <ranges>
 #include <set>
 #include <source_location>
 #include <stdexcept>

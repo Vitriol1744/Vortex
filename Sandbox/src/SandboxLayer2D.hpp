@@ -16,10 +16,10 @@ class SandboxLayer2D : public Vortex::Layer
     {
     }
 
-    virtual void OnAttach();
-    virtual void OnDetach();
+    virtual void OnAttach() override;
+    virtual void OnDetach() override;
 
-    virtual void OnUpdate();
-    virtual void OnRender();
-    virtual void OnImGuiRender();
+    virtual void OnUpdate() override;
+    virtual void OnRender() override;
+    virtual void OnImGuiRender() override;
 };
