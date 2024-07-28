@@ -64,6 +64,10 @@ int main(int argc, char** argv) { return Vortex::Main(argc, argv); }
 int WINAPI wWinMain(HINSTANCE _In_ hInstance, HINSTANCE _In_opt_ hPrevInstance,
                     LPWSTR _In_ lpCmdLine, int _In_ nCmdShow)
 {
-    return main(__argc, __argv);
+    (void)hInstance;
+    (void)hPrevInstance;
+    (void)lpCmdLine;
+    (void)nCmdShow;
+    return Vortex::Main(__argc, __argv);
 }
 #endif

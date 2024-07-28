@@ -11,6 +11,7 @@ set (CMAKE_CXX_STANDARD 23)
 set (CXX_STANDARD_REQUIRED ON)
 
 find_package (Vulkan REQUIRED)
+find_package (VulkanHeaders CONFIG)
 
 add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/magic_enum)
@@ -25,17 +26,17 @@ elseif (CMAKE_BUILD_TYPE MATCHES Release)
     add_definitions (-DVT_DIST)
 endif ()
 
-#add_definitions (-DVT_STATIC_LIBRARY)
-add_definitions (-DVT_BUILD_DLL)
+add_definitions (-DVT_STATIC_LIBRARY)
+#add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendor/imgui)
-set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only)
+set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers)
 
 set (SOURCES
     src/Vortex/Core/LayerStack.cpp
     src/Vortex/Core/Events/EventSystem.cpp
-    src/Vortex/Core/Log/Log.cpp
+    src/Vortex/Core/Log/Log.cpp 
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
@@ -59,6 +60,10 @@ if (UNIX)
     set (SOURCES ${SOURCES}
         src/Vortex/Renderer/Window/X11/X11Window.cpp
         src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
+elseif (WIN32)
+    set (SOURCES ${SOURCES}
+        src/Vortex/Renderer/Window/Win32/Win32Window.cpp
+        src/Vortex/Renderer/Window/Win32/Win32Monitor.cpp)
 endif ()
 
 # ImGui
@@ -72,7 +77,7 @@ set (SOURCES ${SOURCES}
     src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
 
 
-add_library (${PROJECT_NAME} SHARED ${SOURCES})
+add_library (${PROJECT_NAME} STATIC ${SOURCES})
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
 target_compile_options(${PROJECT_NAME} PRIVATE

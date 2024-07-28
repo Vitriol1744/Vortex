@@ -9,10 +9,12 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
-#define VK_USE_PLATFORM_X11_KHR
+#ifdef VT_PLATFORM_LINUX
+    #define VK_USE_PLATFORM_X11_KHR
+    #define GLFW_EXPOSE_NATIVE_X11
+#endif
+
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 

@@ -11,6 +11,8 @@
 
 #ifdef VT_PLATFORM_LINUX
     #include "Vortex/Renderer/Window/X11/X11Window.hpp"
+#elifdef VT_PLATFORM_WINDOWS
+    #include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
 #endif
 
 namespace Vortex
@@ -19,6 +21,8 @@ namespace Vortex
     {
 #ifdef VT_PLATFORM_LINUX
         return WindowSubsystem::eX11;
+#elifdef VT_PLATFORM_WINDOWS
+        return WindowSubsystem::eWin32;
 #else
     #error "Platform not supported!"
 #endif
@@ -35,6 +39,8 @@ namespace Vortex
         else
             VtCoreFatal(
                 "Only X11 Windowing system is currently supported by Vortex");
+#elifdef VT_PLATFORM_WINDOWS
+        Win32Window::PollEvents();
 #else
     #error "Polling events is not supported by Vortex on this platform."
 #endif
@@ -47,6 +53,8 @@ namespace Vortex
         WindowSubsystem subsystem = GetWindowSubsystem();
         if (subsystem == WindowSubsystem::eX11)
             ret = CreateRef<X11Window>(specification);
+#elifdef VT_PLATFORM_WINDOWS
+        ret = CreateRef<Win32Window>(specification);
 #endif
 
         return ret;
