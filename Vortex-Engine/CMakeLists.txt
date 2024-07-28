@@ -33,6 +33,7 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendo
 set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only)
 
 set (SOURCES
+    src/Vortex/Core/LayerStack.cpp
     src/Vortex/Core/Events/EventSystem.cpp
     src/Vortex/Core/Log/Log.cpp
     src/Vortex/Core/Log/Logger.cpp
@@ -61,8 +62,8 @@ set (SOURCES ${SOURCES}
     vendor/imgui/imgui_demo.cpp 
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
-    vendor/imgui/imgui_widgets.cpp
-)
+    vendor/imgui/imgui_widgets.cpp)
+
 
 add_library (${PROJECT_NAME} SHARED ${SOURCES})
 
