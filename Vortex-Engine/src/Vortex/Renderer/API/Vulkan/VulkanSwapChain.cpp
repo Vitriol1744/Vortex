@@ -164,7 +164,7 @@ namespace Vortex
         renderPassInfo.renderPass  = m_RenderPass;
         renderPassInfo.framebuffer = m_Frames[m_CurrentImageIndex].Framebuffer;
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_Extent;
+        renderPassInfo.renderArea.extent = (VkExtent2D)m_Extent;
 
         VkClearValue clearColor          = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount   = 1;
