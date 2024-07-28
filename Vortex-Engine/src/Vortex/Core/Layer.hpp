@@ -23,6 +23,7 @@ namespace Vortex
         virtual void            OnDetach() {}
 
         virtual void            OnUpdate() {}
+        virtual void            OnRender() {}
         virtual void            OnImGuiRender() {}
 
         inline std::string_view GetName() const { return m_Name; }
