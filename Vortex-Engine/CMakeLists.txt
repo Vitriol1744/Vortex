@@ -33,6 +33,7 @@ set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendo
 set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only)
 
 set (SOURCES
+    src/Vortex/Engine/main3.cpp
     src/Vortex/Core/LayerStack.cpp
     src/Vortex/Core/Events/EventSystem.cpp
     src/Vortex/Core/Log/Log.cpp
@@ -81,5 +82,5 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 add_compile_options (-fvisibility=hidden)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})

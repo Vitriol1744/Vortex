@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Vortex/Core/Export.hpp"
+#include "Vortex/Core/LayerStack.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
 namespace Vortex
@@ -38,11 +38,29 @@ namespace Vortex
          * @return boolean value indicating, whether application should be
          * restarted uppon close
          */
-        bool                    Run();
+        bool        Run();
         /**
          * @brief Closes the application
          */
-        void                    Close();
+        void        Close();
+
+        inline void PushOverlay(Ref<Layer> overlay)
+        {
+            return m_LayerStack.PushOverlay(overlay);
+        }
+        inline void PushLayer(Ref<Layer> layer)
+        {
+            return m_LayerStack.PushLayer(layer);
+        }
+
+        inline Ref<Layer> PopOverlay(Ref<Layer> overlay)
+        {
+            return m_LayerStack.PopOverlay(overlay);
+        }
+        inline Ref<Layer> PopLayer(Ref<Layer> layer)
+        {
+            return m_LayerStack.PopLayer(layer);
+        }
 
         inline std::string_view GetName() const { return m_Name; }
         inline const Version&   GetVersion() const { return m_Version; }
@@ -56,6 +74,7 @@ namespace Vortex
         std::string         m_Name;
         Version             m_Version    = {0, 1, 0};
         Ref<Window>         m_MainWindow = nullptr;
+        LayerStack          m_LayerStack;
 
         static Application* s_Instance;
     };

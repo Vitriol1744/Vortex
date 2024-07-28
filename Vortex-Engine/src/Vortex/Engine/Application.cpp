@@ -35,13 +35,17 @@ namespace Vortex
         m_Running = true;
         while (m_Running)
         {
-            m_MainWindow->Present();
             Window::PollEvents();
+            for (auto layer : m_LayerStack) layer->OnUpdate();
+            for (auto layer : m_LayerStack) layer->OnRender();
+            for (auto layer : m_LayerStack) layer->OnImGuiRender();
 
-            // m_MainWindow->IsOpen();
             EventSystem::PollEvents();
-            Close();
+            m_MainWindow->Present();
+            m_Running = m_MainWindow->IsOpen();
         }
+
+        for (auto layer : m_LayerStack) PopLayer(layer);
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }

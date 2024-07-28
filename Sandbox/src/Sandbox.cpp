@@ -7,6 +7,8 @@
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Engine/Application.hpp"
 
+#include "SandboxLayer2D.hpp"
+
 using namespace Vortex;
 class Game : public Application
 {
@@ -14,6 +16,7 @@ class Game : public Application
     Game(const ApplicationSpecification& spec)
         : Application(spec)
     {
+        PushLayer(CreateRef<SandboxLayer2D>("SandboxLayer2D"));
     }
 };
 

@@ -19,6 +19,8 @@ elseif (CMAKE_BUILD_TYPE MATCHES Dist)
 endif ()
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
-set (SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/Sandbox.cpp)
+set (SOURCES 
+    src/Sandbox.cpp
+    src/SandboxLayer2D.cpp)
 add_executable (${PROJECT_NAME} ${SOURCES})
 target_link_libraries (${PROJECT_NAME} PUBLIC Vortex-Engine)
