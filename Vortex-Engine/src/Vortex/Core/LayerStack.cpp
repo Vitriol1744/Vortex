@@ -14,13 +14,23 @@ namespace Vortex
     {
         m_Layers.emplace(m_Layers.begin() + m_InsertIndex, layer);
         m_InsertIndex++;
-    }
 
+        layer->OnAttach();
+    }
     void LayerStack::PushOverlay(Ref<Layer> overlay)
     {
         m_Layers.emplace_back(overlay);
+        overlay->OnAttach();
     }
 
+    Ref<Layer> LayerStack::PopOverlay(Ref<Layer> overlay)
+    {
+        auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
+        if (it != m_Layers.end()) m_Layers.erase(it);
+
+        overlay->OnDetach();
+        return overlay;
+    }
     Ref<Layer> LayerStack::PopLayer(Ref<Layer> layer)
     {
         auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
@@ -30,14 +40,7 @@ namespace Vortex
             m_InsertIndex--;
         }
 
+        layer->OnDetach();
         return layer;
-    }
-
-    Ref<Layer> LayerStack::PopOverlay(Ref<Layer> overlay)
-    {
-        auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
-        if (it != m_Layers.end()) m_Layers.erase(it);
-
-        return overlay;
     }
 }; // namespace Vortex
