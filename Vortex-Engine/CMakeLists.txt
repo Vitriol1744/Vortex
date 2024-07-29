@@ -4,8 +4,10 @@
 # 
 #  SPDX-License-Identifier: GPL-3
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.15)
 project (Vortex-Engine)
+
+cmake_policy(SET CMP0092 NEW)
 
 set (CMAKE_CXX_STANDARD 23)
 set (CXX_STANDARD_REQUIRED ON)
@@ -89,12 +91,11 @@ else ()
 endif ()
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
+
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+  $<$<CXX_COMPILER_ID:MSVC>: /W4>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror -fvisibility=hidden>
 )
-string(REGEX REPLACE "/W[3]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-add_compile_options (-fvisibility=hidden)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)

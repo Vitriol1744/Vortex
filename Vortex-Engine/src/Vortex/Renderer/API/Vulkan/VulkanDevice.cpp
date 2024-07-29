@@ -170,13 +170,13 @@ namespace Vortex
         deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
         deviceCreateInfo.pNext = nullptr;
         deviceCreateInfo.flags = vk::DeviceCreateFlagBits();
-        deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
+        deviceCreateInfo.queueCreateInfoCount = static_cast<u32>(queueCreateInfos.size());
         deviceCreateInfo.pQueueCreateInfos    = queueCreateInfos.data();
         deviceCreateInfo.enabledLayerCount
-            = useValidationLayers ? validationLayers.size() : 0;
+            = useValidationLayers ? static_cast<u32>(validationLayers.size()) : 0ull;
         deviceCreateInfo.ppEnabledLayerNames
             = useValidationLayers ? validationLayers.data() : nullptr;
-        deviceCreateInfo.enabledExtensionCount   = s_DeviceExtensions.size();
+        deviceCreateInfo.enabledExtensionCount   = static_cast<u32>(s_DeviceExtensions.size());
         deviceCreateInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
         deviceCreateInfo.pEnabledFeatures        = &features;
 

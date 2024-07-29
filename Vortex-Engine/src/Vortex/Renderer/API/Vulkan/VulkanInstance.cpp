@@ -142,7 +142,7 @@ namespace Vortex
         createInfo.ppEnabledLayerNames     = s_UseValidationLayers
                                                ? s_ValidationLayers.data()
                                                : VK_NULL_HANDLE;
-        createInfo.enabledExtensionCount   = extensions.size();
+        createInfo.enabledExtensionCount   = static_cast<u32>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkCall(vk::createInstance(&createInfo, nullptr, &m_Instance));

@@ -78,7 +78,7 @@ namespace Vortex
         initInfo.DescriptorPool = m_DescriptorPool;
         initInfo.RenderPass     = context->GetSwapChain().GetRenderPass();
         initInfo.Subpass        = 0;
-        usize frameCount        = context->GetSwapChain().GetFrames().size();
+        u32 frameCount        = static_cast<u32>(context->GetSwapChain().GetFrames().size());
         initInfo.MinImageCount  = frameCount;
         initInfo.ImageCount     = frameCount;
         initInfo.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;

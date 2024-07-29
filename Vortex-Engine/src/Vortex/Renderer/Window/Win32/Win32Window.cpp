@@ -213,9 +213,9 @@ namespace Vortex
             [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
                                               + currentMode.GreenBits
                                               + currentMode.BlueBits;
-            [[maybe_unused]] u16 redBits     = currentMode.RedBits;
-            [[maybe_unused]] u16 greenBits   = currentMode.GreenBits;
-            [[maybe_unused]] u16 blueBits    = currentMode.BlueBits;
+            [[maybe_unused]] u32 redBits     = currentMode.RedBits;
+            [[maybe_unused]] u32 greenBits   = currentMode.GreenBits;
+            [[maybe_unused]] i32 blueBits    = currentMode.BlueBits;
             [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
 
             VtCoreTrace(

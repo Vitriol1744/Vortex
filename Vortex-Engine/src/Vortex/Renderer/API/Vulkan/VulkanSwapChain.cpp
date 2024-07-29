@@ -91,7 +91,7 @@ namespace Vortex
 
         if (oldSwapChain)
         {
-            for (auto frame : m_Frames)
+            for (auto& frame : m_Frames)
                 device.destroyImageView(frame.ImageView, nullptr);
             device.destroySwapchainKHR(oldSwapChain, nullptr);
         }
