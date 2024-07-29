@@ -10,6 +10,8 @@ project (Vortex-Engine)
 set (CMAKE_CXX_STANDARD 23)
 set (CXX_STANDARD_REQUIRED ON)
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 find_package (Vulkan REQUIRED)
 find_package (VulkanHeaders CONFIG)
 
@@ -26,8 +28,6 @@ elseif (CMAKE_BUILD_TYPE MATCHES Release)
     add_definitions (-DVT_DIST)
 endif ()
 
-add_definitions (-DVT_STATIC_LIBRARY)
-#add_definitions (-DVT_BUILD_DLL)
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendor/imgui)
@@ -75,13 +75,18 @@ set (SOURCES ${SOURCES}
     vendor/imgui/imgui_widgets.cpp
     src/Vortex/Renderer/Window/imgui_impl_glfw.cpp
     src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
-
-
-add_library (${PROJECT_NAME} STATIC ${SOURCES})
+    
+if (BUILD_SHARED_LIBS)
+    add_definitions (-DVT_BUILD_DLL)
+    add_library (${PROJECT_NAME} SHARED ${SOURCES})
+else ()
+    add_library (${PROJECT_NAME} STATIC ${SOURCES})
+    target_compile_definitions (${PROJECT_NAME} PUBLIC -DVT_STATIC_LIBRARY)
+endif ()
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<CXX_COMPILER_ID:MSVC>:/W3>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
 )
 add_compile_options (-fvisibility=hidden)
