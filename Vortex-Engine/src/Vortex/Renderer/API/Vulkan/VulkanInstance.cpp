@@ -138,7 +138,7 @@ namespace Vortex
         createInfo.flags            = vk::InstanceCreateFlags();
         createInfo.pApplicationInfo = &appInfo;
         createInfo.enabledLayerCount
-            = s_UseValidationLayers ? s_ValidationLayers.size() : 0;
+            = s_UseValidationLayers ? static_cast<u32>(s_ValidationLayers.size()) : 0;
         createInfo.ppEnabledLayerNames     = s_UseValidationLayers
                                                ? s_ValidationLayers.data()
                                                : VK_NULL_HANDLE;

@@ -136,8 +136,8 @@ namespace Vortex
             case GLFW_KEY_PAUSE: ret = KeyCode::ePause; break;
             case GLFW_KEY_MENU: ret = KeyCode::eMenu; break;
 
-            default:
-        }
+            default: break;
+        } 
 
         return ret;
     }

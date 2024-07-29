@@ -58,7 +58,7 @@ namespace Vortex
         constexpr operator u64() const
         {
             return (static_cast<u64>(Major) << 48)
-                 | (static_cast<u64>(Minor) << 32) | (Patch << 16);
+                 | (static_cast<u64>(Minor) << 32) | (static_cast<u64>(Patch) << 16ull);
         }
 
         friend std::ostream& operator<<(std::ostream&  os,

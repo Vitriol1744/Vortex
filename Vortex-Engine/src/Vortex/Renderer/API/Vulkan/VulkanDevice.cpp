@@ -51,7 +51,7 @@ namespace Vortex
                 if (heap.flags & vk::MemoryHeapFlagBits::eDeviceLocal)
                 {
                     vram = heap.size;
-                    score += vram;
+                    score += static_cast<u32>(vram);
                     break;
                 }
             }

@@ -223,9 +223,12 @@ namespace Vortex
         vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
 
+        u32        width, height;
+        width = 0;
+        height = 0;
         if (result == vk::Result::eErrorOutOfDateKHR
             || result == vk::Result::eSuboptimalKHR)
-            OnResize(auto{0}, auto{0});
+            OnResize(width, height);
         else VkCall(result);
     }
     void VulkanSwapChain::OnResize(u32 width, u32 height)
