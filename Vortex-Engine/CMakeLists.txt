@@ -10,7 +10,7 @@ project (Vortex-Engine)
 set (CMAKE_CXX_STANDARD 23)
 set (CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 find_package (Vulkan REQUIRED)
 find_package (VulkanHeaders CONFIG)
@@ -19,6 +19,10 @@ add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/magic_enum)
 add_subdirectory (vendor/glm)
 add_subdirectory (vendor/glfw)
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DVT_DEBUG)
@@ -76,7 +80,7 @@ set (SOURCES ${SOURCES}
     src/Vortex/Renderer/Window/imgui_impl_glfw.cpp
     src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
     
-if (BUILD_SHARED_LIBS)
+if (VORTEX_BUILD_SHARED_LIBS)
     add_definitions (-DVT_BUILD_DLL)
     add_library (${PROJECT_NAME} SHARED ${SOURCES})
 else ()
@@ -86,9 +90,10 @@ endif ()
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W3>
+  $<$<CXX_COMPILER_ID:MSVC>:>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
 )
+string(REGEX REPLACE "/W[3]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 add_compile_options (-fvisibility=hidden)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
