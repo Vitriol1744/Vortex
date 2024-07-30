@@ -25,6 +25,7 @@ namespace Vortex
         specs.VideoMode           = {800, 600};
         specs.Decorated           = true;
         specs.Monitor             = Monitor::GetPrimaryMonitor();
+        specs.AlwaysOnTop         = false;
 
         m_MainWindow              = Window::Create(specs);
         m_ImGuiLayer = CreateRef<VulkanImGuiLayer>("VulkanImGuiLayer");
@@ -50,7 +51,7 @@ namespace Vortex
             m_Running = m_MainWindow->IsOpen();
         }
 
-        for (auto layer : std::views::reverse(m_LayerStack)) PopLayer(layer);
+        for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }
