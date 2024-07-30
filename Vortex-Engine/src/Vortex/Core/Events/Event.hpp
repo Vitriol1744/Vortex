@@ -36,6 +36,10 @@ namespace Vortex
         {
             m_Listeners.push_back(listener);
         }
+        inline void operator+=(EventListener listener)
+        {
+            AddListener(listener);
+        }
         inline void operator()() { EventSystem::PushEvent(this); }
         inline void Dispatch() override
         {
@@ -63,6 +67,10 @@ namespace Vortex
         inline void AddListener(EventListener listener)
         {
             m_Listeners.push_back(listener);
+        }
+        inline void operator+=(EventListener listener)
+        {
+            AddListener(listener);
         }
         inline void operator()(Arg1 arg1)
         {
