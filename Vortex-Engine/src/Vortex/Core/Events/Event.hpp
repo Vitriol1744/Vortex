@@ -6,13 +6,6 @@
  */
 #pragma once
 
-#define VtAddListener2(event, name, function, ...)                             \
-    event.AddListener(std::to_string(name).data(),                             \
-                      std::bind(function, __VA_ARGS__))
-#define VtAddListener(event, function, ...)                                    \
-    VtAddListener2(event, __COUNTER__, function, __VA_ARGS__)
-#define VtPlaceholder(n) std::placeholders::_##n
-
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Events/EventSystem.hpp"
 
@@ -30,224 +23,150 @@ namespace Vortex
     class Event : public EventBase
     {
       public:
-        inline void RemoveAllListeners()
-        {
-            listeners.clear();
-            listenersCount = 0;
-        }
+        using EventListener = std::function<bool()>;
+
+        inline void RemoveAllListeners() { m_Listeners.clear(); }
         [[nodiscard]]
         inline int GetListenersCount() const
         {
-            return listenersCount;
+            return m_Listeners.size();
         }
 
-        inline void AddListener(const char*                  id,
-                                const std::function<bool()>& listener)
+        inline void AddListener(EventListener listener)
         {
-            if (listeners.find(id) == listeners.end())
-            {
-                listeners[id] = listener;
-                listenersCount++;
-            }
-            else
-                VtCoreAssertMsg(false,
-                                "Listener with given id already exists!");
-        }
-        inline void RemoveListener(const char* id)
-        {
-            listeners.erase(id);
-            listenersCount--;
+            m_Listeners.push_back(listener);
         }
         inline void operator()() { EventSystem::PushEvent(this); }
         inline void Dispatch() override
         {
-            for (const auto& listener : listeners)
-                if (listener.second) listener.second.operator()();
+            for (const auto& listener : m_Listeners)
+                if (listener && listener()) break;
         }
 
       private:
-        int listenersCount = 0;
-        std::unordered_map<const char*, std::function<bool()>> listeners;
+        std::vector<EventListener> m_Listeners;
     };
 
     template <typename Arg1>
     class Event<Arg1> : public EventBase
     {
       public:
-        inline void RemoveAllListeners()
-        {
-            listeners.clear();
-            listenersCount = 0;
-        }
+        using EventListener = std::function<bool(Arg1)>;
+
+        inline void RemoveAllListeners() { m_Listeners.clear(); }
         [[nodiscard]]
         inline int GetListenersCount() const
         {
-            return listenersCount;
+            return m_Listeners.size();
         }
 
-        inline void AddListener(const char*                      id,
-                                const std::function<bool(Arg1)>& listener)
+        inline void AddListener(EventListener listener)
         {
-            if (listeners.find(id) == listeners.end())
-            {
-                listeners[id] = listener;
-                listenersCount++;
-            }
-            else
-                VtCoreAssertMsg(false,
-                                "Listener with given id already exists!");
-        }
-        inline void RemoveListener(const char* id)
-        {
-            listeners.erase(id);
-            listenersCount--;
+            m_Listeners.push_back(listener);
         }
         inline void operator()(Arg1 arg1)
         {
-            eventsData.push(arg1);
+            m_EventData.push(arg1);
             EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            Arg1& arg1 = eventsData.front();
-            for (const auto& listener : listeners)
-            {
-                if (listener.second)
-                {
-                    if (listener.second(arg1)) break;
-                }
-            }
-            eventsData.pop();
+            Arg1& arg1 = m_EventData.front();
+            for (const auto& listener : m_Listeners)
+                if (listener && listener(arg1)) break;
+            m_EventData.pop();
         }
 
       private:
-        int listenersCount = 0;
-        std::unordered_map<const char*, std::function<bool(Arg1)>> listeners;
-        std::queue<Arg1>                                           eventsData;
+        std::vector<std::function<bool(Arg1)>> m_Listeners;
+        std::queue<Arg1>                       m_EventData;
     };
 
     template <typename Arg1, typename Arg2>
     class Event<Arg1, Arg2> : public EventBase
     {
       public:
-        inline void RemoveAllListeners()
-        {
-            listeners.clear();
-            listenersCount = 0;
-        }
+        using EventListener = std::function<bool(Arg1, Arg2)>;
+
+        inline void RemoveAllListeners() { m_Listeners.clear(); }
         [[nodiscard]]
         inline int GetListenersCount() const
         {
-            return listenersCount;
+            return m_Listeners;
         }
 
-        inline void AddListener(const char*                            id,
-                                const std::function<bool(Arg1, Arg2)>& listener)
+        inline void AddListener(const EventListener& listener)
         {
-            if (listeners.find(id) == listeners.end())
-            {
-                listeners[id] = listener;
-                listenersCount++;
-            }
-            else
-                VtCoreAssertMsg(false,
-                                "Listener with given id already exists!");
+            m_Listeners.push_back(listener);
         }
-        inline void RemoveListener(const char* id)
+        inline void operator+=(const EventListener& listener)
         {
-            listeners.erase(id);
-            listenersCount--;
+            AddListener(listener);
         }
         inline void operator()(Arg1 arg1, Arg2 arg2)
         {
-            eventsData.push({arg1, arg2});
+            m_EventData.push({arg1, arg2});
             EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            auto& [arg1, arg2] = eventsData.front();
-            for (const auto& listener : listeners)
-            {
-                if (listener.second)
-                {
-                    if (listener.second(arg1, arg2)) break;
-                }
-            }
-            eventsData.pop();
+            auto& [arg1, arg2] = m_EventData.front();
+            for (const auto& listener : m_Listeners)
+                if (listener && listener(arg1, arg2)) break;
+            m_EventData.pop();
         }
 
       private:
-        int listenersCount = 0;
-        std::unordered_map<const char*, std::function<bool(Arg1, Arg2)>>
-            listeners;
+        std::vector<EventListener> m_Listeners;
         struct EventData
         {
             Arg1 arg1;
             Arg2 arg2;
         };
-        std::queue<EventData> eventsData;
+        std::queue<EventData> m_EventData;
     };
     template <typename Arg1, typename Arg2, typename Arg3>
     class Event<Arg1, Arg2, Arg3> : public EventBase
     {
       public:
-        inline void RemoveAllListeners()
-        {
-            listeners.clear();
-            listenersCount = 0;
-        }
+        using EventListener = std::function<bool(Arg1, Arg2, Arg3)>;
+
+        inline void RemoveAllListeners() { m_Listeners.clear(); }
         [[nodiscard]]
         inline int GetListenersCount() const
         {
-            return listenersCount;
+            return m_Listeners.size();
         }
 
-        inline void
-        AddListener(const char*                                  id,
-                    const std::function<bool(Arg1, Arg2, Arg3)>& listener)
+        inline void AddListener(const EventListener& listener)
         {
-            if (listeners.find(id) == listeners.end())
-            {
-                listeners[id] = listener;
-                listenersCount++;
-            }
-            else
-                VtCoreAssertMsg(false,
-                                "Listener with given id already exists!");
+            m_Listeners.push_back(listener);
         }
-        inline void RemoveListener(const char* id)
+        inline void operator+=(EventListener listener)
         {
-            listeners.erase(id);
-            listenersCount--;
+            m_Listeners.push_back(listener);
         }
         inline void operator()(Arg1 arg1, Arg2 arg2, Arg3 arg3)
         {
-            eventsData.push({arg1, arg2, arg3});
+            m_EventData.push({arg1, arg2, arg3});
             EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            auto& [arg1, arg2, arg3] = eventsData.front();
-            for (const auto& listener : listeners)
-            {
-                if (listener.second)
-                {
-                    if (listener.second(arg1, arg2, arg3)) break;
-                }
-            }
-            eventsData.pop();
+            auto& [arg1, arg2, arg3] = m_EventData.front();
+            for (const auto& listener : m_Listeners)
+                if (listener && listener(arg1, arg2, arg3)) break;
+            m_EventData.pop();
         }
 
       private:
-        int listenersCount = 0;
-        std::unordered_map<const char*, std::function<bool(Arg1, Arg2, Arg3)>>
-            listeners;
+        std::vector<EventListener> m_Listeners;
         struct EventData
         {
             Arg1 arg1;
             Arg2 arg2;
             Arg3 arg3;
         };
-        std::queue<EventData> eventsData;
+        std::queue<EventData> m_EventData;
     };
 } // namespace Vortex
