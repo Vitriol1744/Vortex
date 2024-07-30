@@ -12,8 +12,7 @@ namespace Vortex::Input
 {
     enum class MouseCode : i8
     {
-        eUnknown = 0,
-        eNone,
+        eUnknown = -1,
         eLeft,
         eRight,
         eMiddle,
