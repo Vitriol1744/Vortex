@@ -40,7 +40,19 @@ namespace Vortex
         {
             AddListener(listener);
         }
-        inline void operator()() { EventSystem::PushEvent(this); }
+        inline void operator-=(EventListener listener)
+        {
+            std::remove_if(m_Listeners.begin(), m_Listeners.end(),
+                           [&listener](const EventListener& currentListener) {
+                               return listener.target<bool()>()
+                                   == currentListener.target<bool()>();
+                           });
+        }
+        inline void operator()()
+        {
+            Dispatch();
+            // EventSystem::PushEvent(this);
+        }
         inline void Dispatch() override
         {
             for (const auto& listener : m_Listeners)
@@ -72,22 +84,31 @@ namespace Vortex
         {
             AddListener(listener);
         }
+        inline void operator-=(EventListener listener)
+        {
+            std::remove_if(
+                m_Listeners.begin(), m_Listeners.end(),
+                [&listener](const EventListener& currentListener)
+                { return listener.target() == currentListener.target(); });
+        }
         inline void operator()(Arg1 arg1)
         {
-            m_EventData.push(arg1);
-            EventSystem::PushEvent(this);
+            for (const auto& listener : m_Listeners) listener(arg1);
+            // m_EventData.push(arg1);
+            // EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            Arg1& arg1 = m_EventData.front();
-            for (const auto& listener : m_Listeners)
-                if (listener && listener(arg1)) break;
-            m_EventData.pop();
+            // Arg1& arg1 = m_EventData.front();
+            // for (const auto& listener : m_Listeners)
+            //     if (listener && listener(arg1)) break;
+            // m_EventData.pop();
         }
 
       private:
         std::vector<std::function<bool(Arg1)>> m_Listeners;
-        std::queue<Arg1>                       m_EventData;
+        [[maybe_unused]]
+        std::queue<Arg1> m_EventData;
     };
 
     template <typename Arg1, typename Arg2>
@@ -111,17 +132,25 @@ namespace Vortex
         {
             AddListener(listener);
         }
+        inline void operator-=(EventListener listener)
+        {
+            std::remove_if(
+                m_Listeners.begin(), m_Listeners.end(),
+                [&listener](const EventListener& currentListener)
+                { return listener.target() == currentListener.target(); });
+        }
         inline void operator()(Arg1 arg1, Arg2 arg2)
         {
-            m_EventData.push({arg1, arg2});
-            EventSystem::PushEvent(this);
+            for (const auto& listener : m_Listeners) listener(arg1, arg2);
+            // m_EventData.push({arg1, arg2});
+            // EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            auto& [arg1, arg2] = m_EventData.front();
-            for (const auto& listener : m_Listeners)
-                if (listener && listener(arg1, arg2)) break;
-            m_EventData.pop();
+            // auto& [arg1, arg2] = m_EventData.front();
+            // for (const auto& listener : m_Listeners)
+            //     if (listener && listener(arg1, arg2)) break;
+            // m_EventData.pop();
         }
 
       private:
@@ -131,6 +160,7 @@ namespace Vortex
             Arg1 arg1;
             Arg2 arg2;
         };
+        [[maybe_unused]]
         std::queue<EventData> m_EventData;
     };
     template <typename Arg1, typename Arg2, typename Arg3>
@@ -154,17 +184,25 @@ namespace Vortex
         {
             m_Listeners.push_back(listener);
         }
+        inline void operator-=(EventListener listener)
+        {
+            std::remove_if(
+                m_Listeners.begin(), m_Listeners.end(),
+                [&listener](const EventListener& currentListener)
+                { return listener.target() == currentListener.target(); });
+        }
         inline void operator()(Arg1 arg1, Arg2 arg2, Arg3 arg3)
         {
-            m_EventData.push({arg1, arg2, arg3});
-            EventSystem::PushEvent(this);
+            for (const auto& listener : m_Listeners) listener(arg1, arg2, arg3);
+            // m_EventData.push({arg1, arg2, arg3});
+            // EventSystem::PushEvent(this);
         }
         inline void Dispatch() override
         {
-            auto& [arg1, arg2, arg3] = m_EventData.front();
+            /*auto& [arg1, arg2, arg3] = m_EventData.front();
             for (const auto& listener : m_Listeners)
                 if (listener && listener(arg1, arg2, arg3)) break;
-            m_EventData.pop();
+            m_EventData.pop();*/
         }
 
       private:
@@ -175,6 +213,7 @@ namespace Vortex
             Arg2 arg2;
             Arg3 arg3;
         };
+        [[maybe_unused]]
         std::queue<EventData> m_EventData;
     };
 } // namespace Vortex
