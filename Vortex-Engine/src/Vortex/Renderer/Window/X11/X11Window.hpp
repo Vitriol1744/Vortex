@@ -61,7 +61,7 @@ namespace Vortex
                                   i32 maxHeight) override;
 
         virtual void SetAutoIconify(bool autoIconify) const noexcept override;
-        virtual void SetCursorPosition(Vec2d position) const noexcept override;
+        virtual void SetCursorPosition(Vec2d position) noexcept override;
         virtual void ShowCursor() const noexcept override;
         virtual void HideCursor() const noexcept override;
         virtual void SetFullscreen(bool fullscreen) override;

@@ -10,6 +10,9 @@
 
 #include <GLFW/glfw3.h>
 
+#define GLFW_EXPOSE_NATIVE_WIN32 1
+#include <GLFW/glfw3native.h>
+
 namespace Vortex
 {
     class VT_API Win32Window : public Window
@@ -61,7 +64,7 @@ namespace Vortex
                                   i32 maxHeight) override;
 
         virtual void SetAutoIconify(bool autoIconify) const noexcept override;
-        virtual void SetCursorPosition(Vec2d position) const noexcept override;
+        virtual void SetCursorPosition(Vec2d position) noexcept override;
         virtual void ShowCursor() const noexcept override;
         virtual void HideCursor() const noexcept override;
         virtual void SetFullscreen(bool fullscreen) override;
@@ -70,8 +73,12 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        static usize s_WindowsCount;
+        HWND         hWnd = nullptr;
         GLFWwindow*  m_Window;
+
+        Vec2i        m_LastCursorPos = {0, 0};
+
+        static usize s_WindowsCount;
 
         void         SetupEvents();
 

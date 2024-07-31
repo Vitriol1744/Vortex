@@ -376,7 +376,7 @@ namespace Vortex
     {
         glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
     }
-    void X11Window::SetCursorPosition(Vec2d position) const noexcept
+    void X11Window::SetCursorPosition(Vec2d position) noexcept
     {
         glfwSetCursorPos(m_Window, position.x, position.y);
     }

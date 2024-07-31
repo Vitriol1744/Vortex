@@ -127,14 +127,14 @@ namespace Vortex
                                   i32 maxHeight)
             = 0;
 
-        virtual void SetAutoIconify(bool autoIconify) const noexcept  = 0;
-        virtual void SetCursorPosition(Vec2d position) const noexcept = 0;
-        virtual void ShowCursor() const noexcept                      = 0;
-        virtual void HideCursor() const noexcept                      = 0;
-        virtual void SetFullscreen(bool fullscreen)                   = 0;
-        virtual void SetResizable(bool resizable) noexcept            = 0;
-        virtual void SetVisible(bool visible) const                   = 0;
-        virtual void SetAlwaysOnTop(bool alwaysOnTop)                 = 0;
+        virtual void SetAutoIconify(bool autoIconify) const noexcept = 0;
+        virtual void SetCursorPosition(Vec2d position) noexcept      = 0;
+        virtual void ShowCursor() const noexcept                     = 0;
+        virtual void HideCursor() const noexcept                     = 0;
+        virtual void SetFullscreen(bool fullscreen)                  = 0;
+        virtual void SetResizable(bool resizable) noexcept           = 0;
+        virtual void SetVisible(bool visible) const                  = 0;
+        virtual void SetAlwaysOnTop(bool alwaysOnTop)                = 0;
 
         static Ref<Window>
         Create(const WindowSpecification& windowSpecification);

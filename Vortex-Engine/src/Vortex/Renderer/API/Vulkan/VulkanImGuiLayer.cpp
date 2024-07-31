@@ -186,7 +186,7 @@ namespace Vortex
                 io.AddKeyEvent(ImGuiMod_Super, pressed);
                 break;
 
-            default:
+            default: break;
         }
     }
 

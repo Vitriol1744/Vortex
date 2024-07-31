@@ -247,6 +247,7 @@ namespace Vortex
         glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
 
         SetupEvents();
+        hWnd = glfwGetWin32Window(m_Window);
 
         if (!specification.NoAPI)
             m_Data.RendererContext = RendererContext::Create(this);
@@ -276,9 +277,10 @@ namespace Vortex
     }
     Vec2i Win32Window::GetPosition() const noexcept
     {
-        Vec2i position;
-        glfwGetWindowPos(m_Window, &position.x, &position.y);
-        return position;
+        POINT pos = {0, 0};
+        ClientToScreen(hWnd, &pos);
+
+        return Vec2i(pos.x, pos.y);
     }
     inline i32 Win32Window::GetWidth() const noexcept
     {
@@ -312,7 +314,12 @@ namespace Vortex
         m_Data.IsOpen = false;
         glfwWindowShouldClose(m_Window);
     }
-    void Win32Window::RequestFocus() noexcept { glfwFocusWindow(m_Window); }
+    void Win32Window::RequestFocus() noexcept
+    {
+        BringWindowToTop(hWnd);
+        SetForegroundWindow(hWnd);
+        SetFocus(hWnd);
+    }
     void Win32Window::RequestUserAttention() const noexcept
     {
         glfwRequestWindowAttention(m_Window);
@@ -359,7 +366,21 @@ namespace Vortex
     }
     void Win32Window::SetOpacity(f32 opacity)
     {
-        glfwSetWindowOpacity(m_Window, opacity);
+        LONG exStyle = GetWindowLongW(hWnd, GWL_EXSTYLE);
+        if (opacity < 1.f || (exStyle & WS_EX_TRANSPARENT))
+        {
+            const BYTE alpha = (BYTE)(255 * opacity);
+            exStyle |= WS_EX_LAYERED;
+            SetWindowLongW(hWnd, GWL_EXSTYLE, exStyle);
+            SetLayeredWindowAttributes(hWnd, 0, alpha, LWA_ALPHA);
+        }
+        else if (exStyle & WS_EX_TRANSPARENT)
+            SetLayeredWindowAttributes(hWnd, 0, 0, 0);
+        else
+        {
+            exStyle &= ~WS_EX_LAYERED;
+            SetWindowLongW(hWnd, GWL_EXSTYLE, exStyle);
+        }
     }
     void Win32Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                    i32 maxHeight)
@@ -376,9 +397,16 @@ namespace Vortex
     {
         glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
     }
-    void Win32Window::SetCursorPosition(Vec2d position) const noexcept
+    void Win32Window::SetCursorPosition(Vec2d position) noexcept
     {
-        glfwSetCursorPos(m_Window, position.x, position.y);
+        POINT pos
+            = {static_cast<i32>(position.x), static_cast<i32>(position.y)};
+
+        m_LastCursorPos.x = pos.x;
+        m_LastCursorPos.y = pos.y;
+
+        ClientToScreen(hWnd, &pos);
+        SetCursorPos(pos.x, pos.y);
     }
     void Win32Window::ShowCursor() const noexcept
     {
