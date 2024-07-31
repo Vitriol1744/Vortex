@@ -137,7 +137,7 @@ namespace Vortex
             case GLFW_KEY_MENU: ret = KeyCode::eMenu; break;
 
             default: break;
-        } 
+        }
 
         return ret;
     }
@@ -207,16 +207,27 @@ namespace Vortex
 
         if (monitor)
         {
-            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
-            VideoMode                         currentMode
+            [[maybe_unused]]
+            std::string_view monitorName
+                = monitor->GetName();
+            VideoMode currentMode
                 = specification.Monitor->GetCurrentVideoMode();
-            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
-                                              + currentMode.GreenBits
-                                              + currentMode.BlueBits;
-            [[maybe_unused]] u32 redBits     = currentMode.RedBits;
-            [[maybe_unused]] u32 greenBits   = currentMode.GreenBits;
-            [[maybe_unused]] i32 blueBits    = currentMode.BlueBits;
-            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
+            [[maybe_unused]]
+            u32 bitsPerPixel
+                = currentMode.RedBits + currentMode.GreenBits
+                + currentMode.BlueBits;
+            [[maybe_unused]]
+            u32 redBits
+                = currentMode.RedBits;
+            [[maybe_unused]]
+            u32 greenBits
+                = currentMode.GreenBits;
+            [[maybe_unused]]
+            i32 blueBits
+                = currentMode.BlueBits;
+            [[maybe_unused]]
+            u32 refreshRate
+                = currentMode.RefreshRate;
 
             VtCoreTrace(
                 "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
@@ -237,7 +248,8 @@ namespace Vortex
 
         SetupEvents();
 
-        m_Data.RendererContext = RendererContext::Create(this);
+        if (!specification.NoAPI)
+            m_Data.RendererContext = RendererContext::Create(this);
     }
     Win32Window::~Win32Window()
     {
@@ -350,7 +362,7 @@ namespace Vortex
         glfwSetWindowOpacity(m_Window, opacity);
     }
     void Win32Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
-                                 i32 maxHeight)
+                                   i32 maxHeight)
     {
         m_Data.MinWidth  = minWidth;
         m_Data.MinHeight = minHeight;
@@ -449,8 +461,9 @@ namespace Vortex
         auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
-            window->m_Data.RendererContext->OnResize(static_cast<u32>(width),
-                                                     static_cast<u32>(height));
+            if (window->m_Data.RendererContext)
+                window->m_Data.RendererContext->OnResize(
+                    static_cast<u32>(width), static_cast<u32>(height));
 
             FramebufferResizedEvent(window, width, height);
         };
@@ -506,7 +519,7 @@ namespace Vortex
         {
             auto window = VtGetWindow(handle);
             if (entered) MouseEnteredEvent(window);
-            else MouseLeavedEvent(window);
+            else MouseLeftEvent(window);
         };
         auto scrollCallback = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
         {

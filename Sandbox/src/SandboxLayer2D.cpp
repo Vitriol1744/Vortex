@@ -7,7 +7,6 @@
 #include "SandboxLayer2D.hpp"
 
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
-#include "Vortex/Renderer/Window/imgui_impl_glfw.h"
 #include <imgui.h>
 
 #include "Vortex/Core/Log/Log.hpp"
@@ -28,9 +27,9 @@ using namespace Vortex;
 void SandboxLayer2D::OnAttach()
 {
     s_Window  = Application::Get()->GetWindow();
+    s_Window->SetPosition({300, 300});
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
-    vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
 
     s_Shader                = Shader::Create();
 

@@ -38,6 +38,7 @@ namespace Vortex
 
         s_PrimaryMonitor = s_Monitors[0];
         VtCoreInfo("Found {} monitors", s_Monitors.size());
+        initialized = false;
     }
 
     Ref<Monitor> Monitor::GetPrimaryMonitor()
@@ -45,7 +46,7 @@ namespace Vortex
         Initialize();
         return s_PrimaryMonitor;
     }
-    const std::vector<Ref<Monitor>>& GetMonitors()
+    const std::vector<Ref<Monitor>>& Monitor::GetMonitors()
     {
         Initialize();
         return s_Monitors;
@@ -54,6 +55,6 @@ namespace Vortex
     namespace MonitorEvents
     {
 
-        Event<Monitor*, MonitorState> monitorStateChangedEvent;
+        Event<Monitor*, MonitorState> MonitorStateChangedEvent;
     }; // namespace MonitorEvents
-};     // namespace Vortex
+}; // namespace Vortex

@@ -79,7 +79,7 @@ set (SOURCES ${SOURCES}
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
     vendor/imgui/imgui_widgets.cpp
-    src/Vortex/Renderer/Window/imgui_impl_glfw.cpp
+    
     src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
     
 if (VORTEX_BUILD_SHARED_LIBS)

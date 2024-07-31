@@ -59,6 +59,7 @@ namespace Vortex
         bool               AutoIconify  = false;
         bool               CenterCursor = false;
         bool               FocusOnShow  = false;
+        bool               NoAPI        = false;
     };
 
     class VT_API Window : public NonCopyable<Window>
@@ -147,6 +148,10 @@ namespace Vortex
             return Create(VideoMode(width, height), title);
         }
 
+        // NOTE: Only for internal usage
+        static Window* CreateForImGui(const WindowSpecification& specification);
+        static void    DeleteImGui(Window* window) { delete window; }
+
         static WindowSubsystem GetWindowSubsystem();
 
       protected:
@@ -199,14 +204,14 @@ namespace Vortex
         extern Event<Window*, Input::MouseCode>    MouseButtonPressedEvent;
         // Vortex::Input::MouseCode mouseCode
         extern Event<Window*, Input::MouseCode>    MouseButtonReleasedEvent;
-        //
-        extern Event<Window*>                      MouseEnteredEvent;
-        //
-        extern Event<Window*>                      MouseLeavedEvent;
         // Vortex::Vec2 wheel
         extern Event<Window*, f64, f64>            MouseScrolledEvent;
         // Vortex::Vec2 mousePosition
         extern Event<Window*, f64, f64>            MouseMovedEvent;
+        //
+        extern Event<Window*>                      MouseEnteredEvent;
+        //
+        extern Event<Window*>                      MouseLeftEvent;
         //
         extern Event<Window*, i32, i32>            WindowMovedEvent;
         // Vortex::Window::WindowResizedEventType windowResizedEventType,

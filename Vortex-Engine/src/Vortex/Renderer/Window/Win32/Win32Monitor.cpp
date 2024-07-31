@@ -119,7 +119,7 @@ namespace Vortex
                 MonitorState state = MonitorState::eDisconnected;
                 if (event == GLFW_CONNECTED) state = MonitorState::eConnected;
 
-                MonitorEvents::monitorStateChangedEvent(monitor, state);
+                MonitorEvents::MonitorStateChangedEvent(monitor, state);
             });
 
         return true;

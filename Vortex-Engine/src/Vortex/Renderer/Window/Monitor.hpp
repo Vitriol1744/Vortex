@@ -117,7 +117,7 @@ namespace Vortex
     namespace MonitorEvents
     {
         // monitor, monitorState
-        extern Event<Monitor*, MonitorState> monitorStateChangedEvent;
+        extern Event<Monitor*, MonitorState> MonitorStateChangedEvent;
 
     }; // namespace MonitorEvents
-};     // namespace Vortex
+}; // namespace Vortex
