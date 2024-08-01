@@ -34,8 +34,7 @@ namespace Vortex
         virtual bool        IsHovered() const noexcept override;
         virtual std::string GetTitle() const noexcept override;
         virtual Vec2i       GetPosition() const noexcept override;
-        virtual i32         GetWidth() const noexcept override;
-        virtual i32         GetHeight() const noexcept override;
+        virtual Vec2i       GetSize() const noexcept override;
         virtual Vec2i       GetFramebufferSize() const noexcept override;
         virtual Vec2f       GetContentScale() const noexcept override;
         virtual f32         GetOpacity() const noexcept override;

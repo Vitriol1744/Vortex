@@ -7,6 +7,8 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
+#include "Vortex/Core/Utf.hpp"
+
 #include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
 
 namespace Vortex
@@ -247,7 +249,7 @@ namespace Vortex
         glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
 
         SetupEvents();
-        hWnd = glfwGetWin32Window(m_Window);
+        m_WindowHandle = glfwGetWin32Window(m_Window);
 
         if (!specification.NoAPI)
             m_Data.RendererContext = RendererContext::Create(this);
@@ -262,33 +264,29 @@ namespace Vortex
     void Win32Window::PollEvents() { glfwPollEvents(); }
     void Win32Window::Present() { m_Data.RendererContext->Present(); }
 
-    bool Win32Window::IsFocused() const noexcept { return m_Data.Focused; }
+    bool Win32Window::IsFocused() const noexcept
+    {
+        return GetActiveWindow() == m_WindowHandle;
+    }
     bool Win32Window::IsMinimized() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED);
+        return IsIconic(m_WindowHandle);
     }
     bool Win32Window::IsHovered() const noexcept
     {
         return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
     }
-    std::string Win32Window::GetTitle() const noexcept
-    {
-        return glfwGetWindowTitle(m_Window);
-    }
-    Vec2i Win32Window::GetPosition() const noexcept
+    std::string Win32Window::GetTitle() const noexcept { return m_Data.Title; }
+    Vec2i       Win32Window::GetPosition() const noexcept
     {
         POINT pos = {0, 0};
-        ClientToScreen(hWnd, &pos);
+        ClientToScreen(m_WindowHandle, &pos);
 
         return Vec2i(pos.x, pos.y);
     }
-    inline i32 Win32Window::GetWidth() const noexcept
+    inline Vec2i Win32Window::GetSize() const noexcept
     {
-        return m_Data.VideoMode.Width;
-    }
-    i32 Win32Window::GetHeight() const noexcept
-    {
-        return m_Data.VideoMode.Height;
+        return Vec2i(m_Data.VideoMode.Width, m_Data.VideoMode.Height);
     }
     Vec2i Win32Window::GetFramebufferSize() const noexcept
     {
@@ -306,7 +304,15 @@ namespace Vortex
     }
     f32 Win32Window::GetOpacity() const noexcept
     {
-        return glfwGetWindowOpacity(m_Window);
+        BYTE  alpha = 0;
+        DWORD flags = 0;
+
+        if ((GetWindowLongW(m_WindowHandle, GWL_EXSTYLE) & WS_EX_LAYERED)
+            && GetLayeredWindowAttributes(m_WindowHandle, NULL, &alpha, &flags)
+            && (flags & LWA_ALPHA))
+            return alpha / 255.0f;
+
+        return 1.0f;
     }
 
     void Win32Window::Close() noexcept
@@ -316,9 +322,9 @@ namespace Vortex
     }
     void Win32Window::RequestFocus() noexcept
     {
-        BringWindowToTop(hWnd);
-        SetForegroundWindow(hWnd);
-        SetFocus(hWnd);
+        BringWindowToTop(m_WindowHandle);
+        SetForegroundWindow(m_WindowHandle);
+        SetFocus(m_WindowHandle);
     }
     void Win32Window::RequestUserAttention() const noexcept
     {
@@ -330,7 +336,13 @@ namespace Vortex
     void Win32Window::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
-        glfwSetWindowTitle(m_Window, title.data());
+
+        std::wstring wideTitle;
+        wideTitle.reserve(title.length() + 1);
+        Utf32::ToWide(title.begin(), title.end(), std::back_inserter(wideTitle),
+                      0);
+
+        SetWindowTextW(m_WindowHandle, wideTitle.c_str());
     }
     void Win32Window::SetIcon(i32 count, const std::vector<Icon>& icons) const
     {
@@ -348,6 +360,8 @@ namespace Vortex
     }
     void Win32Window::SetPosition(i32 x, i32 y) const
     {
+        // RECT rect = {x, y, x, y};
+
         glfwSetWindowPos(m_Window, x, y);
     }
     void Win32Window::SetAspectRatio(i32 numerator, i32 denominator)
@@ -366,20 +380,20 @@ namespace Vortex
     }
     void Win32Window::SetOpacity(f32 opacity)
     {
-        LONG exStyle = GetWindowLongW(hWnd, GWL_EXSTYLE);
+        LONG exStyle = GetWindowLongW(m_WindowHandle, GWL_EXSTYLE);
         if (opacity < 1.f || (exStyle & WS_EX_TRANSPARENT))
         {
-            const BYTE alpha = (BYTE)(255 * opacity);
+            const BYTE alpha = static_cast<BYTE>(255 * opacity);
             exStyle |= WS_EX_LAYERED;
-            SetWindowLongW(hWnd, GWL_EXSTYLE, exStyle);
-            SetLayeredWindowAttributes(hWnd, 0, alpha, LWA_ALPHA);
+            SetWindowLongW(m_WindowHandle, GWL_EXSTYLE, exStyle);
+            SetLayeredWindowAttributes(m_WindowHandle, 0, alpha, LWA_ALPHA);
         }
         else if (exStyle & WS_EX_TRANSPARENT)
-            SetLayeredWindowAttributes(hWnd, 0, 0, 0);
+            SetLayeredWindowAttributes(m_WindowHandle, 0, 0, 0);
         else
         {
             exStyle &= ~WS_EX_LAYERED;
-            SetWindowLongW(hWnd, GWL_EXSTYLE, exStyle);
+            SetWindowLongW(m_WindowHandle, GWL_EXSTYLE, exStyle);
         }
     }
     void Win32Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
@@ -405,7 +419,7 @@ namespace Vortex
         m_LastCursorPos.x = pos.x;
         m_LastCursorPos.y = pos.y;
 
-        ClientToScreen(hWnd, &pos);
+        ClientToScreen(m_WindowHandle, &pos);
         SetCursorPos(pos.x, pos.y);
     }
     void Win32Window::ShowCursor() const noexcept

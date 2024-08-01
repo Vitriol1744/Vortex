@@ -37,8 +37,7 @@ namespace Vortex
         virtual bool        IsHovered() const noexcept override;
         virtual std::string GetTitle() const noexcept override;
         virtual Vec2i       GetPosition() const noexcept override;
-        virtual i32         GetWidth() const noexcept override;
-        virtual i32         GetHeight() const noexcept override;
+        virtual Vec2i       GetSize() const noexcept override;
         virtual Vec2i       GetFramebufferSize() const noexcept override;
         virtual Vec2f       GetContentScale() const noexcept override;
         virtual f32         GetOpacity() const noexcept override;
@@ -73,7 +72,7 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        HWND         hWnd = nullptr;
+        HWND         m_WindowHandle = nullptr;
         GLFWwindow*  m_Window;
 
         Vec2i        m_LastCursorPos = {0, 0};

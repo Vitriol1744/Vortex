@@ -280,13 +280,9 @@ namespace Vortex
         glfwGetWindowPos(m_Window, &position.x, &position.y);
         return position;
     }
-    inline i32 X11Window::GetWidth() const noexcept
+    inline Vec2i X11Window::GetSize() const noexcept
     {
-        return m_Data.VideoMode.Width;
-    }
-    i32 X11Window::GetHeight() const noexcept
-    {
-        return m_Data.VideoMode.Height;
+        return Vec2i(m_Data.VideoMode.Width, m_Data.VideoMode.Height);
     }
     Vec2i X11Window::GetFramebufferSize() const noexcept
     {

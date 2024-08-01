@@ -78,16 +78,13 @@ namespace Vortex
         virtual bool        IsHovered() const noexcept       = 0;
         virtual std::string GetTitle() const noexcept        = 0;
         virtual Vec2i       GetPosition() const noexcept     = 0;
-        inline Vec2i        GetSize() const noexcept
-        {
-            return Vec2i(GetWidth(), GetHeight());
-        }
-        virtual i32   GetWidth() const noexcept           = 0;
-        virtual i32   GetHeight() const noexcept          = 0;
-        virtual Vec2i GetFramebufferSize() const noexcept = 0;
-        virtual Vec2f GetContentScale() const noexcept    = 0;
-        virtual f32   GetOpacity() const noexcept         = 0;
-        inline Vec2d  GetCursorPosition() const noexcept
+        virtual Vec2i       GetSize() const noexcept         = 0;
+        inline i32          GetWidth() const noexcept { return GetSize().x; }
+        inline i32          GetHeight() const noexcept { return GetSize().y; }
+        virtual Vec2i       GetFramebufferSize() const noexcept = 0;
+        virtual Vec2f       GetContentScale() const noexcept    = 0;
+        virtual f32         GetOpacity() const noexcept         = 0;
+        inline Vec2d        GetCursorPosition() const noexcept
         {
             return m_Data.MousePosition;
         }
