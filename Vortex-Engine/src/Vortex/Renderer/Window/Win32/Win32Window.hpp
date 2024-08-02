@@ -50,8 +50,7 @@ namespace Vortex
         virtual void        Restore() noexcept override;
 
         virtual void        SetTitle(std::string_view title) override;
-        virtual void        SetIcon(i32                      count,
-                                    const std::vector<Icon>& icons) const override;
+        virtual void        SetIcon(const Icon* icons, usize count) override;
         virtual void        SetPosition(i32 x, i32 y) const override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
         virtual void SetWidth(const i32 width) noexcept override;
@@ -72,16 +71,23 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        HWND         m_WindowHandle = nullptr;
-        GLFWwindow*  m_Window;
+        HWND          m_WindowHandle = nullptr;
+        HICON         m_BigIcon      = nullptr;
+        HICON         m_SmallIcon    = nullptr;
 
-        Vec2i        m_LastCursorPos = {0, 0};
+        GLFWwindow*   m_Window;
 
-        static usize s_WindowsCount;
+        Vec2i         m_LastCursorPos = {0, 0};
 
-        void         SetupEvents();
+        static usize  s_WindowsCount;
 
-        static bool  Initialize();
-        static void  Shutdown();
+        void          SetupEvents();
+
+        static Image& ChooseImage(const Image* images, usize count, i32 width,
+                                  i32 height);
+        static HICON  CreateIconOrCursor(const Image& image, i32 xhot, i32 yhot, bool icon = true);
+
+        static bool   Initialize();
+        static void   Shutdown();
     };
 }; // namespace Vortex

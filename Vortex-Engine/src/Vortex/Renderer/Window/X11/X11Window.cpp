@@ -321,10 +321,10 @@ namespace Vortex
         m_Data.Title = title;
         glfwSetWindowTitle(m_Window, title.data());
     }
-    void X11Window::SetIcon(i32 count, const std::vector<Icon>& icons) const
+    void X11Window::SetIcon(const Icon* icons, usize count)
     {
         std::vector<GLFWimage> images(count);
-        for (auto& icon : icons)
+        for (auto& icon : std::views::counted(icons, count))
         {
             GLFWimage image;
             image.width  = icon.Width;

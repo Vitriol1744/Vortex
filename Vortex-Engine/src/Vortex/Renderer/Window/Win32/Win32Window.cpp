@@ -15,7 +15,7 @@ namespace Vortex
 {
     usize       Win32Window::s_WindowsCount = 0;
 
-    static void glfwErrorCallback(int code, const char* description)
+    static void glfwErrorCallback(i32 code, const char* description)
     {
         (void)code;
         (void)description;
@@ -257,6 +257,10 @@ namespace Vortex
     Win32Window::~Win32Window()
     {
         glfwDestroyWindow(m_Window);
+        
+        if (m_BigIcon) DestroyIcon(m_BigIcon);
+        if (m_SmallIcon) DestroyIcon(m_SmallIcon);
+
         --s_WindowsCount;
         if (s_WindowsCount == 0) Shutdown();
     }
@@ -344,19 +348,29 @@ namespace Vortex
 
         SetWindowTextW(m_WindowHandle, wideTitle.c_str());
     }
-    void Win32Window::SetIcon(i32 count, const std::vector<Icon>& icons) const
+    void Win32Window::SetIcon(const Icon* icons, usize count)
     {
-        std::vector<GLFWimage> images(count);
-        for (auto& icon : icons)
-        {
-            GLFWimage image;
-            image.width  = icon.Width;
-            image.height = icon.Height;
-            image.pixels = icon.Pixels;
-            images.push_back(image);
-        }
+        VtCoreAssert(count > 0);
 
-        glfwSetWindowIcon(m_Window, count, images.data());
+        const Image& bigImage = ChooseImage(icons, count, GetSystemMetrics(SM_CXICON),
+                                            GetSystemMetrics(SM_CYICON));
+        const Image& smallImage
+            = ChooseImage(icons, count, GetSystemMetrics(SM_CXSMICON),
+                          GetSystemMetrics(SM_CYSMICON));
+
+        HICON bigIcon   = CreateIconOrCursor(bigImage, 0, 0);
+        HICON smallIcon = CreateIconOrCursor(smallImage, 0, 0);
+
+        SendMessageW(m_WindowHandle, WM_SETICON, ICON_BIG,
+                     reinterpret_cast<LPARAM>(bigIcon));
+        SendMessageW(m_WindowHandle, WM_SETICON, ICON_SMALL,
+                     reinterpret_cast<LPARAM>(smallIcon));
+
+        if (m_BigIcon) DestroyIcon(m_BigIcon);
+        if (m_SmallIcon) DestroyIcon(m_SmallIcon);
+
+        m_BigIcon = bigIcon;
+        m_SmallIcon = smallIcon;
     }
     void Win32Window::SetPosition(i32 x, i32 y) const
     {
@@ -613,6 +627,91 @@ namespace Vortex
         glfwSetCharModsCallback(m_Window, charModsCallback);
         glfwSetDropCallback(m_Window, dropCallback);
         glfwSetJoystickCallback(joystickCallback);
+    }
+
+    Image& Win32Window::ChooseImage(const Image* images, usize count, i32 width,
+        i32 height)
+    {
+        i32 leastDiff = std::numeric_limits<i32>::max();
+        Image& ret       = const_cast<Image&>(images[0]);
+
+        for (auto& image : std::views::counted(images, count))
+        {
+            const i32 currentDiff
+                = std::abs(image.Width * image.Height - width * height);
+
+            if (currentDiff < leastDiff)
+            {
+                ret       = image;
+                leastDiff = currentDiff;
+            }
+        }
+
+        return ret;
+    }
+
+    HICON Win32Window::CreateIconOrCursor(const Image& image, i32 xhot,
+                                          i32 yhot, bool icon)
+    {
+        BITMAPV5HEADER header{};
+        header.bV5Size        = sizeof(header);
+        header.bV5Width       = image.Width;
+        header.bV5Height      = -image.Height;
+        header.bV5Planes      = 1;
+        header.bV5BitCount    = 32;
+        header.bV5Compression = BI_BITFIELDS;
+        header.bV5RedMask     = 0x00ff0000;
+        header.bV5GreenMask   = 0x0000ff00;
+        header.bV5BlueMask    = 0x000000ff;
+        header.bV5AlphaMask   = 0xff000000;
+
+        unsigned char* target = nullptr;
+        HDC            dc     = GetDC(nullptr);
+        HBITMAP        color  = CreateDIBSection(
+            dc, reinterpret_cast<BITMAPINFO*>(&header), DIB_RGB_COLORS,
+            reinterpret_cast<void**>(&target), nullptr, static_cast<DWORD>(0));
+        ReleaseDC(nullptr, dc);
+
+        if (!color)
+        {
+            VtCoreError("Win32: Failed to create RGBA bitmap");
+            return nullptr;
+        }
+
+        HBITMAP mask = CreateBitmap(image.Width, image.Height, 1, 1, nullptr);
+        if (!mask)
+        {
+            VtCoreError("Win32: Failed to create mask bitmap");
+            DeleteObject(color);
+            return nullptr;
+        }
+
+        unsigned char* source = image.Pixels;
+        for (i32 i = 0; i < image.Width * image.Height; i++)
+        {
+            target[0] = source[2];
+            target[1] = source[1];
+            target[2] = source[0];
+            target[3] = source[3];
+            target += 4;
+            source += 4;
+        }
+
+        ICONINFO iconInfo{};
+        iconInfo.fIcon    = icon;
+        iconInfo.xHotspot = xhot;
+        iconInfo.yHotspot = yhot;
+        iconInfo.hbmMask  = mask;
+        iconInfo.hbmColor = color;
+
+        HICON handle      = CreateIconIndirect(&iconInfo);
+
+        DeleteObject(color);
+        DeleteObject(mask);
+
+        if (!handle) VtCoreError("Win32: Failed to create image");
+
+        return handle;
     }
 
     bool Win32Window::Initialize()

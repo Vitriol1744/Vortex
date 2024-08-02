@@ -47,8 +47,7 @@ namespace Vortex
         virtual void        Restore() noexcept override;
 
         virtual void        SetTitle(std::string_view title) override;
-        virtual void        SetIcon(i32                      count,
-                                    const std::vector<Icon>& icons) const override;
+        virtual void        SetIcon(const Icon* icons, usize count) override;
         virtual void        SetPosition(i32 x, i32 y) const override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
         virtual void SetWidth(const i32 width) noexcept override;

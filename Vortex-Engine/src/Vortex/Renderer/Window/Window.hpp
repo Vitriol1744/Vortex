@@ -28,12 +28,14 @@ namespace Vortex
     };
 
     using Pixel = u8;
-    struct Icon
+    struct Image
     {
         i32    Width  = 0;
         i32    Height = 0;
         Pixel* Pixels;
     };
+    using Icon   = Image;
+    using Cursor = Image;
 
     struct WindowSpecification
     {
@@ -102,7 +104,8 @@ namespace Vortex
         virtual void Restore() noexcept                    = 0;
 
         virtual void SetTitle(std::string_view title)      = 0;
-        virtual void SetIcon(i32 count, const std::vector<Icon>& icons) const
+        inline void  SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
+        virtual void SetIcon(const Icon* icons, usize count)
             = 0;
 
         inline void SetPosition(const Vec2i& position) noexcept
