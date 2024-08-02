@@ -8,6 +8,8 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include <expected>
+
 namespace Vortex
 {
     using Pixel = u8;
