@@ -777,8 +777,8 @@ namespace Vortex
 
     bool VulkanImGuiLayer::OnMonitorStateUpdate(Monitor*, MonitorState)
     {
-        auto bd = GetBackendData();
-        bd->WantUpdateMonitors    = true;
+        auto bd                = GetBackendData();
+        bd->WantUpdateMonitors = true;
 
         return false;
     }
@@ -794,8 +794,8 @@ namespace Vortex
         specs.FocusOnShow = false;
         specs.Decorated = !(viewport->Flags & ImGuiViewportFlags_NoDecoration);
         specs.AlwaysOnTop      = (viewport->Flags & ImGuiViewportFlags_TopMost);
-        specs.VideoMode.Width  = viewport->Size.x;
-        specs.VideoMode.Height = viewport->Size.y;
+        specs.VideoMode.Width  = static_cast<i32>(viewport->Size.x);
+        specs.VideoMode.Height = static_cast<i32>(viewport->Size.y);
         specs.Title            = "No Title Yet";
         Window* window         = Window::CreateForImGui(specs);
 
@@ -833,7 +833,8 @@ namespace Vortex
     {
         auto position = GetViewportData(viewport)->Window->GetPosition();
 
-        return ImVec2(position.x, position.y);
+        return ImVec2(static_cast<f32>(position.x),
+                      static_cast<f32>(position.y));
     }
     void VulkanImGuiLayer::SetWindowPosition(ImGuiViewport* viewport,
                                              ImVec2         position)
@@ -847,7 +848,7 @@ namespace Vortex
     {
         auto size = GetViewportData(viewport)->Window->GetSize();
 
-        return ImVec2(size.x, size.y);
+        return ImVec2(static_cast<f32>(size.x), static_cast<f32>(size.y));
     }
     void VulkanImGuiLayer::SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
     {
