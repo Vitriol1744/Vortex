@@ -55,8 +55,8 @@ namespace Vortex::ImageLoader
         u32 dibSize = dibHeader.HeaderSize;
         if (dibSize != 12 && dibSize != 40 && dibSize != 56 && dibSize != 108
             && dibSize != 124)
-            return std::unexpected(
-                std::format("Invalid DIB header size, path: '{}'", path));
+            return std::unexpected(std::format(
+                "Invalid DIB header size, path: '{}'", path.string()));
 
         Scope<Pixel[]> pixels = CreateScope<Pixel[]>(dibHeader.ImageSize);
         ifs.seekg(bmpHeader.PixelDataOffset);
