@@ -60,6 +60,7 @@ set (SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanSwapChain.cpp
     src/Vortex/Renderer/Window/Monitor.cpp
     src/Vortex/Renderer/Window/Window.cpp
+    src/Vortex/Utility/ImageLoader.cpp
 )
 
 if (UNIX)

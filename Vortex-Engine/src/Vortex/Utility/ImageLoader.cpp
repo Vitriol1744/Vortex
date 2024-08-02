@@ -13,25 +13,25 @@ namespace Vortex::ImageLoader
 #pragma pack(push, 1)
     struct BmpHeader
     {
-        i16 Signature;
-        i32 Size;
-        i32 Reserved;
-        i32 Offset;
+        u16 Signature;
+        u32 Size;
+        u32 Reserved;
+        u32 PixelDataOffset;
     };
 
     struct DibHeader
     {
-        i32 HeaderSize;
-        i32 Width;
-        i32 Height;
-        i16 ColorPlaneCount;
-        i16 BitsPerPixel;
-        i32 CompressionMethod;
-        i32 ImageSize;
-        i32 HorizontalResolution;
-        i32 VerticalResolution;
-        i32 ColorCount;
-        i32 ImportantColors;
+        u32 HeaderSize;
+        u32 Width;
+        u32 Height;
+        u16 ColorPlaneCount;
+        u16 BitsPerPixel;
+        u32 CompressionMethod;
+        u32 ImageSize;
+        u32 HorizontalResolution;
+        u32 VerticalResolution;
+        u32 ColorCount;
+        u32 ImportantColors;
     };
 #pragma pack(pop)
 
@@ -52,18 +52,18 @@ namespace Vortex::ImageLoader
         DibHeader dibHeader;
         ifs.read(reinterpret_cast<char*>(&dibHeader), sizeof(DibHeader));
 
+        u32 dibSize = dibHeader.HeaderSize;
+        if (dibSize != 12 && dibSize != 40 && dibSize != 56 && dibSize != 108
+            && dibSize != 124)
+            return std::unexpected(
+                std::format("Invalid DIB header size, path: '{}'", path));
+
         Scope<Pixel[]> pixels = CreateScope<Pixel[]>(dibHeader.ImageSize);
-        ifs.seekg(bmpHeader.Offset);
+        ifs.seekg(bmpHeader.PixelDataOffset);
         ifs.read(reinterpret_cast<char*>(pixels.get()), dibHeader.ImageSize);
 
-        // The bitmap is in the BGR format, we have to swap bytes to make it RGB
-        u8 temp = 0;
-        for (i64 i = 0; i < dibHeader.ImageSize; i += 3)
-        {
-            temp          = pixels[i];
-            pixels[i]     = pixels[i + 2];
-            pixels[i + 2] = temp;
-        }
+        for (i64 i = 0; (i + 2) < dibHeader.ImageSize; i += 3)
+            std::swap(pixels[i], pixels[i + 2]);
 
         width  = dibHeader.Width;
         height = dibHeader.Height;
