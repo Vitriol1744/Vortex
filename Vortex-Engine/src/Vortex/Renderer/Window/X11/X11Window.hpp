@@ -50,8 +50,7 @@ namespace Vortex
         virtual void        SetIcon(const Icon* icons, usize count) override;
         virtual void        SetPosition(i32 x, i32 y) const override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
-        virtual void SetWidth(const i32 width) noexcept override;
-        virtual void SetHeight(const i32 height) noexcept override;
+        virtual void SetSize(const Vec2i& size) noexcept override;
 
         virtual void SetOpacity(f32 opacity) override;
 

@@ -105,23 +105,24 @@ namespace Vortex
 
         virtual void SetTitle(std::string_view title)      = 0;
         inline void  SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
-        virtual void SetIcon(const Icon* icons, usize count)
-            = 0;
+        virtual void SetIcon(const Icon* icons, usize count) = 0;
 
-        inline void SetPosition(const Vec2i& position) noexcept
+        inline void  SetPosition(const Vec2i& position) noexcept
         {
             SetPosition(position.x, position.y);
         }
         virtual void SetPosition(i32 x, i32 y) const                = 0;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) = 0;
-        inline void  SetSize(const Vec2i& size) noexcept
+        virtual void SetSize(const Vec2i& size) noexcept            = 0;
+        inline void  SetWidth(const i32 width) noexcept
         {
-            SetWidth(size.x);
-            SetHeight(size.y);
+            SetSize(Vec2i(width, GetSize().y));
         }
-        virtual void SetWidth(const i32 width) noexcept   = 0;
-        virtual void SetHeight(const i32 height) noexcept = 0;
-        virtual void SetOpacity(f32 opacity)              = 0;
+        inline void SetHeight(const i32 height) noexcept
+        {
+            SetSize(Vec2i(GetSize().x, height));
+        }
+        virtual void SetOpacity(f32 opacity) = 0;
 
         virtual void SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                   i32 maxHeight)

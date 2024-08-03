@@ -345,13 +345,9 @@ namespace Vortex
         m_Data.Denominator = denominator;
         glfwSetWindowAspectRatio(m_Window, numerator, denominator);
     }
-    void X11Window::SetWidth(const i32 width) noexcept
+    void X11Window::SetSize(const Vec2i& size) noexcept
     {
-        glfwSetWindowSize(m_Window, width, m_Data.VideoMode.Height);
-    }
-    void X11Window::SetHeight(const i32 height) noexcept
-    {
-        glfwSetWindowSize(m_Window, m_Data.VideoMode.Width, height);
+        glfwSetWindowSize(m_Window, size.x, size.y);
     }
     void X11Window::SetOpacity(f32 opacity)
     {

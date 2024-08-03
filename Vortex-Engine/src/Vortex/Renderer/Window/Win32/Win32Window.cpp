@@ -257,7 +257,7 @@ namespace Vortex
     Win32Window::~Win32Window()
     {
         glfwDestroyWindow(m_Window);
-        
+
         if (m_BigIcon) DestroyIcon(m_BigIcon);
         if (m_SmallIcon) DestroyIcon(m_SmallIcon);
 
@@ -288,9 +288,12 @@ namespace Vortex
 
         return Vec2i(pos.x, pos.y);
     }
-    inline Vec2i Win32Window::GetSize() const noexcept
+    Vec2i Win32Window::GetSize() const noexcept
     {
-        return Vec2i(m_Data.VideoMode.Width, m_Data.VideoMode.Height);
+        RECT area;
+        GetClientRect(m_WindowHandle, &area);
+
+        return Vec2i(area.right, area.bottom);
     }
     Vec2i Win32Window::GetFramebufferSize() const noexcept
     {
@@ -352,8 +355,9 @@ namespace Vortex
     {
         VtCoreAssert(count > 0);
 
-        const Image& bigImage = ChooseImage(icons, count, GetSystemMetrics(SM_CXICON),
-                                            GetSystemMetrics(SM_CYICON));
+        const Image& bigImage
+            = ChooseImage(icons, count, GetSystemMetrics(SM_CXICON),
+                          GetSystemMetrics(SM_CYICON));
         const Image& smallImage
             = ChooseImage(icons, count, GetSystemMetrics(SM_CXSMICON),
                           GetSystemMetrics(SM_CYSMICON));
@@ -369,14 +373,23 @@ namespace Vortex
         if (m_BigIcon) DestroyIcon(m_BigIcon);
         if (m_SmallIcon) DestroyIcon(m_SmallIcon);
 
-        m_BigIcon = bigIcon;
+        m_BigIcon   = bigIcon;
         m_SmallIcon = smallIcon;
     }
     void Win32Window::SetPosition(i32 x, i32 y) const
     {
-        // RECT rect = {x, y, x, y};
+        RECT rect    = {x, y, x, y};
+        LONG style   = GetWindowLongW(m_WindowHandle, GWL_STYLE);
+        LONG exStyle = GetWindowLongW(m_WindowHandle, GWL_EXSTYLE);
 
-        glfwSetWindowPos(m_Window, x, y);
+        AdjustWindowRectExForDpi(&rect, style, FALSE, exStyle,
+                                 GetDpiForWindow(m_WindowHandle));
+
+        // SWP_NOACTIVATE - Don't activate the window
+        // SWP_NOZORDER - Retain the current Z order
+        // SWP_NOSIZE - Don't change the size of window
+        SetWindowPos(m_WindowHandle, nullptr, rect.left, rect.top, 0, 0,
+                     SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
     }
     void Win32Window::SetAspectRatio(i32 numerator, i32 denominator)
     {
@@ -384,13 +397,19 @@ namespace Vortex
         m_Data.Denominator = denominator;
         glfwSetWindowAspectRatio(m_Window, numerator, denominator);
     }
-    void Win32Window::SetWidth(const i32 width) noexcept
+    void Win32Window::SetSize(const Vec2i& size) noexcept
     {
-        glfwSetWindowSize(m_Window, width, m_Data.VideoMode.Height);
-    }
-    void Win32Window::SetHeight(const i32 height) noexcept
-    {
-        glfwSetWindowSize(m_Window, m_Data.VideoMode.Width, height);
+        RECT rect    = {0, 0, (LONG)size.x, (LONG)size.y};
+        LONG style   = GetWindowLongW(m_WindowHandle, GWL_STYLE);
+        LONG exStyle = GetWindowLongW(m_WindowHandle, GWL_EXSTYLE);
+
+        // Client to Screen
+        AdjustWindowRectExForDpi(&rect, style, FALSE, exStyle,
+                                 GetDpiForWindow(m_WindowHandle));
+
+        SetWindowPos(m_WindowHandle, nullptr, 0, 0, rect.right - rect.left,
+                     rect.bottom - rect.top,
+                     SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
     }
     void Win32Window::SetOpacity(f32 opacity)
     {
@@ -413,10 +432,32 @@ namespace Vortex
     void Win32Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                    i32 maxHeight)
     {
+        if (minWidth != -1 && minHeight != -1
+            && (minWidth < 0 || minHeight < 0))
+        {
+            VtCoreError("Win32: Invalid window minimum size: {}:{}", minWidth,
+                        minHeight);
+            return;
+        }
+
+        if (maxWidth != -1 && maxHeight != -1
+            && (maxWidth < 0 || maxHeight < 0 || maxWidth < minWidth
+                || maxHeight < minHeight))
+        {
+            VtCoreError("Win32: Invalid window maximum size: {}:{}", maxWidth,
+                        maxHeight);
+            return;
+        }
+
         m_Data.MinWidth  = minWidth;
         m_Data.MinHeight = minHeight;
         m_Data.MaxWidth  = maxWidth;
         m_Data.MaxHeight = maxHeight;
+
+        RECT area;
+        GetWindowRect(m_WindowHandle, &area);
+        MoveWindow(m_WindowHandle, area.left, area.top, area.right - area.left,
+                   area.bottom - area.top, TRUE);
         glfwSetWindowSizeLimits(m_Window, minWidth, minHeight, maxWidth,
                                 maxHeight);
     }
@@ -630,9 +671,9 @@ namespace Vortex
     }
 
     Image& Win32Window::ChooseImage(const Image* images, usize count, i32 width,
-        i32 height)
+                                    i32 height)
     {
-        i32 leastDiff = std::numeric_limits<i32>::max();
+        i32    leastDiff = std::numeric_limits<i32>::max();
         Image& ret       = const_cast<Image&>(images[0]);
 
         for (auto& image : std::views::counted(images, count))
