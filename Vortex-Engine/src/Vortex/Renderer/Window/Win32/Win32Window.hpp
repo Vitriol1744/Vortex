@@ -70,18 +70,29 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        HWND          m_WindowHandle = nullptr;
-        HICON         m_BigIcon      = nullptr;
-        HICON         m_SmallIcon    = nullptr;
+        HWND         m_WindowHandle = nullptr;
+        HICON        m_BigIcon      = nullptr;
+        HICON        m_SmallIcon    = nullptr;
 
-        GLFWwindow*   m_Window;
+        GLFWwindow*  m_Window;
 
-        Vec2i         m_LastCursorPos = {0, 0};
+        Vec2i        m_LastCursorPos = {0, 0};
 
-        static usize  s_WindowsCount;
+        static usize s_WindowsCount;
+        inline static std::unordered_map<HWND, Win32Window*>& GetWindowMap()
+        {
+            static std::unordered_map<HWND, Win32Window*> map;
 
-        void          SetupEvents();
+            return map;
+        }
 
+        void                  SetupEvents();
+        void                  ApplyAspectRatio(i32 edge, RECT& area);
+        LRESULT WINAPI        HandleEvents(HWND hWnd, UINT msg, WPARAM wParam,
+                                           LPARAM lParam);
+
+        static LRESULT WINAPI HandleGlobalEvents(HWND hWnd, UINT msg,
+                                                 WPARAM wParam, LPARAM lParam);
         static Image& ChooseImage(const Image* images, usize count, i32 width,
                                   i32 height);
         static HICON  CreateIconOrCursor(const Image& image, i32 xhot, i32 yhot,

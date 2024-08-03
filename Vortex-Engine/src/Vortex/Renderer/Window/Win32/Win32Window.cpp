@@ -11,9 +11,14 @@
 
 #include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
 
+#include "shellscalingapi.h"
+
 namespace Vortex
 {
-    usize       Win32Window::s_WindowsCount = 0;
+    usize                                  Win32Window::s_WindowsCount = 0;
+    static WNDPROC                         defWindowProc;
+    inline static constexpr const wchar_t* s_WindowClassName
+        = L"Vortex Window Class";
 
     static void glfwErrorCallback(i32 code, const char* description)
     {
@@ -145,7 +150,7 @@ namespace Vortex
     }
 
     using Input::MouseCode;
-    MouseCode ToVtMouseCode(i32 mouse)
+    static MouseCode ToVtMouseCode(i32 mouse)
     {
         MouseCode ret = MouseCode::eUnknown;
         switch (mouse)
@@ -161,6 +166,130 @@ namespace Vortex
         }
 
         return ret;
+    }
+
+    static KeyCode VtKeyCode(u32 keycode, bool extended = false)
+    {
+        switch (keycode)
+        {
+            case '0': return KeyCode::eNum0;
+            case '1': return KeyCode::eNum1;
+            case '2': return KeyCode::eNum2;
+            case '3': return KeyCode::eNum3;
+            case '4': return KeyCode::eNum4;
+            case '5': return KeyCode::eNum5;
+            case '6': return KeyCode::eNum6;
+            case '7': return KeyCode::eNum7;
+            case '8': return KeyCode::eNum8;
+            case '9': return KeyCode::eNum9;
+            case 'A': return KeyCode::eA;
+            case 'B': return KeyCode::eB;
+            case 'C': return KeyCode::eC;
+            case 'D': return KeyCode::eD;
+            case 'E': return KeyCode::eE;
+            case 'F': return KeyCode::eF;
+            case 'G': return KeyCode::eG;
+            case 'H': return KeyCode::eH;
+            case 'I': return KeyCode::eI;
+            case 'J': return KeyCode::eJ;
+            case 'K': return KeyCode::eK;
+            case 'L': return KeyCode::eL;
+            case 'M': return KeyCode::eM;
+            case 'N': return KeyCode::eN;
+            case 'O': return KeyCode::eO;
+            case 'P': return KeyCode::eP;
+            case 'Q': return KeyCode::eQ;
+            case 'R': return KeyCode::eR;
+            case 'S': return KeyCode::eS;
+            case 'T': return KeyCode::eT;
+            case 'U': return KeyCode::eU;
+            case 'V': return KeyCode::eV;
+            case 'W': return KeyCode::eW;
+            case 'X': return KeyCode::eX;
+            case 'Y': return KeyCode::eY;
+            case 'Z': return KeyCode::eZ;
+            case VK_OEM_3: return KeyCode::eTilde;
+            case VK_F1: return KeyCode::eF1;
+            case VK_F2: return KeyCode::eF2;
+            case VK_F3: return KeyCode::eF3;
+            case VK_F4: return KeyCode::eF4;
+            case VK_F5: return KeyCode::eF5;
+            case VK_F6: return KeyCode::eF6;
+            case VK_F7: return KeyCode::eF7;
+            case VK_F8: return KeyCode::eF8;
+            case VK_F9: return KeyCode::eF9;
+            case VK_F10: return KeyCode::eF10;
+            case VK_F11: return KeyCode::eF11;
+            case VK_F12: return KeyCode::eF12;
+            case VK_F13: return KeyCode::eF13;
+            case VK_F14: return KeyCode::eF14;
+            case VK_F15: return KeyCode::eF15;
+            case VK_ESCAPE: return KeyCode::eEscape;
+            case VK_BACK: return KeyCode::eBackspace;
+            case VK_TAB: return KeyCode::eTab;
+            case VK_CAPITAL: return KeyCode::eCapsLock;
+            case VK_RETURN:
+                return extended ? KeyCode::eEnter : KeyCode::eReturn;
+            case VK_LSHIFT: return KeyCode::eLShift;
+            case VK_RSHIFT: return KeyCode::eRShift;
+            case VK_LCONTROL: return KeyCode::eLCtrl;
+            case VK_RCONTROL: return KeyCode::eRCtrl;
+            case VK_MENU: return extended ? KeyCode::eRAlt : KeyCode::eLAlt;
+            case VK_LWIN: return KeyCode::eLSystem;
+            case VK_RWIN: return KeyCode::eRSystem;
+            case VK_SPACE: return KeyCode::eSpace;
+            case VK_OEM_MINUS: return KeyCode::eHyphen;
+            case VK_OEM_PLUS: return KeyCode::eEqual;
+            case VK_DECIMAL: return KeyCode::eDecimal;
+            case VK_OEM_4: return KeyCode::eLBracket;
+            case VK_OEM_6: return KeyCode::eRBracket;
+            case VK_OEM_1: return KeyCode::eSemicolon;
+            case VK_OEM_7: return KeyCode::eApostrophe;
+            case VK_OEM_COMMA: return KeyCode::eComma;
+            case VK_OEM_PERIOD: return KeyCode::ePeriod;
+            case VK_OEM_2: return KeyCode::eSlash;
+            case VK_OEM_5: return KeyCode::eBackslash;
+            case VK_UP: return KeyCode::eUp;
+            case VK_DOWN: return KeyCode::eDown;
+            case VK_LEFT: return KeyCode::eLeft;
+            case VK_RIGHT: return KeyCode::eRight;
+            case VK_NUMPAD0: return KeyCode::eNumpad0;
+            case VK_NUMPAD1: return KeyCode::eNumpad1;
+            case VK_NUMPAD2: return KeyCode::eNumpad2;
+            case VK_NUMPAD3: return KeyCode::eNumpad3;
+            case VK_NUMPAD4: return KeyCode::eNumpad4;
+            case VK_NUMPAD5: return KeyCode::eNumpad5;
+            case VK_NUMPAD6: return KeyCode::eNumpad6;
+            case VK_NUMPAD7: return KeyCode::eNumpad7;
+            case VK_NUMPAD8: return KeyCode::eNumpad8;
+            case VK_NUMPAD9: return KeyCode::eNumpad9;
+            case VK_SEPARATOR: return KeyCode::eSeparator;
+            case VK_ADD: return KeyCode::eAdd;
+            case VK_SUBTRACT: return KeyCode::eSubtract;
+            case VK_MULTIPLY: return KeyCode::eMultiply;
+            case VK_DIVIDE: return KeyCode::eDivide;
+            case VK_INSERT: return KeyCode::eInsert;
+            case VK_DELETE: return KeyCode::eDelete;
+            case VK_PRIOR: return KeyCode::ePageUp;
+            case VK_NEXT: return KeyCode::ePageDown;
+            case VK_HOME: return KeyCode::eHome;
+            case VK_END: return KeyCode::eEnd;
+        }
+
+        return KeyCode::eUnknown;
+    }
+    static MouseCode VtMouseCode(u32 mousecode)
+    {
+        switch (mousecode)
+        {
+            case MK_LBUTTON: return MouseCode::eLeft;
+            case MK_MBUTTON: return MouseCode::eMiddle;
+            case MK_RBUTTON: return MouseCode::eRight;
+            case MK_XBUTTON1: return MouseCode::eX1;
+            case MK_XBUTTON2: return MouseCode::eX2;
+        }
+
+        return MouseCode::eUnknown;
     }
 
     Win32Window::Win32Window(const WindowSpecification& specification)
@@ -249,7 +378,8 @@ namespace Vortex
         glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
 
         SetupEvents();
-        m_WindowHandle = glfwGetWin32Window(m_Window);
+        m_WindowHandle                 = glfwGetWin32Window(m_Window);
+        GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
             m_Data.RendererContext = RendererContext::Create(this);
@@ -278,7 +408,9 @@ namespace Vortex
     }
     bool Win32Window::IsHovered() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
+        // TODO(v1tr10l7): Win32: is Hovered return
+        // glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
+        return false;
     }
     std::string Win32Window::GetTitle() const noexcept { return m_Data.Title; }
     Vec2i       Win32Window::GetPosition() const noexcept
@@ -295,17 +427,22 @@ namespace Vortex
 
         return Vec2i(area.right, area.bottom);
     }
-    Vec2i Win32Window::GetFramebufferSize() const noexcept
-    {
-        Vec2i ret;
-        glfwGetFramebufferSize(m_Window, &ret.x, &ret.y);
-
-        return ret;
-    }
+    Vec2i Win32Window::GetFramebufferSize() const noexcept { return GetSize(); }
     Vec2f Win32Window::GetContentScale() const noexcept
     {
-        Vec2f ret;
-        glfwGetWindowContentScale(m_Window, &ret.x, &ret.y);
+        Vec2f          ret;
+        const HMONITOR monitor
+            = MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONEAREST);
+
+        UINT xdpi, ydpi;
+        if (GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi) != S_OK)
+        {
+            VtCoreError("Win32: Failed to query monitor DPI");
+            return {0, 0};
+        }
+
+        ret.x = xdpi / (float)USER_DEFAULT_SCREEN_DPI;
+        ret.y = ydpi / (float)USER_DEFAULT_SCREEN_DPI;
 
         return ret;
     }
@@ -335,11 +472,22 @@ namespace Vortex
     }
     void Win32Window::RequestUserAttention() const noexcept
     {
-        glfwRequestWindowAttention(m_Window);
+        // TODO(v1tr10l7): Win32: Request user attention
+        // glfwRequestWindowAttention(m_Window);
     }
-    void Win32Window::Maximize() noexcept { glfwMaximizeWindow(m_Window); }
-    void Win32Window::Minimize() noexcept { glfwIconifyWindow(m_Window); }
-    void Win32Window::Restore() noexcept { glfwRestoreWindow(m_Window); }
+    void Win32Window::Maximize() noexcept
+    {
+        if (IsWindowVisible(m_WindowHandle))
+            ShowWindow(m_WindowHandle, SW_MAXIMIZE);
+    }
+    void Win32Window::Minimize() noexcept
+    {
+        ShowWindow(m_WindowHandle, SW_MINIMIZE);
+    }
+    void Win32Window::Restore() noexcept
+    {
+        ShowWindow(m_WindowHandle, SW_RESTORE);
+    }
     void Win32Window::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
@@ -393,9 +541,23 @@ namespace Vortex
     }
     void Win32Window::SetAspectRatio(i32 numerator, i32 denominator)
     {
+        if (numerator == 0 || denominator == 0
+            || (numerator != -1 && numerator < 0)
+            || (denominator != -1 && denominator < 0))
+        {
+            VtCoreError("Win32: Invalid window aspect ratio: {}:{}", numerator,
+                        denominator);
+            return;
+        }
+
         m_Data.Numererator = numerator;
         m_Data.Denominator = denominator;
-        glfwSetWindowAspectRatio(m_Window, numerator, denominator);
+
+        RECT area;
+        GetWindowRect(m_WindowHandle, &area);
+        ApplyAspectRatio(WMSZ_BOTTOMRIGHT, area);
+        MoveWindow(m_WindowHandle, area.left, area.top, area.right - area.left,
+                   area.bottom - area.top, TRUE);
     }
     void Win32Window::SetSize(const Vec2i& size) noexcept
     {
@@ -458,13 +620,12 @@ namespace Vortex
         GetWindowRect(m_WindowHandle, &area);
         MoveWindow(m_WindowHandle, area.left, area.top, area.right - area.left,
                    area.bottom - area.top, TRUE);
-        glfwSetWindowSizeLimits(m_Window, minWidth, minHeight, maxWidth,
-                                maxHeight);
     }
 
     void Win32Window::SetAutoIconify(bool autoIconify) const noexcept
     {
-        glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
+        // TODO(v1tr10l7): Win32: SetAutoIconify
+        (void)autoIconify;
     }
     void Win32Window::SetCursorPosition(Vec2d position) noexcept
     {
@@ -477,14 +638,8 @@ namespace Vortex
         ClientToScreen(m_WindowHandle, &pos);
         SetCursorPos(pos.x, pos.y);
     }
-    void Win32Window::ShowCursor() const noexcept
-    {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-    void Win32Window::HideCursor() const noexcept
-    {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    }
+    void Win32Window::ShowCursor() const noexcept { ::ShowCursor(true); }
+    void Win32Window::HideCursor() const noexcept { ::ShowCursor(false); }
     void Win32Window::SetFullscreen(bool fullscreen)
     {
         (void)fullscreen;
@@ -494,27 +649,34 @@ namespace Vortex
     }
     void Win32Window::SetResizable(bool resizable) noexcept
     {
-        m_Data.Resizable = resizable;
-        glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, resizable);
+        // m_Data.Resizable = resizable;
+        // TODO(v1tr10l7): SetResizable
+        (void)resizable;
     }
     void Win32Window::SetVisible(bool visible) const
     {
-        if (visible) return glfwShowWindow(m_Window);
-        glfwHideWindow(m_Window);
+        ShowWindow(m_WindowHandle, visible ? SW_SHOW : SW_HIDE);
     }
     void Win32Window::SetAlwaysOnTop(bool alwaysOnTop)
     {
-        glfwSetWindowAttrib(m_Window, GLFW_FLOATING, alwaysOnTop);
+        // TODO(v1tr10l7): Win32: SetAlwaysOnTop
+        (void)alwaysOnTop;
     }
 
     void Win32Window::SetupEvents()
     {
         using namespace WindowEvents;
+        defWindowProc = reinterpret_cast<WNDPROC>(
+            GetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC));
+        SetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC,
+                          reinterpret_cast<LONG_PTR>(HandleGlobalEvents));
 
 #define VtGetWindow(handle)                                                    \
     reinterpret_cast<Win32Window*>(glfwGetWindowUserPointer(handle))
 #pragma region callbacks
-        auto positionCallback = [](GLFWwindow* handle, i32 xpos, i32 ypos)
+        [[maybe_unused]]
+        auto positionCallback
+            = [](GLFWwindow* handle, i32 xpos, i32 ypos)
         {
             auto window = VtGetWindow(handle);
             WindowMovedEvent(window, xpos, ypos);
@@ -522,7 +684,9 @@ namespace Vortex
             window->m_Data.Position.x = xpos;
             window->m_Data.Position.y = ypos;
         };
-        auto sizeCallback = [](GLFWwindow* handle, i32 width, i32 height)
+        [[maybe_unused]]
+        auto sizeCallback
+            = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
             WindowResizedEvent(window, width, height);
@@ -530,14 +694,18 @@ namespace Vortex
             window->m_Data.VideoMode.Width  = width;
             window->m_Data.VideoMode.Height = height;
         };
-        auto closeCallback = [](GLFWwindow* handle)
+        [[maybe_unused]]
+        auto closeCallback
+            = [](GLFWwindow* handle)
         {
             auto window = VtGetWindow(handle);
             WindowClosedEvent(window);
 
             window->m_Data.IsOpen = false;
         };
-        auto focusCallback = [](GLFWwindow* handle, i32 focused)
+        [[maybe_unused]]
+        auto focusCallback
+            = [](GLFWwindow* handle, i32 focused)
         {
             auto window = VtGetWindow(handle);
             if (focused) WindowFocusedEvent(window);
@@ -545,12 +713,16 @@ namespace Vortex
 
             window->m_Data.Focused = focused;
         };
-        auto iconifyCallback = [](GLFWwindow* handle, i32 iconified)
+        [[maybe_unused]]
+        auto iconifyCallback
+            = [](GLFWwindow* handle, i32 iconified)
         {
             auto window = VtGetWindow(handle);
             WindowMinimizedEvent(window, iconified);
         };
-        auto maximizeCallback = [](GLFWwindow* handle, i32 maximized)
+        [[maybe_unused]]
+        auto maximizeCallback
+            = [](GLFWwindow* handle, i32 maximized)
         {
             auto window = VtGetWindow(handle);
             WindowMaximizedEvent(window, maximized);
@@ -564,8 +736,10 @@ namespace Vortex
 
             FramebufferResizedEvent(window, width, height);
         };
-        auto keyCallback =
-            [](GLFWwindow* handle, i32 key, i32 scancode, i32 action, i32 mods)
+        [[maybe_unused]]
+        auto keyCallback
+            = [](GLFWwindow* handle, i32 key, i32 scancode, i32 action,
+                 i32 mods)
         {
             auto window = VtGetWindow(handle);
             using Input::KeyCode;
@@ -586,11 +760,14 @@ namespace Vortex
                 case GLFW_REPEAT: KeyPressedEvent(window, keycode, 1); break;
             }
         };
-        auto charCallback = [](GLFWwindow* handle, u32 codepoint)
+        [[maybe_unused]]
+        auto charCallback
+            = [](GLFWwindow* handle, u32 codepoint)
         {
             auto window = VtGetWindow(handle);
             KeyTypedEvent(window, codepoint);
         };
+        [[maybe_unused]]
         auto mouseButtonCallback
             = [](GLFWwindow* handle, i32 button, i32 action, i32 mods)
         {
@@ -612,18 +789,24 @@ namespace Vortex
                     = false;
             }
         };
-        auto cursorEnterCallback = [](GLFWwindow* handle, i32 entered)
+        [[maybe_unused]]
+        auto cursorEnterCallback
+            = [](GLFWwindow* handle, i32 entered)
         {
             auto window = VtGetWindow(handle);
             if (entered) MouseEnteredEvent(window);
             else MouseLeftEvent(window);
         };
-        auto scrollCallback = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
+        [[maybe_unused]]
+        auto scrollCallback
+            = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
         {
             auto window = VtGetWindow(handle);
             MouseScrolledEvent(window, xoffset, yoffset);
         };
-        auto cursorPosCallback = [](GLFWwindow* handle, f64 xpos, f64 ypos)
+        [[maybe_unused]]
+        auto cursorPosCallback
+            = [](GLFWwindow* handle, f64 xpos, f64 ypos)
         {
             auto window = VtGetWindow(handle);
             MouseMovedEvent(window, xpos, ypos);
@@ -668,6 +851,223 @@ namespace Vortex
         glfwSetCharModsCallback(m_Window, charModsCallback);
         glfwSetDropCallback(m_Window, dropCallback);
         glfwSetJoystickCallback(joystickCallback);
+    }
+    void Win32Window::ApplyAspectRatio(i32 edge, RECT& area)
+    {
+        RECT      frame   = {};
+        LONG      style   = GetWindowLongW(m_WindowHandle, GWL_STYLE);
+        LONG      exStyle = GetWindowLongW(m_WindowHandle, GWL_EXSTYLE);
+        const f32 ratio   = static_cast<f32>(m_Data.Numererator)
+                        / static_cast<f32>(m_Data.Denominator);
+
+        AdjustWindowRectExForDpi(&frame, style, FALSE, exStyle,
+                                 GetDpiForWindow(m_WindowHandle));
+
+        if (edge == WMSZ_LEFT || edge == WMSZ_BOTTOMLEFT || edge == WMSZ_RIGHT
+            || edge == WMSZ_BOTTOMRIGHT)
+            area.bottom = area.top + (frame.bottom - frame.top)
+                        + static_cast<i32>(((area.right - area.left)
+                                            - (frame.right - frame.left))
+                                           / ratio);
+        else if (edge == WMSZ_TOPLEFT || edge == WMSZ_TOPRIGHT)
+            area.top = area.bottom - (frame.bottom - frame.top)
+                     - static_cast<i32>(((area.right - area.left)
+                                         - (frame.right - frame.left))
+                                        / ratio);
+        else if (edge == WMSZ_TOP || edge == WMSZ_BOTTOM)
+            area.right = area.left + (frame.right - frame.left)
+                       + static_cast<i32>(((area.bottom - area.top)
+                                           - (frame.bottom - frame.top))
+                                          * ratio);
+    }
+
+    LRESULT WINAPI Win32Window::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam,
+                                             LPARAM lParam)
+    {
+        static bool cursorTracked = true;
+        switch (msg)
+        {
+            case WM_ACTIVATEAPP: break;
+            case WM_CHAR:
+            case WM_SYSCHAR:
+            {
+                u32 highSurrogate = 0;
+                if (wParam >= 0xd800 && wParam <= 0xdbff)
+                    highSurrogate = static_cast<WCHAR>(wParam);
+                else
+                {
+                    u32 codepoint = 0;
+
+                    if (wParam >= 0xdc00 && wParam <= 0xdfff)
+                    {
+                        if (highSurrogate)
+                        {
+                            codepoint += (highSurrogate - 0xd800) << 10;
+                            codepoint += static_cast<WCHAR>(wParam) - 0xdc00;
+                            codepoint += 0x10000;
+                        }
+                    }
+                    else codepoint = static_cast<WCHAR>(wParam);
+                    WindowEvents::KeyTypedEvent(this, codepoint);
+                }
+                return 0;
+            }
+            case WM_UNICHAR:
+            {
+                if (wParam == UNICODE_NOCHAR) return TRUE;
+                u32 c = static_cast<u32>(wParam);
+                WindowEvents::KeyTypedEvent(this, c);
+                return FALSE;
+            }
+            case WM_CLOSE:
+            case WM_DESTROY:
+                m_Data.IsOpen = false;
+                PostQuitMessage(0);
+                break;
+            case WM_DEVICECHANGE: break;
+            case WM_DISPLAYCHANGE: break;
+            case WM_DROPFILES: break;
+            case WM_ERASEBKGND: return TRUE;
+            case WM_SYSKEYUP:
+            case WM_KEYUP:
+            case WM_SYSKEYDOWN:
+            case WM_KEYDOWN:
+            {
+                KeyCode key
+                    = VtKeyCode(static_cast<u32>(wParam), lParam & (1 << 24));
+                if (((u32)lParam & (1 << 31)) == 0)
+                {
+                    WindowEvents::KeyPressedEvent(this, key, lParam & 0xFF00);
+                    m_Data.Keys[std::to_underlying(key)] = true;
+                }
+                else
+                {
+                    WindowEvents::KeyReleasedEvent(this, key);
+                    m_Data.Keys[static_cast<u32>(key)] = false;
+                }
+                break;
+            }
+            case WM_LBUTTONUP:
+            case WM_MBUTTONUP:
+            case WM_RBUTTONUP:
+            case WM_XBUTTONUP:
+                WindowEvents::MouseButtonReleasedEvent(this,
+                                                       VtMouseCode(wParam));
+                break;
+            case WM_LBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_RBUTTONDOWN:
+            case WM_XBUTTONDOWN:
+                WindowEvents::MouseButtonPressedEvent(this,
+                                                      VtMouseCode(wParam));
+                break;
+            case WM_LBUTTONDBLCLK:
+            case WM_MBUTTONDBLCLK:
+            case WM_RBUTTONDBLCLK:
+            case WM_XBUTTONDBLCLK:
+                WindowEvents::MouseButtonPressedEvent(this,
+                                                      VtMouseCode(wParam));
+                break;
+            case WM_MOUSEACTIVATE: break;
+            case WM_MOUSELEAVE:
+                cursorTracked = false;
+                WindowEvents::MouseLeftEvent(this);
+                break;
+            case WM_MOUSEMOVE:
+            {
+                if (!cursorTracked)
+                {
+                    TRACKMOUSEEVENT lpEventTrack;
+                    lpEventTrack.cbSize      = sizeof(lpEventTrack);
+                    lpEventTrack.dwFlags     = TME_LEAVE;
+                    lpEventTrack.hwndTrack   = m_WindowHandle;
+                    lpEventTrack.dwHoverTime = 0;
+                    TrackMouseEvent(&lpEventTrack);
+
+                    cursorTracked = true;
+                    WindowEvents::MouseEnteredEvent(this);
+                }
+
+                POINT point = (POINT)lParam;
+                ScreenToClient(hWnd, &point);
+                u32 x           = point.x;
+                u32 y           = point.y;
+
+                m_Data.Position = {x, y};
+                WindowEvents::MouseMovedEvent(this, x, y);
+                break;
+            }
+            case WM_MOUSEWHEEL:
+            {
+                i16 delta = HIWORD(wParam);
+                WindowEvents::MouseScrolledEvent(this, delta / 120.0f, 0.0f);
+                break;
+            }
+            case WM_MOUSEHWHEEL:
+            {
+                i16 delta = HIWORD(wParam);
+                WindowEvents::MouseScrolledEvent(this, 0.0f, delta / 120.0f);
+                break;
+            }
+            case WM_SIZE:
+                m_Data.VideoMode.Width  = LOWORD(lParam);
+                m_Data.VideoMode.Height = HIWORD(lParam);
+                WindowEvents::WindowResizedEvent(this, LOWORD(lParam),
+                                                 HIWORD(lParam));
+
+                if (wParam == SIZE_MINIMIZED)
+                    WindowEvents::WindowMinimizedEvent(this, true);
+                break;
+            case WM_SETFOCUS: WindowEvents::WindowFocusedEvent(this); break;
+            case WM_KILLFOCUS: WindowEvents::WindowFocusLostEvent(this); break;
+            case WM_SYSCOMMAND:
+            {
+                switch (wParam)
+                {
+                    case SC_MONITORPOWER:
+                    {
+                        MonitorState monitorState = {};
+                        switch (lParam)
+                        {
+                            case -1:
+                                monitorState = MonitorState::eConnected;
+                                break;
+                            case 2:
+                                monitorState = MonitorState::eDisconnected;
+                                break;
+                            case 1:
+                                monitorState = MonitorState::eLowPower;
+                                break;
+                        }
+
+                        // TODO(v1tr10l7): Monitor state updated event
+                        (void)monitorState;
+                        break;
+                    }
+                    case SC_SCREENSAVE:
+                        // NOTE: If fullscreen is enabled, disable screensaver
+                        if (m_Data.Fullscreen) return 0;
+                        // WindowEvents::monitorStateChangedEvent(
+                        //     MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL),
+                        //     MonitorState::ScreenSaver);
+                        break;
+                }
+                break;
+            }
+            default: break;
+        }
+
+        return defWindowProc(hWnd, msg, wParam, lParam);
+    }
+
+    LRESULT WINAPI Win32Window::HandleGlobalEvents(HWND hWnd, UINT msg,
+                                                   WPARAM wParam, LPARAM lParam)
+    {
+        Win32Window* window = GetWindowMap()[hWnd];
+
+        VtCoreInfo("Winproc");
+        return window ? window->HandleEvents(hWnd, msg, wParam, lParam)
+                      : defWindowProc(hWnd, msg, wParam, lParam);
     }
 
     Image& Win32Window::ChooseImage(const Image* images, usize count, i32 width,
@@ -757,9 +1157,29 @@ namespace Vortex
 
     bool Win32Window::Initialize()
     {
+        HINSTANCE   hInstance = GetModuleHandleW(nullptr);
+
+        WNDCLASSEXW wcex{};
+        wcex.cbSize        = sizeof(wcex);
+        wcex.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+        wcex.lpfnWndProc   = HandleGlobalEvents;
+        wcex.cbClsExtra    = 0;
+        wcex.cbWndExtra    = 0;
+        wcex.hCursor       = nullptr;
+        //= LoadCursorW(hInstance, (LPCWSTR)MAKEINTRESOURCEW(IDC_ARROW));
+        wcex.hIcon         = nullptr;
+        wcex.hbrBackground = nullptr;
+        wcex.hInstance     = hInstance;
+        wcex.lpszMenuName  = nullptr;
+        wcex.lpszClassName = s_WindowClassName;
         glfwSetErrorCallback(glfwErrorCallback);
 
+        RegisterClassExW(&wcex);
         return glfwInit() == GLFW_TRUE;
     }
-    void Win32Window::Shutdown() { glfwTerminate(); }
+    void Win32Window::Shutdown()
+    {
+        UnregisterClassW(s_WindowClassName, GetModuleHandleW(nullptr));
+        glfwTerminate();
+    }
 }; // namespace Vortex
