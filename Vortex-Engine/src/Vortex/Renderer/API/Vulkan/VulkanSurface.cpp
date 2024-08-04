@@ -10,9 +10,9 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    #include <X11/Xlib.h>
     #define VK_USE_PLATFORM_X11_KHR
     #define GLFW_EXPOSE_NATIVE_X11
+    #include <X11/Xlib.h>
     #include <vulkan/vulkan_xlib.h>
 #elifdef VT_PLATFORM_WINDOWS
     #define VK_USE_PLATFORM_WIN32_KHR
@@ -36,7 +36,7 @@ namespace Vortex
         surfaceCreateInfo.flags = 0;
         surfaceCreateInfo.dpy   = glfwGetX11Display();
         surfaceCreateInfo.window
-            = std::any_cast<Window>(window->GetNativeHandle());
+            = std::any_cast<::Window>(window->GetNativeHandle());
 
         vkCreateXlibSurfaceKHR(vkInstance, &surfaceCreateInfo, VK_NULL_HANDLE,
                                &surface);

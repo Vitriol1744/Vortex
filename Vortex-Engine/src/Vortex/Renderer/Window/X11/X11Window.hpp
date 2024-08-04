@@ -8,7 +8,9 @@
 
 #include "Vortex/Renderer/Window/Window.hpp"
 
+#define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 namespace Vortex
 {
@@ -23,7 +25,7 @@ namespace Vortex
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
-            return m_Window;
+            return glfwGetX11Window(m_Window);
         }
         inline virtual bool IsOpen() const noexcept override
         {
