@@ -4,10 +4,17 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "Vortex/Core/Utf.hpp"
+#include "Vortex/Core/Utf.hpp" // NOLINT(misc-header-include-cycle)
 
 namespace Vortex
 {
+    template <typename In, typename Out>
+    Out Utf<32>::FromWide(In begin, In end, Out output)
+    {
+        while (begin < end) *output++ = DecodeWide(*begin++);
+
+        return output;
+    }
     template <typename In, typename Out>
     Out Utf<32>::ToWide(In begin, In end, Out output, wchar_t replacement)
     {

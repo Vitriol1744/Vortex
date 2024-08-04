@@ -23,6 +23,8 @@ namespace Vortex
     {
       public:
         template <typename In, typename Out>
+        static Out FromWide(In begin, In end, Out output);
+        template <typename In, typename Out>
         static Out ToWide(In begin, In end, Out output, wchar_t replacement);
 
         template <typename In>
