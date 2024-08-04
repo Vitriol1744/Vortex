@@ -38,6 +38,7 @@ namespace Vortex
         m_Data.Resizable        = specs.Resizable;
         m_Data.Visible          = specs.Visible;
         m_Data.Focused          = specs.Focused;
+        m_Data.AlwaysOnTop      = specs.AlwaysOnTop;
         m_Data.MouseHovered     = false;
         m_Data.Decorated        = specs.Decorated;
         m_Data.FocusOnShow      = specs.FocusOnShow;

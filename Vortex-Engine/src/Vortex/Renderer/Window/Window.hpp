@@ -166,6 +166,7 @@ namespace Vortex
             bool             Resizable        = true;
             bool             Visible          = true;
             bool             Focused          = false;
+            bool             AlwaysOnTop      = true;
             bool             MouseHovered     = false;
             bool             Decorated        = false;
             bool             FocusOnShow      = false;

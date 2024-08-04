@@ -304,6 +304,8 @@ namespace Vortex
         i32          width   = specification.VideoMode.Width;
         i32          height  = specification.VideoMode.Height;
         const char*  title   = specification.Title.data();
+        auto         style   = GetWindowStyle();
+        auto         styleEx = GetWindowStyleEx();
 
         Ref<Monitor> monitor = specification.Monitor;
         [[maybe_unused]]
@@ -311,7 +313,6 @@ namespace Vortex
             = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
                       : nullptr;
 
-        u32  style = WS_OVERLAPPEDWINDOW;
         RECT wrect{};
         wrect.left   = 0;
         wrect.right  = specification.VideoMode.Width;
@@ -330,12 +331,15 @@ namespace Vortex
                  - static_cast<i32>(specification.VideoMode.Height))
               / 2;
 
-        std::wstring _title;
+        std::wstring wideTitle;
         Utf32::ToWide(specification.Title.begin(), specification.Title.end(),
-                      std::back_inserter(_title), 0);
-        m_WindowHandle = CreateWindowExW(
-            0, s_WindowClassName, _title.data(), style, x, y, width, height,
-            nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
+                      std::back_inserter(wideTitle), 0);
+
+        HINSTANCE hInstance = GetModuleHandleW(nullptr);
+        m_WindowHandle      = CreateWindowExW(
+            styleEx, s_WindowClassName, wideTitle.data(), style, x, y, width,
+            height, nullptr, nullptr, hInstance, nullptr);
+        WinAssert(m_WindowHandle);
 
         if (monitor)
         {
@@ -369,7 +373,7 @@ namespace Vortex
                 bitsPerPixel, redBits, greenBits, blueBits, refreshRate);
         }
         VtCoreTrace(
-            "GLFW: Created window {{ width: {}, height: {}, title: {} }}",
+            "Win32: Created window {{ width: {}, height: {}, title: {} }}",
             width, height, title);
 
         ++s_WindowsCount;
@@ -677,6 +681,28 @@ namespace Vortex
         (void)alwaysOnTop;
     }
 
+    DWORD Win32Window::GetWindowStyle()
+    {
+        DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+        if (!m_Data.Fullscreen) return style | WS_POPUP;
+
+        style |= WS_SYSMENU | WS_MINIMIZEBOX;
+        if (m_Data.Decorated)
+        {
+            style |= WS_CAPTION;
+            if (m_Data.Resizable) style |= WS_MINIMIZEBOX | WS_THICKFRAME;
+            return style | WS_OVERLAPPEDWINDOW;
+        }
+
+        return style | WS_POPUP;
+    }
+    DWORD Win32Window::GetWindowStyleEx()
+    {
+        DWORD styleEx = WS_EX_APPWINDOW;
+        if (m_Data.Fullscreen || m_Data.AlwaysOnTop) styleEx |= WS_EX_TOPMOST;
+
+        return styleEx;
+    }
     void Win32Window::SetupEvents()
     {
         using namespace WindowEvents;

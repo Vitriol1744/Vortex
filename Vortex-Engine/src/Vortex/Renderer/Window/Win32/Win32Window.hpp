@@ -92,6 +92,8 @@ namespace Vortex
             return windowsMap;
         }
 
+        DWORD                 GetWindowStyle();
+        DWORD                 GetWindowStyleEx();
         void                  SetupEvents();
         void                  ApplyAspectRatio(i32 edge, RECT& area);
         LRESULT WINAPI        HandleEvents(HWND hWnd, UINT msg, WPARAM wParam,

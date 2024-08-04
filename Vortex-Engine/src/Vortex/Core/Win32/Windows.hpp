@@ -56,7 +56,7 @@
 #ifndef VT_DIST
     #define WinAssert(x)                                                       \
         {                                                                      \
-            HRESULT result = (x);                                              \
+            auto result = (x);                                                 \
             if (result != 0)                                                   \
                 ;                                                              \
             else                                                               \
@@ -70,7 +70,7 @@
 #else
     #define WinAssert(x)                                                       \
         {                                                                      \
-            HRESULT result = (x);                                              \
+            auto result = (x);                                                 \
             (void)result;                                                      \
         }
 #endif

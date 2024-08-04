@@ -26,6 +26,9 @@ namespace Vortex
         specs.Decorated           = true;
         specs.Monitor             = Monitor::GetPrimaryMonitor();
         specs.AlwaysOnTop         = false;
+        specs.Resizable           = true;
+        specs.Fullscreen          = false;
+        specs.Decorated           = true;
 
         m_MainWindow              = Window::Create(specs);
         m_ImGuiLayer = CreateRef<VulkanImGuiLayer>("VulkanImGuiLayer");
