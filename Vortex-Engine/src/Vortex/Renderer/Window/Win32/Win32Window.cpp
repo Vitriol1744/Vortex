@@ -16,7 +16,6 @@
 namespace Vortex
 {
     usize                                  Win32Window::s_WindowsCount = 0;
-    static WNDPROC                         defWindowProc;
     inline static constexpr const wchar_t* s_WindowClassName
         = L"Vortex Window Class";
 
@@ -293,6 +292,7 @@ namespace Vortex
     }
 
     Win32Window::Win32Window(const WindowSpecification& specification)
+        : Window(specification)
     {
         if (s_WindowsCount == 0)
         {
@@ -301,41 +301,15 @@ namespace Vortex
                        glfwGetVersionString());
         }
 
-        i32         width  = specification.VideoMode.Width;
-        i32         height = specification.VideoMode.Height;
-        const char* title  = specification.Title.data();
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, specification.Visible);
-        m_Data.Visible = specification.Visible;
-        glfwWindowHint(GLFW_DECORATED, specification.Decorated);
-        m_Data.Decorated = specification.Decorated;
-        glfwWindowHint(GLFW_FOCUSED, specification.Focused);
-        m_Data.Focused = specification.Focused;
-        glfwWindowHint(GLFW_FLOATING, specification.AlwaysOnTop);
-        glfwWindowHint(GLFW_MAXIMIZED, specification.Maximized);
-        glfwWindowHint(GLFW_POSITION_X, specification.Position.x);
-        glfwWindowHint(GLFW_POSITION_Y, specification.Position.y);
-        m_Data.Position = specification.Position;
-        glfwWindowHint(GLFW_RED_BITS, specification.VideoMode.RedBits);
-        glfwWindowHint(GLFW_GREEN_BITS, specification.VideoMode.GreenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, specification.VideoMode.BlueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, specification.VideoMode.RefreshRate);
-        glfwWindowHint(GLFW_AUTO_ICONIFY, specification.AutoIconify);
-        m_Data.AutoIconify = specification.AutoIconify;
-        glfwWindowHint(GLFW_CENTER_CURSOR, specification.CenterCursor);
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, specification.FocusOnShow);
-        m_Data.FocusOnShow   = specification.FocusOnShow;
+        i32          width   = specification.VideoMode.Width;
+        i32          height  = specification.VideoMode.Height;
+        const char*  title   = specification.Title.data();
 
         Ref<Monitor> monitor = specification.Monitor;
         [[maybe_unused]]
         GLFWmonitor* monitorHandle
             = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
                       : nullptr;
-
-        // m_Window = glfwCreateWindow(
-        //     width, height, title,
-        //     specification.Fullscreen ? monitorHandle : nullptr, nullptr);
 
         u32  style = WS_OVERLAPPEDWINDOW;
         RECT wrect{};
@@ -400,12 +374,9 @@ namespace Vortex
 
         ++s_WindowsCount;
         SetVisible(true);
-        m_Data.IsOpen = true; //! glfwWindowShouldClose(m_Window);
-
-        // glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
+        m_Data.IsOpen = true;
 
         SetupEvents();
-        // m_WindowHandle                 = glfwGetWin32Window(m_Window);
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
@@ -709,11 +680,6 @@ namespace Vortex
     void Win32Window::SetupEvents()
     {
         using namespace WindowEvents;
-        defWindowProc = DefWindowProcW;
-        // defWindowProc = reinterpret_cast<WNDPROC>(
-        //     GetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC));
-        // SetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC,
-        //                   reinterpret_cast<LONG_PTR>(HandleGlobalEvents));
         return;
 
 #define VtGetWindow(handle)                                                    \
@@ -1248,14 +1214,16 @@ namespace Vortex
         wcex.lpszMenuName  = nullptr;
         wcex.lpszClassName = s_WindowClassName;
         wcex.hIconSm       = nullptr;
-        glfwSetErrorCallback(glfwErrorCallback);
 
         WinAssert(RegisterClassExW(&wcex));
+
+        glfwSetErrorCallback(glfwErrorCallback);
         return glfwInit() == GLFW_TRUE;
     }
     void Win32Window::Shutdown()
     {
-        UnregisterClassW(s_WindowClassName, GetModuleHandleW(nullptr));
+        WinAssert(
+            UnregisterClassW(s_WindowClassName, GetModuleHandleW(nullptr)));
         glfwTerminate();
     }
 }; // namespace Vortex

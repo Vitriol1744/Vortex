@@ -162,6 +162,7 @@ namespace Vortex
     }
 
     X11Window::X11Window(const WindowSpecification& specification)
+        : Window(specification)
     {
         if (s_WindowsCount == 0)
         {

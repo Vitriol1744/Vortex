@@ -15,7 +15,6 @@ set (CXX_STANDARD_REQUIRED ON)
 option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 find_package (Vulkan REQUIRED)
-find_package (VulkanHeaders CONFIG)
 
 add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/magic_enum)
@@ -99,11 +98,15 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Workaround for std::expected not available in clang
-    target_compile_options(${PROJECT_NAME} PUBLIC
-      -stdlib=libstdc++ -D__cpp_concepts=202002 -Wno-builtin-macro-redefined
+    target_compile_options(${PROJECT_NAME} PUBLIC 
+        $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libstdc++ -D__cpp_concepts=202002 -Wno-builtin-macro-redefined -Wno-unused-command-line-argument>
     )
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
+
+if (WIN32)
+    target_link_libraries (${PROJECT_NAME} PUBLIC Shcore)
+endif ()

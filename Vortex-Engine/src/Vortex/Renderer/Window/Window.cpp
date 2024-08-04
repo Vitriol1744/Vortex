@@ -28,6 +28,23 @@ namespace Vortex
 #endif
     };
 
+    Window::Window(const WindowSpecification& specs)
+    {
+        m_Data.VideoMode        = specs.VideoMode;
+        m_Data.Title            = specs.Title;
+        m_Data.Position         = specs.Position;
+        m_Data.IsOpen           = true;
+        m_Data.Fullscreen       = specs.Fullscreen;
+        m_Data.Resizable        = specs.Resizable;
+        m_Data.Visible          = specs.Visible;
+        m_Data.Focused          = specs.Focused;
+        m_Data.MouseHovered     = false;
+        m_Data.Decorated        = specs.Decorated;
+        m_Data.FocusOnShow      = specs.FocusOnShow;
+        m_Data.AutoIconify      = specs.AutoIconify;
+        m_Data.MousePassthrough = false;
+    }
+
     void Window::PollEvents()
     {
 #ifdef VT_PLATFORM_LINUX
@@ -43,31 +60,30 @@ namespace Vortex
 #endif
     }
 
-    Ref<Window> Window::Create(const WindowSpecification& specification)
+    Ref<Window> Window::Create(const WindowSpecification& specs)
     {
         Ref<Window> ret = nullptr;
 #ifdef VT_PLATFORM_LINUX
         WindowSubsystem subsystem = GetWindowSubsystem();
         if (subsystem == WindowSubsystem::eX11)
-            ret = CreateRef<X11Window>(specification);
+            ret = CreateRef<X11Window>(specs);
 #elifdef VT_PLATFORM_WINDOWS
-        ret = CreateRef<Win32Window>(specification);
+        ret = CreateRef<Win32Window>(specs);
 #endif
 
         return ret;
     }
 
-    Window* Window::CreateForImGui(const WindowSpecification& specification)
+    Window* Window::CreateForImGui(const WindowSpecification& specs)
     {
-        const_cast<WindowSpecification&>(specification).NoAPI = true;
+        const_cast<WindowSpecification&>(specs).NoAPI = true;
 
-        Window* ret                                           = nullptr;
+        Window* ret                                   = nullptr;
 #ifdef VT_PLATFORM_LINUX
         WindowSubsystem subsystem = GetWindowSubsystem();
-        if (subsystem == WindowSubsystem::eX11)
-            ret = new X11Window(specification);
+        if (subsystem == WindowSubsystem::eX11) ret = new X11Window(specs);
 #elifdef VT_PLATFORM_WINDOWS
-        ret = new Win32Window(specification);
+        ret = new Win32Window(specs);
 #endif
 
         return ret;

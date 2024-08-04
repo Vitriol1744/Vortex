@@ -67,7 +67,7 @@ namespace Vortex
     class VT_API Window : public NonCopyable<Window>
     {
       public:
-        Window()          = default;
+        Window(const WindowSpecification& specs);
         virtual ~Window() = default;
 
         static void         PollEvents();
