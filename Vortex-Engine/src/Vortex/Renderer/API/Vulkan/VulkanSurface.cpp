@@ -20,6 +20,8 @@
     #include <vulkan/vulkan_win32.h>
 #endif
 
+#include <GLFW/glfw3native.h>
+
 namespace Vortex
 {
     void VulkanSurface::Create(Window*            window,
