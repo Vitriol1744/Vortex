@@ -6,12 +6,10 @@
  */
 #pragma once
 
+#include "Vortex/Core/Win32/Windows.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
 #include <GLFW/glfw3.h>
-
-#define GLFW_EXPOSE_NATIVE_WIN32 1
-#include <GLFW/glfw3native.h>
 
 namespace Vortex
 {
@@ -26,7 +24,7 @@ namespace Vortex
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
-            return m_Window;
+            return m_WindowHandle;
         }
         inline virtual bool IsOpen() const noexcept override
         {
@@ -70,20 +68,28 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        HWND         m_WindowHandle = nullptr;
-        HICON        m_BigIcon      = nullptr;
-        HICON        m_SmallIcon    = nullptr;
+        HWND                                           m_WindowHandle = nullptr;
+        HICON                                          m_BigIcon      = nullptr;
+        HICON                                          m_SmallIcon    = nullptr;
+        bool                                           m_CursorTracked = false;
 
-        GLFWwindow*  m_Window;
+        GLFWwindow*                                    m_Window;
 
-        Vec2i        m_LastCursorPos = {0, 0};
+        Vec2i                                          m_LastCursorPos = {0, 0};
 
-        static usize s_WindowsCount;
-        inline static std::unordered_map<HWND, Win32Window*>& GetWindowMap()
+        static usize                                   s_WindowsCount;
+        static std::unordered_map<HWND, Win32Window*>& GetWindowMap()
         {
             static std::unordered_map<HWND, Win32Window*> map;
 
             return map;
+        }
+        inline static std::unordered_map<HWND, Win32Window*>* GetWindowsMap()
+        {
+            static auto windowsMap
+                = new std::unordered_map<HWND, Win32Window*>();
+
+            return windowsMap;
         }
 
         void                  SetupEvents();

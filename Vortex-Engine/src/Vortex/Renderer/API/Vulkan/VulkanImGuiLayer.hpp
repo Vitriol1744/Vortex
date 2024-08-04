@@ -11,18 +11,17 @@
 
 #include "Vortex/Renderer/Window/Window.hpp"
 
+#include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <GLFW/glfw3.h> 
 #undef CreateWindow
 
 namespace Vortex
 {
     struct ImGui_ImplVortex_Data
     {
-        Vortex::Window* MainWindow  = nullptr;
-        Vortex::f64     Time        = 0.0;
-        Vortex::Window* MouseWindow = nullptr;
-        GLFWcursor*     MouseCursors[ImGuiMouseCursor_COUNT]{};
+        Vortex::Window* MainWindow        = nullptr;
+        Vortex::f64     Time              = 0.0;
+        Vortex::Window* MouseWindow       = nullptr;
         ImVec2          LastValidMousePos = {};
         Vortex::Window* KeyOwnerWindows[std::to_underlying(
             Vortex::Input::KeyCode::eKeyCount)]
@@ -91,8 +90,7 @@ namespace Vortex
         static bool   OnWindowFocusLost(Window* window);
         static bool   OnWindowClosed(Window* window);
 
-        static bool        OnMonitorStateUpdate(Monitor*, MonitorState);
-
+        static bool   OnMonitorStateUpdate(Monitor*, MonitorState);
 
         //--------------------------------------------------------------------
         // Window helpers ----------------------------------------------------

@@ -6,12 +6,12 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
+
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Utf.hpp"
 
-#include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
-
-#include "shellscalingapi.h"
+#include <shellscalingapi.h>
 
 namespace Vortex
 {
@@ -328,13 +328,40 @@ namespace Vortex
         m_Data.FocusOnShow   = specification.FocusOnShow;
 
         Ref<Monitor> monitor = specification.Monitor;
+        [[maybe_unused]]
         GLFWmonitor* monitorHandle
             = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
                       : nullptr;
 
-        m_Window = glfwCreateWindow(
-            width, height, title,
-            specification.Fullscreen ? monitorHandle : nullptr, nullptr);
+        // m_Window = glfwCreateWindow(
+        //     width, height, title,
+        //     specification.Fullscreen ? monitorHandle : nullptr, nullptr);
+
+        u32  style = WS_OVERLAPPEDWINDOW;
+        RECT wrect{};
+        wrect.left   = 0;
+        wrect.right  = specification.VideoMode.Width;
+        wrect.top    = 0;
+        wrect.bottom = specification.VideoMode.Height;
+        AdjustWindowRectEx(&wrect, style, false, 0);
+        HDC dc                  = GetDC(nullptr);
+
+        m_Data.VideoMode.Width  = wrect.right - wrect.left;
+        m_Data.VideoMode.Height = wrect.bottom - wrect.top;
+        m_Data.Position         = {wrect.left, wrect.top};
+        i32 x                   = (GetDeviceCaps(dc, HORZRES)
+                 - static_cast<i32>(specification.VideoMode.Width))
+              / 2;
+        i32 y = (GetDeviceCaps(dc, VERTRES)
+                 - static_cast<i32>(specification.VideoMode.Height))
+              / 2;
+
+        std::wstring _title;
+        Utf32::ToWide(specification.Title.begin(), specification.Title.end(),
+                      std::back_inserter(_title), 0);
+        m_WindowHandle = CreateWindowExW(
+            0, s_WindowClassName, _title.data(), style, x, y, width, height,
+            nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
 
         if (monitor)
         {
@@ -373,20 +400,25 @@ namespace Vortex
 
         ++s_WindowsCount;
         SetVisible(true);
-        m_Data.IsOpen = !glfwWindowShouldClose(m_Window);
+        m_Data.IsOpen = true; //! glfwWindowShouldClose(m_Window);
 
-        glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
+        // glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
 
         SetupEvents();
-        m_WindowHandle                 = glfwGetWin32Window(m_Window);
+        // m_WindowHandle                 = glfwGetWin32Window(m_Window);
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
             m_Data.RendererContext = RendererContext::Create(this);
+
+        ShowWindow(m_WindowHandle, SW_SHOW);
+        UpdateWindow(m_WindowHandle);
     }
     Win32Window::~Win32Window()
     {
-        glfwDestroyWindow(m_Window);
+        // glfwDestroyWindow(m_Window);
+        GetWindowMap().erase(m_WindowHandle);
+        DestroyWindow(m_WindowHandle);
 
         if (m_BigIcon) DestroyIcon(m_BigIcon);
         if (m_SmallIcon) DestroyIcon(m_SmallIcon);
@@ -395,7 +427,17 @@ namespace Vortex
         if (s_WindowsCount == 0) Shutdown();
     }
 
-    void Win32Window::PollEvents() { glfwPollEvents(); }
+    void Win32Window::PollEvents()
+    {
+
+        MSG msg;
+        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        // glfwPollEvents();
+    }
     void Win32Window::Present() { m_Data.RendererContext->Present(); }
 
     bool Win32Window::IsFocused() const noexcept
@@ -409,8 +451,8 @@ namespace Vortex
     bool Win32Window::IsHovered() const noexcept
     {
         // TODO(v1tr10l7): Win32: is Hovered return
-        // glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
-        return false;
+        return m_Data.MouseHovered;
+        // return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
     }
     std::string Win32Window::GetTitle() const noexcept { return m_Data.Title; }
     Vec2i       Win32Window::GetPosition() const noexcept
@@ -462,7 +504,8 @@ namespace Vortex
     void Win32Window::Close() noexcept
     {
         m_Data.IsOpen = false;
-        glfwWindowShouldClose(m_Window);
+        WindowEvents::WindowClosedEvent(this);
+        // glfwWindowShouldClose(m_Window);
     }
     void Win32Window::RequestFocus() noexcept
     {
@@ -666,10 +709,12 @@ namespace Vortex
     void Win32Window::SetupEvents()
     {
         using namespace WindowEvents;
-        defWindowProc = reinterpret_cast<WNDPROC>(
-            GetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC));
-        SetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC,
-                          reinterpret_cast<LONG_PTR>(HandleGlobalEvents));
+        defWindowProc = DefWindowProcW;
+        // defWindowProc = reinterpret_cast<WNDPROC>(
+        //     GetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC));
+        // SetWindowLongPtrW(m_WindowHandle, GWLP_WNDPROC,
+        //                   reinterpret_cast<LONG_PTR>(HandleGlobalEvents));
+        return;
 
 #define VtGetWindow(handle)                                                    \
     reinterpret_cast<Win32Window*>(glfwGetWindowUserPointer(handle))
@@ -884,9 +929,16 @@ namespace Vortex
     LRESULT WINAPI Win32Window::HandleEvents(HWND hWnd, UINT msg, WPARAM wParam,
                                              LPARAM lParam)
     {
-        static bool cursorTracked = true;
         switch (msg)
         {
+            case WM_MOVE:
+                WindowEvents::WindowMovedEvent(this, LOWORD(lParam),
+                                               HIWORD(lParam));
+                break;
+            case WM_INPUT:
+            {
+                break;
+            }
             case WM_ACTIVATEAPP: break;
             case WM_CHAR:
             case WM_SYSCHAR:
@@ -922,7 +974,7 @@ namespace Vortex
             case WM_CLOSE:
             case WM_DESTROY:
                 m_Data.IsOpen = false;
-                PostQuitMessage(0);
+                // PostQuitMessage(0);
                 break;
             case WM_DEVICECHANGE: break;
             case WM_DISPLAYCHANGE: break;
@@ -948,19 +1000,35 @@ namespace Vortex
                 break;
             }
             case WM_LBUTTONUP:
-            case WM_MBUTTONUP:
             case WM_RBUTTONUP:
+            case WM_MBUTTONUP:
             case WM_XBUTTONUP:
-                WindowEvents::MouseButtonReleasedEvent(this,
-                                                       VtMouseCode(wParam));
-                break;
+            case WM_RBUTTONDOWN:
             case WM_LBUTTONDOWN:
             case WM_MBUTTONDOWN:
-            case WM_RBUTTONDOWN:
             case WM_XBUTTONDOWN:
-                WindowEvents::MouseButtonPressedEvent(this,
-                                                      VtMouseCode(wParam));
+            {
+                bool pressed = false;
+                if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN
+                    || msg == WM_MBUTTONDOWN || msg == WM_XBUTTONDOWN)
+                    pressed = true;
+
+                MouseCode code = MouseCode::eUnknown;
+                if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
+                    code = MouseCode::eLeft;
+                else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
+                    code = MouseCode::eRight;
+                else if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONUP)
+                    code = MouseCode::eMiddle;
+                else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+                    code = MouseCode::eX1;
+                else code = MouseCode::eX2;
+
+                if (pressed) WindowEvents::MouseButtonPressedEvent(this, code);
+                else WindowEvents::MouseButtonReleasedEvent(this, code);
                 break;
+            }
+
             case WM_LBUTTONDBLCLK:
             case WM_MBUTTONDBLCLK:
             case WM_RBUTTONDBLCLK:
@@ -969,32 +1037,36 @@ namespace Vortex
                                                       VtMouseCode(wParam));
                 break;
             case WM_MOUSEACTIVATE: break;
+            case WM_NCMOUSELEAVE:
             case WM_MOUSELEAVE:
-                cursorTracked = false;
+                if (m_CursorTracked)
+                    WindowEvents::MouseMovedEvent(this, -FLT_MAX, FLT_MAX);
+
+                m_CursorTracked     = false;
+                m_Data.MouseHovered = false;
                 WindowEvents::MouseLeftEvent(this);
                 break;
             case WM_MOUSEMOVE:
             {
-                if (!cursorTracked)
+                if (!m_CursorTracked)
                 {
-                    TRACKMOUSEEVENT lpEventTrack;
-                    lpEventTrack.cbSize      = sizeof(lpEventTrack);
-                    lpEventTrack.dwFlags     = TME_LEAVE;
-                    lpEventTrack.hwndTrack   = m_WindowHandle;
-                    lpEventTrack.dwHoverTime = 0;
+                    TRACKMOUSEEVENT lpEventTrack = {};
+                    lpEventTrack.cbSize          = sizeof(lpEventTrack);
+                    lpEventTrack.dwFlags         = TME_LEAVE;
+                    lpEventTrack.hwndTrack       = m_WindowHandle;
+                    lpEventTrack.dwHoverTime     = 0;
                     TrackMouseEvent(&lpEventTrack);
 
-                    cursorTracked = true;
+                    m_CursorTracked     = true;
+                    m_Data.MouseHovered = true;
                     WindowEvents::MouseEnteredEvent(this);
                 }
 
-                POINT point = (POINT)lParam;
-                ScreenToClient(hWnd, &point);
-                u32 x           = point.x;
-                u32 y           = point.y;
-
-                m_Data.Position = {x, y};
-                WindowEvents::MouseMovedEvent(this, x, y);
+                POINT pos       = {(LONG)LOWORD(lParam), (LONG)HIWORD(lParam)};
+                // if (msg == WM_MOUSEMOVE) ClientToScreen(m_WindowHandle,
+                // &pos);
+                m_Data.Position = {pos.x, pos.y};
+                WindowEvents::MouseMovedEvent(this, pos.x, pos.y);
                 break;
             }
             case WM_MOUSEWHEEL:
@@ -1014,6 +1086,8 @@ namespace Vortex
                 m_Data.VideoMode.Height = HIWORD(lParam);
                 WindowEvents::WindowResizedEvent(this, LOWORD(lParam),
                                                  HIWORD(lParam));
+                WindowEvents::FramebufferResizedEvent(this, LOWORD(lParam),
+                                                      HIWORD(lParam));
 
                 if (wParam == SIZE_MINIMIZED)
                     WindowEvents::WindowMinimizedEvent(this, true);
@@ -1057,7 +1131,7 @@ namespace Vortex
             default: break;
         }
 
-        return defWindowProc(hWnd, msg, wParam, lParam);
+        return DefWindowProc(hWnd, msg, wParam, lParam);
     }
 
     LRESULT WINAPI Win32Window::HandleGlobalEvents(HWND hWnd, UINT msg,
@@ -1065,9 +1139,8 @@ namespace Vortex
     {
         Win32Window* window = GetWindowMap()[hWnd];
 
-        VtCoreInfo("Winproc");
         return window ? window->HandleEvents(hWnd, msg, wParam, lParam)
-                      : defWindowProc(hWnd, msg, wParam, lParam);
+                      : DefWindowProc(hWnd, msg, wParam, lParam);
     }
 
     Image& Win32Window::ChooseImage(const Image* images, usize count, i32 width,
@@ -1160,21 +1233,24 @@ namespace Vortex
         HINSTANCE   hInstance = GetModuleHandleW(nullptr);
 
         WNDCLASSEXW wcex{};
-        wcex.cbSize        = sizeof(wcex);
-        wcex.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        wcex.lpfnWndProc   = HandleGlobalEvents;
-        wcex.cbClsExtra    = 0;
-        wcex.cbWndExtra    = 0;
-        wcex.hCursor       = nullptr;
-        //= LoadCursorW(hInstance, (LPCWSTR)MAKEINTRESOURCEW(IDC_ARROW));
-        wcex.hIcon         = nullptr;
+        wcex.cbSize      = sizeof(wcex);
+        wcex.style       = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+        wcex.lpfnWndProc = HandleGlobalEvents;
+        wcex.cbClsExtra  = 0;
+        wcex.cbWndExtra  = 0;
+        wcex.hInstance   = hInstance;
+        wcex.hCursor
+            = LoadCursorW(hInstance, reinterpret_cast<LPCWSTR>(IDC_ARROW));
+        wcex.hIcon = reinterpret_cast<HICON>(
+            LoadImageW(hInstance, L"Vortex_Icon", IMAGE_ICON, 0, 0,
+                       LR_DEFAULTSIZE | LR_SHARED));
         wcex.hbrBackground = nullptr;
-        wcex.hInstance     = hInstance;
         wcex.lpszMenuName  = nullptr;
         wcex.lpszClassName = s_WindowClassName;
+        wcex.hIconSm       = nullptr;
         glfwSetErrorCallback(glfwErrorCallback);
 
-        RegisterClassExW(&wcex);
+        WinAssert(RegisterClassExW(&wcex));
         return glfwInit() == GLFW_TRUE;
     }
     void Win32Window::Shutdown()

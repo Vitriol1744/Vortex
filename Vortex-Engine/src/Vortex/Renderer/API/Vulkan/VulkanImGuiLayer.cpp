@@ -10,6 +10,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
 
 namespace Vortex
@@ -247,10 +248,10 @@ namespace Vortex
         ImGui_ImplVortex_Data* bd  = new ImGui_ImplVortex_Data;
         io.BackendPlatformUserData = reinterpret_cast<void*>(bd);
         io.BackendPlatformName     = "Vortex-Engine";
-        io.BackendFlags
-            |= ImGuiBackendFlags_HasMouseCursors; // We can honor
-                                                  // GetMouseCursor() values
-                                                  // (optional)
+        // io.BackendFlags
+        //     |= ImGuiBackendFlags_HasMouseCursors; // We can honor
+        //  GetMouseCursor() values
+        //  (optional)
         io.BackendFlags
             |= ImGuiBackendFlags_HasSetMousePos; // We can honor
                                                  // io.WantSetMousePos requests
@@ -326,10 +327,6 @@ namespace Vortex
 
         ImGui::DestroyPlatformWindows();
 
-        for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT;
-             cursor_n++)
-            glfwDestroyCursor(bd->MouseCursors[cursor_n]);
-
         io.BackendPlatformName     = nullptr;
         io.BackendPlatformUserData = nullptr;
         io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors
@@ -390,35 +387,7 @@ namespace Vortex
 
     void VulkanImGuiLayer::CreateCursors()
     {
-        auto         bd                = GetBackendData();
-
-        // Create mouse cursors
-        // (By design, on X11 cursors are user configurable and some cursors may
-        // be missing. When a cursor doesn't exist, GLFW will emit an error
-        // which will often be pri32ed by the app, so we temporarily disable
-        // error reporting. Missing cursors will return nullptr and our
-        // _UpdateMouseCursor() function will use the Arrow cursor instead.)
-        GLFWerrorfun prevErrorCallback = glfwSetErrorCallback(nullptr);
-        bd->MouseCursors[ImGuiMouseCursor_Arrow]
-            = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_TextInput]
-            = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_ResizeNS]
-            = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_ResizeEW]
-            = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_Hand]
-            = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_ResizeAll]
-            = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_ResizeNESW]
-            = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_ResizeNWSE]
-            = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR);
-        bd->MouseCursors[ImGuiMouseCursor_NotAllowed]
-            = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR);
-        glfwSetErrorCallback(prevErrorCallback);
-        (void)glfwGetError(nullptr);
+        // TODO(v1tr10l7): VulkanImGuiLayer::CreateCursors()
     }
     void VulkanImGuiLayer::SetUpEvents()
     {
@@ -509,13 +478,11 @@ namespace Vortex
                 }
             }
 
-            auto window
-                = std::any_cast<GLFWwindow*>(data->Window->GetNativeHandle());
-            const bool windowNoInput
-                = (viewport->Flags & ImGuiViewportFlags_NoInputs) != 0;
-            glfwSetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH, windowNoInput);
-            if (glfwGetWindowAttrib(window, GLFW_HOVERED))
-                mouseViewportID = viewport->ID;
+            // const bool windowNoInput
+            //     = (viewport->Flags & ImGuiViewportFlags_NoInputs) != 0;
+            //  glfwSetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH,
+            //  windowNoInput);
+            if (data->Window->IsHovered()) mouseViewportID = viewport->ID;
         }
 
         if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport)
@@ -523,14 +490,8 @@ namespace Vortex
     }
     void VulkanImGuiLayer::UpdateMouseCursor()
     {
-        ImGuiIO&               io = ImGui::GetIO();
-        ImGui_ImplVortex_Data* bd = GetBackendData();
-        if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
-            || glfwGetInputMode(std::any_cast<GLFWwindow*>(
-                                    bd->MainWindow->GetNativeHandle()),
-                                GLFW_CURSOR)
-                   == GLFW_CURSOR_DISABLED)
-            return;
+        ImGuiIO& io = ImGui::GetIO();
+        if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)) return;
 
         ImGuiMouseCursor imguiCursor = ImGui::GetMouseCursor();
         ImGuiPlatformIO& platformIO  = ImGui::GetPlatformIO();
@@ -539,18 +500,10 @@ namespace Vortex
             auto window = reinterpret_cast<Window*>(
                 platformIO.Viewports[n]->PlatformHandle);
 
-            auto glfwWindow
-                = std::any_cast<GLFWwindow*>(window->GetNativeHandle());
             if (imguiCursor == ImGuiMouseCursor_None || io.MouseDrawCursor)
-                glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+                window->HideCursor();
             else
-            {
-                glfwSetCursor(glfwWindow,
-                              bd->MouseCursors[imguiCursor]
-                                  ? bd->MouseCursors[imguiCursor]
-                                  : bd->MouseCursors[ImGuiMouseCursor_Arrow]);
-                glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            }
+                ; // TODO(v1tr10l7): Update cursor
         }
     }
     void VulkanImGuiLayer::UpdateMonitors()
@@ -879,22 +832,16 @@ namespace Vortex
     {
         GetViewportData(viewport)->Window->SetOpacity(opacity);
     }
-    i32 VulkanImGuiLayer::CreateVulkanSurface(ImGuiViewport* viewport,
-                                              ImU64          vkInstance,
-                                              const void*    vkAllocator,
-                                              ImU64*         outVkSurface)
+    i32 VulkanImGuiLayer::CreateVulkanSurface(ImGuiViewport* viewport, ImU64,
+                                              const void*, ImU64* outVkSurface)
     {
-        ImGuiViewportData* data     = GetViewportData(viewport);
-        auto               instance = reinterpret_cast<VkInstance>(vkInstance);
-        auto               window
-            = std::any_cast<GLFWwindow*>(data->Window->GetNativeHandle());
-        auto allocator
-            = reinterpret_cast<const VkAllocationCallbacks*>(vkAllocator);
-        auto     surface = reinterpret_cast<VkSurfaceKHR*>(outVkSurface);
+        ImGuiViewportData* data = GetViewportData(viewport);
+        auto          surface   = reinterpret_cast<VkSurfaceKHR*>(outVkSurface);
 
-        VkResult err
-            = glfwCreateWindowSurface(instance, window, allocator, surface);
+        VulkanSurface surf;
+        surf.Create(data->Window, VulkanContext::GetPhysicalDevice());
+        *surface = vk::SurfaceKHR(surf);
 
-        return static_cast<i32>(err);
+        return static_cast<i32>(VK_SUCCESS);
     }
 }; // namespace Vortex

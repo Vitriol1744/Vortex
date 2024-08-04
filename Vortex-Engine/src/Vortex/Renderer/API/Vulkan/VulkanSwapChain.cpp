@@ -224,7 +224,7 @@ namespace Vortex
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
 
         u32        width, height;
-        width = 0;
+        width  = 0;
         height = 0;
         if (result == vk::Result::eErrorOutOfDateKHR
             || result == vk::Result::eSuboptimalKHR)
@@ -445,12 +445,10 @@ namespace Vortex
         if (capabilities.currentExtent.width
             != std::numeric_limits<uint32_t>::max())
             return capabilities.currentExtent;
-        int width, height;
-        glfwGetFramebufferSize(m_Surface.GetNativeWindowHandle(), &width,
-                               &height);
+        auto         size = m_Surface.GetWindow()->GetFramebufferSize();
 
         vk::Extent2D actualExtent
-            = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+            = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
 
         actualExtent.width
             = std::clamp(actualExtent.width, capabilities.minImageExtent.width,

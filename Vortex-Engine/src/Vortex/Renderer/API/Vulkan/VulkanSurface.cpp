@@ -10,27 +10,47 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
 #ifdef VT_PLATFORM_LINUX
+    #include <X11/Xlib.h>
     #define VK_USE_PLATFORM_X11_KHR
     #define GLFW_EXPOSE_NATIVE_X11
+    #include <vulkan/vulkan_xlib.h>
+#elifdef VT_PLATFORM_WINDOWS
+    #define VK_USE_PLATFORM_WIN32_KHR
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #include <vulkan/vulkan_win32.h>
 #endif
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
 namespace Vortex
 {
-    void VulkanSurface::Create(Window*            windowHandle,
+    void VulkanSurface::Create(Window*            window,
                                vk::PhysicalDevice physicalDevice)
     {
-        // TODO(v1tr10l7): Replace glfwCreateWindowSurface with native calls
-        GLFWwindow* window
-            = std::any_cast<GLFWwindow*>(windowHandle->GetNativeHandle());
-
         VkInstance   vkInstance = (vk::Instance)VulkanContext::GetInstance();
         VkSurfaceKHR surface;
-        VkCall(vk::Result(
-            glfwCreateWindowSurface(vkInstance, window, nullptr, &surface)));
+
+#ifdef VT_PLATFORM_LINUX
+        VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {};
+        surfaceCreateInfo.sType
+            = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+        surfaceCreateInfo.pNext = VK_NULL_HANDLE;
+        surfaceCreateInfo.flags = 0;
+        surfaceCreateInfo.dpy   = glfwGetX11Display();
+        surfaceCreateInfo.window
+            = std::any_cast<Window>(window->GetNativeHandle());
+
+        vkCreateXlibSurfaceKHR(vkInstance, &surfaceCreateInfo, VK_NULL_HANDLE,
+                               &surface);
+#elifdef VT_PLATFORM_WINDOWS
+        VkWin32SurfaceCreateInfoKHR createInfo{};
+        createInfo.sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        createInfo.pNext     = VK_NULL_HANDLE;
+        createInfo.flags     = 0;
+        createInfo.hinstance = GetModuleHandle(nullptr);
+        createInfo.hwnd      = std::any_cast<HWND>(window->GetNativeHandle());
+
+        VkCall(vk::Result(vkCreateWin32SurfaceKHR(vkInstance, &createInfo,
+                                                  VK_NULL_HANDLE, &surface)));
+#endif
         m_Surface       = vk::SurfaceKHR(surface);
         m_WindowHandle  = window;
 

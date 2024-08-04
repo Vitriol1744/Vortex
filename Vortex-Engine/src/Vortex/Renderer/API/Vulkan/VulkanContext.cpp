@@ -30,9 +30,6 @@ namespace Vortex
 
         m_SwapChain.CreateSurface(window);
         u32 width, height;
-        glfwGetFramebufferSize(m_SwapChain.GetSurface().GetNativeWindowHandle(),
-                               reinterpret_cast<i32*>(&width),
-                               reinterpret_cast<i32*>(&height));
         m_SwapChain.Create(width, height, false);
         ++s_ContextCount;
     }

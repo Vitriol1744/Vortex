@@ -29,13 +29,10 @@ namespace Vortex
             return m_PresentModes;
         }
 
-        inline GLFWwindow* GetNativeWindowHandle() const
-        {
-            return m_WindowHandle;
-        }
+        inline Window* GetWindow() const { return m_WindowHandle; }
 
       private:
-        GLFWwindow*                     m_WindowHandle;
+        Window*                         m_WindowHandle;
 
         vk::SurfaceKHR                  m_Surface             = VK_NULL_HANDLE;
         vk::SurfaceFormatKHR            m_SurfaceFormat       = {};
