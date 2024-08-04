@@ -14,6 +14,7 @@
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
+#include "Vortex/Utility/ImageLoader.hpp"
 
 using namespace Vortex;
 
@@ -21,17 +22,28 @@ static Ref<Window>                 s_Window           = nullptr;
 static Ref<VulkanContext>          s_Context          = nullptr;
 static Ref<Shader>                 s_Shader           = nullptr;
 static Ref<VulkanGraphicsPipeline> s_GraphicsPipeline = nullptr;
+static Scope<Pixel[]>              pixels             = nullptr;
 
 using namespace Vortex;
 
 void SandboxLayer2D::OnAttach()
 {
-    s_Window  = Application::Get()->GetWindow();
+    s_Window = Application::Get()->GetWindow();
     s_Window->SetPosition({300, 300});
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
-    s_Shader                = Shader::Create();
+    s_Shader = Shader::Create();
+    i32  width, height;
+    auto ret = ImageLoader::LoadBMP("assets/icon.bmp", width, height);
+    if (!ret) { VtError("error: {}", ret.error()); }
+    else pixels = std::move(ret.value());
+    Image img;
+    img.Pixels = pixels.get();
+    img.Width  = width;
+    img.Height = height;
+
+    s_Window->SetIcon(img);
 
     GraphicsPipelineSpecification specification{};
     specification.Window = Application::Get()->GetWindow();
