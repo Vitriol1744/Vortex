@@ -12,6 +12,27 @@
 
 namespace Vortex
 {
+    static vk::Format ToVulkanFormat(ShaderDataType type)
+    {
+        switch (type)
+        {
+            case ShaderDataType::eInt: return vk::Format::eR32Sint;
+            case ShaderDataType::eInt2: return vk::Format::eR32G32Sint;
+            case ShaderDataType::eInt3: return vk::Format::eR32G32B32Sint;
+            case ShaderDataType::eInt4: return vk::Format::eR32G32B32A32Sint;
+            case ShaderDataType::eFloat: return vk::Format::eR32Sfloat;
+            case ShaderDataType::eFloat2: return vk::Format::eR32G32Sfloat;
+            case ShaderDataType::eFloat3: return vk::Format::eR32G32B32Sfloat;
+            case ShaderDataType::eFloat4:
+                return vk::Format::eR32G32B32A32Sfloat;
+
+            default: break;
+        }
+
+        VtCoreError("ToVulkanFormat: Undefined format");
+        return vk::Format::eUndefined;
+    }
+
     VulkanGraphicsPipeline::VulkanGraphicsPipeline(
         const GraphicsPipelineSpecification& specification)
     {
@@ -38,32 +59,32 @@ namespace Vortex
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType
             = vk::StructureType::ePipelineVertexInputStateCreateInfo;
-        vertexInputInfo.vertexBindingDescriptionCount   = 0;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
 
-        // TEMPORARY ---------------------------------------------
         vk::VertexInputBindingDescription bindingDescription{};
         bindingDescription.binding   = 0;
-        bindingDescription.stride    = 20;
+        bindingDescription.stride    = specification.Layout.GetStride();
         bindingDescription.inputRate = vk::VertexInputRate::eVertex;
 
-        std::array<vk::VertexInputAttributeDescription, 2>
-            attributeDescriptions{};
-        attributeDescriptions[0].binding  = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format   = vk::Format::eR32G32Sfloat;
-        attributeDescriptions[0].offset   = 0;
-        attributeDescriptions[1].binding  = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format   = vk::Format::eR32G32B32Sfloat;
-        attributeDescriptions[1].offset   = 8;
+        std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
+        attributeDescriptions.resize(specification.Layout.GetElementCount());
+        u32 binding  = 0;
+        u32 location = 0;
+        for (const auto& element : specification.Layout)
+        {
+            attributeDescriptions[location].binding  = binding;
+            attributeDescriptions[location].location = location;
+            attributeDescriptions[location].format
+                = ToVulkanFormat(element.Type);
+            attributeDescriptions[location].offset = element.Offset;
+            ++location;
+        }
 
-        vertexInputInfo.vertexBindingDescriptionCount   = 1;
-        vertexInputInfo.vertexAttributeDescriptionCount = 2;
-        vertexInputInfo.pVertexBindingDescriptions      = &bindingDescription;
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount
+            = attributeDescriptions.size();
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputInfo.pVertexAttributeDescriptions
             = attributeDescriptions.data();
-        // -------------------------------------------------------
 
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType

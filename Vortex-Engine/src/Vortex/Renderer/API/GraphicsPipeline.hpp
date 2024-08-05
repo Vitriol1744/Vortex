@@ -7,13 +7,15 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
+#include "Vortex/Renderer/VertexBufferLayout.hpp"
 
 namespace Vortex
 {
     struct GraphicsPipelineSpecification
     {
-        Ref<class Window> Window = nullptr;
-        Ref<class Shader> Shader = nullptr;
+        Ref<class Window>  Window = nullptr;
+        Ref<class Shader>  Shader = nullptr;
+        VertexBufferLayout Layout;
     };
 
     class VT_API GraphicsPipeline

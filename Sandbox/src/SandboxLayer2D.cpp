@@ -81,9 +81,14 @@ void SandboxLayer2D::OnAttach()
 
     // s_Window->SetIcon(img);
 
+    std::initializer_list<VertexBufferElement> elements
+        = {ShaderDataType::eFloat2, ShaderDataType::eFloat3};
+    VertexBufferLayout            layout(elements);
+
     GraphicsPipelineSpecification specification{};
     specification.Window = Application::Get()->GetWindow();
     specification.Shader = s_Shader;
+    specification.Layout = layout;
 
     s_GraphicsPipeline   = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(
         GraphicsPipeline::Create(specification));
