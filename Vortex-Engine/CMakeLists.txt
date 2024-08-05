@@ -36,7 +36,7 @@ endif ()
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendor/imgui)
-set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers)
+set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers xcb)
 
 set (SOURCES
     src/Vortex/Core/LayerStack.cpp
@@ -57,6 +57,7 @@ set (SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanShader.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSurface.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSwapChain.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.cpp
     src/Vortex/Renderer/Window/Monitor.cpp
     src/Vortex/Renderer/Window/Window.cpp
     src/Vortex/Utility/ImageLoader.cpp

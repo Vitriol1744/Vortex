@@ -11,9 +11,10 @@
 
 namespace Vortex
 {
-    usize       X11Window::s_WindowsCount = 0;
+    xcb_connection_t* X11Window::s_XcbConnection = nullptr;
+    usize             X11Window::s_WindowsCount  = 0;
 
-    static void glfwErrorCallback(int code, const char* description)
+    static void       glfwErrorCallback(int code, const char* description)
     {
         (void)code;
         (void)description;
@@ -208,27 +209,16 @@ namespace Vortex
 
         if (monitor)
         {
-            [[maybe_unused]]
-            std::string_view monitorName
-                = monitor->GetName();
-            VideoMode currentMode
+            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
+            VideoMode                         currentMode
                 = specification.Monitor->GetCurrentVideoMode();
-            [[maybe_unused]]
-            u32 bitsPerPixel
-                = currentMode.RedBits + currentMode.GreenBits
-                + currentMode.BlueBits;
-            [[maybe_unused]]
-            u16 redBits
-                = currentMode.RedBits;
-            [[maybe_unused]]
-            u16 greenBits
-                = currentMode.GreenBits;
-            [[maybe_unused]]
-            u16 blueBits
-                = currentMode.BlueBits;
-            [[maybe_unused]]
-            u32 refreshRate
-                = currentMode.RefreshRate;
+            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
+                                              + currentMode.GreenBits
+                                              + currentMode.BlueBits;
+            [[maybe_unused]] u16 redBits     = currentMode.RedBits;
+            [[maybe_unused]] u16 greenBits   = currentMode.GreenBits;
+            [[maybe_unused]] u16 blueBits    = currentMode.BlueBits;
+            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
 
             VtCoreTrace(
                 "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
@@ -574,7 +564,10 @@ namespace Vortex
 
         glfwSetErrorCallback(glfwErrorCallback);
 
-        return glfwInit() == GLFW_TRUE;
+        bool status = glfwInit() == GLFW_TRUE;
+        // s_XcbConnection = XGetXCBConnection(glfwGetX11Display());
+
+        return status;
     }
     void X11Window::Shutdown() { glfwTerminate(); }
 }; // namespace Vortex

@@ -12,6 +12,8 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
+#include <X11/Xlib-xcb.h>
+
 namespace Vortex
 {
     class VT_API X11Window : public Window
@@ -69,12 +71,14 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        static usize s_WindowsCount;
-        GLFWwindow*  m_Window;
+        GLFWwindow*              m_Window;
 
-        void         SetupEvents();
+        static xcb_connection_t* s_XcbConnection;
+        static usize             s_WindowsCount;
 
-        static bool  Initialize();
-        static void  Shutdown();
+        void                     SetupEvents();
+
+        static bool              Initialize();
+        static void              Shutdown();
     };
 }; // namespace Vortex

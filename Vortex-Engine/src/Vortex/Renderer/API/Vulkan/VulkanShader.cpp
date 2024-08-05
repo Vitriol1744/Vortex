@@ -13,8 +13,9 @@ namespace Vortex
 {
     VulkanShader::VulkanShader()
     {
+        // NOTE: Temporary!
         std::vector<u8> vertexShaderCode;
-        ReadShaderCode("vert.spv", vertexShaderCode);
+        ReadShaderCode("vert2.spv", vertexShaderCode);
         std::vector<u8> fragmentShaderCode;
         ReadShaderCode("frag.spv", fragmentShaderCode);
 

@@ -33,6 +33,9 @@ namespace Vortex
             return m_QueueFamilyIndices;
         }
 
+        u32 FindMemoryType(u32                     typeFilter,
+                           vk::MemoryPropertyFlags properties) const;
+
       private:
         vk::PhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         QueueFamilyIndices m_QueueFamilyIndices;

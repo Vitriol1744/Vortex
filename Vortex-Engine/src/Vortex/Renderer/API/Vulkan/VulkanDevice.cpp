@@ -74,6 +74,25 @@ namespace Vortex
         return ret;
     }
 
+    u32 VulkanPhysicalDevice::FindMemoryType(
+        u32 typeFilter, vk::MemoryPropertyFlags properties) const
+    {
+        vk::PhysicalDeviceMemoryProperties memoryProperties{};
+        m_PhysicalDevice.getMemoryProperties(&memoryProperties);
+
+        for (u32 i = 0; i < memoryProperties.memoryTypeCount; i++)
+        {
+            if (typeFilter & (1 << i)
+                && (memoryProperties.memoryTypes[i].propertyFlags & properties)
+                       == properties)
+                return i;
+        }
+
+        VtCoreError("Failed to find suitable memory type!");
+        VtCoreAssert(false);
+        return 0;
+    }
+
     void VulkanPhysicalDevice::FindQueueFamilies()
     {
         u32 queueFamilyCount = 0;
@@ -170,13 +189,16 @@ namespace Vortex
         deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
         deviceCreateInfo.pNext = nullptr;
         deviceCreateInfo.flags = vk::DeviceCreateFlagBits();
-        deviceCreateInfo.queueCreateInfoCount = static_cast<u32>(queueCreateInfos.size());
-        deviceCreateInfo.pQueueCreateInfos    = queueCreateInfos.data();
+        deviceCreateInfo.queueCreateInfoCount
+            = static_cast<u32>(queueCreateInfos.size());
+        deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
         deviceCreateInfo.enabledLayerCount
-            = useValidationLayers ? static_cast<u32>(validationLayers.size()) : 0ull;
+            = useValidationLayers ? static_cast<u32>(validationLayers.size())
+                                  : 0ull;
         deviceCreateInfo.ppEnabledLayerNames
             = useValidationLayers ? validationLayers.data() : nullptr;
-        deviceCreateInfo.enabledExtensionCount   = static_cast<u32>(s_DeviceExtensions.size());
+        deviceCreateInfo.enabledExtensionCount
+            = static_cast<u32>(s_DeviceExtensions.size());
         deviceCreateInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
         deviceCreateInfo.pEnabledFeatures        = &features;
 
