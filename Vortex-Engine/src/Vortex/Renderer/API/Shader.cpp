@@ -11,5 +11,9 @@
 
 namespace Vortex
 {
-    Ref<Shader> Shader::Create() { return CreateRef<VulkanShader>(); }
+    Ref<Shader> Shader::Create(std::string_view vertexPath,
+                               std::string_view fragmentPath)
+    {
+        return CreateRef<VulkanShader>(vertexPath, fragmentPath);
+    }
 }; // namespace Vortex

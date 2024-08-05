@@ -14,7 +14,8 @@ namespace Vortex
     class VT_API VulkanShader final : public Shader
     {
       public:
-        VulkanShader();
+        VulkanShader(std::string_view vertexPath,
+                     std::string_view fragmentPath);
         virtual ~VulkanShader();
 
         inline vk::ShaderModule GetVertexShader() const

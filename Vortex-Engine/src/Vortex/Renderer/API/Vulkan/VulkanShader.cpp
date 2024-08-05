@@ -11,13 +11,13 @@
 
 namespace Vortex
 {
-    VulkanShader::VulkanShader()
+    VulkanShader::VulkanShader(std::string_view vertexPath,
+                               std::string_view fragmentPath)
     {
-        // NOTE: Temporary!
         std::vector<u8> vertexShaderCode;
-        ReadShaderCode("vert2.spv", vertexShaderCode);
+        ReadShaderCode(vertexPath, vertexShaderCode);
         std::vector<u8> fragmentShaderCode;
-        ReadShaderCode("frag.spv", fragmentShaderCode);
+        ReadShaderCode(fragmentPath, fragmentShaderCode);
 
         vk::ShaderModuleCreateInfo vertexShaderInfo{};
         vertexShaderInfo.sType    = vk::StructureType::eShaderModuleCreateInfo;

@@ -57,7 +57,7 @@ static Ref<Window>        s_Window   = nullptr;
 static Ref<VulkanContext> s_Context  = nullptr;
 static Ref<Shader>        s_Shader   = nullptr;
 static Ref<VulkanGraphicsPipeline> s_GraphicsPipeline = nullptr;
-static VulkanVertexBuffer*         s_VertexBuffer     = nullptr;
+static Ref<VulkanVertexBuffer>     s_VertexBuffer     = nullptr;
 static Scope<Pixel[]>              pixels             = nullptr;
 
 using namespace Vortex;
@@ -69,7 +69,7 @@ void SandboxLayer2D::OnAttach()
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
-    s_Shader = Shader::Create();
+    s_Shader = Shader::Create("vert2.spv", "frag.spv");
     i32  width, height;
     auto ret = ImageLoader::LoadBMP("assets/icon.bmp", width, height);
     if (!ret) { VtError("error: {}", ret.error()); }
@@ -92,7 +92,7 @@ void SandboxLayer2D::OnAttach()
 
     s_GraphicsPipeline   = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(
         GraphicsPipeline::Create(specification));
-    s_VertexBuffer = new VulkanVertexBuffer(
+    s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
 }
 void SandboxLayer2D::OnDetach() {}

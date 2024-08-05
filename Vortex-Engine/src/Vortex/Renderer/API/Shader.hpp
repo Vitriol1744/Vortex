@@ -16,6 +16,7 @@ namespace Vortex
         Shader()          = default;
         virtual ~Shader() = default;
 
-        static Ref<Shader> Create();
+        static Ref<Shader> Create(std::string_view vertexPath,
+                                  std::string_view fragmentPath);
     };
 }; // namespace Vortex
