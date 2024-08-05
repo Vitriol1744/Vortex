@@ -17,9 +17,13 @@ namespace Vortex
         void          Initialize();
         void          Shutdown();
 
+        VmaAllocation AllocateImage(vk::ImageCreateInfo imageInfo,
+                                    VmaMemoryUsage usage, vk::Image& outImage,
+                                    vk::DeviceSize& outAllocateSize);
         VmaAllocation AllocateBuffer(vk::BufferCreateInfo bufferInfo,
                                      VmaMemoryUsage       usage,
                                      vk::Buffer&          outBuffer);
+
         void  DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
 
         void* MapMemory(VmaAllocation allocation);

@@ -14,6 +14,7 @@
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 #include "Vortex/Utility/ImageLoader.hpp"
 
@@ -49,15 +50,18 @@ struct Vertex
         return attributeDescriptions;
     }
 };
-const std::vector<Vertex> s_Vertices = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-                                        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-                                        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                                        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+                                        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+                                        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
+const std::vector<u16>    indices    = {0, 1, 2, 2, 3, 0};
 
 static Ref<Window>        s_Window   = nullptr;
 static Ref<VulkanContext> s_Context  = nullptr;
 static Ref<Shader>        s_Shader   = nullptr;
 static Ref<VulkanGraphicsPipeline> s_GraphicsPipeline = nullptr;
 static Ref<VulkanVertexBuffer>     s_VertexBuffer     = nullptr;
+static Ref<VulkanIndexBuffer>      s_IndexBuffer      = nullptr;
 static Scope<Pixel[]>              pixels             = nullptr;
 
 using namespace Vortex;
@@ -94,6 +98,8 @@ void SandboxLayer2D::OnAttach()
         GraphicsPipeline::Create(specification));
     s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
+    s_IndexBuffer = CreateRef<VulkanIndexBuffer>(
+        (void*)indices.data(), indices.size() * sizeof(uint16_t));
 }
 void SandboxLayer2D::OnDetach() {}
 
@@ -130,8 +136,11 @@ void SandboxLayer2D::OnImGuiRender()
     vk::Buffer     vertexBuffers[] = {s_VertexBuffer->GetBuffer()};
     vk::DeviceSize offsets[]       = {0};
     commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+    commandBuffer.bindIndexBuffer(s_IndexBuffer->GetBuffer(), 0,
+                                  vk::IndexType::eUint16);
 
-    commandBuffer.draw(s_Vertices.size(), 1, 0, 0);
+    // commandBuffer.draw(s_Vertices.size(), 1, 0, 0);
+    commandBuffer.drawIndexed(u32(indices.size()), 1, 0, 0, 0);
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
     swapChain.EndFrame();
 }
