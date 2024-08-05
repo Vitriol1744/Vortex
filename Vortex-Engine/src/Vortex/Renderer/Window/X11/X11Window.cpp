@@ -314,7 +314,8 @@ namespace Vortex
     }
     void X11Window::SetIcon(const Icon* icons, usize count)
     {
-        std::vector<GLFWimage> images(count);
+        std::vector<GLFWimage> images;
+        images.reserve(count);
         for (auto& icon : std::views::counted(icons, count))
         {
             GLFWimage image;
