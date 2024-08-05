@@ -6,6 +6,7 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 
@@ -14,66 +15,36 @@ namespace Vortex
     VulkanVertexBuffer::VulkanVertexBuffer(void* data, usize size)
         : m_Size(size)
     {
-        vk::Device       device              = VulkanContext::GetDevice();
-        vk::Buffer       stagingBuffer       = VK_NULL_HANDLE;
-        vk::DeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
-        CreateBuffer(size, vk::BufferUsageFlagBits::eTransferSrc,
-                     vk::MemoryPropertyFlagBits::eHostVisible
-                         | vk::MemoryPropertyFlagBits::eHostCoherent,
-                     stagingBuffer, stagingBufferMemory);
+        vk::BufferCreateInfo stagingInfo{};
+        stagingInfo.sType       = vk::StructureType::eBufferCreateInfo;
+        stagingInfo.size        = size;
+        stagingInfo.usage       = vk::BufferUsageFlagBits::eTransferSrc;
+        stagingInfo.sharingMode = vk::SharingMode::eExclusive;
 
-        void* bufferData;
-        VkCall(device.mapMemory(stagingBufferMemory, 0, u32(size),
-                                vk::MemoryMapFlags(), &bufferData));
-        std::memcpy(bufferData, data, size);
-        device.unmapMemory(stagingBufferMemory);
+        vk::Buffer    stagingBuffer{};
+        VmaAllocation stagingAllocation = VulkanAllocator::AllocateBuffer(
+            stagingInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
-        CreateBuffer(size,
-                     vk::BufferUsageFlagBits::eTransferDst
-                         | vk::BufferUsageFlagBits::eVertexBuffer,
-                     vk::MemoryPropertyFlagBits::eDeviceLocal, m_VertexBuffer,
-                     m_VertexBufferMemory);
+        u8* dest = VulkanAllocator::MapMemory<u8*>(stagingAllocation);
+        std::memcpy(dest, data, size);
+        VulkanAllocator::UnmapMemory(stagingAllocation);
+
+        vk::BufferCreateInfo vertexBufferInfo{};
+        vertexBufferInfo.sType = vk::StructureType::eBufferCreateInfo;
+        vertexBufferInfo.size  = size;
+        vertexBufferInfo.usage = vk::BufferUsageFlagBits::eTransferDst
+                               | vk::BufferUsageFlagBits::eVertexBuffer;
+        vertexBufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+        m_MemoryAllocation           = VulkanAllocator::AllocateBuffer(
+            vertexBufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_VertexBuffer);
         CopyBuffer(stagingBuffer, m_VertexBuffer, size);
-        device.destroyBuffer(stagingBuffer, VK_NULL_HANDLE);
-        device.freeMemory(stagingBufferMemory, VK_NULL_HANDLE);
+        VulkanAllocator::DestroyBuffer(stagingBuffer, stagingAllocation);
     }
 
     VulkanVertexBuffer::~VulkanVertexBuffer()
     {
-        vk::Device device = VulkanContext::GetDevice();
-        device.destroyBuffer(m_VertexBuffer, VK_NULL_HANDLE);
-        device.freeMemory(m_VertexBufferMemory, VK_NULL_HANDLE);
-    }
-
-    void VulkanVertexBuffer::CreateBuffer(vk::DeviceSize          size,
-                                          vk::BufferUsageFlags    usage,
-                                          vk::MemoryPropertyFlags properties,
-                                          vk::Buffer&             buffer,
-                                          vk::DeviceMemory&       bufferMemory)
-    {
-        vk::BufferCreateInfo createInfo{};
-        createInfo.sType       = vk::StructureType::eBufferCreateInfo;
-        createInfo.size        = size;
-        createInfo.usage       = usage;
-        createInfo.sharingMode = vk::SharingMode::eExclusive;
-
-        vk::Device device      = VulkanContext::GetDevice();
-        VkCall(device.createBuffer(&createInfo, VK_NULL_HANDLE, &buffer));
-
-        vk::MemoryRequirements memoryRequirements;
-        device.getBufferMemoryRequirements(buffer, &memoryRequirements);
-
-        auto memoryType = VulkanContext::GetPhysicalDevice().FindMemoryType(
-            memoryRequirements.memoryTypeBits, properties);
-
-        vk::MemoryAllocateInfo allocateInfo{};
-        allocateInfo.sType           = vk::StructureType::eMemoryAllocateInfo;
-        allocateInfo.allocationSize  = memoryRequirements.size;
-        allocateInfo.memoryTypeIndex = memoryType;
-
-        VkCall(device.allocateMemory(&allocateInfo, VK_NULL_HANDLE,
-                                     &bufferMemory));
-        device.bindBufferMemory(buffer, bufferMemory, 0);
+        VulkanAllocator::DestroyBuffer(m_VertexBuffer, m_MemoryAllocation);
     }
 
     void VulkanVertexBuffer::CopyBuffer(vk::Buffer src, vk::Buffer dest,

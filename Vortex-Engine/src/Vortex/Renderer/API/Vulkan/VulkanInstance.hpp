@@ -15,11 +15,13 @@ namespace Vortex
       public:
         VulkanInstance() = default;
 
-        void   Initialize();
-        void   Destroy();
+        void       Initialize();
+        void       Destroy();
 
-        inline operator vk::Instance() const { return m_Instance; }
-        inline operator bool() const { return m_Instance; }
+        inline u32 GetUsedApiVersion() const { return m_UsedApiVersion; }
+
+        inline     operator vk::Instance() const { return m_Instance; }
+        inline     operator bool() const { return m_Instance; }
 
         static const std::vector<const char*>& GetValidationLayers();
         static vk::Bool32                      ShouldUseValidationLayers();
@@ -27,6 +29,7 @@ namespace Vortex
       private:
         vk::Instance               m_Instance = VK_NULL_HANDLE;
         vk::DebugUtilsMessengerEXT m_DebugMessenger;
+        u32                        m_UsedApiVersion = 0;
 
         void                       SetupDebugMessenger();
 

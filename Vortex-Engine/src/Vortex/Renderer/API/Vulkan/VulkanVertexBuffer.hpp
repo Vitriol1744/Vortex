@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 
 namespace Vortex
 {
@@ -31,12 +31,10 @@ namespace Vortex
 
       private:
         vk::Buffer       m_VertexBuffer       = VK_NULL_HANDLE;
+        VmaAllocation    m_MemoryAllocation   = VK_NULL_HANDLE;
         vk::DeviceMemory m_VertexBufferMemory = VK_NULL_HANDLE;
         usize            m_Size               = 0;
 
-        void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
-                          vk::MemoryPropertyFlags properties,
-                          vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
         void CopyBuffer(vk::Buffer src, vk::Buffer dest, vk::DeviceSize size);
     };
 }; // namespace Vortex

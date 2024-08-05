@@ -109,7 +109,7 @@ namespace Vortex
         appInfo.pEngineName   = Vortex::g_EngineName.data();
         appInfo.engineVersion = VK_MAKE_VERSION(
             vortexVersion.Major, vortexVersion.Minor, vortexVersion.Patch);
-        appInfo.apiVersion = VK_API_VERSION_1_3;
+        appInfo.apiVersion = m_UsedApiVersion = s_MinimumVulkanVersionSupported;
         VtCoreInfo(
             "Vulkan: Application Info: {{ applicationName: {}, "
             "applicationVersion: {}, engineName: {}, engineVersion: {}}}",
@@ -138,11 +138,13 @@ namespace Vortex
         createInfo.flags            = vk::InstanceCreateFlags();
         createInfo.pApplicationInfo = &appInfo;
         createInfo.enabledLayerCount
-            = s_UseValidationLayers ? static_cast<u32>(s_ValidationLayers.size()) : 0;
-        createInfo.ppEnabledLayerNames     = s_UseValidationLayers
-                                               ? s_ValidationLayers.data()
-                                               : VK_NULL_HANDLE;
-        createInfo.enabledExtensionCount   = static_cast<u32>(extensions.size());
+            = s_UseValidationLayers
+                ? static_cast<u32>(s_ValidationLayers.size())
+                : 0;
+        createInfo.ppEnabledLayerNames   = s_UseValidationLayers
+                                             ? s_ValidationLayers.data()
+                                             : VK_NULL_HANDLE;
+        createInfo.enabledExtensionCount = static_cast<u32>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkCall(vk::createInstance(&createInfo, nullptr, &m_Instance));

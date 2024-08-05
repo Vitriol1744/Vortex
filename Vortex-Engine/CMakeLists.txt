@@ -20,6 +20,7 @@ add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/magic_enum)
 add_subdirectory (vendor/glm)
 add_subdirectory (vendor/glfw)
+add_subdirectory (vendor/VulkanMemoryAllocator)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -36,7 +37,7 @@ endif ()
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendor/imgui)
-set (LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers xcb)
+set (PUBLIC_LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers GPUOpen::VulkanMemoryAllocator)
 
 set (SOURCES
     src/Vortex/Core/LayerStack.cpp
@@ -48,6 +49,7 @@ set (SOURCES
     src/Vortex/Renderer/API/GraphicsPipeline.cpp
     src/Vortex/Renderer/API/RendererContext.cpp
     src/Vortex/Renderer/API/Shader.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanAllocator.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
@@ -95,7 +97,7 @@ target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
 
 target_compile_options(${PROJECT_NAME} PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>: /W4>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror -fvisibility=hidden>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror -fvisibility=hidden -Wno-nullability-extension -Wno-nullability-completeness>
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Workaround for std::expected not available in clang
@@ -106,7 +108,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
-target_link_libraries (${PROJECT_NAME} PUBLIC ${LIBS})
+target_link_libraries (${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 
 if (WIN32)
     target_link_libraries (${PROJECT_NAME} PUBLIC Shcore)

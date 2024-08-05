@@ -14,3 +14,6 @@
 	path = Vortex-Engine/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "Vortex-Engine/vendor/VulkanMemoryAllocator"]
+	path = Vortex-Engine/vendor/VulkanMemoryAllocator
+	url = https://github.com/Vitriol1744/VulkanMemoryAllocator

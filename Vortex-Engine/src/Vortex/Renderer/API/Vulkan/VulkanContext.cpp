@@ -6,6 +6,7 @@
  */
 #include "vtpch.hpp"
 
+#include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 
 #include <GLFW/glfw3.h>
@@ -26,6 +27,7 @@ namespace Vortex
             s_VulkanInstance.Initialize();
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
             s_Device.Initialize(s_PhysicalDevice);
+            VulkanAllocator::Initialize();
         }
 
         m_SwapChain.CreateSurface(window);
@@ -44,6 +46,7 @@ namespace Vortex
 
         if (s_ContextCount == 0)
         {
+            VulkanAllocator::Shutdown();
             s_Device.Destroy();
             s_VulkanInstance.Destroy();
         }
