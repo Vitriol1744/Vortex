@@ -17,6 +17,3 @@
 [submodule "Vortex-Engine/vendor/VulkanMemoryAllocator"]
 	path = Vortex-Engine/vendor/VulkanMemoryAllocator
 	url = https://github.com/Vitriol1744/VulkanMemoryAllocator
-[submodule "Vortex-Engine/vendor/shaderc"]
-	path = Vortex-Engine/vendor/shaderc
-	url = https://github.com/google/shaderc
