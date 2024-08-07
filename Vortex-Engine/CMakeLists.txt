@@ -14,7 +14,7 @@ set (CXX_STANDARD_REQUIRED ON)
 
 option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-find_package (Vulkan REQUIRED COMPONENTS glslc glslang)
+find_package (Vulkan REQUIRED)
 
 set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
