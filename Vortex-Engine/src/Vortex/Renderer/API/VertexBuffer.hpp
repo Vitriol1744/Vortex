@@ -18,5 +18,7 @@ namespace Vortex
         virtual void  SetData(void* data, usize size, usize offset = 0) = 0;
 
         virtual usize GetSize() const                                   = 0;
+
+        static Ref<VertexBuffer> Create(void* data, usize size);
     };
 }; // namespace Vortex

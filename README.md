@@ -58,6 +58,9 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 * [glm](https://github.com/g-truc/glm.git) - OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [glfw](https://github.com/glfw/glfw.git) - GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development.
     It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
+* [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git) - Easy to integrate Vulkan memory allocation library.
+* [shaderc](https://github.com/google/shaderc.git) - A collection of tools, libraries and tests for shader compilation.
+
 
 ## License
 Vortex is licensed with the General Public License V3

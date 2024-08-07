@@ -10,6 +10,7 @@
 #include <imgui.h>
 
 #include "Vortex/Core/Log/Log.hpp"
+#include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
@@ -56,9 +57,16 @@ const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
 const std::vector<u16>    indices    = {0, 1, 2, 2, 3, 0};
 
-static Ref<Window>        s_Window   = nullptr;
-static Ref<VulkanContext> s_Context  = nullptr;
-static Ref<Shader>        s_Shader   = nullptr;
+struct UniformBufferObject
+{
+    Mat4 Model;
+    Mat4 View;
+    Mat4 Projection;
+};
+
+static Ref<Window>                 s_Window           = nullptr;
+static Ref<VulkanContext>          s_Context          = nullptr;
+static Ref<Shader>                 s_Shader           = nullptr;
 static Ref<VulkanGraphicsPipeline> s_GraphicsPipeline = nullptr;
 static Ref<VulkanVertexBuffer>     s_VertexBuffer     = nullptr;
 static Ref<VulkanIndexBuffer>      s_IndexBuffer      = nullptr;
@@ -73,7 +81,9 @@ void SandboxLayer2D::OnAttach()
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
-    s_Shader = Shader::Create("vert2.spv", "frag.spv");
+    // s_Shader = Shader::Create("vert2.spv", "frag.spv");
+    s_Shader = Shader::Create("assets/shaders/basic.vert",
+                              "assets/shaders/basic.frag");
     i32  width, height;
     auto ret = ImageLoader::LoadBMP("assets/icon.bmp", width, height);
     if (!ret) { VtError("error: {}", ret.error()); }
@@ -83,7 +93,7 @@ void SandboxLayer2D::OnAttach()
     img.Width  = width;
     img.Height = height;
 
-    // s_Window->SetIcon(img);
+    s_Window->SetIcon(img);
 
     std::initializer_list<VertexBufferElement> elements
         = {ShaderDataType::eFloat2, ShaderDataType::eFloat3};

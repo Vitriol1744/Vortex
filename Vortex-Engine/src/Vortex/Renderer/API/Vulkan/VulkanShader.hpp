@@ -28,10 +28,16 @@ namespace Vortex
         }
 
       private:
-        vk::ShaderModule m_VertexShader   = VK_NULL_HANDLE;
-        vk::ShaderModule m_FragmentShader = VK_NULL_HANDLE;
+        vk::ShaderModule                     m_VertexShader   = VK_NULL_HANDLE;
+        vk::ShaderModule                     m_FragmentShader = VK_NULL_HANDLE;
+        std::vector<vk::DescriptorSetLayout> m_DescriptoSetLayouts;
 
-        static void      ReadShaderCode(std::string_view path,
-                                        std::vector<u8>& buffer);
+        static void        ReadShaderCode(std::string_view path,
+                                          std::vector<u8>& buffer);
+        static std::string ReadShaderCode(std::string_view path);
+
+        static void        CompileShaderCode(std::string_view        path,
+                                             vk::ShaderStageFlagBits stage,
+                                             std::vector<u32>&       outputBinary);
     };
 }; // namespace Vortex

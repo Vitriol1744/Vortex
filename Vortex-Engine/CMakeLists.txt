@@ -4,7 +4,7 @@
 # 
 #  SPDX-License-Identifier: GPL-3
 #
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.25)
 project (Vortex-Engine)
 
 cmake_policy(SET CMP0092 NEW)
@@ -14,17 +14,20 @@ set (CXX_STANDARD_REQUIRED ON)
 
 option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-find_package (Vulkan REQUIRED)
+find_package (Vulkan REQUIRED COMPONENTS glslc glslang)
+
+set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set (GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set (SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+set (SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
 
 add_subdirectory (vendor/fmt)
 add_subdirectory (vendor/magic_enum)
 add_subdirectory (vendor/glm)
 add_subdirectory (vendor/glfw)
 add_subdirectory (vendor/VulkanMemoryAllocator)
-
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory (vendor/shaderc)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions (-DVT_DEBUG)
@@ -37,7 +40,7 @@ endif ()
 add_definitions (-DVT_ENABLE_ASSERTIONS)
 
 set (INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex" vendor/imgui)
-set (PUBLIC_LIBS ${Vulkan_LIBRARIES} fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Headers GPUOpen::VulkanMemoryAllocator)
+set (PUBLIC_LIBS fmt::fmt-header-only magic_enum::magic_enum glfw glm::glm-header-only Vulkan::Vulkan Vulkan::Headers GPUOpen::VulkanMemoryAllocator shaderc)
 
 set (SOURCES
     src/Vortex/Core/LayerStack.cpp
