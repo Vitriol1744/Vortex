@@ -12,7 +12,7 @@
 // #include <libshaderc_util/file_finder.h>
 #include <shaderc/shaderc.hpp>
 #include <spirv-tools/libspirv.h>
-#include <spirv_cross/spirv_glsl.hpp>
+// #include <spirv_cross/spirv_glsl.hpp>
 
 namespace Vortex
 {
