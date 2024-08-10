@@ -24,7 +24,7 @@ namespace Vortex
         (void)code;
         (void)description;
         VtCoreError(
-            "GLFW: An error has occured, ErrorCode: {}, Description: {}", code,
+            "GLFW: An error has occurred, ErrorCode: {}, Description: {}", code,
             description);
     }
 
@@ -301,15 +301,14 @@ namespace Vortex
                        glfwGetVersionString());
         }
 
-        i32          width   = specification.VideoMode.Width;
-        i32          height  = specification.VideoMode.Height;
-        const char*  title   = specification.Title.data();
-        auto         style   = GetWindowStyle();
-        auto         styleEx = GetWindowStyleEx();
+        i32                           width   = specification.VideoMode.Width;
+        i32                           height  = specification.VideoMode.Height;
+        const char*                   title   = specification.Title.data();
+        auto                          style   = GetWindowStyle();
+        auto                          styleEx = GetWindowStyleEx();
 
-        Ref<Monitor> monitor = specification.Monitor;
-        [[maybe_unused]]
-        GLFWmonitor* monitorHandle
+        Ref<Monitor>                  monitor = specification.Monitor;
+        [[maybe_unused]] GLFWmonitor* monitorHandle
             = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
                       : nullptr;
 
@@ -343,27 +342,16 @@ namespace Vortex
 
         if (monitor)
         {
-            [[maybe_unused]]
-            std::string_view monitorName
-                = monitor->GetName();
-            VideoMode currentMode
+            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
+            VideoMode                         currentMode
                 = specification.Monitor->GetCurrentVideoMode();
-            [[maybe_unused]]
-            u32 bitsPerPixel
-                = currentMode.RedBits + currentMode.GreenBits
-                + currentMode.BlueBits;
-            [[maybe_unused]]
-            u32 redBits
-                = currentMode.RedBits;
-            [[maybe_unused]]
-            u32 greenBits
-                = currentMode.GreenBits;
-            [[maybe_unused]]
-            i32 blueBits
-                = currentMode.BlueBits;
-            [[maybe_unused]]
-            u32 refreshRate
-                = currentMode.RefreshRate;
+            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
+                                              + currentMode.GreenBits
+                                              + currentMode.BlueBits;
+            [[maybe_unused]] u32 redBits     = currentMode.RedBits;
+            [[maybe_unused]] u32 greenBits   = currentMode.GreenBits;
+            [[maybe_unused]] i32 blueBits    = currentMode.BlueBits;
+            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
 
             VtCoreTrace(
                 "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
@@ -711,8 +699,7 @@ namespace Vortex
 #define VtGetWindow(handle)                                                    \
     reinterpret_cast<Win32Window*>(glfwGetWindowUserPointer(handle))
 #pragma region callbacks
-        [[maybe_unused]]
-        auto positionCallback
+        [[maybe_unused]] auto positionCallback
             = [](GLFWwindow* handle, i32 xpos, i32 ypos)
         {
             auto window = VtGetWindow(handle);
@@ -721,8 +708,7 @@ namespace Vortex
             window->m_Data.Position.x = xpos;
             window->m_Data.Position.y = ypos;
         };
-        [[maybe_unused]]
-        auto sizeCallback
+        [[maybe_unused]] auto sizeCallback
             = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
@@ -731,17 +717,14 @@ namespace Vortex
             window->m_Data.VideoMode.Width  = width;
             window->m_Data.VideoMode.Height = height;
         };
-        [[maybe_unused]]
-        auto closeCallback
-            = [](GLFWwindow* handle)
+        [[maybe_unused]] auto closeCallback = [](GLFWwindow* handle)
         {
             auto window = VtGetWindow(handle);
             WindowClosedEvent(window);
 
             window->m_Data.IsOpen = false;
         };
-        [[maybe_unused]]
-        auto focusCallback
+        [[maybe_unused]] auto focusCallback
             = [](GLFWwindow* handle, i32 focused)
         {
             auto window = VtGetWindow(handle);
@@ -750,15 +733,13 @@ namespace Vortex
 
             window->m_Data.Focused = focused;
         };
-        [[maybe_unused]]
-        auto iconifyCallback
+        [[maybe_unused]] auto iconifyCallback
             = [](GLFWwindow* handle, i32 iconified)
         {
             auto window = VtGetWindow(handle);
             WindowMinimizedEvent(window, iconified);
         };
-        [[maybe_unused]]
-        auto maximizeCallback
+        [[maybe_unused]] auto maximizeCallback
             = [](GLFWwindow* handle, i32 maximized)
         {
             auto window = VtGetWindow(handle);
@@ -773,10 +754,8 @@ namespace Vortex
 
             FramebufferResizedEvent(window, width, height);
         };
-        [[maybe_unused]]
-        auto keyCallback
-            = [](GLFWwindow* handle, i32 key, i32 scancode, i32 action,
-                 i32 mods)
+        [[maybe_unused]] auto keyCallback =
+            [](GLFWwindow* handle, i32 key, i32 scancode, i32 action, i32 mods)
         {
             auto window = VtGetWindow(handle);
             using Input::KeyCode;
@@ -797,15 +776,13 @@ namespace Vortex
                 case GLFW_REPEAT: KeyPressedEvent(window, keycode, 1); break;
             }
         };
-        [[maybe_unused]]
-        auto charCallback
+        [[maybe_unused]] auto charCallback
             = [](GLFWwindow* handle, u32 codepoint)
         {
             auto window = VtGetWindow(handle);
             KeyTypedEvent(window, codepoint);
         };
-        [[maybe_unused]]
-        auto mouseButtonCallback
+        [[maybe_unused]] auto mouseButtonCallback
             = [](GLFWwindow* handle, i32 button, i32 action, i32 mods)
         {
             auto window = VtGetWindow(handle);
@@ -826,23 +803,20 @@ namespace Vortex
                     = false;
             }
         };
-        [[maybe_unused]]
-        auto cursorEnterCallback
+        [[maybe_unused]] auto cursorEnterCallback
             = [](GLFWwindow* handle, i32 entered)
         {
             auto window = VtGetWindow(handle);
             if (entered) MouseEnteredEvent(window);
             else MouseLeftEvent(window);
         };
-        [[maybe_unused]]
-        auto scrollCallback
+        [[maybe_unused]] auto scrollCallback
             = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
         {
             auto window = VtGetWindow(handle);
             MouseScrolledEvent(window, xoffset, yoffset);
         };
-        [[maybe_unused]]
-        auto cursorPosCallback
+        [[maybe_unused]] auto cursorPosCallback
             = [](GLFWwindow* handle, f64 xpos, f64 ypos)
         {
             auto window = VtGetWindow(handle);

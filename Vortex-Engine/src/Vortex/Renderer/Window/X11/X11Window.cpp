@@ -19,7 +19,7 @@ namespace Vortex
         (void)code;
         (void)description;
         VtCoreError(
-            "GLFW: An error has occured, ErrorCode: {}, Description: {}", code,
+            "GLFW: An error has occurred, ErrorCode: {}, Description: {}", code,
             description);
     }
 
@@ -137,7 +137,7 @@ namespace Vortex
             case GLFW_KEY_PAUSE: ret = KeyCode::ePause; break;
             case GLFW_KEY_MENU: ret = KeyCode::eMenu; break;
 
-            default:
+            default: break;
         }
 
         return ret;
@@ -267,9 +267,13 @@ namespace Vortex
     }
     Vec2i X11Window::GetPosition() const noexcept
     {
+#ifdef VT_USE_WAYLAND
+        return {0, 0};
+#else
         Vec2i position;
         glfwGetWindowPos(m_Window, &position.x, &position.y);
         return position;
+#endif
     }
     inline Vec2i X11Window::GetSize() const noexcept
     {
@@ -560,8 +564,10 @@ namespace Vortex
 
     bool X11Window::Initialize()
     {
+#ifndef VT_USE_WAYLAND
         glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         glfwInitHint(GLFW_X11_XCB_VULKAN_SURFACE, GLFW_FALSE);
+#endif
 
         glfwSetErrorCallback(glfwErrorCallback);
 

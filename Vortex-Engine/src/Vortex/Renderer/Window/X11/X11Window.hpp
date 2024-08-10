@@ -9,6 +9,9 @@
 #include "Vortex/Renderer/Window/Window.hpp"
 
 #define GLFW_EXPOSE_NATIVE_X11
+#ifdef VT_USE_WAYLAND
+    #define GLFW_EXPOSE_NATIVE_WAYLAND
+#endif
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
@@ -27,7 +30,11 @@ namespace Vortex
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
+#ifndef VT_USE_WAYLAND
             return glfwGetX11Window(m_Window);
+#else
+            return glfwGetWaylandWindow(m_Window);
+#endif
         }
         inline virtual bool IsOpen() const noexcept override
         {

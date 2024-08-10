@@ -103,8 +103,11 @@ namespace Vortex
 
     bool X11Monitor::Initialize(std::vector<Ref<Monitor>>& monitors)
     {
+        // NOTE: for now it is determined at compilation time
+#ifndef VT_USE_WAYLAND
         glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         glfwInitHint(GLFW_X11_XCB_VULKAN_SURFACE, GLFW_FALSE);
+#endif
         VtCoreAssert(glfwInit());
         i32           monitorCount;
         GLFWmonitor** glfwMonitors = glfwGetMonitors(&monitorCount);
