@@ -30,16 +30,38 @@
 #endif
 
 #ifdef VT_ENABLE_ASSERTIONS
-    #define VtCoreAssert(expr) VtCoreAssertMsg(expr, #expr)
-    #define VtCoreAssertMsg(expr, msg)                                         \
-        if (expr) {}                                                           \
-        else                                                                   \
+    #define VtPrintCoreAssertMessage(expr, msg)                                \
         {                                                                      \
             std::source_location source = std::source_location::current();     \
             (void)source;                                                      \
             VtCoreFatal("Assertion Failed: '{}' ->\n{}[{}:{}] ->\n{}", msg,    \
                         source.file_name(), source.line(), source.column(),    \
                         source.function_name());                               \
+        }
+
+    #define VtCoreAssert(expr) VtCoreAssertMsg(expr, #expr)
+    #define VtCoreAssertMsg(expr, msg)                                         \
+        if (expr) {}                                                           \
+        else                                                                   \
+        {                                                                      \
+            VtPrintCoreAssertMessage(expr, msg);                               \
+            VtDebugBreak;                                                      \
+        }
+    #define VtCoreAssertFormat(expr, ...)                                      \
+        if (expr) {}                                                           \
+        else                                                                   \
+        {                                                                      \
+            std::string formatted = fmt::format(__VA_ARGS__);                  \
+            VtPrintCoreAssertMessage(expr, formatted);                         \
+            VtDebugBreak;                                                      \
+        }
+    #define VtPrintAssertMessage(expr, msg)                                    \
+        {                                                                      \
+            std::source_location source = std::source_location::current();     \
+            (void)source;                                                      \
+            VtFatal("Assertion Failed: '{}' ->\n{}[{}:{}] ->\n{}", msg,        \
+                    source.file_name(), source.line(), source.column(),        \
+                    source.function_name());                                   \
             VtDebugBreak;                                                      \
         }
     #define VtAssert(expr) VtAssertMsg(expr, #expr)
@@ -47,13 +69,18 @@
         if (expr) {}                                                           \
         else                                                                   \
         {                                                                      \
-            std::source_location source = std::source_location::current();     \
-            (void)source;                                                      \
-            VtFatal("Assertion Failed: '{}' ->\n{}[{}:{}], ->\n{}", msg,       \
-                    source.file_name(), source.line(), source.column(),        \
-                    source.function_name());                                   \
+            VtPrintAssertMessage(expr, msg);                                   \
             VtDebugBreak;                                                      \
         }
+    #define VtAssertFormat(expr, ...)                                          \
+        if (expr) {}                                                           \
+        else                                                                   \
+        {                                                                      \
+            auto formatted = fmt::format(__VA_ARGS__);                         \
+            VtPrintAssertMessage(expr, formatted);                             \
+            VtDebugBreak;                                                      \
+        }
+
     #ifdef VT_DEBUG
         #define VtCoreSlowAssert(expr) VtCoreAssert(expr)
         #define VtSlowAssert(expr)     VtAssert(expr)
