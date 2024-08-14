@@ -28,6 +28,10 @@ namespace Vortex
         }
 
         inline virtual usize GetSize() const override { return m_Size; }
+        virtual u32          GetCount() const override
+        {
+            return GetSize() / sizeof(u32);
+        }
 
       private:
         vk::Buffer       m_IndexBuffer       = VK_NULL_HANDLE;
