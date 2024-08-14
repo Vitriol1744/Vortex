@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Log/Log.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 
 #ifndef VT_DIST
     #define VkCall(x)                                                          \

@@ -6,8 +6,6 @@
  */
 #pragma once
 
-#include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
-
 #include <vk_mem_alloc.h>
 
 namespace Vortex
