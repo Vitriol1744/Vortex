@@ -36,21 +36,21 @@ namespace Vortex
     VulkanGraphicsPipeline::VulkanGraphicsPipeline(
         const GraphicsPipelineSpecification& specification)
     {
-        auto shader
+        m_Shader
             = std::dynamic_pointer_cast<VulkanShader>(specification.Shader);
 
         vk::PipelineShaderStageCreateInfo vertexShaderStage{};
         vertexShaderStage.sType
             = vk::StructureType::ePipelineShaderStageCreateInfo;
         vertexShaderStage.stage  = vk::ShaderStageFlagBits::eVertex;
-        vertexShaderStage.module = shader->GetVertexShader();
+        vertexShaderStage.module = m_Shader->GetVertexShader();
         vertexShaderStage.pName  = "main";
 
         vk::PipelineShaderStageCreateInfo fragmentShaderStage{};
         fragmentShaderStage.sType
             = vk::StructureType::ePipelineShaderStageCreateInfo;
         fragmentShaderStage.stage  = vk::ShaderStageFlagBits::eFragment;
-        fragmentShaderStage.module = shader->GetFragmentShader();
+        fragmentShaderStage.module = m_Shader->GetFragmentShader();
         fragmentShaderStage.pName  = "main";
 
         vk::PipelineShaderStageCreateInfo shaderStages[]
@@ -106,7 +106,7 @@ namespace Vortex
         rasterizer.polygonMode             = vk::PolygonMode::eFill;
         rasterizer.lineWidth               = 1.0f;
         rasterizer.cullMode                = vk::CullModeFlagBits::eBack;
-        rasterizer.frontFace               = vk::FrontFace::eClockwise;
+        rasterizer.frontFace               = vk::FrontFace::eCounterClockwise;
         rasterizer.depthBiasEnable         = VK_FALSE;
 
         vk::PipelineMultisampleStateCreateInfo multisampling{};
@@ -119,7 +119,14 @@ namespace Vortex
         colorBlendAttachment.colorWriteMask
             = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
             | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.blendEnable         = VK_TRUE;
+        colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+        colorBlendAttachment.dstColorBlendFactor
+            = vk::BlendFactor::eOneMinusSrcAlpha;
+        colorBlendAttachment.colorBlendOp        = vk::BlendOp::eAdd;
+        colorBlendAttachment.alphaBlendOp        = vk::BlendOp::eAdd;
+        colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+        colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
 
         vk::PipelineColorBlendStateCreateInfo colorBlending{};
         colorBlending.sType
@@ -139,16 +146,19 @@ namespace Vortex
         dynamicState.sType = vk::StructureType::ePipelineDynamicStateCreateInfo;
         dynamicState.dynamicStateCount
             = static_cast<uint32_t>(dynamicStates.size());
-        dynamicState.pDynamicStates = dynamicStates.data();
+        dynamicState.pDynamicStates      = dynamicStates.data();
+
+        vk::Device  device               = VulkanContext::GetDevice();
+        const auto& descriptorSetLayouts = m_Shader->GetDescriptorSetLayouts();
 
         vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-        pipelineLayoutInfo.setLayoutCount         = 0;
+        pipelineLayoutInfo.setLayoutCount         = descriptorSetLayouts.size();
+        pipelineLayoutInfo.pSetLayouts            = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
         auto context = std::dynamic_pointer_cast<VulkanContext>(
             specification.Window->GetRendererContext());
-        vk::Device device = VulkanContext::GetDevice();
 
         VkCall(device.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE,
                                            &m_PipelineLayout));

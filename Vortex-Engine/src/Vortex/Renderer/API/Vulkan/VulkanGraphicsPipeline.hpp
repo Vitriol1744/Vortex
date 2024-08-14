@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
 
 namespace Vortex
 {
@@ -19,9 +20,11 @@ namespace Vortex
 
         inline operator vk::Pipeline() const { return m_Pipeline; }
         inline vk::PipelineLayout GetLayout() const { return m_PipelineLayout; }
+        inline Ref<VulkanShader>  GetShader() const { return m_Shader; }
 
       private:
         vk::Pipeline       m_Pipeline       = VK_NULL_HANDLE;
         vk::PipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+        Ref<VulkanShader>  m_Shader         = nullptr;
     };
 }; // namespace Vortex
