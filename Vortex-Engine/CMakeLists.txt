@@ -87,6 +87,7 @@ set(PUBLIC_LIBS
     shaderc_util
     spirv-cross-reflect
     spirv-cross-hlsl
+    spirv-cross-glsl
     spirv-cross-cpp
     stdc++exp)
 
