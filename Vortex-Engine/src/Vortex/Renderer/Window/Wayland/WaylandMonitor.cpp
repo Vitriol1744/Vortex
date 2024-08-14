@@ -6,11 +6,11 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/X11/X11Monitor.hpp"
+#include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
 
 namespace Vortex
 {
-    X11Monitor::X11Monitor(GLFWmonitor* handle)
+    WaylandMonitor::WaylandMonitor(GLFWmonitor* handle)
         : m_Handle(handle)
     {
 
@@ -64,32 +64,32 @@ namespace Vortex
         glfwSetMonitorUserPointer(m_Handle, this);
     }
 
-    Vec2i X11Monitor::GetPosition() const
+    Vec2i WaylandMonitor::GetPosition() const
     {
         Vec2i ret;
         glfwGetMonitorPos(m_Handle, &ret.x, &ret.y);
 
         return ret;
     }
-    Vec4i X11Monitor::GetWorkArea() const
+    Vec4i WaylandMonitor::GetWorkArea() const
     {
         Vec4i ret;
         glfwGetMonitorWorkarea(m_Handle, &ret.x, &ret.y, &ret.z, &ret.w);
 
         return ret;
     }
-    Vec2f X11Monitor::GetContentScale() const
+    Vec2f WaylandMonitor::GetContentScale() const
     {
         Vec2f ret;
         glfwGetMonitorContentScale(m_Handle, &ret.x, &ret.y);
 
         return ret;
     }
-    void X11Monitor::SetGamma(f32 gamma) const
+    void WaylandMonitor::SetGamma(f32 gamma) const
     {
         glfwSetGamma(m_Handle, gamma);
     }
-    void X11Monitor::SetGammaRamp(GammaRamp& gammaRamp)
+    void WaylandMonitor::SetGammaRamp(GammaRamp& gammaRamp)
     {
         GLFWgammaramp ramp;
         ramp.red      = gammaRamp.Red.data();
@@ -101,24 +101,22 @@ namespace Vortex
         glfwSetGammaRamp(m_Handle, &ramp);
     }
 
-    bool X11Monitor::Initialize(std::vector<Ref<Monitor>>& monitors)
+    bool WaylandMonitor::Initialize(std::vector<Ref<Monitor>>& monitors)
     {
         // NOTE: for now it is determined at compilation time
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-        glfwInitHint(GLFW_X11_XCB_VULKAN_SURFACE, GLFW_TRUE);
-
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
         VtCoreAssert(glfwInit());
         i32           monitorCount;
         GLFWmonitor** glfwMonitors = glfwGetMonitors(&monitorCount);
         monitors.reserve(monitorCount);
 
         for (i32 i = 0; i < monitorCount; i++)
-            monitors.push_back(CreateRef<X11Monitor>(glfwMonitors[i]));
+            monitors.push_back(CreateRef<WaylandMonitor>(glfwMonitors[i]));
 
         glfwSetMonitorCallback(
             [](GLFWmonitor* handle, i32 event)
             {
-                X11Monitor* monitor = reinterpret_cast<X11Monitor*>(
+                WaylandMonitor* monitor = reinterpret_cast<WaylandMonitor*>(
                     glfwGetMonitorUserPointer(handle));
                 MonitorState state = MonitorState::eDisconnected;
                 if (event == GLFW_CONNECTED) state = MonitorState::eConnected;

@@ -10,6 +10,11 @@
 #include "Vortex/Renderer/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
+    // NOTE(v1tr10l7): if we don't expose both api's, compiler will start
+    // complaining about missing glfw native calls to either wayland or glfw
+    #define GLFW_EXPOSE_NATIVE_WAYLAND
+    #define GLFW_EXPOSE_NATIVE_X11
+    #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
     #include "Vortex/Renderer/Window/X11/X11Window.hpp"
 #elifdef VT_PLATFORM_WINDOWS
     #include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
@@ -20,7 +25,28 @@ namespace Vortex
     static WindowSubsystem ChooseSubsystem()
     {
 #ifdef VT_PLATFORM_LINUX
-        return WindowSubsystem::eX11;
+        const char* xdgSessionType = std::getenv("XDG_SESSION_TYPE");
+        bool waylandAvailable = (std::strcmp(xdgSessionType, "wayland") == 0)
+                             && std::getenv("WAYLAND_DISPLAY");
+        bool        xlibAvailable    = std::getenv("DISPLAY");
+
+        const char* platformOverride = std::getenv("VT_PLATFORM_OVERRIDE");
+        if (platformOverride)
+        {
+            if (strcmp(platformOverride, "wayland") == 0 && waylandAvailable)
+                return WindowSubsystem::eWayland;
+            else if (strcmp(platformOverride, "x11") == 0 && xlibAvailable)
+                return WindowSubsystem::eX11;
+            else
+                VtCoreWarn(
+                    "Unrecognized platform override, VT_PLATFORM_OVERRIDE='{}'",
+                    platformOverride);
+        }
+        else if (waylandAvailable) return WindowSubsystem::eWayland;
+        else if (xlibAvailable) return WindowSubsystem::eX11;
+
+        VtCoreAssertMsg(false, "no supported window servers detected");
+        return WindowSubsystem::eUndefined;
 #elifdef VT_PLATFORM_WINDOWS
         return WindowSubsystem::eWin32;
 #else
@@ -51,9 +77,9 @@ namespace Vortex
 #ifdef VT_PLATFORM_LINUX
         if (GetWindowSubsystem() == WindowSubsystem::eX11)
             X11Window::PollEvents();
-        else
-            VtCoreFatal(
-                "Only X11 Windowing system is currently supported by Vortex");
+        else if (GetWindowSubsystem() == WindowSubsystem::eWayland)
+            WaylandWindow::PollEvents();
+        else VtCoreFatal("This platform is not supported by Vortex!");
 #elifdef VT_PLATFORM_WINDOWS
         Win32Window::PollEvents();
 #else
@@ -68,6 +94,8 @@ namespace Vortex
         WindowSubsystem subsystem = GetWindowSubsystem();
         if (subsystem == WindowSubsystem::eX11)
             ret = CreateRef<X11Window>(specs);
+        else if (subsystem == WindowSubsystem::eWayland)
+            ret = CreateRef<WaylandWindow>(specs);
 #elifdef VT_PLATFORM_WINDOWS
         ret = CreateRef<Win32Window>(specs);
 #endif
@@ -83,6 +111,8 @@ namespace Vortex
 #ifdef VT_PLATFORM_LINUX
         WindowSubsystem subsystem = GetWindowSubsystem();
         if (subsystem == WindowSubsystem::eX11) ret = new X11Window(specs);
+        else if (subsystem == WindowSubsystem::eWayland)
+            ret = new WaylandWindow(specs);
 #elifdef VT_PLATFORM_WINDOWS
         ret = new Win32Window(specs);
 #endif
@@ -92,7 +122,14 @@ namespace Vortex
 
     WindowSubsystem Window::GetWindowSubsystem()
     {
-        static WindowSubsystem subsystem = ChooseSubsystem();
+        static WindowSubsystem subsystem = []() -> WindowSubsystem
+        {
+            WindowSubsystem subsystem = ChooseSubsystem();
+
+            VtCoreInfo("Window: Using {}...",
+                       magic_enum::enum_name(subsystem).data() + 1);
+            return subsystem;
+        }();
 
         return subsystem;
     };

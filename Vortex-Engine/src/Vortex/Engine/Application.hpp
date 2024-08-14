@@ -37,7 +37,7 @@ namespace Vortex
         /**
          * @brief Runs the application
          * @return boolean value indicating, whether application should be
-         * restarted uppon close
+         * restarted upon close
          */
         bool        Run();
         /**

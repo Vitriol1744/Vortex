@@ -49,11 +49,16 @@ namespace Vortex
 
         virtual void        SetTitle(std::string_view title) override;
         virtual void        SetIcon(const Icon* icons, usize count) override;
-        virtual void        SetPosition(i32 x, i32 y) const override;
+        virtual void        SetPosition(i32 x, i32 y) override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
         virtual void SetSize(const Vec2i& size) noexcept override;
 
         virtual void SetOpacity(f32 opacity) override;
+        virtual Ref<RendererContext>
+        GetRendererContext() const noexcept override
+        {
+            return m_RendererContext;
+        }
 
         virtual void SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                   i32 maxHeight) override;
@@ -68,16 +73,17 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        HWND                                           m_WindowHandle = nullptr;
-        HICON                                          m_BigIcon      = nullptr;
-        HICON                                          m_SmallIcon    = nullptr;
-        bool                                           m_CursorTracked = false;
+        HWND                       m_WindowHandle  = nullptr;
+        HICON                      m_BigIcon       = nullptr;
+        HICON                      m_SmallIcon     = nullptr;
+        bool                       m_CursorTracked = false;
 
-        GLFWwindow*                                    m_Window;
+        GLFWwindow*                m_Window;
+        Ref<class RendererContext> m_RendererContext = nullptr;
 
-        Vec2i                                          m_LastCursorPos = {0, 0};
+        Vec2i                      m_LastCursorPos   = {0, 0};
 
-        static usize                                   s_WindowsCount;
+        static usize               s_WindowsCount;
         static std::unordered_map<HWND, Win32Window*>& GetWindowMap()
         {
             static std::unordered_map<HWND, Win32Window*> map;

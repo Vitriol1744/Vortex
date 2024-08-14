@@ -16,61 +16,47 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Utility/ImageLoader.hpp"
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 
 using namespace Vortex;
 struct Vertex
 {
-    Vec2                                     Pos;
-    Vec3                                     Color;
-
-    static vk::VertexInputBindingDescription GetBindingDescription()
-    {
-        vk::VertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding   = 0;
-        bindingDescription.stride    = sizeof(Vertex);
-        bindingDescription.inputRate = vk::VertexInputRate::eVertex;
-
-        return bindingDescription;
-    }
-    static std::array<vk::VertexInputAttributeDescription, 2>
-    GetAttributeDescriptions()
-    {
-        std::array<vk::VertexInputAttributeDescription, 2>
-            attributeDescriptions{};
-        attributeDescriptions[0].binding  = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format   = vk::Format::eR32G32Sfloat;
-        attributeDescriptions[0].offset   = offsetof(Vertex, Pos);
-        attributeDescriptions[1].binding  = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format   = vk::Format::eR32G32B32Sfloat;
-        attributeDescriptions[1].offset   = offsetof(Vertex, Color);
-
-        return attributeDescriptions;
-    }
+    Vec2 Pos;
+    Vec3 Color;
 };
 const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
                                         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
                                         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
-const std::vector<u16>    indices    = {0, 1, 2, 2, 3, 0};
+const std::vector<u32>    indices    = {0, 1, 2, 2, 3, 0};
 
 struct UniformBufferObject
 {
-    Mat4 Model;
-    Mat4 View;
-    Mat4 Projection;
+    alignas(16) Mat4 Model;
+    alignas(16) Mat4 View;
+    alignas(16) Mat4 Projection;
+    alignas(8) Vec2 lightPos;
 };
 
-static Ref<Window>                 s_Window           = nullptr;
-static Ref<VulkanContext>          s_Context          = nullptr;
-static Ref<Shader>                 s_Shader           = nullptr;
-static Ref<VulkanGraphicsPipeline> s_GraphicsPipeline = nullptr;
-static Ref<VulkanVertexBuffer>     s_VertexBuffer     = nullptr;
-static Ref<VulkanIndexBuffer>      s_IndexBuffer      = nullptr;
-static Scope<Pixel[]>              pixels             = nullptr;
+static Ref<Window>                    s_Window           = nullptr;
+static Ref<VulkanContext>             s_Context          = nullptr;
+static Ref<VulkanShader>              s_Shader           = nullptr;
+static Ref<VulkanGraphicsPipeline>    s_GraphicsPipeline = nullptr;
+static Ref<VulkanVertexBuffer>        s_VertexBuffer     = nullptr;
+static Ref<VulkanIndexBuffer>         s_IndexBuffer      = nullptr;
+static Ref<VulkanUniformBuffer>       s_UniformBuffer    = nullptr;
+static std::vector<vk::DescriptorSet> s_DescriptorSets;
+static Scope<Pixel[]>                 pixels = nullptr;
 
 using namespace Vortex;
 
@@ -81,19 +67,21 @@ void SandboxLayer2D::OnAttach()
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
-    // s_Shader = Shader::Create("vert2.spv", "frag.spv");
-    s_Shader = Shader::Create("assets/shaders/basic.vert",
-                              "assets/shaders/basic.frag");
+    s_Shader = CreateRef<VulkanShader>("assets/shaders/uniform.glsl");
     i32  width, height;
     auto ret = ImageLoader::LoadBMP("assets/icon.bmp", width, height);
     if (!ret) { VtError("error: {}", ret.error()); }
-    else pixels = std::move(ret.value());
-    Image img;
-    img.Pixels = pixels.get();
-    img.Width  = width;
-    img.Height = height;
+    else
+    {
+        pixels = std::move(ret.value());
+        Image img;
+        img.Pixels = pixels.get();
+        img.Width  = width;
+        img.Height = height;
 
-    s_Window->SetIcon(img);
+        s_Window->SetIcon(img);
+    }
+    s_Window->ShowCursor();
 
     std::initializer_list<VertexBufferElement> elements
         = {ShaderDataType::eFloat2, ShaderDataType::eFloat3};
@@ -108,49 +96,71 @@ void SandboxLayer2D::OnAttach()
         GraphicsPipeline::Create(specification));
     s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
-    s_IndexBuffer = CreateRef<VulkanIndexBuffer>(
-        (void*)indices.data(), indices.size() * sizeof(uint16_t));
+    s_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(),
+                                                 indices.size() * sizeof(u32));
+    s_UniformBuffer
+        = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
+
+    vk::Device device = VulkanContext::GetDevice();
+    VtCoreInfo("Frames in flight: {}", VT_MAX_FRAMES_IN_FLIGHT);
+
+    s_DescriptorSets = s_Shader->GetDescriptorSets()[0].Sets;
+    s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
 }
 void SandboxLayer2D::OnDetach() {}
 
 void SandboxLayer2D::OnUpdate() {}
-void SandboxLayer2D::OnRender() {}
+void SandboxLayer2D::OnRender()
+{
+    Renderer::Draw(s_GraphicsPipeline, s_VertexBuffer, s_IndexBuffer);
+}
 void SandboxLayer2D::OnImGuiRender()
 {
-    bool showWindow = true;
-    ImGui::ShowDemoWindow(&showWindow);
-    ImGui::Render();
 
-    VulkanSwapChain& swapChain = s_Context->GetSwapChain();
-    swapChain.BeginFrame();
+    Vec2              cursorPos     = {100, 100};
+
+    VulkanSwapChain&  swapChain     = s_Context->GetSwapChain();
 
     vk::Extent2D      extent        = swapChain.GetExtent();
     vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
 
-    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics,
-                               *s_GraphicsPipeline);
+    bool              showWindow    = true;
+    ImGui::ShowDemoWindow(&showWindow);
 
-    vk::Viewport viewport{};
-    viewport.x        = 0.0f;
-    viewport.y        = 0.0f;
-    viewport.width    = static_cast<f32>(extent.width);
-    viewport.height   = static_cast<f32>(extent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    commandBuffer.setViewport(0, 1, &viewport);
+    ImGui::Render();
 
-    vk::Rect2D scissor{};
-    scissor.offset = vk::Offset2D(0, 0);
-    scissor.extent = extent;
-    commandBuffer.setScissor(0, 1, &scissor);
-    vk::Buffer     vertexBuffers[] = {s_VertexBuffer->GetBuffer()};
-    vk::DeviceSize offsets[]       = {0};
-    commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
-    commandBuffer.bindIndexBuffer(s_IndexBuffer->GetBuffer(), 0,
-                                  vk::IndexType::eUint16);
-
-    // commandBuffer.draw(s_Vertices.size(), 1, 0, 0);
-    commandBuffer.drawIndexed(u32(indices.size()), 1, 0, 0, 0);
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
-    swapChain.EndFrame();
+    Renderer::EndFrame();
+
+    auto currentFrame = s_Context->GetSwapChain().GetCurrentFrameIndex();
+    auto updateUniformBuffers = [cursorPos, currentFrame]()
+    {
+        static auto startTime   = std::chrono::high_resolution_clock::now();
+
+        auto        currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(
+                         currentTime - startTime)
+                         .count();
+        UniformBufferObject ubo{};
+        ubo.lightPos = s_Window->GetCursorPosition();
+        ubo.Model    = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
+                                   glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.View     = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
+                                   glm::vec3(0.0f, 0.0f, 0.0f),
+                                   glm::vec3(0.0f, 0.0f, 1.0f));
+
+        auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
+        ubo.Projection       = glm::perspective(
+            glm::radians(45.0f),
+            swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+
+        ubo.Projection[1][1] *= -1;
+
+        void* dest = VulkanAllocator::MapMemory(
+            s_UniformBuffer->m_Allocations[currentFrame]);
+        std::memcpy(dest, &ubo, sizeof(ubo));
+        VulkanAllocator::UnmapMemory(
+            s_UniformBuffer->m_Allocations[currentFrame]);
+    };
+    updateUniformBuffers();
 }

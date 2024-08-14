@@ -10,6 +10,7 @@
 #include "Vortex/Renderer/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
+    #include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
     #include "Vortex/Renderer/Window/X11/X11Monitor.hpp"
 #elifdef VT_PLATFORM_WINDOWS
     #include "Vortex/Renderer/Window/Win32/Win32Monitor.hpp"
@@ -30,6 +31,8 @@ namespace Vortex
 #ifdef VT_PLATFORM_LINUX
         if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
             initialized = X11Monitor::Initialize(s_Monitors);
+        else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+            initialized = WaylandMonitor::Initialize(s_Monitors);
 #elifdef VT_PLATFORM_WINDOWS
         initialized = Win32Monitor::Initialize(s_Monitors);
 #endif
@@ -57,4 +60,4 @@ namespace Vortex
 
         Event<Monitor*, MonitorState> MonitorStateChangedEvent;
     }; // namespace MonitorEvents
-}; // namespace Vortex
+};     // namespace Vortex

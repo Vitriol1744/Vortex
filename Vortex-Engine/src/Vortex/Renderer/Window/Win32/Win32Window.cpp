@@ -372,7 +372,7 @@ namespace Vortex
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
-            m_Data.RendererContext = RendererContext::Create(this);
+            m_RendererContext = RendererContext::Create(this);
 
         ShowWindow(m_WindowHandle, SW_SHOW);
         UpdateWindow(m_WindowHandle);
@@ -401,7 +401,7 @@ namespace Vortex
         }
         // glfwPollEvents();
     }
-    void Win32Window::Present() { m_Data.RendererContext->Present(); }
+    void Win32Window::Present() { m_RendererContext->Present(); }
 
     bool Win32Window::IsFocused() const noexcept
     {
@@ -530,7 +530,7 @@ namespace Vortex
         m_BigIcon   = bigIcon;
         m_SmallIcon = smallIcon;
     }
-    void Win32Window::SetPosition(i32 x, i32 y) const
+    void Win32Window::SetPosition(i32 x, i32 y)
     {
         RECT rect    = {x, y, x, y};
         LONG style   = GetWindowLongW(m_WindowHandle, GWL_STYLE);
@@ -748,9 +748,9 @@ namespace Vortex
         auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
-            if (window->m_Data.RendererContext)
-                window->m_Data.RendererContext->OnResize(
-                    static_cast<u32>(width), static_cast<u32>(height));
+            if (window->m_RendererContext)
+                window->m_RendererContext->OnResize(static_cast<u32>(width),
+                                                    static_cast<u32>(height));
 
             FramebufferResizedEvent(window, width, height);
         };
@@ -1018,7 +1018,7 @@ namespace Vortex
                 {
                     TRACKMOUSEEVENT lpEventTrack = {};
                     lpEventTrack.cbSize          = sizeof(lpEventTrack);
-                    lpEventTrack.dwFlags         = TME_LEAVE;
+                    lpEventTrack.dwFlags         = TIME_LEAVE;
                     lpEventTrack.hwndTrack       = m_WindowHandle;
                     lpEventTrack.dwHoverTime     = 0;
                     TrackMouseEvent(&lpEventTrack);

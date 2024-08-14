@@ -1,26 +1,25 @@
-# 
-#  Created by v1tr10l7 on 17.07.2024.
-#  Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
-# 
-#  SPDX-License-Identifier: GPL-3
 #
-cmake_minimum_required (VERSION 3.27)
-project (SandboxApp)
+# Created by v1tr10l7 on 17.07.2024. Copyright (c) 2024-2024, Szymon Zemke
+# <v1tr10l7@proton.me>
+#
+# SPDX-License-Identifier: GPL-3
+#
+cmake_minimum_required(VERSION 3.27)
+project(SandboxApp)
 
-set (CMAKE_CXX_STANDARD 23)
-set (CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 23)
+set(CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions (-DVT_DEBUG)
-elseif (CMAKE_BUILD_TYPE MATCHES Release)
-    add_definitions (-DVT_RELEASE)
-elseif (CMAKE_BUILD_TYPE MATCHES Dist)
-    add_definitions (-DVT_DIST)
-endif ()
-add_definitions (-DVT_ENABLE_ASSERTIONS)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  add_definitions(-DVT_DEBUG)
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+  add_definitions(-DVT_RELEASE)
+elseif(CMAKE_BUILD_TYPE MATCHES Dist)
+  add_definitions(-DVT_DIST)
+endif()
+add_definitions(-DVT_ENABLE_ASSERTIONS)
+add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
-set (SOURCES 
-    src/Sandbox.cpp
-    src/SandboxLayer2D.cpp)
-add_executable (${PROJECT_NAME} ${SOURCES})
-target_link_libraries (${PROJECT_NAME} PUBLIC Vortex-Engine)
+set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES})
+target_link_libraries(${PROJECT_NAME} PUBLIC Vortex-Engine)

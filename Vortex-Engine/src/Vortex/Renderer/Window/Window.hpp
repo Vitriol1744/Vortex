@@ -91,19 +91,16 @@ namespace Vortex
             return m_Data.MousePosition;
         }
 
-        inline Ref<RendererContext> GetRendererContext() const noexcept
-        {
-            return m_Data.RendererContext;
-        }
+        virtual Ref<RendererContext> GetRendererContext() const noexcept   = 0;
 
-        virtual void Close() noexcept                      = 0;
-        virtual void RequestFocus() noexcept               = 0;
-        virtual void RequestUserAttention() const noexcept = 0;
-        virtual void Maximize() noexcept                   = 0;
-        virtual void Minimize() noexcept                   = 0;
-        virtual void Restore() noexcept                    = 0;
+        virtual void                 Close() noexcept                      = 0;
+        virtual void                 RequestFocus() noexcept               = 0;
+        virtual void                 RequestUserAttention() const noexcept = 0;
+        virtual void                 Maximize() noexcept                   = 0;
+        virtual void                 Minimize() noexcept                   = 0;
+        virtual void                 Restore() noexcept                    = 0;
 
-        virtual void SetTitle(std::string_view title)      = 0;
+        virtual void                 SetTitle(std::string_view title)      = 0;
         inline void  SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
         virtual void SetIcon(const Icon* icons, usize count) = 0;
 
@@ -111,7 +108,7 @@ namespace Vortex
         {
             SetPosition(position.x, position.y);
         }
-        virtual void SetPosition(i32 x, i32 y) const                = 0;
+        virtual void SetPosition(i32 x, i32 y)                      = 0;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) = 0;
         virtual void SetSize(const Vec2i& size) noexcept            = 0;
         inline void  SetWidth(const i32 width) noexcept
@@ -182,11 +179,9 @@ namespace Vortex
             std::array<bool, std::to_underlying(Input::KeyCode::eKeyCount)>
                 Keys;
             std::array<bool, std::to_underlying(Input::MouseCode::eButtonCount)>
-                                       MouseButtons;
+                  MouseButtons;
 
-            Vec2d                      MousePosition   = {0, 0};
-
-            Ref<class RendererContext> RendererContext = nullptr;
+            Vec2d MousePosition = {0, 0};
         } m_Data;
     };
 

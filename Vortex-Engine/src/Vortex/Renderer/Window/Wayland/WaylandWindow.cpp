@@ -7,23 +7,11 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
-#include "Vortex/Renderer/Window/X11/X11Window.hpp"
-
-#include <X11/Xresource.h>
+#include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
 
 namespace Vortex
 {
-    Display*          X11Window::s_Display       = nullptr;
-    i32               X11Window::s_Screen        = 0;
-    ::Window          X11Window::s_RootWindow    = 0;
-    XContext          X11Window::s_Context       = 0;
-    xcb_connection_t* X11Window::s_XcbConnection = nullptr;
-    usize             X11Window::s_WindowsCount  = 0;
-
-    namespace
-    {
-        ::Cursor s_BlankCursor = 0;
-    }
+    usize       WaylandWindow::s_WindowsCount = 0;
 
     static void glfwErrorCallback(int code, const char* description)
     {
@@ -155,7 +143,7 @@ namespace Vortex
     }
 
     using Input::MouseCode;
-    MouseCode ToVtMouseCode(i32 mouse)
+    static MouseCode ToVtMouseCode(i32 mouse)
     {
         MouseCode ret = MouseCode::eUnknown;
         switch (mouse)
@@ -173,12 +161,12 @@ namespace Vortex
         return ret;
     }
 
-    X11Window::X11Window(const WindowSpecification& specification)
+    WaylandWindow::WaylandWindow(const WindowSpecification& specification)
         : Window(specification)
     {
         if (s_WindowsCount == 0)
         {
-            VtCoreAssert(X11Window::Initialize());
+            VtCoreAssert(WaylandWindow::Initialize());
             VtCoreInfo("GLFW: Successfully initialized, version: {}",
                        glfwGetVersionString());
         }
@@ -217,7 +205,6 @@ namespace Vortex
         m_Window = glfwCreateWindow(
             width, height, title,
             specification.Fullscreen ? monitorHandle : nullptr, nullptr);
-        m_WindowHandle = glfwGetX11Window(m_Window);
 
         if (monitor)
         {
@@ -253,120 +240,82 @@ namespace Vortex
 
         if (!specification.NoAPI)
             m_RendererContext = RendererContext::Create(this);
-
-        if (s_WindowsCount == 1)
-        {
-            // Create Blank Cursor
-            char   data[1]           = {0};
-            Pixmap blankCursorPixMap = XCreateBitmapFromData(
-                s_Display, DefaultRootWindow(s_Display), data, 1, 1);
-            XColor blankCursorColor;
-            s_BlankCursor = XCreatePixmapCursor(
-                s_Display, blankCursorPixMap, blankCursorPixMap,
-                &blankCursorColor, &blankCursorColor, 0, 0);
-
-            XFreePixmap(s_Display, blankCursorPixMap);
-        }
     }
-    X11Window::~X11Window()
+    WaylandWindow::~WaylandWindow()
     {
+        VtCoreTrace("Wayland: Destroying window...");
         glfwDestroyWindow(m_Window);
         --s_WindowsCount;
-        if (s_WindowsCount == 0) Shutdown();
+        // if (s_WindowsCount == 0) Shutdown();
     }
 
-    void X11Window::PollEvents() { glfwPollEvents(); }
-    void X11Window::Present() { m_RendererContext->Present(); }
+    void WaylandWindow::PollEvents() { glfwPollEvents(); }
+    void WaylandWindow::Present()
+    {
+        if (m_RendererContext) m_RendererContext->Present();
+    }
 
-    bool X11Window::IsFocused() const noexcept { return m_Data.Focused; }
-    bool X11Window::IsMinimized() const noexcept
+    bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
+    bool WaylandWindow::IsMinimized() const noexcept
     {
         return glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED);
     }
-    bool X11Window::IsHovered() const noexcept
+    bool WaylandWindow::IsHovered() const noexcept
     {
         return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
     }
-    std::string X11Window::GetTitle() const noexcept
+    std::string WaylandWindow::GetTitle() const noexcept
     {
         return glfwGetWindowTitle(m_Window);
     }
-    Vec2i X11Window::GetPosition() const noexcept
+    Vec2i WaylandWindow::GetPosition() const noexcept
     {
-        Vec2i    position;
-        ::Window dummy;
-        XTranslateCoordinates(s_Display, m_WindowHandle, s_RootWindow, 0, 0,
-                              &position.x, &position.y, &dummy);
-
-        return position;
+        // NOTE(v1tr10l7): wayland doesn't provide a way to retrieve window
+        // position
+        return {0, 0};
     }
-    inline Vec2i X11Window::GetSize() const noexcept
+    inline Vec2i WaylandWindow::GetSize() const noexcept
     {
-        XWindowAttributes attributes{};
-        XGetWindowAttributes(s_Display, m_WindowHandle, &attributes);
-
-        return Vec2i(attributes.width, attributes.height);
+        return Vec2i(m_Data.VideoMode.Width, m_Data.VideoMode.Height);
     }
-    Vec2i X11Window::GetFramebufferSize() const noexcept { return GetSize(); }
-    Vec2f X11Window::GetContentScale() const noexcept
+    Vec2i WaylandWindow::GetFramebufferSize() const noexcept
+    {
+        Vec2i ret;
+        glfwGetFramebufferSize(m_Window, &ret.x, &ret.y);
+
+        return ret;
+    }
+    Vec2f WaylandWindow::GetContentScale() const noexcept
     {
         Vec2f ret;
         glfwGetWindowContentScale(m_Window, &ret.x, &ret.y);
 
         return ret;
     }
-    f32 X11Window::GetOpacity() const noexcept
+    f32 WaylandWindow::GetOpacity() const noexcept
     {
         return glfwGetWindowOpacity(m_Window);
     }
 
-    void X11Window::Close() noexcept
+    void WaylandWindow::Close() noexcept
     {
         m_Data.IsOpen = false;
         glfwWindowShouldClose(m_Window);
     }
-    void X11Window::RequestFocus() noexcept
-    {
-        return glfwFocusWindow(m_Window);
-        Atom netActiveWindow
-            = XInternAtom(s_Display, "_NET_ACTIVE_WINDOW", true);
-
-        if (netActiveWindow)
-        {
-            XEvent event{};
-            event.type                 = ClientMessage;
-            event.xclient.window       = m_WindowHandle;
-            event.xclient.message_type = netActiveWindow;
-            event.xclient.format       = 32;
-            event.xclient.data.l[0]    = 1;
-            event.xclient.data.l[1]    = 0; // lastUserActivityTime;
-            event.xclient.data.l[2]    = 0;
-
-            int mask = SubstructureNotifyMask | SubstructureRedirectMask;
-            VtCoreAssert(XSendEvent(s_Display, DefaultRootWindow(s_Display),
-                                    false, mask, &event));
-        }
-        else
-        {
-            XSetInputFocus(s_Display, m_WindowHandle, RevertToPointerRoot,
-                           CurrentTime);
-            XRaiseWindow(s_Display, m_WindowHandle);
-        }
-    }
-    void X11Window::RequestUserAttention() const noexcept
+    void WaylandWindow::RequestFocus() noexcept { glfwFocusWindow(m_Window); }
+    void WaylandWindow::RequestUserAttention() const noexcept
     {
         glfwRequestWindowAttention(m_Window);
     }
-    void X11Window::Maximize() noexcept { glfwMaximizeWindow(m_Window); }
-    void X11Window::Minimize() noexcept { glfwIconifyWindow(m_Window); }
-    void X11Window::Restore() noexcept { glfwRestoreWindow(m_Window); }
-    void X11Window::SetTitle(std::string_view title)
+    void WaylandWindow::Maximize() noexcept { glfwMaximizeWindow(m_Window); }
+    void WaylandWindow::Minimize() noexcept { glfwIconifyWindow(m_Window); }
+    void WaylandWindow::Restore() noexcept { glfwRestoreWindow(m_Window); }
+    void WaylandWindow::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
-
         glfwSetWindowTitle(m_Window, title.data());
     }
-    void X11Window::SetIcon(const Icon* icons, usize count)
+    void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
         std::vector<GLFWimage> images;
         images.reserve(count);
@@ -381,29 +330,26 @@ namespace Vortex
 
         glfwSetWindowIcon(m_Window, count, images.data());
     }
-    void X11Window::SetPosition(i32 x, i32 y)
+    void WaylandWindow::SetPosition(i32 x, i32 y)
     {
-
-        XMoveWindow(s_Display, m_WindowHandle, x, y);
-        m_Data.Position.x = x;
-        m_Data.Position.y = y;
+        glfwSetWindowPos(m_Window, x, y);
     }
-    void X11Window::SetAspectRatio(i32 numerator, i32 denominator)
+    void WaylandWindow::SetAspectRatio(i32 numerator, i32 denominator)
     {
         m_Data.Numererator = numerator;
         m_Data.Denominator = denominator;
         glfwSetWindowAspectRatio(m_Window, numerator, denominator);
     }
-    void X11Window::SetSize(const Vec2i& size) noexcept
+    void WaylandWindow::SetSize(const Vec2i& size) noexcept
     {
         glfwSetWindowSize(m_Window, size.x, size.y);
     }
-    void X11Window::SetOpacity(f32 opacity)
+    void WaylandWindow::SetOpacity(f32 opacity)
     {
         glfwSetWindowOpacity(m_Window, opacity);
     }
-    void X11Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
-                                 i32 maxHeight)
+    void WaylandWindow::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
+                                     i32 maxHeight)
     {
         m_Data.MinWidth  = minWidth;
         m_Data.MinHeight = minHeight;
@@ -413,55 +359,50 @@ namespace Vortex
                                 maxHeight);
     }
 
-    void X11Window::SetAutoIconify(bool autoIconify) const noexcept
+    void WaylandWindow::SetAutoIconify(bool autoIconify) const noexcept
     {
         glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
     }
-    void X11Window::SetCursorPosition(Vec2d position) noexcept
+    void WaylandWindow::SetCursorPosition(Vec2d position) noexcept
     {
-        m_WarpCursorPos.x = static_cast<i32>(position.x);
-        m_WarpCursorPos.y = static_cast<i32>(position.y);
-
-        XWarpPointer(s_Display, None, m_WindowHandle, 0, 0, 0, 0,
-                     m_WarpCursorPos.x, m_WarpCursorPos.y);
-        XFlush(s_Display);
+        glfwSetCursorPos(m_Window, position.x, position.y);
     }
-    void X11Window::ShowCursor() const noexcept
+    void WaylandWindow::ShowCursor() const noexcept
     {
-        XDefineCursor(s_Display, m_WindowHandle, None);
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-    void X11Window::HideCursor() const noexcept
+    void WaylandWindow::HideCursor() const noexcept
     {
-        XDefineCursor(s_Display, m_WindowHandle, s_BlankCursor);
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
-    void X11Window::SetFullscreen(bool fullscreen)
+    void WaylandWindow::SetFullscreen(bool fullscreen)
     {
         (void)fullscreen;
         VtCoreError(
             "Vortex currently doesn't support switching fullscreen on this "
             "platform.");
     }
-    void X11Window::SetResizable(bool resizable) noexcept
+    void WaylandWindow::SetResizable(bool resizable) noexcept
     {
         m_Data.Resizable = resizable;
         glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, resizable);
     }
-    void X11Window::SetVisible(bool visible) const
+    void WaylandWindow::SetVisible(bool visible) const
     {
         if (visible) return glfwShowWindow(m_Window);
         glfwHideWindow(m_Window);
     }
-    void X11Window::SetAlwaysOnTop(bool alwaysOnTop)
+    void WaylandWindow::SetAlwaysOnTop(bool alwaysOnTop)
     {
         glfwSetWindowAttrib(m_Window, GLFW_FLOATING, alwaysOnTop);
     }
 
-    void X11Window::SetupEvents()
+    void WaylandWindow::SetupEvents()
     {
         using namespace WindowEvents;
 
 #define VtGetWindow(handle)                                                    \
-    reinterpret_cast<X11Window*>(glfwGetWindowUserPointer(handle))
+    reinterpret_cast<WaylandWindow*>(glfwGetWindowUserPointer(handle))
 #pragma region callbacks
         auto positionCallback = [](GLFWwindow* handle, i32 xpos, i32 ypos)
         {
@@ -620,37 +561,14 @@ namespace Vortex
         glfwSetJoystickCallback(joystickCallback);
     }
 
-    bool X11Window::Initialize()
+    bool WaylandWindow::Initialize()
     {
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-        glfwInitHint(GLFW_X11_XCB_VULKAN_SURFACE, GLFW_TRUE);
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
 
         glfwSetErrorCallback(glfwErrorCallback);
 
-        XInitThreads();
-        XrmInitialize();
         bool status = glfwInit() == GLFW_TRUE;
-        s_Display   = XOpenDisplay(nullptr);
-        if (!s_Display)
-        {
-            std::string str     = fmt::format("");
-            const char* display = std::getenv("DISPLAY");
-            if (display)
-            {
-                VtCoreAssertFormat(false, "X11: Failed to open display {}",
-                                   display);
-            }
-            else
-                VtCoreAssertMsg(
-                    false, "X11: The DISPLAY environment variable is not set.");
-        }
-
-        s_Screen        = DefaultScreen(s_Display);
-        s_RootWindow    = RootWindow(s_Display, s_Screen);
-        s_Context       = XUniqueContext();
-        s_XcbConnection = XGetXCBConnection(s_Display);
-
         return status;
     }
-    void X11Window::Shutdown() { glfwTerminate(); }
+    void WaylandWindow::Shutdown() { glfwTerminate(); }
 }; // namespace Vortex

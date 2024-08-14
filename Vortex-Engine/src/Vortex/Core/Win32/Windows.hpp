@@ -62,7 +62,7 @@
             else                                                               \
             {                                                                  \
                 VtCoreError(                                                   \
-                    "Win32: '{}' wasn't sucessfull\nError Message: {}", #x,    \
+                    "Win32: '{}' wasn't successful\nError Message: {}", #x,    \
                     Win32::GetErrorMessage(GetLastError()));                   \
                 VtDebugBreak;                                                  \
             }                                                                  \

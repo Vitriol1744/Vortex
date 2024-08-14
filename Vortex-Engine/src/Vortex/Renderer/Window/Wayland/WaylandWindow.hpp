@@ -8,26 +8,24 @@
 
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_WAYLAND
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include <X11/Xlib-xcb.h>
-
 namespace Vortex
 {
-    class VT_API X11Window : public Window
+    class VT_API WaylandWindow : public Window
     {
       public:
-        X11Window(const WindowSpecification& specification);
-        virtual ~X11Window();
+        WaylandWindow(const WindowSpecification& specification);
+        virtual ~WaylandWindow();
 
         static void             PollEvents();
         virtual void            Present() override;
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
-            return glfwGetX11Window(m_Window);
+            return glfwGetWaylandWindow(m_Window);
         }
         inline virtual bool IsOpen() const noexcept override
         {
@@ -77,16 +75,9 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        xcb_window_t               m_WindowHandle;
         GLFWwindow*                m_Window;
         Ref<class RendererContext> m_RendererContext = nullptr;
-        Vec2i                      m_WarpCursorPos   = {0, 0};
 
-        static Display*            s_Display;
-        static i32                 s_Screen;
-        static ::Window            s_RootWindow;
-        static XContext            s_Context;
-        static xcb_connection_t*   s_XcbConnection;
         static usize               s_WindowsCount;
 
         void                       SetupEvents();

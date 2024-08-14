@@ -27,12 +27,12 @@ namespace Vortex
 
         inline Ref<Layer> operator[](usize index)
         {
-            VtCoreAssert(index >= 0 && index <= m_Layers.size());
+            VtCoreAssert(index <= m_Layers.size());
             return m_Layers[index];
         }
         inline const Ref<Layer> operator[](usize index) const
         {
-            VtCoreAssert(index >= 0 && index <= m_Layers.size());
+            VtCoreAssert(index <= m_Layers.size());
             return m_Layers[index];
         }
 

@@ -9,6 +9,7 @@
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Events/EventSystem.hpp"
 #include "Vortex/Engine/Application.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 
 namespace Vortex
 {
@@ -31,28 +32,34 @@ namespace Vortex
         specs.Decorated           = true;
 
         m_MainWindow              = Window::Create(specs);
+        Renderer::Initialize();
         m_ImGuiLayer = CreateRef<VulkanImGuiLayer>("VulkanImGuiLayer");
         PushOverlay(m_ImGuiLayer);
     }
-    Application::~Application() { s_Instance = nullptr; }
+    Application::~Application()
+    {
+        Renderer::Shutdown();
+        s_Instance = nullptr;
+    }
 
     bool Application::Run()
     {
         m_Running = true;
-        while (m_Running)
-        {
+        do {
             Window::PollEvents();
             for (auto layer : m_LayerStack) layer->OnUpdate();
+
+            Renderer::BeginFrame(m_MainWindow);
             for (auto layer : m_LayerStack) layer->OnRender();
 
             m_ImGuiLayer->Begin();
             for (auto layer : m_LayerStack) layer->OnImGuiRender();
             m_ImGuiLayer->End();
+            m_MainWindow->Present();
 
             EventSystem::PollEvents();
-            m_MainWindow->Present();
             m_Running = m_MainWindow->IsOpen();
-        }
+        } while (m_Running);
 
         for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
         return m_ShouldRestart;

@@ -12,8 +12,10 @@
 #ifdef VT_PLATFORM_LINUX
     #define VK_USE_PLATFORM_X11_KHR
     #define GLFW_EXPOSE_NATIVE_X11
-    #include <X11/Xlib.h>
-    #include <vulkan/vulkan_xlib.h>
+    #include <X11/Xlib-xcb.h>
+    #include <vulkan/vulkan_xcb.h>
+    #define GLFW_EXPOSE_NATIVE_WAYLAND
+    #include <vulkan/vulkan_wayland.h>
 #elifdef VT_PLATFORM_WINDOWS
     #define VK_USE_PLATFORM_WIN32_KHR
     #define GLFW_EXPOSE_NATIVE_WIN32
@@ -28,20 +30,38 @@ namespace Vortex
                                vk::PhysicalDevice physicalDevice)
     {
         VkInstance   vkInstance = (vk::Instance)VulkanContext::GetInstance();
-        VkSurfaceKHR surface;
+        VkSurfaceKHR surface    = VK_NULL_HANDLE;
 
 #ifdef VT_PLATFORM_LINUX
-        VkXlibSurfaceCreateInfoKHR surfaceCreateInfo = {};
-        surfaceCreateInfo.sType
-            = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-        surfaceCreateInfo.pNext = VK_NULL_HANDLE;
-        surfaceCreateInfo.flags = 0;
-        surfaceCreateInfo.dpy   = glfwGetX11Display();
-        surfaceCreateInfo.window
-            = std::any_cast<::Window>(window->GetNativeHandle());
+        if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
+        {
+            VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+            surfaceCreateInfo.sType
+                = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+            surfaceCreateInfo.pNext = VK_NULL_HANDLE;
+            surfaceCreateInfo.flags = 0;
+            surfaceCreateInfo.connection
+                = XGetXCBConnection(glfwGetX11Display());
+            surfaceCreateInfo.window
+                = std::any_cast<::Window>(window->GetNativeHandle());
 
-        vkCreateXlibSurfaceKHR(vkInstance, &surfaceCreateInfo, VK_NULL_HANDLE,
-                               &surface);
+            vkCreateXcbSurfaceKHR(vkInstance, &surfaceCreateInfo,
+                                  VK_NULL_HANDLE, &surface);
+        }
+        else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+        {
+            VkWaylandSurfaceCreateInfoKHR createInfo{};
+            createInfo.sType
+                = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+            createInfo.pNext   = VK_NULL_HANDLE;
+            createInfo.flags   = 0;
+            createInfo.display = glfwGetWaylandDisplay();
+            createInfo.surface
+                = std::any_cast<wl_surface*>(window->GetNativeHandle());
+
+            VkCall(vk::Result(vkCreateWaylandSurfaceKHR(
+                vkInstance, &createInfo, VK_NULL_HANDLE, &surface)));
+        }
 #elifdef VT_PLATFORM_WINDOWS
         VkWin32SurfaceCreateInfoKHR createInfo{};
         createInfo.sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -53,6 +73,8 @@ namespace Vortex
         VkCall(vk::Result(vkCreateWin32SurfaceKHR(vkInstance, &createInfo,
                                                   VK_NULL_HANDLE, &surface)));
 #endif
+
+        VtCoreAssert(surface != VK_NULL_HANDLE);
         m_Surface       = vk::SurfaceKHR(surface);
         m_WindowHandle  = window;
 

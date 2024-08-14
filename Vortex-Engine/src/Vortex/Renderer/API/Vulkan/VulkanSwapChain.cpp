@@ -107,10 +107,13 @@ namespace Vortex
     {
         VtCoreTrace("Vulkan: Destroying swapchain...");
         vk::Device device = VulkanContext::GetDevice();
+        device.waitIdle();
 
         device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         for (auto& frame : m_Frames)
         {
+            VkCall(
+                device.waitForFences(1, &frame.WaitFence, VK_TRUE, UINT64_MAX));
             device.destroyFence(frame.WaitFence, VK_NULL_HANDLE);
             device.destroyCommandPool(frame.CommandPool);
             device.destroySemaphore(frame.ImageAvailableSemaphore,
@@ -121,7 +124,8 @@ namespace Vortex
             device.destroyImageView(frame.ImageView, nullptr);
         }
 
-        device.destroySwapchainKHR(m_SwapChain, nullptr);
+        if (m_SwapChain)
+            device.destroySwapchainKHR(m_SwapChain, VK_NULL_HANDLE);
     }
 
     void VulkanSwapChain::BeginFrame()
@@ -159,19 +163,21 @@ namespace Vortex
         vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
         VkCall(commandBuffer.begin(&beginInfo));
 
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        vk::RenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType       = vk::StructureType::eRenderPassBeginInfo;
         renderPassInfo.renderPass  = m_RenderPass;
         renderPassInfo.framebuffer = m_Frames[m_CurrentImageIndex].Framebuffer;
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = (VkExtent2D)m_Extent;
+        renderPassInfo.renderArea.offset.x = 0;
+        renderPassInfo.renderArea.offset.y = 0;
+        renderPassInfo.renderArea.extent   = m_Extent;
 
-        VkClearValue clearColor          = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-        renderPassInfo.clearValueCount   = 1;
-        renderPassInfo.pClearValues      = &clearColor;
+        vk::ClearValue clearValue;
+        clearValue.setColor({0.1f, 0.1f, 0.1f, 1.0f});
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues    = &clearValue;
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
-                             VK_SUBPASS_CONTENTS_INLINE);
+        commandBuffer.beginRenderPass(&renderPassInfo,
+                                      vk::SubpassContents::eInline);
     }
     void VulkanSwapChain::EndFrame()
     {

@@ -14,13 +14,10 @@
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
     #include <vulkan/vulkan_win32.h>
-    #define VT_VULKAN_PLATFORM_SURFACE_EXTENSION_NAME                          \
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME
 #elifdef VT_PLATFORM_LINUX
-    #include <X11/Xlib.h>
-    #include <vulkan/vulkan_xlib.h>
-    #define VT_VULKAN_PLATFORM_SURFACE_EXTENSION_NAME                          \
-        VK_KHR_XLIB_SURFACE_EXTENSION_NAME
+    #include <X11/Xlib-xcb.h>
+    #include <vulkan/vulkan_wayland.h>
+    #include <vulkan/vulkan_xcb.h>
 #endif
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
@@ -116,10 +113,17 @@ namespace Vortex
             appInfo.pApplicationName, appVersion, appInfo.pEngineName,
             vortexVersion);
 
-        std::vector<const char*> extensions
-            = {VK_KHR_SURFACE_EXTENSION_NAME,
-               VT_VULKAN_PLATFORM_SURFACE_EXTENSION_NAME,
-               VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+        std::vector<const char*> extensions = {
+            VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+
+#ifdef VT_PLATFORM_LINUX
+        if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+            extensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+        else if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
+            extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#elifdef VT_PLATFORM_WINDOWS
+        extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#endif
 
         if (s_UseValidationLayers)
         {
