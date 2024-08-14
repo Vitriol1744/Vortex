@@ -313,6 +313,7 @@ namespace Vortex
     {
         spirv_cross::Compiler compiler(shaderBinary);
         auto                  resources = compiler.get_shader_resources();
+        (void)path;
 
         VtCoreTrace("===========================");
         VtCoreTrace(" Vulkan Shader Reflection");

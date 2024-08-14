@@ -88,8 +88,7 @@ set(PUBLIC_LIBS
     spirv-cross-reflect
     spirv-cross-hlsl
     spirv-cross-glsl
-    spirv-cross-cpp
-    stdc++exp)
+    spirv-cross-cpp)
 
 if(UNIX)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} X11 X11-xcb)
