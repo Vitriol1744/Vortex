@@ -180,9 +180,9 @@ namespace Vortex
         {
             if (shaderDescriptorSet.UniformDescriptors.size())
             {
-                VkDescriptorPoolSize& typeCount
+                vk::DescriptorPoolSize& typeCount
                     = m_DescriptorSets[set].PoolSizes.emplace_back();
-                typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                typeCount.type = vk::DescriptorType::eUniformBuffer;
                 typeCount.descriptorCount
                     = shaderDescriptorSet.UniformDescriptors.size();
                 VtCoreTrace("size: {}", typeCount.descriptorCount);
