@@ -81,7 +81,7 @@ namespace Vortex::Vulkan
             case vk::Result::eErrorDeviceLost:
                 result
                     = "The logical or physical device has been lost. See Lost "
-                      "Devic!";
+                      "Device!";
                 break;
             case vk::Result::eErrorMemoryMapFailed:
                 result = "Mapping of a memory object has failed!";
