@@ -172,7 +172,7 @@ namespace Vortex
         renderPassInfo.renderArea.extent   = m_Extent;
 
         vk::ClearValue clearValue;
-        clearValue.setColor({0.1f, 0.1f, 0.1f, 1.0f});
+        clearValue.setColor(vk::ClearColorValue(0.1f, 0.1f, 0.1f, 1.0f));
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues    = &clearValue;
 
