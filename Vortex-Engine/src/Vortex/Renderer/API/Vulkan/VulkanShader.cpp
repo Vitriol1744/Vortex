@@ -350,6 +350,7 @@ namespace Vortex
             uniform.ShaderStage                             = stage;
             shaderDescriptorSet.UniformDescriptors[binding] = uniform;
 
+            (void)memberCount;
             VtCoreTrace("name: {}", name);
             VtCoreTrace("set: {}, binding: {}", set, binding);
             VtCoreTrace("memberCount: {}", memberCount);
