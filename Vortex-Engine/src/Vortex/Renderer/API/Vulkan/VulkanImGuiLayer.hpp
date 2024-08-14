@@ -57,28 +57,30 @@ namespace Vortex
         virtual void OnImGuiRender();
 
       private:
-        vk::DescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+        vk::DescriptorPool             m_DescriptorPool = VK_NULL_HANDLE;
+        vk::CommandPool                m_CommandPool    = VK_NULL_HANDLE;
+        std::vector<vk::CommandBuffer> m_CommandBuffers;
 
-        static void        CreateCursors();
-        static void        SetUpEvents();
-        static void        InitializePlatformInterface();
+        static void                    CreateCursors();
+        static void                    SetUpEvents();
+        static void                    InitializePlatformInterface();
 
-        static void        UpdateMouseData();
-        static void        UpdateMouseCursor();
-        static void        UpdateMonitors();
+        static void                    UpdateMouseData();
+        static void                    UpdateMouseCursor();
+        static void                    UpdateMonitors();
 
         //--------------------------------------------------------------------
         // Events ------------------------------------------------------------
         //--------------------------------------------------------------------
-        static bool        OnKeyPressed(Window* window, Input::KeyCode key,
-                                        u32 repeatCount);
-        static bool        OnKeyReleased(Window* window, Input::KeyCode key);
-        static bool        OnKeyTyped(Window* window, u32 key);
+        static bool   OnKeyPressed(Window* window, Input::KeyCode key,
+                                   u32 repeatCount);
+        static bool   OnKeyReleased(Window* window, Input::KeyCode key);
+        static bool   OnKeyTyped(Window* window, u32 key);
 
-        static bool        OnMouseButtonPressed(Window*          window,
-                                                Input::MouseCode button);
-        static bool        OnMouseButtonReleased(Window*          window,
-                                                 Input::MouseCode button);
+        static bool   OnMouseButtonPressed(Window*          window,
+                                           Input::MouseCode button);
+        static bool   OnMouseButtonReleased(Window*          window,
+                                            Input::MouseCode button);
         static bool   OnMouseScrolled(Window* window, f64 xoffset, f64 yoffset);
         static bool   OnMouseMoved(Window* window, f64 x, f64 y);
         static bool   OnMouseEntered(Window* window);

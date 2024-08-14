@@ -193,7 +193,6 @@ namespace Vortex
 
     void VulkanImGuiLayer::OnAttach()
     {
-
         auto window  = Application::Get()->GetWindow();
         auto context = std::dynamic_pointer_cast<VulkanContext>(
             window->GetRendererContext());
@@ -290,6 +289,8 @@ namespace Vortex
         ImGuiViewport* mainViewport = ImGui::GetMainViewport();
         mainViewport->PlatformHandle
             = reinterpret_cast<void*>(GetBackendData()->MainWindow);
+        auto data                          = GetViewportData(mainViewport);
+        data->WindowOwned                  = false;
 
         ImGui_ImplVulkan_InitInfo initInfo = {};
         initInfo.Instance = vk::Instance(VulkanContext::GetInstance());
@@ -311,13 +312,36 @@ namespace Vortex
         initInfo.CheckVkResultFn
             = [](VkResult result) -> void { VkCall(vk::Result(result)); };
         ImGui_ImplVulkan_Init(&initInfo);
+
+        vk::CommandPoolCreateInfo commandPoolInfo{};
+        commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+        commandPoolInfo.pNext = VK_NULL_HANDLE;
+        // TODO(v1tr10l7): should be transient:
+        commandPoolInfo.flags
+            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
+                                               .GetQueueFamilyIndices()
+                                               .Graphics.value();
+        VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
+                                        &m_CommandPool));
+
+        m_CommandBuffers.resize(frameCount);
+        vk::CommandBufferAllocateInfo bufferAlloc{};
+        bufferAlloc.sType       = vk::StructureType::eCommandBufferAllocateInfo;
+        bufferAlloc.commandPool = m_CommandPool;
+        bufferAlloc.level       = vk::CommandBufferLevel::eSecondary;
+        bufferAlloc.commandBufferCount = frameCount;
+
+        VkCall(device.allocateCommandBuffers(&bufferAlloc,
+                                             m_CommandBuffers.data()));
     }
     void VulkanImGuiLayer::OnDetach()
     {
-
+        VtCoreTrace("Detaching VulkanImGuiLayer...");
         vk::Device device = VulkanContext::GetDevice();
         device.waitIdle();
 
+        device.destroyCommandPool(m_CommandPool);
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplVortex_Data* bd = GetBackendData();
         VtCoreAssert(
@@ -372,7 +396,83 @@ namespace Vortex
     }
     void VulkanImGuiLayer::End()
     {
-        // ImGui::Render();
+        auto window  = Application::Get()->GetWindow();
+        auto context = std::dynamic_pointer_cast<VulkanContext>(
+            window->GetRendererContext());
+        VulkanSwapChain&  swapChain     = context->GetSwapChain();
+        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        (void)commandBuffer;
+
+#if 0
+        ImGui::Render();
+        vk::CommandBufferBeginInfo commandBegin{};
+        commandBegin.sType = vk::StructureType::eCommandBufferBeginInfo;
+        commandBegin.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+        commandBegin.pNext = VK_NULL_HANDLE;
+        VkCall(commandBuffer.begin(&commandBegin));
+
+        vk::ClearValue clearValues[2];
+        clearValues[0].setColor({0.1f, 0.1f, 0.1f, 1.0f});
+        clearValues[1].setDepthStencil({1.0f, 0});
+
+        vk::RenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType      = vk::StructureType::eRenderPassBeginInfo;
+        renderPassInfo.pNext      = VK_NULL_HANDLE;
+        renderPassInfo.renderPass = swapChain.GetRenderPass();
+        renderPassInfo.renderArea.offset.x = 0;
+        renderPassInfo.renderArea.offset.y = 0;
+        auto extent                        = swapChain.GetExtent();
+        renderPassInfo.renderArea.extent   = extent;
+        renderPassInfo.clearValueCount     = 2;
+        renderPassInfo.pClearValues        = clearValues;
+        renderPassInfo.framebuffer = swapChain.GetCurrentFrame().Framebuffer;
+
+        commandBuffer.beginRenderPass(
+            &renderPassInfo, vk::SubpassContents::eSecondaryCommandBuffers);
+
+        vk::CommandBufferInheritanceInfo inheritanceInfo{};
+        inheritanceInfo.sType
+            = vk::StructureType::eCommandBufferInheritanceInfo;
+        inheritanceInfo.renderPass  = swapChain.GetRenderPass();
+        inheritanceInfo.framebuffer = swapChain.GetCurrentFrame().Framebuffer;
+
+        vk::CommandBufferBeginInfo imguiBegin{};
+        imguiBegin.sType = vk::StructureType::eCommandBufferBeginInfo;
+        imguiBegin.flags = vk::CommandBufferUsageFlagBits::eRenderPassContinue;
+        imguiBegin.pInheritanceInfo = &inheritanceInfo;
+        auto currentFrame           = swapChain.GetCurrentFrameIndex();
+        VkCall(m_CommandBuffers[currentFrame].begin(&imguiBegin));
+
+        vk::Viewport viewport = {};
+        viewport.x            = 0.0f;
+        viewport.y            = (float)extent.height;
+        viewport.height       = -(float)extent.height;
+        viewport.width        = (float)extent.width;
+        viewport.minDepth     = 0.0f;
+        viewport.maxDepth     = 1.0f;
+        m_CommandBuffers[currentFrame].setViewport(0, 1, &viewport);
+
+        vk::Rect2D scissor = {};
+        scissor.extent     = extent;
+        scissor.offset.x   = 0;
+        scissor.offset.y   = 0;
+        m_CommandBuffers[currentFrame].setScissor(0, 1, &scissor);
+
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+                                        m_CommandBuffers[currentFrame]);
+
+        m_CommandBuffers[currentFrame].end();
+
+        std::vector<vk::CommandBuffer> commandBuffers;
+        commandBuffers.push_back(m_CommandBuffers[currentFrame]);
+
+        commandBuffer.executeCommands(u32(commandBuffers.size()),
+                                      commandBuffers.data());
+
+        commandBuffer.endRenderPass();
+        commandBuffer.end();
+#endif
+
         ImGuiIO io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
@@ -502,8 +602,8 @@ namespace Vortex
 
             if (imguiCursor == ImGuiMouseCursor_None || io.MouseDrawCursor)
                 window->HideCursor();
-            else
-                ; // TODO(v1tr10l7): Update cursor
+            // else
+            //  TODO(v1tr10l7): Update cursor
         }
     }
     void VulkanImGuiLayer::UpdateMonitors()
@@ -570,7 +670,7 @@ namespace Vortex
 
         usize keycode = std::to_underlying(key);
 
-        if (keycode >= 0 && keycode < std::size(bd->KeyOwnerWindows))
+        if (keycode < std::size(bd->KeyOwnerWindows))
             bd->KeyOwnerWindows[keycode] = window;
 
         ImGuiIO& io       = ImGui::GetIO();
@@ -586,7 +686,7 @@ namespace Vortex
         UpdateKeyModifiers(key, false);
 
         usize keycode = std::to_underlying(key);
-        if (keycode >= 0 && keycode < std::size(bd->KeyOwnerWindows))
+        if (keycode < std::size(bd->KeyOwnerWindows))
             bd->KeyOwnerWindows[keycode] = window;
 
         ImGuiIO& io       = ImGui::GetIO();
@@ -762,7 +862,8 @@ namespace Vortex
         ImGui_ImplVortex_Data* bd = GetBackendData();
         if (auto data = GetViewportData(viewport))
         {
-            if (data->WindowOwned)
+            if (data->WindowOwned
+                && data->Window != Application::Get()->GetWindow().get())
             {
                 // Release any keys that were pressed in the window being
                 // destroyed and are still held down, because we will not
