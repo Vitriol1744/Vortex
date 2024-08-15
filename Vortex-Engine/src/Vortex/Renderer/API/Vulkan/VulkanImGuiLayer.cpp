@@ -225,9 +225,11 @@ namespace Vortex
         io.ConfigFlags
             |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-        io.ConfigFlags
-            |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport
-                                                 // / Platform Windows
+
+        if (Window::GetWindowSubsystem() != WindowSubsystem::eWayland)
+            io.ConfigFlags
+                |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport
+                                                     // / Platform Windows
 
         ImGui::StyleColorsDark();
         // When viewports are enabled we tweak WindowRounding/WindowBg so
@@ -255,11 +257,13 @@ namespace Vortex
             |= ImGuiBackendFlags_HasSetMousePos; // We can honor
                                                  // io.WantSetMousePos requests
                                                  // (optional, rarely used)
-        io.BackendFlags
-            |= ImGuiBackendFlags_PlatformHasViewports; // We can create
-                                                       // multi-viewports on the
-                                                       // Platform side
-                                                       // (optional)
+
+        if (Window::GetWindowSubsystem() != WindowSubsystem::eWayland)
+            io.BackendFlags
+                |= ImGuiBackendFlags_PlatformHasViewports; // We can create
+                                                           // multi-viewports on
+                                                           // the Platform side
+                                                           // (optional)
         io.BackendFlags
             |= ImGuiBackendFlags_HasMouseHoveredViewport; // We can call
                                                           // io.AddMouseViewportEvent()
@@ -286,11 +290,12 @@ namespace Vortex
             InitializePlatformInterface();
 
         // Set platform dependent data in viewport
-        ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-        mainViewport->PlatformHandle
-            = reinterpret_cast<void*>(GetBackendData()->MainWindow);
-        auto data                          = GetViewportData(mainViewport);
-        data->WindowOwned                  = false;
+        ImGuiViewport* mainViewport    = ImGui::GetMainViewport();
+        auto           data            = new ImGuiViewportData;
+        data->Window                   = bd->MainWindow;
+        data->WindowOwned              = false;
+        mainViewport->PlatformUserData = data;
+        mainViewport->PlatformHandle = reinterpret_cast<void*>(bd->MainWindow);
 
         ImGui_ImplVulkan_InitInfo initInfo = {};
         initInfo.Instance = vk::Instance(VulkanContext::GetInstance());
@@ -342,6 +347,12 @@ namespace Vortex
         device.waitIdle();
 
         device.destroyCommandPool(m_CommandPool);
+
+        auto mainViewport = ImGui::GetMainViewport();
+        delete reinterpret_cast<ImGuiViewportData*>(
+            mainViewport->PlatformUserData);
+        mainViewport->PlatformUserData = nullptr;
+        mainViewport->PlatformHandle   = nullptr;
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplVortex_Data* bd = GetBackendData();
         VtCoreAssert(
@@ -349,8 +360,11 @@ namespace Vortex
             && "No platform backend to shutdown, or already shutdown?");
         ImGuiIO& io = ImGui::GetIO();
 
-        ImGui::DestroyPlatformWindows();
-
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            VtCoreTrace("VulkanImGuiLayer: Destroying platform windows...");
+            ImGui::DestroyPlatformWindows();
+        }
         io.BackendPlatformName     = nullptr;
         io.BackendPlatformUserData = nullptr;
         io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors
@@ -402,6 +416,8 @@ namespace Vortex
         VulkanSwapChain&  swapChain     = context->GetSwapChain();
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         (void)commandBuffer;
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
 #if 0
         ImGui::Render();
@@ -512,30 +528,22 @@ namespace Vortex
     }
     void VulkanImGuiLayer::InitializePlatformInterface()
     {
-        ImGuiPlatformIO& io                 = ImGui::GetPlatformIO();
-        io.Platform_CreateWindow            = CreateWindow;
-        io.Platform_DestroyWindow           = DestroyWindow;
-        io.Platform_ShowWindow              = ShowWindow;
-        io.Platform_SetWindowPos            = SetWindowPosition;
-        io.Platform_GetWindowPos            = GetWindowPosition;
-        io.Platform_SetWindowSize           = SetWindowSize;
-        io.Platform_GetWindowSize           = GetWindowSize;
-        io.Platform_SetWindowFocus          = RequestWindowFocus;
-        io.Platform_GetWindowFocus          = IsWindowFocused;
-        io.Platform_GetWindowMinimized      = IsWindowMinimized;
-        io.Platform_SetWindowTitle          = SetWindowTitle;
-        io.Platform_SetWindowAlpha          = SetWindowOpacity;
-        io.Platform_RenderWindow            = [](ImGuiViewport*, void*) {};
-        io.Platform_SwapBuffers             = [](ImGuiViewport*, void*) {};
-        io.Platform_CreateVkSurface         = CreateVulkanSurface;
-
-        ImGui_ImplVortex_Data* bd           = GetBackendData();
-        ImGuiViewport*         mainViewport = ImGui::GetMainViewport();
-        auto                   data         = new ImGuiViewportData;
-        data->Window                        = bd->MainWindow;
-        data->WindowOwned                   = false;
-        mainViewport->PlatformUserData      = data;
-        mainViewport->PlatformHandle = reinterpret_cast<void*>(bd->MainWindow);
+        ImGuiPlatformIO& io            = ImGui::GetPlatformIO();
+        io.Platform_CreateWindow       = CreateWindow;
+        io.Platform_DestroyWindow      = DestroyWindow;
+        io.Platform_ShowWindow         = ShowWindow;
+        io.Platform_SetWindowPos       = SetWindowPosition;
+        io.Platform_GetWindowPos       = GetWindowPosition;
+        io.Platform_SetWindowSize      = SetWindowSize;
+        io.Platform_GetWindowSize      = GetWindowSize;
+        io.Platform_SetWindowFocus     = RequestWindowFocus;
+        io.Platform_GetWindowFocus     = IsWindowFocused;
+        io.Platform_GetWindowMinimized = IsWindowMinimized;
+        io.Platform_SetWindowTitle     = SetWindowTitle;
+        io.Platform_SetWindowAlpha     = SetWindowOpacity;
+        io.Platform_RenderWindow       = [](ImGuiViewport*, void*) {};
+        io.Platform_SwapBuffers        = [](ImGuiViewport*, void*) {};
+        io.Platform_CreateVkSurface    = CreateVulkanSurface;
     }
 
     void VulkanImGuiLayer::UpdateMouseData()
