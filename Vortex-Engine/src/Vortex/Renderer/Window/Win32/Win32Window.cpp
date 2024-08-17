@@ -1117,8 +1117,8 @@ namespace Vortex
 
         for (auto& image : std::views::counted(images, count))
         {
-            const i32 currentDiff
-                = std::abs(image.Width * image.Height - width * height);
+            const i32 currentDiff = std::abs(
+                image.GetWidth() * image.GetHeight() - width * height);
 
             if (currentDiff < leastDiff)
             {
@@ -1135,8 +1135,8 @@ namespace Vortex
     {
         BITMAPV5HEADER header{};
         header.bV5Size        = sizeof(header);
-        header.bV5Width       = image.Width;
-        header.bV5Height      = -image.Height;
+        header.bV5Width       = image.GetWidth();
+        header.bV5Height      = -image.GetHeight();
         header.bV5Planes      = 1;
         header.bV5BitCount    = 32;
         header.bV5Compression = BI_BITFIELDS;
@@ -1158,7 +1158,8 @@ namespace Vortex
             return nullptr;
         }
 
-        HBITMAP mask = CreateBitmap(image.Width, image.Height, 1, 1, nullptr);
+        HBITMAP mask
+            = CreateBitmap(image.GetWidth(), image.GetHeight(), 1, 1, nullptr);
         if (!mask)
         {
             VtCoreError("Win32: Failed to create mask bitmap");
@@ -1166,8 +1167,8 @@ namespace Vortex
             return nullptr;
         }
 
-        unsigned char* source = image.Pixels;
-        for (i32 i = 0; i < image.Width * image.Height; i++)
+        unsigned char* source = image.GetPixels();
+        for (i32 i = 0; i < image.GetWidth() * image.GetHeight(); i++)
         {
             target[0] = source[2];
             target[1] = source[1];

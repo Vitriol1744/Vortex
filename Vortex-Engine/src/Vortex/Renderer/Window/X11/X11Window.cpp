@@ -373,9 +373,9 @@ namespace Vortex
         for (auto& icon : std::views::counted(icons, count))
         {
             GLFWimage image;
-            image.width  = icon.Width;
-            image.height = icon.Height;
-            image.pixels = icon.Pixels;
+            image.width  = icon.GetWidth();
+            image.height = icon.GetHeight();
+            image.pixels = icon.GetPixels();
             images.push_back(image);
         }
 

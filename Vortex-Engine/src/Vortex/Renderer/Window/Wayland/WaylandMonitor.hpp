@@ -8,7 +8,9 @@
 
 #include "Vortex/Renderer/Window/Monitor.hpp"
 
+#define GLFW_EXPOSE_NATIVE_WAYLAND
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 namespace Vortex
 {
@@ -28,6 +30,7 @@ namespace Vortex
         static bool      Initialize(std::vector<Ref<Monitor>>& monitors);
 
       private:
+        wl_output*   m_MonitorHandle = nullptr;
         GLFWmonitor* m_Handle;
     };
 }; // namespace Vortex

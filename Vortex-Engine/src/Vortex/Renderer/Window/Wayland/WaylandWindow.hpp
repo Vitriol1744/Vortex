@@ -14,7 +14,7 @@
 
 namespace Vortex
 {
-    class VT_API WaylandWindow : public Window
+    class WaylandWindow : public Window
     {
       public:
         WaylandWindow(const WindowSpecification& specification);
@@ -75,6 +75,7 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
+        wl_surface*                m_WindowHandle = nullptr;
         GLFWwindow*                m_Window;
         Ref<class RendererContext> m_RendererContext = nullptr;
 

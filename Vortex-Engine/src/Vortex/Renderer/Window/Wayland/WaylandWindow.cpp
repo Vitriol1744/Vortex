@@ -11,7 +11,115 @@
 
 namespace Vortex
 {
-    usize       WaylandWindow::s_WindowsCount = 0;
+    usize WaylandWindow::s_WindowsCount = 0;
+    namespace
+    {
+        void RegistryHandleGlobal(void* userData, wl_registry* registry,
+                                  u32 name, const char* interface, u32 version);
+        void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
+                                        u32 name);
+        void SeatHandleCapabilities(void* userData, wl_seat* seat,
+                                    u32 capabilities);
+        void SeatHandleName(void* userData, wl_seat* seat, const char* name);
+
+        wl_display*          s_Display          = nullptr;
+        wl_registry*         s_Registry         = nullptr;
+        wl_registry_listener s_RegistryListener = {
+            .global        = RegistryHandleGlobal,
+            .global_remove = RegistryHandleGlobalRemove,
+        };
+        wl_compositor*         s_Compositor    = nullptr;
+        wl_subcompositor*      s_Subcompositor = nullptr;
+        wl_shm*                s_Shm           = nullptr;
+        wl_seat*               s_Seat          = nullptr;
+        const wl_seat_listener s_SeatListener  = {
+             .capabilities = SeatHandleCapabilities,
+             .name         = SeatHandleName,
+        };
+
+        void RegistryHandleGlobal(void* userData, wl_registry* registry,
+                                  u32 name, const char* interface, u32 version)
+        {
+            (void)userData;
+            (void)registry;
+            (void)name;
+            (void)interface;
+            (void)version;
+
+            if (std::strcmp(interface, "wl_compositor") == 0)
+                s_Compositor
+                    = reinterpret_cast<wl_compositor*>(wl_registry_bind(
+                        registry, name, &wl_compositor_interface, 1));
+            else if (std::strcmp(interface, "wl_subcompositor") == 0)
+                s_Subcompositor
+                    = reinterpret_cast<wl_subcompositor*>(wl_registry_bind(
+                        registry, name, &wl_subcompositor_interface, 1));
+            else if (std::strcmp(interface, "wl_shm") == 0)
+                s_Shm = reinterpret_cast<wl_shm*>(
+                    wl_registry_bind(registry, name, &wl_shm_interface, 1));
+            else if (std::strcmp(interface, "wl_output") == 0)
+            {
+                ; // TODO(v1tr10l7): detected new monitor, we should handle that
+                VtCoreInfo("Wayland: Detected monitor: {}", name);
+            }
+            else if (std::strcmp(interface, "wl_seat") == 0 && !s_Seat)
+            {
+                s_Seat = reinterpret_cast<wl_seat*>(wl_registry_bind(
+                    registry, name, &wl_seat_interface, version));
+                wl_seat_add_listener(s_Seat, &s_SeatListener, nullptr);
+
+                if (wl_seat_get_version(s_Seat)
+                    >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
+                    VtCoreWarn("WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION: {}",
+                               WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION);
+            }
+            else if (std::strcmp(interface, "wl_data_device_manager") == 0)
+                ;
+            else if (std::strcmp(interface, "xdg_wm_base") == 0)
+                ;
+            else if (std::strcmp(interface, "zxdg_decoration_manager_v1") == 0)
+                ;
+            else if (std::strcmp(interface, "wp_viewporter") == 0)
+                ;
+            else if (std::strcmp(interface, "zwp_relative_pointer_manager_v1")
+                     == 0)
+                ;
+            else if (std::strcmp(interface, "zwp_pointer_constraints_v1") == 0)
+                ;
+            else if (std::strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0)
+                ;
+            else if (std::strcmp(interface, "xdg_activation_v1") == 0)
+                ;
+            else if (std::strcmp(interface, "wp_fractional_scale_manager_v1")
+                     == 0)
+                ;
+            VtCoreTrace("Wayland: Registry global: {}", interface);
+        }
+        void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
+                                        u32 name)
+        {
+            (void)userData;
+            (void)registry;
+            (void)name;
+            std::source_location source = std::source_location::current();
+            VtCoreWarn("Wayland: {} is not implemented!",
+                       source.function_name());
+        }
+
+        void SeatHandleCapabilities(void* userData, wl_seat* seat,
+                                    u32 capabilities)
+        {
+            (void)userData;
+            (void)seat;
+            (void)capabilities;
+        }
+        void SeatHandleName(void* userData, wl_seat* seat, const char* name)
+        {
+            (void)userData;
+            (void)seat;
+            (void)name;
+        }
+    }; // namespace
 
     static void glfwErrorCallback(int code, const char* description)
     {
@@ -205,6 +313,7 @@ namespace Vortex
         m_Window = glfwCreateWindow(
             width, height, title,
             specification.Fullscreen ? monitorHandle : nullptr, nullptr);
+        m_WindowHandle = glfwGetWaylandWindow(m_Window);
 
         if (monitor)
         {
@@ -322,9 +431,9 @@ namespace Vortex
         for (auto& icon : std::views::counted(icons, count))
         {
             GLFWimage image;
-            image.width  = icon.Width;
-            image.height = icon.Height;
-            image.pixels = icon.Pixels;
+            image.width  = icon.GetWidth();
+            image.height = icon.GetHeight();
+            image.pixels = icon.GetPixels();
             images.push_back(image);
         }
 
@@ -568,6 +677,10 @@ namespace Vortex
         glfwSetErrorCallback(glfwErrorCallback);
 
         bool status = glfwInit() == GLFW_TRUE;
+
+        s_Display   = glfwGetWaylandDisplay();
+        s_Registry  = wl_display_get_registry(s_Display);
+        wl_registry_add_listener(s_Registry, &s_RegistryListener, nullptr);
         return status;
     }
     void WaylandWindow::Shutdown() { glfwTerminate(); }

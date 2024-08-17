@@ -15,6 +15,7 @@ namespace Vortex
     {
 
         m_Name                            = glfwGetMonitorName(m_Handle);
+        m_MonitorHandle                   = glfwGetWaylandMonitor(m_Handle);
 
         const GLFWvidmode* currentMode    = glfwGetVideoMode(m_Handle);
         m_CurrentVideoMode.Width          = currentMode->width;
@@ -103,7 +104,6 @@ namespace Vortex
 
     bool WaylandMonitor::Initialize(std::vector<Ref<Monitor>>& monitors)
     {
-        // NOTE: for now it is determined at compilation time
         glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
         VtCoreAssert(glfwInit());
         i32           monitorCount;

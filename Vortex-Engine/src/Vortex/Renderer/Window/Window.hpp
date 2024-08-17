@@ -14,6 +14,7 @@
 #include "Vortex/Core/Types.hpp"
 
 #include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/Image.hpp"
 #include "Vortex/Renderer/Window/Monitor.hpp"
 
 namespace Vortex
@@ -27,13 +28,6 @@ namespace Vortex
         eCocoa,
     };
 
-    using Pixel = u8;
-    struct Image
-    {
-        i32    Width  = 0;
-        i32    Height = 0;
-        Pixel* Pixels;
-    };
     using Icon   = Image;
     using Cursor = Image;
 
