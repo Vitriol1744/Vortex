@@ -12,6 +12,8 @@
 #include "Vortex/Core/Platform.hpp"
 #include "Vortex/Core/Types.hpp"
 
+#define VT_UNUSED(x) ((void)(x))
+
 namespace Vortex
 {
     inline constexpr std::string_view g_EngineName = "Vortex Engine";
