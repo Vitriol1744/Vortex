@@ -18,9 +18,50 @@ namespace Vortex
                                   u32 name, const char* interface, u32 version);
         void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
                                         u32 name);
+
         void SeatHandleCapabilities(void* userData, wl_seat* seat,
                                     u32 capabilities);
         void SeatHandleName(void* userData, wl_seat* seat, const char* name);
+
+        void PointerHandleEnter(void* userData, wl_pointer* pointer, u32 serial,
+                                wl_surface* surface, wl_fixed_t xOffset,
+                                wl_fixed_t yOffset);
+        void PointerHandleLeave(void* userData, wl_pointer* pointer, u32 serial,
+                                wl_surface* surface);
+        void PointerHandleMotion(void* userData, wl_pointer* pointer, u32 time,
+                                 wl_fixed_t xOffset, wl_fixed_t yOffset);
+        void PointerHandleButton(void* userData, wl_pointer* pointer,
+                                 u32 serial, u32 time, u32 button, u32 state);
+        void PointerHandleAxis(void* userData, wl_pointer* pointer, u32 time,
+                               u32 axis, wl_fixed_t value);
+        void PointerHandleFrame(void* userData, wl_pointer* pointer);
+        void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
+                                     u32 axisSource);
+        void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
+                                   u32 time, u32 axis);
+        void PointerHandleAxisDiscrete(void* userData, wl_pointer* pointer,
+                                       u32 axis, i32 discrete);
+        void PointerHandleAxisValue120(void* userData, wl_pointer* pointer,
+                                       u32 axis, i32 value120);
+        void PointerHandleAxisRelativeDirection(void*       userData,
+                                                wl_pointer* pointer, u32 axis,
+                                                u32 direction);
+
+        void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
+                                  u32 format, int fd, u32 size);
+        void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
+                                 u32 serial, wl_surface* surface,
+                                 wl_array* keys);
+        void KeyboardHandleLeave(void* userData, wl_keyboard* keyboard,
+                                 u32 serial, wl_surface* surface);
+        void KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
+                               u32 serial, u32 time, u32 scancode, u32 state);
+        void KeyboardHandleModifiers(void* userData, wl_keyboard* keyboard,
+                                     u32 serial, u32 modsDepressed,
+                                     u32 modsLatched, u32 modsLocked,
+                                     u32 group);
+        void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
+                                      i32 rate, i32 delay);
 
         wl_display*          s_Display          = nullptr;
         wl_registry*         s_Registry         = nullptr;
@@ -36,15 +77,38 @@ namespace Vortex
              .capabilities = SeatHandleCapabilities,
              .name         = SeatHandleName,
         };
+        // Mouse pointer
+        wl_pointer*         s_Pointer         = nullptr;
+        wl_pointer_listener s_PointerListener = {
+            .enter                   = PointerHandleEnter,
+            .leave                   = PointerHandleLeave,
+            .motion                  = PointerHandleMotion,
+            .button                  = PointerHandleButton,
+            .axis                    = PointerHandleAxis,
+            .frame                   = PointerHandleFrame,
+            .axis_source             = PointerHandleAxisSource,
+            .axis_stop               = PointerHandleAxisStop,
+            .axis_discrete           = PointerHandleAxisDiscrete,
+            .axis_value120           = PointerHandleAxisValue120,
+            .axis_relative_direction = PointerHandleAxisRelativeDirection,
+        };
+        wl_keyboard*         s_Keyboard         = nullptr;
+        wl_keyboard_listener s_KeyboardListener = {
+            .keymap      = KeyboardHandleKeymap,
+            .enter       = KeyboardHandleEnter,
+            .leave       = KeyboardHandleLeave,
+            .key         = KeyboardHandleKey,
+            .modifiers   = KeyboardHandleModifiers,
+            .repeat_info = KeyboardHandleRepeatInfo,
+        };
+        // wl_touch*            s_Touch            = nullptr;
+        //  TODO(v1tr10l7): touchpad events
+        //  wl_touch_listener    s_TouchListener{};
 
         void RegistryHandleGlobal(void* userData, wl_registry* registry,
                                   u32 name, const char* interface, u32 version)
         {
             (void)userData;
-            (void)registry;
-            (void)name;
-            (void)interface;
-            (void)version;
 
             if (std::strcmp(interface, "wl_compositor") == 0)
                 s_Compositor
@@ -109,15 +173,190 @@ namespace Vortex
         void SeatHandleCapabilities(void* userData, wl_seat* seat,
                                     u32 capabilities)
         {
-            (void)userData;
-            (void)seat;
-            (void)capabilities;
+            VT_UNUSED(userData);
+
+            if (capabilities & WL_SEAT_CAPABILITY_POINTER && !s_Pointer)
+            {
+                s_Pointer = wl_seat_get_pointer(seat);
+                wl_pointer_add_listener(s_Pointer, &s_PointerListener, nullptr);
+            }
+            else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && s_Pointer)
+            {
+                wl_pointer_destroy(s_Pointer);
+                s_Pointer = nullptr;
+            }
+
+            if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !s_Keyboard)
+            {
+                s_Keyboard = wl_seat_get_keyboard(seat);
+                wl_keyboard_add_listener(s_Keyboard, &s_KeyboardListener,
+                                         nullptr);
+            }
+            else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)
+                     && s_Keyboard)
+            {
+                wl_keyboard_destroy(s_Keyboard);
+                s_Keyboard = nullptr;
+            }
+
+            // if (capabilities & WL_SEAT_CAPABILITY_TOUCH)
+            //     ;
         }
-        void SeatHandleName(void* userData, wl_seat* seat, const char* name)
+        void SeatHandleName(void*, wl_seat*, const char* name)
         {
-            (void)userData;
-            (void)seat;
-            (void)name;
+            VtCoreInfo("Wayland: Bound to seat: '{}'", name);
+        }
+
+        void PointerHandleEnter(void* userData, wl_pointer* pointer, u32 serial,
+                                wl_surface* surface, wl_fixed_t xOffset,
+                                wl_fixed_t yOffset)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(serial);
+            VT_UNUSED(surface);
+            VT_UNUSED(xOffset);
+            VT_UNUSED(yOffset);
+        }
+        void PointerHandleLeave(void* userData, wl_pointer* pointer, u32 serial,
+                                wl_surface* surface)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(serial);
+            VT_UNUSED(surface);
+        }
+        void PointerHandleMotion(void* userData, wl_pointer* pointer, u32 time,
+                                 wl_fixed_t xOffset, wl_fixed_t yOffset)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(time);
+            VT_UNUSED(xOffset);
+            VT_UNUSED(yOffset);
+        }
+        void PointerHandleButton(void* userData, wl_pointer* pointer,
+                                 u32 serial, u32 time, u32 button, u32 state)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(serial);
+            VT_UNUSED(time);
+            VT_UNUSED(button);
+            VT_UNUSED(state);
+        }
+        void PointerHandleAxis(void* userData, wl_pointer* pointer, u32 time,
+                               u32 axis, wl_fixed_t value)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(time);
+            VT_UNUSED(axis);
+            VT_UNUSED(value);
+        }
+        void PointerHandleFrame(void* userData, wl_pointer* pointer)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+        }
+        void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
+                                     u32 axisSource)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(axisSource);
+        }
+        void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
+                                   u32 time, u32 axis)
+        {
+
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(time);
+            VT_UNUSED(axis);
+        }
+        void PointerHandleAxisDiscrete(void* userData, wl_pointer* pointer,
+                                       u32 axis, i32 discrete)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(axis);
+            VT_UNUSED(discrete);
+        }
+        void PointerHandleAxisValue120(void* userData, wl_pointer* pointer,
+                                       u32 axis, i32 value120)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(axis);
+            VT_UNUSED(value120);
+        }
+        void PointerHandleAxisRelativeDirection(void*       userData,
+                                                wl_pointer* pointer, u32 axis,
+                                                u32 direction)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(pointer);
+            VT_UNUSED(axis);
+            VT_UNUSED(direction);
+        }
+
+        void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
+                                  u32 format, int fd, u32 size)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(format);
+            VT_UNUSED(fd);
+            VT_UNUSED(size);
+        }
+        void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
+                                 u32 serial, wl_surface* surface,
+                                 wl_array* keys)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(serial);
+            VT_UNUSED(surface);
+            VT_UNUSED(keys);
+        }
+        void KeyboardHandleLeave(void* userData, wl_keyboard* keyboard,
+                                 u32 serial, wl_surface* surface)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(serial);
+            VT_UNUSED(surface);
+        }
+        void KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
+                               u32 serial, u32 time, u32 scancode, u32 state)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(serial);
+            VT_UNUSED(time);
+            VT_UNUSED(scancode);
+            VT_UNUSED(state);
+        }
+        void KeyboardHandleModifiers(void* userData, wl_keyboard* keyboard,
+                                     u32 serial, u32 modsDepressed,
+                                     u32 modsLatched, u32 modsLocked, u32 group)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(serial);
+            VT_UNUSED(modsDepressed);
+            VT_UNUSED(modsLatched);
+            VT_UNUSED(modsLocked);
+            VT_UNUSED(group);
+        }
+        void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
+                                      i32 rate, i32 delay)
+        {
+            VT_UNUSED(userData);
+            VT_UNUSED(keyboard);
+            VT_UNUSED(rate);
+            VT_UNUSED(delay);
         }
     }; // namespace
 
