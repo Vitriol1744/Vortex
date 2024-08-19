@@ -13,19 +13,7 @@
 
 namespace Vortex
 {
-    wl_pointer_listener WaylandWindow::s_PointerListener = {
-        .enter                   = PointerHandleEnter,
-        .leave                   = PointerHandleLeave,
-        .motion                  = PointerHandleMotion,
-        .button                  = PointerHandleButton,
-        .axis                    = PointerHandleAxis,
-        .frame                   = PointerHandleFrame,
-        .axis_source             = PointerHandleAxisSource,
-        .axis_stop               = PointerHandleAxisStop,
-        .axis_discrete           = PointerHandleAxisDiscrete,
-        .axis_value120           = PointerHandleAxisValue120,
-        .axis_relative_direction = PointerHandleAxisRelativeDirection,
-    };
+    wl_pointer_listener  WaylandWindow::s_PointerListener  = {};
     wl_keyboard_listener WaylandWindow::s_KeyboardListener = {
         .keymap      = KeyboardHandleKeymap,
         .enter       = KeyboardHandleEnter,
@@ -145,6 +133,7 @@ namespace Vortex
             if (capabilities & WL_SEAT_CAPABILITY_POINTER && !s_Pointer)
             {
                 s_Pointer = wl_seat_get_pointer(seat);
+
                 wl_pointer_add_listener(
                     s_Pointer, &WaylandWindow::s_PointerListener, nullptr);
             }
@@ -730,7 +719,17 @@ namespace Vortex
 
         s_Display   = glfwGetWaylandDisplay();
         VtCoreAssertMsg(s_Display, "Wayland: Failed to open display");
-        s_Registry = wl_display_get_registry(s_Display);
+        s_Registry                      = wl_display_get_registry(s_Display);
+        s_PointerListener.enter         = PointerHandleEnter;
+        s_PointerListener.leave         = PointerHandleLeave;
+        s_PointerListener.motion        = PointerHandleMotion;
+        s_PointerListener.button        = PointerHandleButton;
+        s_PointerListener.axis          = PointerHandleAxis;
+        s_PointerListener.frame         = PointerHandleFrame;
+        s_PointerListener.axis_source   = PointerHandleAxisSource;
+        s_PointerListener.axis_stop     = PointerHandleAxisStop;
+        s_PointerListener.axis_discrete = PointerHandleAxisDiscrete;
+
         wl_registry_add_listener(s_Registry, &s_RegistryListener, nullptr);
         s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
         VtCoreAssertMsg(s_XkbContext,
@@ -861,25 +860,6 @@ namespace Vortex
         VT_UNUSED(pointer);
         VT_UNUSED(axis);
         VT_UNUSED(discrete);
-    }
-    void WaylandWindow::PointerHandleAxisValue120(void*       userData,
-                                                  wl_pointer* pointer, u32 axis,
-                                                  i32 value120)
-    {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axis);
-        VT_UNUSED(value120);
-    }
-    void WaylandWindow::PointerHandleAxisRelativeDirection(void*       userData,
-                                                           wl_pointer* pointer,
-                                                           u32         axis,
-                                                           u32 direction)
-    {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axis);
-        VT_UNUSED(direction);
     }
 
     void WaylandWindow::KeyboardHandleKeymap(void*        userData,

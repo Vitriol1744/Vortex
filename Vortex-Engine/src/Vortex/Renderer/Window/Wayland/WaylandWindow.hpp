@@ -118,12 +118,6 @@ namespace Vortex
         static void PointerHandleAxisDiscrete(void*       userData,
                                               wl_pointer* pointer, u32 axis,
                                               i32 discrete);
-        static void PointerHandleAxisValue120(void*       userData,
-                                              wl_pointer* pointer, u32 axis,
-                                              i32 value120);
-        static void PointerHandleAxisRelativeDirection(void*       userData,
-                                                       wl_pointer* pointer,
-                                                       u32 axis, u32 direction);
 
         static void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
                                          u32 format, int fd, u32 size);
