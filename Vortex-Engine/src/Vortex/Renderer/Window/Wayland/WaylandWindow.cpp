@@ -120,7 +120,8 @@ namespace Vortex
             VT_UNUSED(userData);
             VT_UNUSED(registry);
             VT_UNUSED(name);
-            std::source_location source = std::source_location::current();
+            [[maybe_unused]] std::source_location source
+                = std::source_location::current();
             VtCoreWarn("Wayland: {} is not implemented!",
                        source.function_name());
         }
