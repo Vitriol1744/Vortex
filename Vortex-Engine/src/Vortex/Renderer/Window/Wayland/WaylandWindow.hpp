@@ -74,6 +74,17 @@ namespace Vortex
         virtual void SetVisible(bool visible) const override;
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
+        static auto& GetWindowMap()
+        {
+            static std::unordered_map<wl_surface*, WaylandWindow*> windowMap
+                = {};
+
+            return windowMap;
+        }
+
+        static wl_pointer_listener  s_PointerListener;
+        static wl_keyboard_listener s_KeyboardListener;
+
       private:
         wl_surface*                m_WindowHandle = nullptr;
         GLFWwindow*                m_Window;
@@ -85,5 +96,51 @@ namespace Vortex
 
         static bool                Initialize();
         static void                Shutdown();
+
+        static void PointerHandleEnter(void* userData, wl_pointer* pointer,
+                                       u32 serial, wl_surface* surface,
+                                       wl_fixed_t xOffset, wl_fixed_t yOffset);
+        static void PointerHandleLeave(void* userData, wl_pointer* pointer,
+                                       u32 serial, wl_surface* surface);
+        static void PointerHandleMotion(void* userData, wl_pointer* pointer,
+                                        u32 time, wl_fixed_t xOffset,
+                                        wl_fixed_t yOffset);
+        static void PointerHandleButton(void* userData, wl_pointer* pointer,
+                                        u32 serial, u32 time, u32 button,
+                                        u32 state);
+        static void PointerHandleAxis(void* userData, wl_pointer* pointer,
+                                      u32 time, u32 axis, wl_fixed_t value);
+        static void PointerHandleFrame(void* userData, wl_pointer* pointer);
+        static void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
+                                            u32 axisSource);
+        static void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
+                                          u32 time, u32 axis);
+        static void PointerHandleAxisDiscrete(void*       userData,
+                                              wl_pointer* pointer, u32 axis,
+                                              i32 discrete);
+        static void PointerHandleAxisValue120(void*       userData,
+                                              wl_pointer* pointer, u32 axis,
+                                              i32 value120);
+        static void PointerHandleAxisRelativeDirection(void*       userData,
+                                                       wl_pointer* pointer,
+                                                       u32 axis, u32 direction);
+
+        static void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
+                                         u32 format, int fd, u32 size);
+        static void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
+                                        u32 serial, wl_surface* surface,
+                                        wl_array* keys);
+        static void KeyboardHandleLeave(void* userData, wl_keyboard* keyboard,
+                                        u32 serial, wl_surface* surface);
+        static void KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
+                                      u32 serial, u32 time, u32 scancode,
+                                      u32 state);
+        static void KeyboardHandleModifiers(void*        userData,
+                                            wl_keyboard* keyboard, u32 serial,
+                                            u32 modsDepressed, u32 modsLatched,
+                                            u32 modsLocked, u32 group);
+        static void KeyboardHandleRepeatInfo(void*        userData,
+                                             wl_keyboard* keyboard, i32 rate,
+                                             i32 delay);
     };
 }; // namespace Vortex

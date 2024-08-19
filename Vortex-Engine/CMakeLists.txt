@@ -91,7 +91,7 @@ set(PUBLIC_LIBS
     spirv-cross-cpp)
 
 if(UNIX)
-  set(PUBLIC_LIBS ${PUBLIC_LIBS} X11 X11-xcb)
+  set(PUBLIC_LIBS ${PUBLIC_LIBS} X11 X11-xcb wayland-client xkbcommon)
 endif()
 
 set(SOURCES
@@ -178,6 +178,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include)
 target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})

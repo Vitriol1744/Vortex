@@ -9,8 +9,31 @@
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
 
+#include <xkbcommon/xkbcommon.h>
+
 namespace Vortex
 {
+    wl_pointer_listener WaylandWindow::s_PointerListener = {
+        .enter                   = PointerHandleEnter,
+        .leave                   = PointerHandleLeave,
+        .motion                  = PointerHandleMotion,
+        .button                  = PointerHandleButton,
+        .axis                    = PointerHandleAxis,
+        .frame                   = PointerHandleFrame,
+        .axis_source             = PointerHandleAxisSource,
+        .axis_stop               = PointerHandleAxisStop,
+        .axis_discrete           = PointerHandleAxisDiscrete,
+        .axis_value120           = PointerHandleAxisValue120,
+        .axis_relative_direction = PointerHandleAxisRelativeDirection,
+    };
+    wl_keyboard_listener WaylandWindow::s_KeyboardListener = {
+        .keymap      = KeyboardHandleKeymap,
+        .enter       = KeyboardHandleEnter,
+        .leave       = KeyboardHandleLeave,
+        .key         = KeyboardHandleKey,
+        .modifiers   = KeyboardHandleModifiers,
+        .repeat_info = KeyboardHandleRepeatInfo,
+    };
     usize WaylandWindow::s_WindowsCount = 0;
     namespace
     {
@@ -23,52 +46,14 @@ namespace Vortex
                                     u32 capabilities);
         void SeatHandleName(void* userData, wl_seat* seat, const char* name);
 
-        void PointerHandleEnter(void* userData, wl_pointer* pointer, u32 serial,
-                                wl_surface* surface, wl_fixed_t xOffset,
-                                wl_fixed_t yOffset);
-        void PointerHandleLeave(void* userData, wl_pointer* pointer, u32 serial,
-                                wl_surface* surface);
-        void PointerHandleMotion(void* userData, wl_pointer* pointer, u32 time,
-                                 wl_fixed_t xOffset, wl_fixed_t yOffset);
-        void PointerHandleButton(void* userData, wl_pointer* pointer,
-                                 u32 serial, u32 time, u32 button, u32 state);
-        void PointerHandleAxis(void* userData, wl_pointer* pointer, u32 time,
-                               u32 axis, wl_fixed_t value);
-        void PointerHandleFrame(void* userData, wl_pointer* pointer);
-        void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
-                                     u32 axisSource);
-        void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
-                                   u32 time, u32 axis);
-        void PointerHandleAxisDiscrete(void* userData, wl_pointer* pointer,
-                                       u32 axis, i32 discrete);
-        void PointerHandleAxisValue120(void* userData, wl_pointer* pointer,
-                                       u32 axis, i32 value120);
-        void PointerHandleAxisRelativeDirection(void*       userData,
-                                                wl_pointer* pointer, u32 axis,
-                                                u32 direction);
-
-        void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
-                                  u32 format, int fd, u32 size);
-        void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
-                                 u32 serial, wl_surface* surface,
-                                 wl_array* keys);
-        void KeyboardHandleLeave(void* userData, wl_keyboard* keyboard,
-                                 u32 serial, wl_surface* surface);
-        void KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
-                               u32 serial, u32 time, u32 scancode, u32 state);
-        void KeyboardHandleModifiers(void* userData, wl_keyboard* keyboard,
-                                     u32 serial, u32 modsDepressed,
-                                     u32 modsLatched, u32 modsLocked,
-                                     u32 group);
-        void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
-                                      i32 rate, i32 delay);
-
         wl_display*          s_Display          = nullptr;
         wl_registry*         s_Registry         = nullptr;
         wl_registry_listener s_RegistryListener = {
             .global        = RegistryHandleGlobal,
             .global_remove = RegistryHandleGlobalRemove,
         };
+        const char*            s_ProxyTag      = glfwGetVersionString();
+        xkb_context*           s_XkbContext    = nullptr;
         wl_compositor*         s_Compositor    = nullptr;
         wl_subcompositor*      s_Subcompositor = nullptr;
         wl_shm*                s_Shm           = nullptr;
@@ -78,37 +63,19 @@ namespace Vortex
              .name         = SeatHandleName,
         };
         // Mouse pointer
-        wl_pointer*         s_Pointer         = nullptr;
-        wl_pointer_listener s_PointerListener = {
-            .enter                   = PointerHandleEnter,
-            .leave                   = PointerHandleLeave,
-            .motion                  = PointerHandleMotion,
-            .button                  = PointerHandleButton,
-            .axis                    = PointerHandleAxis,
-            .frame                   = PointerHandleFrame,
-            .axis_source             = PointerHandleAxisSource,
-            .axis_stop               = PointerHandleAxisStop,
-            .axis_discrete           = PointerHandleAxisDiscrete,
-            .axis_value120           = PointerHandleAxisValue120,
-            .axis_relative_direction = PointerHandleAxisRelativeDirection,
-        };
-        wl_keyboard*         s_Keyboard         = nullptr;
-        wl_keyboard_listener s_KeyboardListener = {
-            .keymap      = KeyboardHandleKeymap,
-            .enter       = KeyboardHandleEnter,
-            .leave       = KeyboardHandleLeave,
-            .key         = KeyboardHandleKey,
-            .modifiers   = KeyboardHandleModifiers,
-            .repeat_info = KeyboardHandleRepeatInfo,
-        };
+        wl_pointer*    s_Pointer            = nullptr;
+        wl_keyboard*   s_Keyboard           = nullptr;
         // wl_touch*            s_Touch            = nullptr;
         //  TODO(v1tr10l7): touchpad events
         //  wl_touch_listener    s_TouchListener{};
+        u32            s_Serial             = 0;
+        u32            s_PointerEnterSerial = 0;
+        WaylandWindow* s_FocusedWindow      = nullptr;
 
         void RegistryHandleGlobal(void* userData, wl_registry* registry,
                                   u32 name, const char* interface, u32 version)
         {
-            (void)userData;
+            VT_UNUSED(userData);
 
             if (std::strcmp(interface, "wl_compositor") == 0)
                 s_Compositor
@@ -162,9 +129,9 @@ namespace Vortex
         void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
                                         u32 name)
         {
-            (void)userData;
-            (void)registry;
-            (void)name;
+            VT_UNUSED(userData);
+            VT_UNUSED(registry);
+            VT_UNUSED(name);
             std::source_location source = std::source_location::current();
             VtCoreWarn("Wayland: {} is not implemented!",
                        source.function_name());
@@ -178,7 +145,8 @@ namespace Vortex
             if (capabilities & WL_SEAT_CAPABILITY_POINTER && !s_Pointer)
             {
                 s_Pointer = wl_seat_get_pointer(seat);
-                wl_pointer_add_listener(s_Pointer, &s_PointerListener, nullptr);
+                wl_pointer_add_listener(
+                    s_Pointer, &WaylandWindow::s_PointerListener, nullptr);
             }
             else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && s_Pointer)
             {
@@ -189,8 +157,8 @@ namespace Vortex
             if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !s_Keyboard)
             {
                 s_Keyboard = wl_seat_get_keyboard(seat);
-                wl_keyboard_add_listener(s_Keyboard, &s_KeyboardListener,
-                                         nullptr);
+                wl_keyboard_add_listener(
+                    s_Keyboard, &WaylandWindow::s_KeyboardListener, nullptr);
             }
             else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)
                      && s_Keyboard)
@@ -205,158 +173,6 @@ namespace Vortex
         void SeatHandleName(void*, wl_seat*, const char* name)
         {
             VtCoreInfo("Wayland: Bound to seat: '{}'", name);
-        }
-
-        void PointerHandleEnter(void* userData, wl_pointer* pointer, u32 serial,
-                                wl_surface* surface, wl_fixed_t xOffset,
-                                wl_fixed_t yOffset)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(serial);
-            VT_UNUSED(surface);
-            VT_UNUSED(xOffset);
-            VT_UNUSED(yOffset);
-        }
-        void PointerHandleLeave(void* userData, wl_pointer* pointer, u32 serial,
-                                wl_surface* surface)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(serial);
-            VT_UNUSED(surface);
-        }
-        void PointerHandleMotion(void* userData, wl_pointer* pointer, u32 time,
-                                 wl_fixed_t xOffset, wl_fixed_t yOffset)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(time);
-            VT_UNUSED(xOffset);
-            VT_UNUSED(yOffset);
-        }
-        void PointerHandleButton(void* userData, wl_pointer* pointer,
-                                 u32 serial, u32 time, u32 button, u32 state)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(serial);
-            VT_UNUSED(time);
-            VT_UNUSED(button);
-            VT_UNUSED(state);
-        }
-        void PointerHandleAxis(void* userData, wl_pointer* pointer, u32 time,
-                               u32 axis, wl_fixed_t value)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(time);
-            VT_UNUSED(axis);
-            VT_UNUSED(value);
-        }
-        void PointerHandleFrame(void* userData, wl_pointer* pointer)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-        }
-        void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
-                                     u32 axisSource)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axisSource);
-        }
-        void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
-                                   u32 time, u32 axis)
-        {
-
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(time);
-            VT_UNUSED(axis);
-        }
-        void PointerHandleAxisDiscrete(void* userData, wl_pointer* pointer,
-                                       u32 axis, i32 discrete)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(discrete);
-        }
-        void PointerHandleAxisValue120(void* userData, wl_pointer* pointer,
-                                       u32 axis, i32 value120)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(value120);
-        }
-        void PointerHandleAxisRelativeDirection(void*       userData,
-                                                wl_pointer* pointer, u32 axis,
-                                                u32 direction)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(direction);
-        }
-
-        void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
-                                  u32 format, int fd, u32 size)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(format);
-            VT_UNUSED(fd);
-            VT_UNUSED(size);
-        }
-        void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
-                                 u32 serial, wl_surface* surface,
-                                 wl_array* keys)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(serial);
-            VT_UNUSED(surface);
-            VT_UNUSED(keys);
-        }
-        void KeyboardHandleLeave(void* userData, wl_keyboard* keyboard,
-                                 u32 serial, wl_surface* surface)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(serial);
-            VT_UNUSED(surface);
-        }
-        void KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
-                               u32 serial, u32 time, u32 scancode, u32 state)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(serial);
-            VT_UNUSED(time);
-            VT_UNUSED(scancode);
-            VT_UNUSED(state);
-        }
-        void KeyboardHandleModifiers(void* userData, wl_keyboard* keyboard,
-                                     u32 serial, u32 modsDepressed,
-                                     u32 modsLatched, u32 modsLocked, u32 group)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(serial);
-            VT_UNUSED(modsDepressed);
-            VT_UNUSED(modsLatched);
-            VT_UNUSED(modsLocked);
-            VT_UNUSED(group);
-        }
-        void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
-                                      i32 rate, i32 delay)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(rate);
-            VT_UNUSED(delay);
         }
     }; // namespace
 
@@ -552,7 +368,8 @@ namespace Vortex
         m_Window = glfwCreateWindow(
             width, height, title,
             specification.Fullscreen ? monitorHandle : nullptr, nullptr);
-        m_WindowHandle = glfwGetWaylandWindow(m_Window);
+        m_WindowHandle                 = glfwGetWaylandWindow(m_Window);
+        GetWindowMap()[m_WindowHandle] = this;
 
         if (monitor)
         {
@@ -640,10 +457,7 @@ namespace Vortex
 
         return ret;
     }
-    f32 WaylandWindow::GetOpacity() const noexcept
-    {
-        return glfwGetWindowOpacity(m_Window);
-    }
+    f32  WaylandWindow::GetOpacity() const noexcept { return 1.0f; }
 
     void WaylandWindow::Close() noexcept
     {
@@ -680,7 +494,11 @@ namespace Vortex
     }
     void WaylandWindow::SetPosition(i32 x, i32 y)
     {
-        glfwSetWindowPos(m_Window, x, y);
+        VT_UNUSED(x);
+        VT_UNUSED(y);
+        VtCoreWarn(
+            "Wayland: The platform does not support setting the window "
+            "position");
     }
     void WaylandWindow::SetAspectRatio(i32 numerator, i32 denominator)
     {
@@ -694,7 +512,10 @@ namespace Vortex
     }
     void WaylandWindow::SetOpacity(f32 opacity)
     {
-        glfwSetWindowOpacity(m_Window, opacity);
+        VT_UNUSED(opacity);
+        VtCoreWarn(
+            "Wayland: The platform does not support setting the window "
+            "opacity");
     }
     void WaylandWindow::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                      i32 maxHeight)
@@ -713,7 +534,9 @@ namespace Vortex
     }
     void WaylandWindow::SetCursorPosition(Vec2d position) noexcept
     {
-        glfwSetCursorPos(m_Window, position.x, position.y);
+        VT_UNUSED(position);
+        VtCoreWarn(
+            "Wayland: The platform does not support setting cursor position");
     }
     void WaylandWindow::ShowCursor() const noexcept
     {
@@ -742,7 +565,9 @@ namespace Vortex
     }
     void WaylandWindow::SetAlwaysOnTop(bool alwaysOnTop)
     {
-        glfwSetWindowAttrib(m_Window, GLFW_FLOATING, alwaysOnTop);
+        VT_UNUSED(alwaysOnTop);
+        VtCoreWarn(
+            "Wayland: The platform does not support making a window floating");
     }
 
     void WaylandWindow::SetupEvents()
@@ -851,22 +676,10 @@ namespace Vortex
                     = false;
             }
         };
-        auto cursorEnterCallback = [](GLFWwindow* handle, i32 entered)
-        {
-            auto window = VtGetWindow(handle);
-            if (entered) MouseEnteredEvent(window);
-            else MouseLeftEvent(window);
-        };
         auto scrollCallback = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
         {
             auto window = VtGetWindow(handle);
             MouseScrolledEvent(window, xoffset, yoffset);
-        };
-        auto cursorPosCallback = [](GLFWwindow* handle, f64 xpos, f64 ypos)
-        {
-            auto window = VtGetWindow(handle);
-            MouseMovedEvent(window, xpos, ypos);
-            window->m_Data.MousePosition = {xpos, ypos};
         };
         auto charModsCallback = [](GLFWwindow* handle, u32 codepoint, i32 mods)
         {
@@ -901,9 +714,7 @@ namespace Vortex
         glfwSetKeyCallback(m_Window, keyCallback);
         glfwSetCharCallback(m_Window, charCallback);
         glfwSetMouseButtonCallback(m_Window, mouseButtonCallback);
-        glfwSetCursorEnterCallback(m_Window, cursorEnterCallback);
         glfwSetScrollCallback(m_Window, scrollCallback);
-        glfwSetCursorPosCallback(m_Window, cursorPosCallback);
         glfwSetCharModsCallback(m_Window, charModsCallback);
         glfwSetDropCallback(m_Window, dropCallback);
         glfwSetJoystickCallback(joystickCallback);
@@ -918,9 +729,220 @@ namespace Vortex
         bool status = glfwInit() == GLFW_TRUE;
 
         s_Display   = glfwGetWaylandDisplay();
-        s_Registry  = wl_display_get_registry(s_Display);
+        VtCoreAssertMsg(s_Display, "Wayland: Failed to open display");
+        s_Registry = wl_display_get_registry(s_Display);
         wl_registry_add_listener(s_Registry, &s_RegistryListener, nullptr);
+        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+        VtCoreAssertMsg(s_XkbContext,
+                        "Wayland: Failed to initialize xkb context");
+
+        // Sync so we got all registry objects
+        wl_display_roundtrip(s_Display);
+
+        // Sync so we got all initial output events
+        wl_display_roundtrip(s_Display);
+
+        VtCoreAssertMsg(s_Shm, "Failed to find wl_shm in the compositor");
+
         return status;
     }
-    void WaylandWindow::Shutdown() { glfwTerminate(); }
+    void WaylandWindow::Shutdown()
+    {
+#define VtRelease(object, destroy_function)                                    \
+    if (object) destroy_function(object)
+
+        VtRelease(s_XkbContext, xkb_context_unref);
+        VtRelease(s_Subcompositor, wl_subcompositor_destroy);
+        VtRelease(s_Compositor, wl_compositor_destroy);
+        VtRelease(s_Shm, wl_shm_destroy);
+        VtRelease(s_Pointer, wl_pointer_destroy);
+        VtRelease(s_Keyboard, wl_keyboard_destroy);
+        VtRelease(s_Seat, wl_seat_destroy);
+        VtRelease(s_Registry, wl_registry_destroy);
+
+        glfwTerminate();
+    }
+
+    void WaylandWindow::PointerHandleEnter(void* userData, wl_pointer* pointer,
+                                           u32 serial, wl_surface* surface,
+                                           wl_fixed_t xOffset,
+                                           wl_fixed_t yOffset)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(xOffset);
+        VT_UNUSED(yOffset);
+
+        if (!surface) return;
+
+        WaylandWindow* window = WaylandWindow::GetWindowMap()[surface];
+        s_Serial              = serial;
+        s_PointerEnterSerial  = serial;
+        s_FocusedWindow       = window;
+
+        WindowEvents::MouseEnteredEvent(window);
+    }
+    void WaylandWindow::PointerHandleLeave(void* userData, wl_pointer* pointer,
+                                           u32 serial, wl_surface* surface)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+
+        if (!surface) return;
+
+        WaylandWindow* window = WaylandWindow::GetWindowMap()[surface];
+        s_Serial              = serial;
+        s_FocusedWindow       = nullptr;
+        WindowEvents::MouseLeftEvent(window);
+    }
+    void WaylandWindow::PointerHandleMotion(void* userData, wl_pointer* pointer,
+                                            u32 time, wl_fixed_t xOffset,
+                                            wl_fixed_t yOffset)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(time);
+
+        f64            xpos   = wl_fixed_to_double(xOffset);
+        f64            ypos   = wl_fixed_to_double(yOffset);
+
+        WaylandWindow* window = s_FocusedWindow;
+        if (window) window->m_Data.MousePosition = Vec2d(xpos, ypos);
+        WindowEvents::MouseMovedEvent(window, xpos, ypos);
+    }
+    void WaylandWindow::PointerHandleButton(void* userData, wl_pointer* pointer,
+                                            u32 serial, u32 time, u32 button,
+                                            u32 state)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(serial);
+        VT_UNUSED(time);
+        VT_UNUSED(button);
+        VT_UNUSED(state);
+    }
+    void WaylandWindow::PointerHandleAxis(void* userData, wl_pointer* pointer,
+                                          u32 time, u32 axis, wl_fixed_t value)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(time);
+        VT_UNUSED(axis);
+        VT_UNUSED(value);
+    }
+    void WaylandWindow::PointerHandleFrame(void* userData, wl_pointer* pointer)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+    }
+    void WaylandWindow::PointerHandleAxisSource(void*       userData,
+                                                wl_pointer* pointer,
+                                                u32         axisSource)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axisSource);
+    }
+    void WaylandWindow::PointerHandleAxisStop(void*       userData,
+                                              wl_pointer* pointer, u32 time,
+                                              u32 axis)
+    {
+
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(time);
+        VT_UNUSED(axis);
+    }
+    void WaylandWindow::PointerHandleAxisDiscrete(void*       userData,
+                                                  wl_pointer* pointer, u32 axis,
+                                                  i32 discrete)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axis);
+        VT_UNUSED(discrete);
+    }
+    void WaylandWindow::PointerHandleAxisValue120(void*       userData,
+                                                  wl_pointer* pointer, u32 axis,
+                                                  i32 value120)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axis);
+        VT_UNUSED(value120);
+    }
+    void WaylandWindow::PointerHandleAxisRelativeDirection(void*       userData,
+                                                           wl_pointer* pointer,
+                                                           u32         axis,
+                                                           u32 direction)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axis);
+        VT_UNUSED(direction);
+    }
+
+    void WaylandWindow::KeyboardHandleKeymap(void*        userData,
+                                             wl_keyboard* keyboard, u32 format,
+                                             int fd, u32 size)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(format);
+        VT_UNUSED(fd);
+        VT_UNUSED(size);
+    }
+    void WaylandWindow::KeyboardHandleEnter(void*        userData,
+                                            wl_keyboard* keyboard, u32 serial,
+                                            wl_surface* surface, wl_array* keys)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(serial);
+        VT_UNUSED(surface);
+        VT_UNUSED(keys);
+    }
+    void WaylandWindow::KeyboardHandleLeave(void*        userData,
+                                            wl_keyboard* keyboard, u32 serial,
+                                            wl_surface* surface)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(serial);
+        VT_UNUSED(surface);
+    }
+    void WaylandWindow::KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
+                                          u32 serial, u32 time, u32 scancode,
+                                          u32 state)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(serial);
+        VT_UNUSED(time);
+        VT_UNUSED(scancode);
+        VT_UNUSED(state);
+    }
+    void WaylandWindow::KeyboardHandleModifiers(void*        userData,
+                                                wl_keyboard* keyboard,
+                                                u32 serial, u32 modsDepressed,
+                                                u32 modsLatched, u32 modsLocked,
+                                                u32 group)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(serial);
+        VT_UNUSED(modsDepressed);
+        VT_UNUSED(modsLatched);
+        VT_UNUSED(modsLocked);
+        VT_UNUSED(group);
+    }
+    void WaylandWindow::KeyboardHandleRepeatInfo(void*        userData,
+                                                 wl_keyboard* keyboard,
+                                                 i32 rate, i32 delay)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(keyboard);
+        VT_UNUSED(rate);
+        VT_UNUSED(delay);
+    }
 }; // namespace Vortex
