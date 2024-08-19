@@ -50,13 +50,16 @@ namespace Vortex
             for (auto layer : m_LayerStack) layer->OnUpdate();
 
             Renderer::BeginFrame(m_MainWindow);
+
             for (auto layer : m_LayerStack) layer->OnRender();
 
             m_ImGuiLayer->Begin();
             for (auto layer : m_LayerStack) layer->OnImGuiRender();
             m_ImGuiLayer->End();
-            m_MainWindow->Present();
 
+            Renderer::EndFrame();
+
+            m_MainWindow->Present();
             EventSystem::PollEvents();
             m_Running = m_MainWindow->IsOpen();
         } while (m_Running);

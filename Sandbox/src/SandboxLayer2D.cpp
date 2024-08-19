@@ -67,20 +67,10 @@ void SandboxLayer2D::OnAttach()
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
+    Image image("assets/icon.bmp");
     s_Shader = CreateRef<VulkanShader>("assets/shaders/uniform.glsl");
-    i32  width, height;
-    auto ret = ImageLoader::LoadBMP("assets/icon.bmp", width, height);
-    if (!ret) { VtError("error: {}", ret.error()); }
-    else
-    {
-        pixels = std::move(ret.value());
-        Image img;
-        img.Pixels = pixels.get();
-        img.Width  = width;
-        img.Height = height;
 
-        s_Window->SetIcon(img);
-    }
+    s_Window->SetIcon(image);
     s_Window->ShowCursor();
 
     std::initializer_list<VertexBufferElement> elements
@@ -126,11 +116,6 @@ void SandboxLayer2D::OnImGuiRender()
 
     bool              showWindow    = true;
     ImGui::ShowDemoWindow(&showWindow);
-
-    ImGui::Render();
-
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
-    Renderer::EndFrame();
 
     auto currentFrame = s_Context->GetSwapChain().GetCurrentFrameIndex();
     auto updateUniformBuffers = [cursorPos, currentFrame]()

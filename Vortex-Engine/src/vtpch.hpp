@@ -25,6 +25,7 @@
 #include <ostream>
 #include <queue>
 #include <ranges>
+#include <regex>
 #include <set>
 #include <source_location>
 #include <stdexcept>
