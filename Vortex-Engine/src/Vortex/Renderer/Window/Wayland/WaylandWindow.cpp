@@ -161,6 +161,7 @@ namespace Vortex
         }
         void SeatHandleName(void*, wl_seat*, const char* name)
         {
+            VT_UNUSED(name);
             VtCoreInfo("Wayland: Bound to seat: '{}'", name);
         }
     }; // namespace
