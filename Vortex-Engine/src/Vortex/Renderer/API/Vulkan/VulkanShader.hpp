@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 
 namespace Vortex
@@ -23,10 +24,18 @@ namespace Vortex
             u32                     Size;
             vk::ShaderStageFlagBits ShaderStage;
         };
+        struct ImageSampler
+        {
+            std::string             Name;
+            u32                     BindingPoint = 0;
+            vk::ShaderStageFlagBits ShaderStage;
+        };
 
         struct DescriptorSet
         {
             std::unordered_map<u32, UniformDescriptor> UniformDescriptors;
+            std::unordered_map<u32, ImageSampler>      ImageSamplers;
+
             vk::DescriptorPool                         Pool = VK_NULL_HANDLE;
             std::vector<vk::DescriptorPoolSize>        PoolSizes;
 
@@ -40,8 +49,9 @@ namespace Vortex
                      std::string_view fragmentPath);
         virtual ~VulkanShader();
 
-        void                    SetUniform(const std::string&       name,
-                                           Ref<VulkanUniformBuffer> buffer);
+        void SetUniform(const std::string&       name,
+                        Ref<VulkanUniformBuffer> buffer);
+        void SetUniform(const std::string& name, Ref<VulkanTexture2D> texture);
 
         inline vk::ShaderModule GetVertexShader() const
         {

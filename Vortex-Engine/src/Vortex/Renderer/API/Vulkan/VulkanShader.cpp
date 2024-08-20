@@ -70,6 +70,16 @@ namespace Vortex
                     * VT_MAX_FRAMES_IN_FLIGHT;
                 VtCoreTrace("size: {}", typeCount.descriptorCount);
             }
+            if (shaderDescriptorSet.ImageSamplers.size())
+            {
+                vk::DescriptorPoolSize& typeCount
+                    = m_DescriptorSets[set].PoolSizes.emplace_back();
+                typeCount.type = vk::DescriptorType::eCombinedImageSampler;
+                typeCount.descriptorCount
+                    = shaderDescriptorSet.ImageSamplers.size()
+                    * VT_MAX_FRAMES_IN_FLIGHT;
+                VtCoreTrace("size: {}", typeCount.descriptorCount);
+            }
 
             std::vector<vk::DescriptorSetLayoutBinding> layoutBindings;
             for (auto& [binding, uniformBuffer] :
@@ -93,9 +103,30 @@ namespace Vortex
                 set.descriptorCount = 1;
                 set.dstBinding      = layoutBinding.binding;
             }
+            for (auto& [binding, sampler] : shaderDescriptorSet.ImageSamplers)
+            {
+                vk::DescriptorSetLayoutBinding& layoutBinding
+                    = layoutBindings.emplace_back();
+                layoutBinding.descriptorType
+                    = vk::DescriptorType::eCombinedImageSampler;
+                layoutBinding.descriptorCount    = 1;
+                layoutBinding.stageFlags         = sampler.ShaderStage;
+                layoutBinding.pImmutableSamplers = VK_NULL_HANDLE;
+                layoutBinding.binding            = binding;
+
+                vk::WriteDescriptorSet& set
+                    = shaderDescriptorSet.WriteDescriptorSets[sampler.Name];
+                set                 = vk::WriteDescriptorSet();
+                set.sType           = vk::StructureType::eWriteDescriptorSet;
+                set.descriptorType  = layoutBinding.descriptorType;
+                set.descriptorCount = 1;
+                set.dstBinding      = layoutBinding.binding;
+            }
 
             VtCoreInfo("Creating descriptor set {} with {} ubos", set,
                        shaderDescriptorSet.UniformDescriptors.size());
+            VtCoreInfo("Creating descriptor set {} with {} ubos", set,
+                       shaderDescriptorSet.ImageSamplers.size());
 
             vk::DescriptorSetLayoutCreateInfo createInfo{};
             createInfo.sType
@@ -254,6 +285,24 @@ namespace Vortex
             device.updateDescriptorSets(1, &descriptorWrite, 0, VK_NULL_HANDLE);
         }
     }
+    void VulkanShader::SetUniform(const std::string&   name,
+                                  Ref<VulkanTexture2D> texture)
+    {
+        vk::Device              device = VulkanContext::GetDevice();
+        vk::WriteDescriptorSet& descriptorWrite
+            = m_DescriptorSets[0].WriteDescriptorSets[name];
+
+        for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            descriptorWrite.dstSet          = m_DescriptorSets[0].Sets[i];
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType
+                = vk::DescriptorType::eCombinedImageSampler;
+            descriptorWrite.pImageInfo = &texture->GetImageInfo();
+
+            device.updateDescriptorSets(1, &descriptorWrite, 0, VK_NULL_HANDLE);
+        }
+    }
 
     std::unordered_map<vk::ShaderStageFlagBits, std::string>
     VulkanShader::Preprocess(std::string_view shaderCode)
@@ -356,6 +405,32 @@ namespace Vortex
             VtCoreTrace("set: {}, binding: {}", set, binding);
             VtCoreTrace("memberCount: {}", memberCount);
             VtCoreTrace("size: {}", size);
+            VtCoreTrace("descriptorCount: {}", descriptorCount);
+            VtCoreTrace("-------------------");
+        }
+
+        for (const auto& resource : resources.sampled_images)
+        {
+            const auto& name = resource.name;
+            auto&       type = compiler.get_type(resource.type_id);
+            u32         set  = compiler.get_decoration(resource.id,
+                                                       spv::DecorationDescriptorSet);
+            u32         binding
+                = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            u32 descriptorCount = 1;
+            for (auto size : type.array) descriptorCount *= size;
+
+            bindings.insert(binding);
+            sets.insert(set);
+            auto&        shaderDescriptorSet = m_DescriptorSets[set];
+            ImageSampler sampler;
+            sampler.Name                               = name;
+            sampler.BindingPoint                       = binding;
+            sampler.ShaderStage                        = stage;
+
+            shaderDescriptorSet.ImageSamplers[binding] = sampler;
+            VtCoreTrace("name: {}", name);
+            VtCoreTrace("set: {}, binding: {}", set, binding);
             VtCoreTrace("descriptorCount: {}", descriptorCount);
             VtCoreTrace("-------------------");
         }

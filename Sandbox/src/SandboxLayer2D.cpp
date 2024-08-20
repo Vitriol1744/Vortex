@@ -17,6 +17,7 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
@@ -33,12 +34,21 @@ struct Vertex
 {
     Vec2 Pos;
     Vec3 Color;
+    Vec2 TexCoords;
 };
+#if 0
 const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
                                         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
                                         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
-const std::vector<u32>    indices    = {0, 1, 2, 2, 3, 0};
+#else
+const std::vector<Vertex> s_Vertices
+    = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+       {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+       {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+       {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+#endif
+const std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
 
 struct UniformBufferObject
 {
@@ -56,7 +66,8 @@ static Ref<VulkanVertexBuffer>        s_VertexBuffer     = nullptr;
 static Ref<VulkanIndexBuffer>         s_IndexBuffer      = nullptr;
 static Ref<VulkanUniformBuffer>       s_UniformBuffer    = nullptr;
 static std::vector<vk::DescriptorSet> s_DescriptorSets;
-static Scope<Pixel[]>                 pixels = nullptr;
+static Scope<Pixel[]>                 pixels      = nullptr;
+static Ref<VulkanTexture2D>           s_Texture2D = nullptr;
 
 using namespace Vortex;
 
@@ -68,13 +79,14 @@ void SandboxLayer2D::OnAttach()
         s_Window->GetRendererContext());
 
     Image image("assets/icon.bmp");
-    s_Shader = CreateRef<VulkanShader>("assets/shaders/uniform.glsl");
+    s_Shader = CreateRef<VulkanShader>("assets/shaders/texture.glsl");
 
     s_Window->SetIcon(image);
     s_Window->ShowCursor();
 
     std::initializer_list<VertexBufferElement> elements
-        = {ShaderDataType::eFloat2, ShaderDataType::eFloat3};
+        = {ShaderDataType::eFloat2, ShaderDataType::eFloat3,
+           ShaderDataType::eFloat2};
     VertexBufferLayout            layout(elements);
 
     GraphicsPipelineSpecification specification{};
@@ -91,11 +103,14 @@ void SandboxLayer2D::OnAttach()
     s_UniformBuffer
         = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
 
+    s_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/texture.jpg");
+
     vk::Device device = VulkanContext::GetDevice();
     VtCoreInfo("Frames in flight: {}", VT_MAX_FRAMES_IN_FLIGHT);
 
     s_DescriptorSets = s_Shader->GetDescriptorSets()[0].Sets;
     s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
+    s_Shader->SetUniform("texSampler", s_Texture2D);
 }
 void SandboxLayer2D::OnDetach() {}
 

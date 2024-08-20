@@ -28,15 +28,21 @@ namespace Vortex::VulkanAllocator
     void          Shutdown() { vmaDestroyAllocator(s_Allocator); }
 
     VmaAllocation AllocateImage(vk::ImageCreateInfo imageInfo,
-                                VmaMemoryUsage usage, vk::Image& outImage)
+                                VmaMemoryUsage usage, vk::Image& outImage,
+                                vk::DeviceSize& outAllocatedSize)
     {
-        VmaAllocationCreateInfo allocInfo{};
-        allocInfo.usage = usage;
+        VmaAllocationCreateInfo allocCreateInfo{};
+        allocCreateInfo.usage = usage;
 
         VmaAllocation allocation{};
-        vmaCreateImage(s_Allocator, (VkImageCreateInfo*)&imageInfo, &allocInfo,
-                       (VkImage*)&outImage, &allocation, VK_NULL_HANDLE);
+        vmaCreateImage(s_Allocator, (VkImageCreateInfo*)&imageInfo,
+                       &allocCreateInfo, (VkImage*)&outImage, &allocation,
+                       VK_NULL_HANDLE);
         VtCoreAssert(allocation != VK_NULL_HANDLE);
+
+        VmaAllocationInfo allocInfo;
+        vmaGetAllocationInfo(s_Allocator, allocation, &allocInfo);
+        outAllocatedSize = allocInfo.size;
 
         return allocation;
     }
@@ -62,6 +68,11 @@ namespace Vortex::VulkanAllocator
     void DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation)
     {
         vmaDestroyBuffer(s_Allocator, buffer, allocation);
+    }
+
+    vk::Result BindImageMemory(VmaAllocation allocation, vk::Image image)
+    {
+        return vk::Result(vmaBindImageMemory(s_Allocator, allocation, image));
     }
 
     void* MapMemory(VmaAllocation allocation)

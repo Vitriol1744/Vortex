@@ -22,10 +22,13 @@ namespace Vortex
                                      VmaMemoryUsage       usage,
                                      vk::Buffer&          outBuffer);
 
-        void  DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
+        void          DestroyImage(vk::Image image, VmaAllocation allocation);
+        void       DestroyBuffer(vk::Buffer buffer, VmaAllocation allocation);
 
-        void* MapMemory(VmaAllocation allocation);
-        void  UnmapMemory(VmaAllocation allocation);
+        vk::Result BindImageMemory(VmaAllocation allocation, vk::Image image);
+
+        void*      MapMemory(VmaAllocation allocation);
+        void       UnmapMemory(VmaAllocation allocation);
 
         template <typename T>
         T MapMemory(VmaAllocation allocation)

@@ -17,6 +17,7 @@ namespace Vortex
     class VT_API Image
     {
       public:
+        Image() = default;
         Image(PathView path);
 
         inline Pixel* GetPixels() const { return m_Pixels; }
