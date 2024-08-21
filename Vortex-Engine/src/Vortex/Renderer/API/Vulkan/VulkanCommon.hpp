@@ -17,7 +17,8 @@
                 ;                                                              \
             else                                                               \
             {                                                                  \
-                VtCoreError("Vulkan: '{}' != VK_SUCCESS\nError Code: {}", #x,  \
+                VtCoreError("Vulkan: '{}' = {}\nError Code: {}",               \
+                            magic_enum::enum_name(status), #x,                 \
                             Vulkan::VkResultToString(status));                 \
             }                                                                  \
         }

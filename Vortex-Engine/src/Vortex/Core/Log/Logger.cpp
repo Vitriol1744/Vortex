@@ -48,6 +48,5 @@ namespace Vortex
 
         printf("%s%s]: ", levelString.data() + 1, COLOR_DEFAULT);
         printf("%s\n", message.data());
-        printf("\n");
     };
 }; // namespace Vortex

@@ -19,10 +19,10 @@ namespace Vortex
             timespec currentTime{};
             clock_gettime(CLOCK_MONOTONIC, &currentTime);
 
-            u64 time = static_cast<u64>(currentTime.tv_sec) * 1000000ull
+            u64 time = static_cast<u64>(currentTime.tv_sec) * 1000'000ull
                      + currentTime.tv_nsec / 1000ull;
 
-            return static_cast<f64>(time / 1000000.0);
+            return static_cast<f64>(time / 1000'000.0);
         }
 
         void Sleep(Timestep timestep) { usleep(timestep.Microseconds()); }

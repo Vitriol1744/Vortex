@@ -40,22 +40,21 @@ namespace Vortex
         VkDebugUtilsMessageTypeFlagsEXT             type,
         const VkDebugUtilsMessengerCallbackDataEXT* data, void* userData)
     {
-        (void)type;
-        (void)userData;
-        (void)data;
+        VT_UNUSED(type);
+        VT_UNUSED(userData);
         switch (severity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                VtCoreTrace("Vulkan Validation Layer: {}", data->pMessage);
+                VtCoreTrace("{}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                VtCoreInfo("Vulkan Validation Layer: {}", data->pMessage);
+                VtCoreInfo("{}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                VtCoreWarn("Vulkan Validation Layer: {}", data->pMessage);
+                VtCoreWarn("{}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                VtCoreError("Vulkan Validation Layer: {}", data->pMessage);
+                VtCoreError("{}", data->pMessage);
                 break;
 
             default: break;
@@ -80,10 +79,10 @@ namespace Vortex
         u32 vulkanVersionMajor = VK_VERSION_MAJOR(vulkanVersion);
         u32 vulkanVersionMinor = VK_VERSION_MINOR(vulkanVersion);
         u32 vulkanVersionPatch = VK_VERSION_PATCH(vulkanVersion);
-        (void)vulkanVersion;
-        (void)vulkanVersionMajor;
-        (void)vulkanVersionMinor;
-        (void)vulkanVersionPatch;
+        VT_UNUSED(vulkanVersion);
+        VT_UNUSED(vulkanVersionMajor);
+        VT_UNUSED(vulkanVersionMinor);
+        VT_UNUSED(vulkanVersionPatch);
 
         VtCoreAssert(vulkanVersion >= s_MinimumVulkanVersionSupported);
         VtCoreInfo("Vulkan: API version: {}.{}.{}", vulkanVersionMajor,
@@ -108,8 +107,8 @@ namespace Vortex
             vortexVersion.Major, vortexVersion.Minor, vortexVersion.Patch);
         appInfo.apiVersion = m_UsedApiVersion = s_MinimumVulkanVersionSupported;
         VtCoreInfo(
-            "Vulkan: Application Info: {{ applicationName: {}, "
-            "applicationVersion: {}, engineName: {}, engineVersion: {}}}",
+            "Vulkan: Application Info: {{ applicationName: '{}', "
+            "applicationVersion: {}, engineName: '{}', engineVersion: {} }}",
             appInfo.pApplicationName, appVersion, appInfo.pEngineName,
             vortexVersion);
 
@@ -132,26 +131,27 @@ namespace Vortex
                 VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
         }
 
-        vk::InstanceCreateInfo createInfo{};
-        createInfo.sType = vk::StructureType::eInstanceCreateInfo;
-        createInfo.pNext
+        vk::InstanceCreateInfo instanceInfo{};
+        instanceInfo.sType = vk::StructureType::eInstanceCreateInfo;
+        instanceInfo.pNext
             = s_UseValidationLayers
                 ? reinterpret_cast<vk::DebugUtilsMessengerCreateInfoEXT*>(
                     &debugCreateInfo)
                 : nullptr;
-        createInfo.flags            = vk::InstanceCreateFlags();
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledLayerCount
+        instanceInfo.flags            = vk::InstanceCreateFlags();
+        instanceInfo.pApplicationInfo = &appInfo;
+        instanceInfo.enabledLayerCount
             = s_UseValidationLayers
                 ? static_cast<u32>(s_ValidationLayers.size())
                 : 0;
-        createInfo.ppEnabledLayerNames   = s_UseValidationLayers
+        instanceInfo.ppEnabledLayerNames = s_UseValidationLayers
                                              ? s_ValidationLayers.data()
                                              : VK_NULL_HANDLE;
-        createInfo.enabledExtensionCount = static_cast<u32>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
+        instanceInfo.enabledExtensionCount
+            = static_cast<u32>(extensions.size());
+        instanceInfo.ppEnabledExtensionNames = extensions.data();
 
-        VkCall(vk::createInstance(&createInfo, nullptr, &m_Instance));
+        VkCall(vk::createInstance(&instanceInfo, nullptr, &m_Instance));
         VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 
         if (m_Instance) VtCoreTrace("Vulkan: Instance created successfully");
@@ -193,11 +193,11 @@ namespace Vortex
     {
         auto dldi
             = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
-        vk::DebugUtilsMessengerCreateInfoEXT createInfo
+        vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo
             = GetDebugMessengerCreateInfo();
 
         VkCall(m_Instance.createDebugUtilsMessengerEXT(
-            &createInfo, nullptr, &m_DebugMessenger, dldi));
+            &debugMessengerInfo, nullptr, &m_DebugMessenger, dldi));
         if (m_DebugMessenger)
             VtCoreTrace("Vulkan: Debug messenger created successfully");
     }
@@ -233,19 +233,20 @@ namespace Vortex
     vk::DebugUtilsMessengerCreateInfoEXT
     VulkanInstance::GetDebugMessengerCreateInfo()
     {
-        vk::DebugUtilsMessengerCreateInfoEXT createInfo{};
-        createInfo.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
-        createInfo.pNext = nullptr;
-        createInfo.flags = vk::DebugUtilsMessengerCreateFlagBitsEXT();
-        createInfo.messageSeverity
+        vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo{};
+        debugMessengerInfo.sType
+            = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
+        debugMessengerInfo.pNext = nullptr;
+        debugMessengerInfo.flags = vk::DebugUtilsMessengerCreateFlagBitsEXT();
+        debugMessengerInfo.messageSeverity
             = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
             | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
-        createInfo.messageType
+        debugMessengerInfo.messageType
             = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
             | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
             | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-        createInfo.pfnUserCallback = ErrorCallback;
-        return createInfo;
+        debugMessengerInfo.pfnUserCallback = ErrorCallback;
+        return debugMessengerInfo;
     }
 }; // namespace Vortex

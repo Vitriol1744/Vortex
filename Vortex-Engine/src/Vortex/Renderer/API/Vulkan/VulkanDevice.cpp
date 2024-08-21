@@ -69,8 +69,16 @@ namespace Vortex
 
         ret.m_PhysicalDevice = bestDevice;
         VtCoreAssertMsg(bestDevice, "Failed to find suitable physical device");
-        VtCoreTrace("Vulkan: Picked physical device, available memory: {}MB",
-                    ret.m_PhysicalDeviceVRAM / 1024 / 1024);
+
+        vk::PhysicalDeviceProperties deviceProperties{};
+        bestDevice.getProperties(&deviceProperties);
+
+        const char* deviceName = deviceProperties.deviceName.data();
+        f64 deviceMemorySize   = static_cast<f64>(ret.m_PhysicalDeviceVRAM)
+                             / 1024.0 / 1024.0 / 1024.0;
+
+        VtCoreInfo("Vulkan: Using '{}' GPU with {}GB of available memory",
+                   deviceName, deviceMemorySize);
         return ret;
     }
 
