@@ -216,15 +216,13 @@ namespace Vortex
 
         vk::PresentInfoKHR presentInfo{};
         presentInfo.sType              = vk::StructureType::ePresentInfoKHR;
-
+        presentInfo.pNext              = VK_NULL_HANDLE;
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores    = signalSemaphores;
-
-        vk::SwapchainKHR swapChains[]  = {m_SwapChain};
         presentInfo.swapchainCount     = 1;
-        presentInfo.pSwapchains        = swapChains;
-
+        presentInfo.pSwapchains        = &m_SwapChain;
         presentInfo.pImageIndices      = &m_CurrentImageIndex;
+        presentInfo.pResults           = VK_NULL_HANDLE;
 
         vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
@@ -257,8 +255,7 @@ namespace Vortex
             m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
             VK_NULL_HANDLE, &imageIndex);
 
-        if (result == vk::Result::eErrorOutOfDateKHR
-            || result == vk::Result::eSuboptimalKHR)
+        if (result == vk::Result::eErrorOutOfDateKHR)
         {
             OnResize();
             VkCall(device.acquireNextImageKHR(
@@ -266,7 +263,7 @@ namespace Vortex
                 m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
                 VK_NULL_HANDLE, &imageIndex));
         }
-        else VkCall(result);
+        else if (result != vk::Result::eSuboptimalKHR) VkCall(result);
 
         return imageIndex;
     }

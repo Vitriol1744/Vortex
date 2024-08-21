@@ -65,9 +65,6 @@ namespace Vortex
             for (auto layer : m_LayerStack) layer->OnRender();
 
             m_ImGuiLayer->Begin();
-            ImGui::Text("Frames: %lu", frames);
-            ImGui::Text("FpsTimer: %f", fpsTimer.ElapsedTime().Seconds());
-            ImGui::Text("%lu", m_FpsCounter);
             for (auto layer : m_LayerStack) layer->OnImGuiRender();
             m_ImGuiLayer->End();
 
@@ -76,12 +73,16 @@ namespace Vortex
 
             m_MainWindow->Present();
             EventSystem::PollEvents();
-            m_Running = m_MainWindow->IsOpen();
-
+            if (!m_MainWindow->IsOpen()) break;
         } while (m_Running);
 
         for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }
+    void Application::Restart()
+    {
+        m_ShouldRestart = true;
+        Close();
+    }
 }; // namespace Vortex

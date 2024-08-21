@@ -44,6 +44,10 @@ namespace Vortex
          * @brief Closes the application
          */
         void        Close();
+        /**
+         * @brief Restart the application
+         */
+        void        Restart();
 
         inline void PushOverlay(Ref<Layer> overlay)
         {
