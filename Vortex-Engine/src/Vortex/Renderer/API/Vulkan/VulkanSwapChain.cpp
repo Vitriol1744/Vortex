@@ -29,7 +29,6 @@ namespace Vortex
         if (vsync) presentMode = vk::PresentModeKHR::eFifo;
 
         m_ImageFormat  = surfaceFormat.format;
-
         m_Extent       = ChooseSwapExtent(capabilities);
 
         u32 imageCount = capabilities.minImageCount + 1;
@@ -37,28 +36,29 @@ namespace Vortex
             && imageCount > capabilities.maxImageCount)
             imageCount = capabilities.maxImageCount;
 
-        vk::SwapchainCreateInfoKHR createInfo{};
-        createInfo.sType           = vk::StructureType::eSwapchainCreateInfoKHR;
-        createInfo.flags           = vk::SwapchainCreateFlagBitsKHR();
-        createInfo.surface         = vk::SurfaceKHR(m_Surface);
-        createInfo.minImageCount   = imageCount;
-        createInfo.imageFormat     = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent     = m_Extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage       = vk::ImageUsageFlagBits::eColorAttachment;
-        createInfo.imageSharingMode = vk::SharingMode::eExclusive;
-        createInfo.queueFamilyIndexCount = 0;
-        createInfo.pQueueFamilyIndices   = VK_NULL_HANDLE;
-        createInfo.preTransform          = capabilities.currentTransform;
+        vk::SwapchainCreateInfoKHR swapChainInfo{};
+        swapChainInfo.sType   = vk::StructureType::eSwapchainCreateInfoKHR;
+        swapChainInfo.pNext   = VK_NULL_HANDLE;
+        swapChainInfo.flags   = vk::SwapchainCreateFlagBitsKHR();
+        swapChainInfo.surface = vk::SurfaceKHR(m_Surface);
+        swapChainInfo.minImageCount    = imageCount;
+        swapChainInfo.imageFormat      = surfaceFormat.format;
+        swapChainInfo.imageColorSpace  = surfaceFormat.colorSpace;
+        swapChainInfo.imageExtent      = m_Extent;
+        swapChainInfo.imageArrayLayers = 1;
+        swapChainInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
+        swapChainInfo.imageSharingMode      = vk::SharingMode::eExclusive;
+        swapChainInfo.queueFamilyIndexCount = 0;
+        swapChainInfo.pQueueFamilyIndices   = VK_NULL_HANDLE;
+        swapChainInfo.preTransform          = capabilities.currentTransform;
         if (capabilities.supportedTransforms
             & vk::SurfaceTransformFlagBitsKHR::eIdentity)
-            createInfo.preTransform
+            swapChainInfo.preTransform
                 = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-        createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-        createInfo.presentMode    = presentMode;
-        createInfo.clipped        = VK_TRUE;
-        createInfo.oldSwapchain   = oldSwapChain;
+        swapChainInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+        swapChainInfo.presentMode    = presentMode;
+        swapChainInfo.clipped        = VK_TRUE;
+        swapChainInfo.oldSwapchain   = oldSwapChain;
 
         auto indices
             = VulkanContext::GetPhysicalDevice().GetQueueFamilyIndices();
@@ -66,13 +66,14 @@ namespace Vortex
             = {indices.Graphics.value(), indices.Present.value()};
         if (indices.Graphics != indices.Present)
         {
-            createInfo.imageSharingMode      = vk::SharingMode::eConcurrent;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices   = queueFamilyIndices;
+            swapChainInfo.imageSharingMode      = vk::SharingMode::eConcurrent;
+            swapChainInfo.queueFamilyIndexCount = 2;
+            swapChainInfo.pQueueFamilyIndices   = queueFamilyIndices;
         }
 
         vk::Device device = VulkanContext::GetDevice();
-        VkCall(device.createSwapchainKHR(&createInfo, nullptr, &m_SwapChain));
+        VkCall(
+            device.createSwapchainKHR(&swapChainInfo, nullptr, &m_SwapChain));
 
         VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
         m_Frames.resize(imageCount);
@@ -276,23 +277,25 @@ namespace Vortex
 
         for (size_t i = 0; i < m_Frames.size(); i++)
         {
-            vk::ImageViewCreateInfo createInfo{};
-            createInfo.sType        = vk::StructureType::eImageViewCreateInfo;
-            createInfo.image        = m_Frames[i].Image;
-            createInfo.viewType     = vk::ImageViewType::e2D;
-            createInfo.format       = m_Surface.GetFormat().format;
-            createInfo.components.r = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.g = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.b = vk::ComponentSwizzle::eIdentity;
-            createInfo.components.a = vk::ComponentSwizzle::eIdentity;
-            createInfo.subresourceRange.aspectMask
+            vk::ImageViewCreateInfo viewInfo{};
+            viewInfo.sType        = vk::StructureType::eImageViewCreateInfo;
+            viewInfo.pNext        = VK_NULL_HANDLE;
+            viewInfo.flags        = vk::ImageViewCreateFlags();
+            viewInfo.image        = m_Frames[i].Image;
+            viewInfo.viewType     = vk::ImageViewType::e2D;
+            viewInfo.format       = m_Surface.GetFormat().format;
+            viewInfo.components.r = vk::ComponentSwizzle::eIdentity;
+            viewInfo.components.g = vk::ComponentSwizzle::eIdentity;
+            viewInfo.components.b = vk::ComponentSwizzle::eIdentity;
+            viewInfo.components.a = vk::ComponentSwizzle::eIdentity;
+            viewInfo.subresourceRange.aspectMask
                 = vk::ImageAspectFlagBits::eColor;
-            createInfo.subresourceRange.baseMipLevel   = 0;
-            createInfo.subresourceRange.levelCount     = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount     = 1;
+            viewInfo.subresourceRange.baseMipLevel   = 0;
+            viewInfo.subresourceRange.levelCount     = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount     = 1;
 
-            VkCall(device.createImageView(&createInfo, VK_NULL_HANDLE,
+            VkCall(device.createImageView(&viewInfo, VK_NULL_HANDLE,
                                           &m_Frames[i].ImageView));
         }
     }
