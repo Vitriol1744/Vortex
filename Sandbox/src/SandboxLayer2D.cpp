@@ -145,6 +145,7 @@ void SandboxLayer2D::OnImGuiRender()
     bool              showWindow    = true;
     ImGui::ShowDemoWindow(&showWindow);
     ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
+    ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
     if (ImGui::Button("Close")) Application::Get()->Close();
     if (ImGui::Button("Restart")) Application::Get()->Restart();
 

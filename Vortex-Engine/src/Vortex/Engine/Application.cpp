@@ -47,6 +47,7 @@ namespace Vortex
     {
         m_Running = true;
         Timer fpsTimer;
+        Timer deltaTimer;
         u64   frames = 0;
 
         do {
@@ -74,6 +75,7 @@ namespace Vortex
             m_MainWindow->Present();
             EventSystem::PollEvents();
             if (!m_MainWindow->IsOpen()) break;
+            m_DeltaTime = deltaTimer.Restart();
         } while (m_Running);
 
         for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
