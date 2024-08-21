@@ -13,6 +13,11 @@
 #include "Vortex/Core/Types.hpp"
 
 #define VT_UNUSED(x) ((void)(x))
+#define VT_TODO()                                                              \
+    {                                                                          \
+        std::source_location source = std::source_location::current();         \
+        VtCoreWarn("{} is not implemented", source.function_name());           \
+    }
 
 namespace Vortex
 {
