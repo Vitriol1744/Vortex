@@ -137,9 +137,6 @@ void SandboxLayer2D::OnRender()
 }
 void SandboxLayer2D::OnImGuiRender()
 {
-
-    Vec2              cursorPos     = {100, 100};
-
     VulkanSwapChain&  swapChain     = s_Context->GetSwapChain();
 
     vk::Extent2D      extent        = swapChain.GetExtent();
@@ -147,37 +144,34 @@ void SandboxLayer2D::OnImGuiRender()
 
     bool              showWindow    = true;
     ImGui::ShowDemoWindow(&showWindow);
-    ImGui::Text("%f", s_Timer.ElapsedTime().Seconds());
+    ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
+    if (ImGui::Button("Close")) Application::Get()->Close();
+    if (ImGui::Button("Restart")) Application::Get()->Restart();
 
-    auto currentFrame = s_Context->GetSwapChain().GetCurrentFrameIndex();
-    auto updateUniformBuffers = [cursorPos, currentFrame]()
-    {
-        static auto startTime   = std::chrono::high_resolution_clock::now();
+    auto        currentFrame = swapChain.GetCurrentFrameIndex();
+    static auto startTime    = std::chrono::high_resolution_clock::now();
 
-        auto        currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(
-                         currentTime - startTime)
-                         .count();
-        UniformBufferObject ubo{};
-        ubo.lightPos = s_Window->GetCursorPosition();
-        ubo.Model    = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
-                                   glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.View     = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
-                                   glm::vec3(0.0f, 0.0f, 0.0f),
-                                   glm::vec3(0.0f, 0.0f, 1.0f));
+    auto        currentTime  = std::chrono::high_resolution_clock::now();
+    f32 time = std::chrono::duration<float, std::chrono::seconds::period>(
+                   currentTime - startTime)
+                   .count();
+    UniformBufferObject ubo{};
+    ubo.lightPos = s_Window->GetCursorPosition();
+    ubo.Model    = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
+                               glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.View
+        = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                      glm::vec3(0.0f, 0.0f, 1.0f));
 
-        auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
-        ubo.Projection       = glm::perspective(
-            glm::radians(45.0f),
-            swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+    auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
+    ubo.Projection       = glm::perspective(
+        glm::radians(45.0f),
+        swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 
-        ubo.Projection[1][1] *= -1;
+    ubo.Projection[1][1] *= -1;
 
-        void* dest = VulkanAllocator::MapMemory(
-            s_UniformBuffer->m_Allocations[currentFrame]);
-        std::memcpy(dest, &ubo, sizeof(ubo));
-        VulkanAllocator::UnmapMemory(
-            s_UniformBuffer->m_Allocations[currentFrame]);
-    };
-    updateUniformBuffers();
+    void* dest = VulkanAllocator::MapMemory(
+        s_UniformBuffer->m_Allocations[currentFrame]);
+    std::memcpy(dest, &ubo, sizeof(ubo));
+    VulkanAllocator::UnmapMemory(s_UniformBuffer->m_Allocations[currentFrame]);
 }
