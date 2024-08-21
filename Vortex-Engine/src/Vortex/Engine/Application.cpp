@@ -8,6 +8,7 @@
 
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Events/EventSystem.hpp"
+#include "Vortex/Core/Timer.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 
@@ -45,7 +46,17 @@ namespace Vortex
     bool Application::Run()
     {
         m_Running = true;
+        Timer fpsTimer;
+        u64   frames = 0;
+
         do {
+            if (fpsTimer.ElapsedTime().Seconds() > 1.0)
+            {
+                m_FpsCounter = frames;
+                frames       = 0;
+                fpsTimer.Restart();
+            }
+
             Window::PollEvents();
             for (auto layer : m_LayerStack) layer->OnUpdate();
 
@@ -54,14 +65,19 @@ namespace Vortex
             for (auto layer : m_LayerStack) layer->OnRender();
 
             m_ImGuiLayer->Begin();
+            ImGui::Text("Frames: %lu", frames);
+            ImGui::Text("FpsTimer: %f", fpsTimer.ElapsedTime().Seconds());
+            ImGui::Text("%lu", m_FpsCounter);
             for (auto layer : m_LayerStack) layer->OnImGuiRender();
             m_ImGuiLayer->End();
 
             Renderer::EndFrame();
+            ++frames;
 
             m_MainWindow->Present();
             EventSystem::PollEvents();
             m_Running = m_MainWindow->IsOpen();
+
         } while (m_Running);
 
         for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();

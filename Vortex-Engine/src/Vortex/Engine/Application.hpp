@@ -66,6 +66,7 @@ namespace Vortex
         inline std::string_view GetName() const { return m_Name; }
         inline const Version&   GetVersion() const { return m_Version; }
         inline Ref<Window>      GetWindow() { return m_MainWindow; }
+        inline u64              GetFPSCounter() { return m_FpsCounter; }
 
         static Application*     Get() { return s_Instance; }
 
@@ -75,6 +76,8 @@ namespace Vortex
         std::string           m_Name;
         Version               m_Version    = {0, 1, 0};
         Ref<Window>           m_MainWindow = nullptr;
+        u64                   m_FpsCounter = 0;
+
         LayerStack            m_LayerStack;
         Ref<VulkanImGuiLayer> m_ImGuiLayer = nullptr;
 
