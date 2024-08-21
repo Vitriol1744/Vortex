@@ -25,6 +25,7 @@ namespace Vortex
             (void)data;
             (void)size;
             (void)offset;
+            VT_TODO();
         }
 
         inline virtual usize GetSize() const override { return m_Size; }

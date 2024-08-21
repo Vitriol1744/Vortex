@@ -13,12 +13,13 @@ namespace Vortex
     class RendererContext
     {
       public:
-        RendererContext()                                           = default;
-        virtual ~RendererContext()                                  = default;
+        RendererContext()                      = default;
+        virtual ~RendererContext()             = default;
 
-        virtual void                Present()                       = 0;
-        virtual void                OnResize(u32 width, u32 height) = 0;
+        virtual void                Present()  = 0;
+        virtual void                OnResize() = 0;
 
-        static Ref<RendererContext> Create(class Window* window);
+        static Ref<RendererContext> Create(class Window* window,
+                                           bool          vsync = false);
     };
 }; // namespace Vortex

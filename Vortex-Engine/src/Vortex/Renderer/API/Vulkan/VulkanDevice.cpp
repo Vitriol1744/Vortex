@@ -92,6 +92,25 @@ namespace Vortex
         VtCoreAssert(false);
         return 0;
     }
+    vk::Format VulkanPhysicalDevice::FindDepthFormat() const
+    {
+        std::vector<vk::Format> candidates
+            = {vk::Format::eD32SfloatS8Uint, vk::Format::eD32Sfloat,
+               vk::Format::eD24UnormS8Uint, vk::Format::eD16UnormS8Uint,
+               vk::Format::eD16Unorm};
+
+        for (auto format : candidates)
+        {
+            vk::FormatProperties formatProperties{};
+            m_PhysicalDevice.getFormatProperties(format, &formatProperties);
+
+            if (formatProperties.optimalTilingFeatures
+                & vk::FormatFeatureFlagBits::eDepthStencilAttachment)
+                return format;
+        }
+
+        return vk::Format::eUndefined;
+    }
 
     void VulkanPhysicalDevice::FindQueueFamilies()
     {

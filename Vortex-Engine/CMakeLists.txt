@@ -52,6 +52,12 @@ set(SPIRV_CROSS_CLI
 set(SPIRV_CROSS_CLI
     OFF
     CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS
+    OFF
+    CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS
+    OFF
+    CACHE BOOL "" FORCE)
 
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/magic_enum)
@@ -60,6 +66,7 @@ add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/VulkanMemoryAllocator)
 add_subdirectory(vendor/shaderc)
 add_subdirectory(vendor/SPIRV-Cross)
+add_subdirectory(vendor/assimp)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DVT_DEBUG)
@@ -70,7 +77,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 endif()
 
 add_definitions(-DVT_ENABLE_ASSERTIONS)
-add_definitions(-DGLM_FORCE_RADIANS)
+add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
 add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
 set(INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex"
@@ -88,7 +95,8 @@ set(PUBLIC_LIBS
     spirv-cross-reflect
     spirv-cross-hlsl
     spirv-cross-glsl
-    spirv-cross-cpp)
+    spirv-cross-cpp
+    assimp)
 
 if(UNIX)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} X11 X11-xcb wayland-client xkbcommon)
@@ -132,13 +140,16 @@ set(SOURCES
 if(UNIX)
   set(SOURCES
       ${SOURCES}
+      src/Vortex/Core/Posix/PosixTime.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandWindow.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandMonitor.cpp
       src/Vortex/Renderer/Window/X11/X11Window.cpp
       src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
 elseif(WIN32)
-  set(SOURCES ${SOURCES} src/Vortex/Renderer/Window/Win32/Win32Window.cpp
-              src/Vortex/Renderer/Window/Win32/Win32Monitor.cpp)
+  set(SOURCES
+      ${SOURCES} src/Vortex/Core/Win32/Win32Time.cpp
+      src/Vortex/Renderer/Window/Win32/Win32Window.cpp
+      src/Vortex/Renderer/Window/Win32/Win32Monitor.cpp)
 endif()
 
 # ImGui

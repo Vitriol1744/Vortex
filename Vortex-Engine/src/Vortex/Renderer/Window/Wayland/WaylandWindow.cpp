@@ -13,7 +13,19 @@
 
 namespace Vortex
 {
-    wl_pointer_listener  WaylandWindow::s_PointerListener  = {};
+    wl_pointer_listener WaylandWindow::s_PointerListener = {
+        .enter                   = PointerHandleEnter,
+        .leave                   = PointerHandleLeave,
+        .motion                  = PointerHandleMotion,
+        .button                  = PointerHandleButton,
+        .axis                    = PointerHandleAxis,
+        .frame                   = PointerHandleFrame,
+        .axis_source             = PointerHandleAxisSource,
+        .axis_stop               = PointerHandleAxisStop,
+        .axis_discrete           = PointerHandleAxisDiscrete,
+        .axis_value120           = PointerHandleAxisValue120,
+        .axis_relative_direction = PointerHandleAxisRelativeDirection,
+    };
     wl_keyboard_listener WaylandWindow::s_KeyboardListener = {
         .keymap      = KeyboardHandleKeymap,
         .enter       = KeyboardHandleEnter,
@@ -395,7 +407,8 @@ namespace Vortex
         SetupEvents();
 
         if (!specification.NoAPI)
-            m_RendererContext = RendererContext::Create(this);
+            m_RendererContext
+                = RendererContext::Create(this, specification.VSync);
     }
     WaylandWindow::~WaylandWindow()
     {
@@ -614,8 +627,7 @@ namespace Vortex
             auto window = VtGetWindow(handle);
 
             if (window->m_RendererContext)
-                window->m_RendererContext->OnResize(static_cast<u32>(width),
-                                                    static_cast<u32>(height));
+                window->m_RendererContext->OnResize();
 
             FramebufferResizedEvent(window, width, height);
         };
@@ -667,11 +679,6 @@ namespace Vortex
                     = false;
             }
         };
-        auto scrollCallback = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
-        {
-            auto window = VtGetWindow(handle);
-            MouseScrolledEvent(window, xoffset, yoffset);
-        };
         auto charModsCallback = [](GLFWwindow* handle, u32 codepoint, i32 mods)
         {
             auto window = VtGetWindow(handle);
@@ -705,7 +712,6 @@ namespace Vortex
         glfwSetKeyCallback(m_Window, keyCallback);
         glfwSetCharCallback(m_Window, charCallback);
         glfwSetMouseButtonCallback(m_Window, mouseButtonCallback);
-        glfwSetScrollCallback(m_Window, scrollCallback);
         glfwSetCharModsCallback(m_Window, charModsCallback);
         glfwSetDropCallback(m_Window, dropCallback);
         glfwSetJoystickCallback(joystickCallback);
@@ -830,6 +836,16 @@ namespace Vortex
         VT_UNUSED(time);
         VT_UNUSED(axis);
         VT_UNUSED(value);
+
+        auto window = s_FocusedWindow;
+        if (!window) return;
+
+        f64 delta = -wl_fixed_to_double(value) / 10.0;
+
+        if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
+            WindowEvents::MouseScrolledEvent(window, delta, 0.0);
+        else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
+            WindowEvents::MouseScrolledEvent(window, 0.0, delta);
     }
     void WaylandWindow::PointerHandleFrame(void* userData, wl_pointer* pointer)
     {
@@ -862,6 +878,25 @@ namespace Vortex
         VT_UNUSED(pointer);
         VT_UNUSED(axis);
         VT_UNUSED(discrete);
+    }
+    void WaylandWindow::PointerHandleAxisValue120(void*       userData,
+                                                  wl_pointer* pointer, u32 axis,
+                                                  i32 value120)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axis);
+        VT_UNUSED(value120);
+    }
+    void WaylandWindow::PointerHandleAxisRelativeDirection(void*       userData,
+                                                           wl_pointer* pointer,
+                                                           u32         axis,
+                                                           u32 direction)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(pointer);
+        VT_UNUSED(axis);
+        VT_UNUSED(direction);
     }
 
     void WaylandWindow::KeyboardHandleKeymap(void*        userData,

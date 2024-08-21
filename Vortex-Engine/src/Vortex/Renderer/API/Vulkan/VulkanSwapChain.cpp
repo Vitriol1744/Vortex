@@ -17,22 +17,20 @@ namespace Vortex
         m_Surface.Create(windowHandle, VulkanContext::GetPhysicalDevice());
     }
 
-    void VulkanSwapChain::Create(u32& width, u32& height, bool vsync)
+    void VulkanSwapChain::Create(bool vsync)
     {
         VtCoreTrace("Vulkan: Creating swapchain...");
-        // TODO(v1tr10l7): Implement VSync
-        (void)vsync;
         auto                       oldSwapChain  = m_SwapChain;
 
         vk::SurfaceFormatKHR       surfaceFormat = m_Surface.GetFormat();
         vk::SurfaceCapabilitiesKHR capabilities  = m_Surface.GetCapabilities();
         vk::PresentModeKHR         presentMode
             = ChooseSwapPresentMode(m_Surface.GetPresentModes());
+        if (vsync) presentMode = vk::PresentModeKHR::eFifo;
+
         m_ImageFormat  = surfaceFormat.format;
 
         m_Extent       = ChooseSwapExtent(capabilities);
-        width          = m_Extent.width;
-        height         = m_Extent.height;
 
         u32 imageCount = capabilities.minImageCount + 1;
         if (capabilities.maxImageCount > 0
@@ -141,7 +139,7 @@ namespace Vortex
 
         if (result == vk::Result::eErrorOutOfDateKHR)
         {
-            OnResize(m_Extent.width, m_Extent.height);
+            OnResize();
             result = device.acquireNextImageKHR(
                 m_SwapChain, UINT64_MAX,
                 GetCurrentFrame().ImageAvailableSemaphore, VK_NULL_HANDLE,
@@ -230,19 +228,16 @@ namespace Vortex
         vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
 
-        u32        width, height;
-        width  = 0;
-        height = 0;
         if (result == vk::Result::eErrorOutOfDateKHR
             || result == vk::Result::eSuboptimalKHR)
-            OnResize(width, height);
+            OnResize();
         else VkCall(result);
     }
-    void VulkanSwapChain::OnResize(u32 width, u32 height)
+    void VulkanSwapChain::OnResize()
     {
         vk::Device device = VulkanContext::GetDevice();
         device.waitIdle();
-        Create(width, height);
+        Create(false);
 
         device.waitIdle();
     }
@@ -264,7 +259,7 @@ namespace Vortex
         if (result == vk::Result::eErrorOutOfDateKHR
             || result == vk::Result::eSuboptimalKHR)
         {
-            OnResize(m_Extent.width, m_Extent.height);
+            OnResize();
             VkCall(device.acquireNextImageKHR(
                 m_SwapChain, UINT64_MAX,
                 m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
@@ -444,6 +439,46 @@ namespace Vortex
             VkCall(device.createFramebuffer(&framebufferInfo, VK_NULL_HANDLE,
                                             &frame.Framebuffer));
         }
+    }
+
+    void VulkanSwapChain::CreateDepthBuffer()
+    {
+        vk::Format depthFormat
+            = VulkanContext::GetPhysicalDevice().FindDepthFormat();
+
+        vk::ImageCreateInfo imageInfo{};
+        imageInfo.sType         = vk::StructureType::eImageCreateInfo;
+        imageInfo.imageType     = vk::ImageType::e2D;
+        imageInfo.extent.width  = m_Extent.width;
+        imageInfo.extent.height = m_Extent.height;
+        imageInfo.extent.depth  = 1;
+        imageInfo.mipLevels     = 1;
+        imageInfo.arrayLayers   = 1;
+        imageInfo.format        = depthFormat;
+        imageInfo.tiling        = vk::ImageTiling::eOptimal;
+        imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+        imageInfo.usage       = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+        imageInfo.samples     = vk::SampleCountFlagBits::e1;
+        imageInfo.sharingMode = vk::SharingMode::eExclusive;
+
+        vk::DeviceSize size;
+        m_DepthAllocation = VulkanAllocator::AllocateImage(
+            imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_DepthImage, size);
+
+        vk::ImageViewCreateInfo viewInfo{};
+        viewInfo.sType    = vk::StructureType::eImageViewCreateInfo;
+        viewInfo.image    = m_DepthImage;
+        viewInfo.viewType = vk::ImageViewType::e2D;
+        viewInfo.format   = depthFormat;
+        viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+        viewInfo.subresourceRange.baseMipLevel   = 0;
+        viewInfo.subresourceRange.levelCount     = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount     = 1;
+
+        vk::Device device                        = VulkanContext::GetDevice();
+        VkCall(device.createImageView(&viewInfo, VK_NULL_HANDLE,
+                                      &m_DepthImageView));
     }
 
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(

@@ -11,8 +11,8 @@
 
 namespace Vortex
 {
-    Ref<RendererContext> RendererContext::Create(Window* window)
+    Ref<RendererContext> RendererContext::Create(Window* window, bool vsync)
     {
-        return CreateRef<VulkanContext>(window);
+        return CreateRef<VulkanContext>(window, vsync);
     }
 }; // namespace Vortex

@@ -372,7 +372,8 @@ namespace Vortex
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
-            m_RendererContext = RendererContext::Create(this);
+            m_RendererContext
+                = RendererContext::Create(this, specification.VSync);
 
         ShowWindow(m_WindowHandle, SW_SHOW);
         UpdateWindow(m_WindowHandle);
@@ -749,8 +750,7 @@ namespace Vortex
         {
             auto window = VtGetWindow(handle);
             if (window->m_RendererContext)
-                window->m_RendererContext->OnResize(static_cast<u32>(width),
-                                                    static_cast<u32>(height));
+                window->m_RendererContext->OnResize();
 
             FramebufferResizedEvent(window, width, height);
         };

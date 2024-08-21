@@ -28,16 +28,16 @@ namespace Vortex
 
         VulkanSwapChain() = default;
 
-        void        CreateSurface(Window* windowHandle);
-        void        Create(u32& width, u32& height, bool vsync = false);
+        void                           CreateSurface(Window* windowHandle);
+        void                           Create(bool vsync = false);
 
-        void        Destroy();
-        inline void DestroySurface() { m_Surface.Destroy(); }
+        void                           Destroy();
+        inline void                    DestroySurface() { m_Surface.Destroy(); }
 
-        void        BeginFrame();
-        void        EndFrame();
-        void        Present();
-        void        OnResize(u32 width, u32 height);
+        void                           BeginFrame();
+        void                           EndFrame();
+        void                           Present();
+        void                           OnResize();
 
         inline const VulkanSurface&    GetSurface() const { return m_Surface; }
         inline const vk::CommandBuffer GetCurrentCommandBuffer() const
@@ -68,7 +68,10 @@ namespace Vortex
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
         vk::Extent2D                        m_Extent;
         vk::Format                          m_ImageFormat;
-        vk::RenderPass                      m_RenderPass = VK_NULL_HANDLE;
+        vk::RenderPass                      m_RenderPass      = VK_NULL_HANDLE;
+        vk::Image                           m_DepthImage      = VK_NULL_HANDLE;
+        VmaAllocation                       m_DepthAllocation = VK_NULL_HANDLE;
+        vk::ImageView                       m_DepthImageView  = VK_NULL_HANDLE;
 
         // TODO(v1tr10l7): remove public
       public:
@@ -79,6 +82,7 @@ namespace Vortex
         void               CreateSyncObjects();
         void               CreateRenderPass();
         void               CreateFramebuffers();
+        void               CreateDepthBuffer();
 
         vk::PresentModeKHR ChooseSwapPresentMode(
             const std::vector<vk::PresentModeKHR>& availablePresentModes)

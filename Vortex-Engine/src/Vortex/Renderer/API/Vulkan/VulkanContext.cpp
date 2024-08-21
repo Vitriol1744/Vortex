@@ -18,7 +18,7 @@ namespace Vortex
     VulkanPhysicalDevice VulkanContext::s_PhysicalDevice = {};
     VulkanDevice         VulkanContext::s_Device         = {};
 
-    VulkanContext::VulkanContext(Window* window)
+    VulkanContext::VulkanContext(Window* window, bool vsync)
     {
         VtCoreTrace("Vulkan: Creating context for the window");
         if (s_ContextCount == 0)
@@ -31,8 +31,7 @@ namespace Vortex
         }
 
         m_SwapChain.CreateSurface(window);
-        u32 width, height;
-        m_SwapChain.Create(width, height, false);
+        m_SwapChain.Create(vsync);
         ++s_ContextCount;
     }
 
@@ -53,8 +52,5 @@ namespace Vortex
     }
 
     void VulkanContext::Present() { m_SwapChain.Present(); }
-    void VulkanContext::OnResize(u32 width, u32 height)
-    {
-        m_SwapChain.OnResize(width, height);
-    }
+    void VulkanContext::OnResize() { m_SwapChain.OnResize(); }
 }; // namespace Vortex

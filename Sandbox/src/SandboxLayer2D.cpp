@@ -11,6 +11,7 @@
 
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
+#include "Vortex/Core/Timer.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
@@ -32,7 +33,7 @@
 using namespace Vortex;
 struct Vertex
 {
-    Vec2 Pos;
+    Vec3 Pos;
     Vec3 Color;
     Vec2 TexCoords;
 };
@@ -41,14 +42,28 @@ const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
                                         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
                                         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
-#else
+#elif 0
 const std::vector<Vertex> s_Vertices
     = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
+#else
+
+const std::vector<Vertex> s_Vertices
+    = {{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+       {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+       {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+       {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+       {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+       {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+       {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+       {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
 #endif
-const std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
+
+// const std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
+const std::vector<u32> s_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
 struct UniformBufferObject
 {
@@ -68,6 +83,7 @@ static Ref<VulkanUniformBuffer>       s_UniformBuffer    = nullptr;
 static std::vector<vk::DescriptorSet> s_DescriptorSets;
 static Scope<Pixel[]>                 pixels      = nullptr;
 static Ref<VulkanTexture2D>           s_Texture2D = nullptr;
+static Timer                          s_Timer{};
 
 using namespace Vortex;
 
@@ -85,7 +101,7 @@ void SandboxLayer2D::OnAttach()
     s_Window->ShowCursor();
 
     std::initializer_list<VertexBufferElement> elements
-        = {ShaderDataType::eFloat2, ShaderDataType::eFloat3,
+        = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
            ShaderDataType::eFloat2};
     VertexBufferLayout            layout(elements);
 
@@ -98,8 +114,8 @@ void SandboxLayer2D::OnAttach()
         GraphicsPipeline::Create(specification));
     s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
-    s_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(),
-                                                 indices.size() * sizeof(u32));
+    s_IndexBuffer = CreateRef<VulkanIndexBuffer>(
+        (void*)s_Indices.data(), s_Indices.size() * sizeof(u32));
     s_UniformBuffer
         = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
 
@@ -131,6 +147,7 @@ void SandboxLayer2D::OnImGuiRender()
 
     bool              showWindow    = true;
     ImGui::ShowDemoWindow(&showWindow);
+    ImGui::Text("%f", s_Timer.ElapsedTime().Seconds());
 
     auto currentFrame = s_Context->GetSwapChain().GetCurrentFrameIndex();
     auto updateUniformBuffers = [cursorPos, currentFrame]()

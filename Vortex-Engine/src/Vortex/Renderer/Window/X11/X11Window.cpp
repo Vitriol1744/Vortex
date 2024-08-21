@@ -252,7 +252,8 @@ namespace Vortex
         SetupEvents();
 
         if (!specification.NoAPI)
-            m_RendererContext = RendererContext::Create(this);
+            m_RendererContext
+                = RendererContext::Create(this, specification.VSync);
 
         if (s_WindowsCount == 1)
         {
@@ -509,8 +510,7 @@ namespace Vortex
             auto window = VtGetWindow(handle);
 
             if (window->m_RendererContext)
-                window->m_RendererContext->OnResize(static_cast<u32>(width),
-                                                    static_cast<u32>(height));
+                window->m_RendererContext->OnResize();
 
             FramebufferResizedEvent(window, width, height);
         };

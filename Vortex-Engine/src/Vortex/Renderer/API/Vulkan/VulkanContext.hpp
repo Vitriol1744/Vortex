@@ -16,11 +16,11 @@ namespace Vortex
     class VulkanContext : public RendererContext
     {
       public:
-        VulkanContext(class Window* window);
+        VulkanContext(class Window* window, bool vsync);
         virtual ~VulkanContext();
 
         virtual void                 Present() override;
-        virtual void                 OnResize(u32 width, u32 height) override;
+        virtual void                 OnResize() override;
 
         VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
 

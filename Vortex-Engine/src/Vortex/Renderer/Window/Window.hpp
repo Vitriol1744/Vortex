@@ -56,6 +56,7 @@ namespace Vortex
         bool               CenterCursor = false;
         bool               FocusOnShow  = false;
         bool               NoAPI        = false;
+        bool               VSync        = false;
     };
 
     class VT_API Window : public NonCopyable<Window>
