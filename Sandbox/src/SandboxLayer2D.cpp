@@ -37,18 +37,6 @@ struct Vertex
     Vec3 Color;
     Vec2 TexCoords;
 };
-#if 0
-const std::vector<Vertex> s_Vertices = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-                                        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-                                        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-                                        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
-#elif 0
-const std::vector<Vertex> s_Vertices
-    = {{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-       {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-       {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-       {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}};
-#else
 
 const std::vector<Vertex> s_Vertices
     = {{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -60,7 +48,6 @@ const std::vector<Vertex> s_Vertices
        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
-#endif
 
 // const std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
 const std::vector<u32> s_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
@@ -83,7 +70,8 @@ static Ref<VulkanUniformBuffer>       s_UniformBuffer    = nullptr;
 static std::vector<vk::DescriptorSet> s_DescriptorSets;
 static Scope<Pixel[]>                 pixels      = nullptr;
 static Ref<VulkanTexture2D>           s_Texture2D = nullptr;
-static Timer                          s_Timer{};
+static bool                           s_VSync     = false;
+Vec2                                  lightPos;
 
 using namespace Vortex;
 
@@ -127,6 +115,10 @@ void SandboxLayer2D::OnAttach()
     s_DescriptorSets = s_Shader->GetDescriptorSets()[0].Sets;
     s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
     s_Shader->SetUniform("texSampler", s_Texture2D);
+
+    Vec2 mousePos = s_Window->GetCursorPosition();
+    lightPos.x    = ((float)(mousePos.x * 16.0f / s_Window->GetWidth()));
+    lightPos.y    = (float)(9.0f - mousePos.y * 9.0f / s_Window->GetHeight());
 }
 void SandboxLayer2D::OnDetach() {}
 
@@ -141,13 +133,24 @@ void SandboxLayer2D::OnImGuiRender()
 
     vk::Extent2D      extent        = swapChain.GetExtent();
     vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+    Vec2              mousePos      = s_Window->GetCursorPosition();
+    mousePos.x -= s_Window->GetWidth() / 2.f;
+    mousePos.y -= s_Window->GetHeight() / 2.f;
+    mousePos.x /= s_Window->GetWidth();
+    mousePos.y /= s_Window->GetHeight();
+    mousePos.x *= -1;
 
-    bool              showWindow    = true;
+    bool showWindow = true;
     ImGui::ShowDemoWindow(&showWindow);
     ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
+    ImGui::Text("MousePos: { x: %f, y: %f }", mousePos.x, mousePos.y);
+
+    ImGui::SliderFloat2("lightPos", (float*)&lightPos, -10, 10);
     if (ImGui::Button("Close")) Application::Get()->Close();
     if (ImGui::Button("Restart")) Application::Get()->Restart();
+    ImGui::Checkbox("vsync", &s_VSync);
+    swapChain.SetVSync(s_VSync);
 
     auto        currentFrame = swapChain.GetCurrentFrameIndex();
     static auto startTime    = std::chrono::high_resolution_clock::now();
@@ -156,8 +159,9 @@ void SandboxLayer2D::OnImGuiRender()
     f32 time = std::chrono::duration<float, std::chrono::seconds::period>(
                    currentTime - startTime)
                    .count();
+
     UniformBufferObject ubo{};
-    ubo.lightPos = s_Window->GetCursorPosition();
+    ubo.lightPos = mousePos;
     ubo.Model    = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
                                glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.View
