@@ -34,6 +34,8 @@ namespace Vortex
         void                           Destroy();
         inline void                    DestroySurface() { m_Surface.Destroy(); }
 
+        inline void                    SetVSync(bool vsync) { m_VSync = vsync; }
+
         void                           BeginFrame();
         void                           EndFrame();
         void                           Present();
@@ -63,6 +65,7 @@ namespace Vortex
         u32                                 m_CurrentFrameIndex  = 0;
         u32                                 m_CurrentImageIndex  = 0;
         inline static constexpr const u32   MAX_FRAMES_IN_FLIGHT = 2;
+        bool                                m_VSync              = false;
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;

@@ -45,16 +45,16 @@ namespace Vortex
         switch (severity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                VtCoreTrace("{}", data->pMessage);
+                VtCoreTrace("Vulkan: {}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                VtCoreInfo("{}", data->pMessage);
+                VtCoreInfo("Vulkan: {}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                VtCoreWarn("{}", data->pMessage);
+                VtCoreWarn("Vulkan: {}", data->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                VtCoreError("{}", data->pMessage);
+                VtCoreError("Vulkan: {}", data->pMessage);
                 break;
 
             default: break;

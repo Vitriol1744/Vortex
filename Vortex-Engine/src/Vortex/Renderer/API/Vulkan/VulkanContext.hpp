@@ -19,8 +19,13 @@ namespace Vortex
         VulkanContext(class Window* window, bool vsync);
         virtual ~VulkanContext();
 
-        virtual void                 Present() override;
-        virtual void                 OnResize() override;
+        virtual void Present() override;
+        virtual void OnResize() override;
+
+        virtual void SetVSync(bool vsync) override
+        {
+            m_SwapChain.SetVSync(vsync);
+        }
 
         VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
 

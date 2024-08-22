@@ -55,10 +55,26 @@ namespace Vortex
             & vk::SurfaceTransformFlagBitsKHR::eIdentity)
             swapChainInfo.preTransform
                 = vk::SurfaceTransformFlagBitsKHR::eIdentity;
-        swapChainInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-        swapChainInfo.presentMode    = presentMode;
-        swapChainInfo.clipped        = VK_TRUE;
-        swapChainInfo.oldSwapchain   = oldSwapChain;
+
+        std::array<vk::CompositeAlphaFlagBitsKHR, 4> compositeAlphaFlags = {
+            vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            vk::CompositeAlphaFlagBitsKHR::ePreMultiplied,
+            vk::CompositeAlphaFlagBitsKHR::ePostMultiplied,
+            vk::CompositeAlphaFlagBitsKHR::eInherit,
+        };
+
+        // Choose composite alpha
+        for (auto compositeAlpha : compositeAlphaFlags)
+        {
+            if (capabilities.supportedCompositeAlpha & compositeAlpha)
+            {
+                swapChainInfo.compositeAlpha = compositeAlpha;
+                break;
+            }
+        }
+        swapChainInfo.presentMode  = presentMode;
+        swapChainInfo.clipped      = VK_TRUE;
+        swapChainInfo.oldSwapchain = oldSwapChain;
 
         auto indices
             = VulkanContext::GetPhysicalDevice().GetQueueFamilyIndices();
@@ -154,7 +170,9 @@ namespace Vortex
 
         VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
 
-        GetCurrentFrame().CommandBuffer.reset(vk::CommandBufferResetFlags());
+        device.resetCommandPool(GetCurrentFrame().CommandPool,
+                                vk::CommandPoolResetFlags());
+        // GetCurrentFrame().CommandBuffer.reset(vk::CommandBufferResetFlags());
 
         vk::CommandBufferBeginInfo beginInfo{};
         beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
@@ -236,7 +254,7 @@ namespace Vortex
     {
         vk::Device device = VulkanContext::GetDevice();
         device.waitIdle();
-        Create(false);
+        Create(m_VSync);
 
         device.waitIdle();
     }
@@ -304,8 +322,7 @@ namespace Vortex
         commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
         commandPoolInfo.pNext = VK_NULL_HANDLE;
         // TODO(v1tr10l7): should be transient:
-        commandPoolInfo.flags
-            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+        commandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
         commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
                                                .GetQueueFamilyIndices()
                                                .Graphics.value();
@@ -484,13 +501,12 @@ namespace Vortex
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(
         const vk::SurfaceCapabilitiesKHR& capabilities)
     {
-        if (capabilities.currentExtent.width
-            != std::numeric_limits<uint32_t>::max())
+        if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
             return capabilities.currentExtent;
         auto         size = m_Surface.GetWindow()->GetFramebufferSize();
 
         vk::Extent2D actualExtent
-            = {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
+            = {static_cast<u32>(size.x), static_cast<u32>(size.y)};
 
         actualExtent.width
             = std::clamp(actualExtent.width, capabilities.minImageExtent.width,

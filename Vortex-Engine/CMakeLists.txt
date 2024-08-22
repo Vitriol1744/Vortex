@@ -109,6 +109,7 @@ set(SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Renderer/Camera.cpp
     src/Vortex/Renderer/Image.cpp
     src/Vortex/Renderer/Renderer.cpp
     src/Vortex/Renderer/API/IndexBuffer.cpp
