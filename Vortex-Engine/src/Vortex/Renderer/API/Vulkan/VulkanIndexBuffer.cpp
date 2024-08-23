@@ -50,51 +50,15 @@ namespace Vortex
     void VulkanIndexBuffer::CopyBuffer(vk::Buffer src, vk::Buffer dest,
                                        vk::DeviceSize size)
     {
-        vk::Device                device = VulkanContext::GetDevice();
-        // TODO(v1tr10l7): TEMPORARY:
-        vk::CommandPool           commandPool{};
-        vk::CommandPoolCreateInfo poolCreateInfo{};
-        poolCreateInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
-        poolCreateInfo.pNext = VK_NULL_HANDLE;
-        poolCreateInfo.flags
-            = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-        poolCreateInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
-                                              .GetQueueFamilyIndices()
-                                              .Transfer.value();
-        VkCall(device.createCommandPool(&poolCreateInfo, VK_NULL_HANDLE,
-                                        &commandPool));
+        const VulkanDevice& device        = VulkanContext::GetDevice();
+        vk::CommandBuffer   commandBuffer = device.BeginTransferCommand();
 
-        vk::CommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType       = vk::StructureType::eCommandBufferAllocateInfo;
-        allocInfo.level       = vk::CommandBufferLevel::ePrimary;
-        allocInfo.commandPool = commandPool;
-        allocInfo.commandBufferCount = 1;
-
-        vk::CommandBuffer commandBuffer{};
-        VkCall(device.allocateCommandBuffers(&allocInfo, &commandBuffer));
-
-        vk::CommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
-        beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-        VkCall(commandBuffer.begin(&beginInfo));
-
-        vk::BufferCopy copyRegion{};
+        vk::BufferCopy      copyRegion{};
         copyRegion.srcOffset = 0;
         copyRegion.dstOffset = 0;
         copyRegion.size      = size;
         commandBuffer.copyBuffer(src, dest, 1, &copyRegion);
-        commandBuffer.end();
 
-        vk::SubmitInfo submit{};
-        submit.sType              = vk::StructureType::eSubmitInfo;
-        submit.commandBufferCount = 1;
-        submit.pCommandBuffers    = &commandBuffer;
-
-        vk::Queue transferQueue = VulkanContext::GetDevice().GetTransferQueue();
-        VkCall(transferQueue.submit(1, &submit, VK_NULL_HANDLE));
-        transferQueue.waitIdle();
-
-        device.freeCommandBuffers(commandPool, 1, &commandBuffer);
-        device.destroyCommandPool(commandPool);
+        device.EndTransferCommand(commandBuffer);
     }
 }; // namespace Vortex
