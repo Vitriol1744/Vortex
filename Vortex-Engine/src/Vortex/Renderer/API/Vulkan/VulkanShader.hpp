@@ -27,7 +27,8 @@ namespace Vortex
         struct ImageSampler
         {
             std::string             Name;
-            u32                     BindingPoint = 0;
+            u32                     BindingPoint    = 0;
+            u32                     DescriptorCount = 1;
             vk::ShaderStageFlagBits ShaderStage;
         };
 

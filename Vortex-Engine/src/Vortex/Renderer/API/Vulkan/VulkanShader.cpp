@@ -89,8 +89,8 @@ namespace Vortex
                     = layoutBindings.emplace_back();
                 layoutBinding.descriptorType
                     = vk::DescriptorType::eUniformBuffer;
-                layoutBinding.descriptorCount    = 1;
-                layoutBinding.stageFlags         = uniformBuffer.ShaderStage;
+                layoutBinding.descriptorCount = uniformBuffer.DescriptorCount;
+                layoutBinding.stageFlags      = uniformBuffer.ShaderStage;
                 layoutBinding.pImmutableSamplers = VK_NULL_HANDLE;
                 layoutBinding.binding            = binding;
 
@@ -100,7 +100,7 @@ namespace Vortex
                 set                 = vk::WriteDescriptorSet();
                 set.sType           = vk::StructureType::eWriteDescriptorSet;
                 set.descriptorType  = layoutBinding.descriptorType;
-                set.descriptorCount = 1;
+                set.descriptorCount = layoutBinding.descriptorCount;
                 set.dstBinding      = layoutBinding.binding;
             }
             for (auto& [binding, sampler] : shaderDescriptorSet.ImageSamplers)
@@ -109,7 +109,7 @@ namespace Vortex
                     = layoutBindings.emplace_back();
                 layoutBinding.descriptorType
                     = vk::DescriptorType::eCombinedImageSampler;
-                layoutBinding.descriptorCount    = 1;
+                layoutBinding.descriptorCount    = sampler.DescriptorCount;
                 layoutBinding.stageFlags         = sampler.ShaderStage;
                 layoutBinding.pImmutableSamplers = VK_NULL_HANDLE;
                 layoutBinding.binding            = binding;
@@ -119,7 +119,7 @@ namespace Vortex
                 set                 = vk::WriteDescriptorSet();
                 set.sType           = vk::StructureType::eWriteDescriptorSet;
                 set.descriptorType  = layoutBinding.descriptorType;
-                set.descriptorCount = 1;
+                set.descriptorCount = layoutBinding.descriptorCount;
                 set.dstBinding      = layoutBinding.binding;
             }
 
@@ -426,6 +426,7 @@ namespace Vortex
             ImageSampler sampler;
             sampler.Name                               = name;
             sampler.BindingPoint                       = binding;
+            sampler.DescriptorCount                    = descriptorCount;
             sampler.ShaderStage                        = stage;
 
             shaderDescriptorSet.ImageSamplers[binding] = sampler;
