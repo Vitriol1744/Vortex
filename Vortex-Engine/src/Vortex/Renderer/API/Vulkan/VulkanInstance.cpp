@@ -41,6 +41,7 @@ namespace Vortex
         const VkDebugUtilsMessengerCallbackDataEXT* data, void* userData)
     {
         VT_UNUSED(type);
+        VT_UNUSED(data);
         VT_UNUSED(userData);
         switch (severity)
         {
