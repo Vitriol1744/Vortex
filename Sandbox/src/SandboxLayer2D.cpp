@@ -9,6 +9,10 @@
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
 #include <imgui.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Timer.hpp"
@@ -74,6 +78,45 @@ Vec2                                  lightPos;
 
 using namespace Vortex;
 
+std::vector<Vertex> vertices;
+std::vector<u32>    indices;
+
+void                ProcessMesh(aiMesh* mesh, const aiScene* scene)
+{
+    for (usize i = 0; i < mesh->mNumVertices; i++)
+    {
+        Vertex vertex{};
+        vertex.Pos.x = mesh->mVertices[i].x;
+        vertex.Pos.y = mesh->mVertices[i].y;
+        vertex.Pos.z = mesh->mVertices[i].z;
+        if (mesh->mTextureCoords[0])
+        {
+            vertex.TexCoords.x = mesh->mTextureCoords[0][i].x;
+            vertex.TexCoords.y = mesh->mTextureCoords[0][i].y;
+        }
+        vertex.Color = Vec3(1.0f, 1.0f, 1.0f);
+        vertices.push_back(vertex);
+    }
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    {
+        aiFace face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++)
+            indices.push_back(face.mIndices[j]);
+    }
+}
+
+void ProcessNode(aiNode* node, const aiScene* scene)
+{
+    for (usize i = 0; i < node->mNumMeshes; i++)
+    {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        ProcessMesh(mesh, scene);
+    }
+    for (usize i = 0; i < node->mNumChildren; i++)
+        ProcessNode(node->mChildren[i], scene);
+}
+
 void SandboxLayer2D::OnAttach()
 {
     s_Window = Application::Get()->GetWindow();
@@ -90,7 +133,12 @@ void SandboxLayer2D::OnAttach()
     std::initializer_list<VertexBufferElement> elements
         = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
            ShaderDataType::eFloat2};
-    VertexBufferLayout            layout(elements);
+    VertexBufferLayout layout(elements);
+    Assimp::Importer   importer;
+    const aiScene*     scene
+        = importer.ReadFile("assets/models/viking_room.obj",
+                            aiProcess_Triangulate | aiProcess_FlipUVs);
+    ProcessNode(scene->mRootNode, scene);
 
     GraphicsPipelineSpecification specification{};
     specification.Window = Application::Get()->GetWindow();
@@ -99,14 +147,21 @@ void SandboxLayer2D::OnAttach()
 
     s_GraphicsPipeline   = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(
         GraphicsPipeline::Create(specification));
+#if 0
     s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
     s_IndexBuffer = CreateRef<VulkanIndexBuffer>(
         (void*)s_Indices.data(), s_Indices.size() * sizeof(u32));
+#else
+    s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
+        (void*)vertices.data(), vertices.size() * sizeof(vertices[0]));
+    s_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(),
+                                                 indices.size() * sizeof(u32));
+#endif
     s_UniformBuffer
         = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
 
-    s_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/texture.jpg");
+    s_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/viking_room.png");
 
     vk::Device device = VulkanContext::GetDevice();
     VtCoreInfo("Frames in flight: {}", VT_MAX_FRAMES_IN_FLIGHT);
