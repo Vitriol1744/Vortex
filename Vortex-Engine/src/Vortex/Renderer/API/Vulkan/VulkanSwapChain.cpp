@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 
 namespace Vortex
 {
@@ -160,90 +161,35 @@ namespace Vortex
 
     void VulkanSwapChain::BeginFrame()
     {
-        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 
         vk::Device device   = VulkanContext::GetDevice();
-        VkCall(device.waitForFences(1, &GetCurrentFrame().WaitFence, VK_TRUE,
-                                    UINT64_MAX));
-        vk::Result result = device.acquireNextImageKHR(
-            m_SwapChain, UINT64_MAX, GetCurrentFrame().ImageAvailableSemaphore,
-            VK_NULL_HANDLE, &m_CurrentImageIndex);
-
-        if (result == vk::Result::eErrorOutOfDateKHR)
-        {
-            OnResize();
-            result = device.acquireNextImageKHR(
-                m_SwapChain, UINT64_MAX,
-                GetCurrentFrame().ImageAvailableSemaphore, VK_NULL_HANDLE,
-                &m_CurrentImageIndex);
-        }
-        else if (result != vk::Result::eSuccess
-                 && result != vk::Result::eSuboptimalKHR)
-        {
-            VkCall(result);
-        }
-
-        VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
+        m_CurrentImageIndex = AcquireNextImage();
 
         device.resetCommandPool(GetCurrentFrame().CommandPool,
                                 vk::CommandPoolResetFlags());
-
-        vk::CommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
-
-        vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
-        VkCall(commandBuffer.begin(&beginInfo));
-
-        vk::RenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType       = vk::StructureType::eRenderPassBeginInfo;
-        renderPassInfo.renderPass  = m_RenderPass;
-        renderPassInfo.framebuffer = m_Frames[m_CurrentImageIndex].Framebuffer;
-        renderPassInfo.renderArea.offset.x = 0;
-        renderPassInfo.renderArea.offset.y = 0;
-        renderPassInfo.renderArea.extent   = m_Extent;
-
-        std::array<vk::ClearValue, 2> clearValues;
-        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
-        clearValues[0].setColor(color);
-        clearValues[1].setDepthStencil({1.0, 0});
-        renderPassInfo.clearValueCount = clearValues.size();
-        renderPassInfo.pClearValues    = clearValues.data();
-
-        commandBuffer.beginRenderPass(&renderPassInfo,
-                                      vk::SubpassContents::eInline);
-    }
-    void VulkanSwapChain::EndFrame()
-    {
-        vk::CommandBuffer commandBuffer = GetCurrentCommandBuffer();
-        commandBuffer.endRenderPass();
-
-        commandBuffer.end();
     }
 
     void VulkanSwapChain::Present()
     {
-        vk::SubmitInfo submitInfo{};
-        submitInfo.sType = vk::StructureType::eSubmitInfo;
+        vk::SubmitInfo         submitInfo{};
+        vk::PipelineStageFlags waitStage
+            = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-        vk::Semaphore waitSemaphores[]
-            = {m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore};
-        vk::PipelineStageFlags waitStages[]
-            = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+        submitInfo.sType              = vk::StructureType::eSubmitInfo;
+        submitInfo.pNext              = VK_NULL_HANDLE;
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores    = waitSemaphores;
-        submitInfo.pWaitDstStageMask  = waitStages;
-
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers
-            = &m_Frames[m_CurrentFrameIndex].CommandBuffer;
-
-        vk::Semaphore signalSemaphores[]
-            = {m_Frames[m_CurrentFrameIndex].RenderFinishedSemaphore};
+        submitInfo.pWaitSemaphores = &GetCurrentFrame().ImageAvailableSemaphore;
+        submitInfo.pWaitDstStageMask    = &waitStage;
+        submitInfo.commandBufferCount   = 1;
+        submitInfo.pCommandBuffers      = &GetCurrentFrame().CommandBuffer;
         submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores    = signalSemaphores;
+        submitInfo.pSignalSemaphores
+            = &GetCurrentFrame().RenderFinishedSemaphore;
+
+        vk::Device device = VulkanContext::GetDevice();
+        VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
 
         vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
-
         VkCall(graphicsQueue.submit(1, &submitInfo,
                                     m_Frames[m_CurrentFrameIndex].WaitFence));
 
@@ -251,11 +197,12 @@ namespace Vortex
         presentInfo.sType              = vk::StructureType::ePresentInfoKHR;
         presentInfo.pNext              = VK_NULL_HANDLE;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores    = signalSemaphores;
-        presentInfo.swapchainCount     = 1;
-        presentInfo.pSwapchains        = &m_SwapChain;
-        presentInfo.pImageIndices      = &m_CurrentImageIndex;
-        presentInfo.pResults           = VK_NULL_HANDLE;
+        presentInfo.pWaitSemaphores
+            = &GetCurrentFrame().RenderFinishedSemaphore;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains    = &m_SwapChain;
+        presentInfo.pImageIndices  = &m_CurrentImageIndex;
+        presentInfo.pResults       = VK_NULL_HANDLE;
 
         vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
@@ -263,7 +210,11 @@ namespace Vortex
         if (result == vk::Result::eErrorOutOfDateKHR
             || result == vk::Result::eSuboptimalKHR)
             OnResize();
-        else VkCall(result);
+        else if (result != vk::Result::eSuccess)
+        {
+            VtCoreError("Vulkan: Failed to present swapChain image");
+            VkCall(result);
+        }
     }
     void VulkanSwapChain::OnResize()
     {
@@ -278,9 +229,10 @@ namespace Vortex
     {
         vk::Device device   = VulkanContext::GetDevice();
 
-        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-        VkCall(device.waitForFences(1, &m_Frames[m_CurrentFrameIndex].WaitFence,
-                                    VK_TRUE, UINT64_MAX));
+        u32 framesInFlight  = Renderer::GetConfiguration().MaxFramesInFlight;
+        m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
+        VkCall(device.waitForFences(1, &GetCurrentFrame().WaitFence, VK_TRUE,
+                                    UINT64_MAX));
 
         u32        imageIndex;
         vk::Result result = device.acquireNextImageKHR(
@@ -288,7 +240,8 @@ namespace Vortex
             m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
             VK_NULL_HANDLE, &imageIndex);
 
-        if (result == vk::Result::eErrorOutOfDateKHR)
+        if (result == vk::Result::eErrorOutOfDateKHR
+            || result == vk::Result::eSuboptimalKHR)
         {
             OnResize();
             VkCall(device.acquireNextImageKHR(
@@ -296,7 +249,11 @@ namespace Vortex
                 m_Frames[m_CurrentFrameIndex].ImageAvailableSemaphore,
                 VK_NULL_HANDLE, &imageIndex));
         }
-        else if (result != vk::Result::eSuboptimalKHR) VkCall(result);
+        else if (result != vk::Result::eSuccess)
+        {
+            VtCoreError("Vulkan: Failed to acquire next swapChain image");
+            VkCall(result);
+        }
 
         return imageIndex;
     }
@@ -394,6 +351,7 @@ namespace Vortex
         vk::Device                device = VulkanContext::GetDevice();
 
         vk::AttachmentDescription colorAttachment{};
+        colorAttachment.flags          = vk::AttachmentDescriptionFlags();
         colorAttachment.format         = m_ImageFormat;
         colorAttachment.samples        = vk::SampleCountFlagBits::e1;
         colorAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
@@ -406,6 +364,7 @@ namespace Vortex
         vk::Format depthFormat
             = VulkanContext::GetPhysicalDevice().FindDepthFormat();
         vk::AttachmentDescription depthAttachment{};
+        depthAttachment.flags          = vk::AttachmentDescriptionFlags();
         depthAttachment.format         = depthFormat;
         depthAttachment.samples        = vk::SampleCountFlagBits::e1;
         depthAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
@@ -425,10 +384,16 @@ namespace Vortex
         depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
         vk::SubpassDescription subpassDescription{};
+        subpassDescription.flags             = vk::SubpassDescriptionFlags();
         subpassDescription.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+        subpassDescription.inputAttachmentCount    = 0;
+        subpassDescription.pInputAttachments       = VK_NULL_HANDLE;
         subpassDescription.colorAttachmentCount    = 1;
         subpassDescription.pColorAttachments       = &colorReference;
+        subpassDescription.pResolveAttachments     = VK_NULL_HANDLE;
         subpassDescription.pDepthStencilAttachment = &depthReference;
+        subpassDescription.preserveAttachmentCount = 0;
+        subpassDescription.pPreserveAttachments    = VK_NULL_HANDLE;
 
         vk::SubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -436,19 +401,22 @@ namespace Vortex
         dependency.srcStageMask
             = vk::PipelineStageFlagBits::eColorAttachmentOutput
             | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-        dependency.srcAccessMask = vk::AccessFlags();
         dependency.dstStageMask
             = vk::PipelineStageFlagBits::eColorAttachmentOutput
             | vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        dependency.srcAccessMask = vk::AccessFlags();
         dependency.dstAccessMask
             = vk::AccessFlagBits::eColorAttachmentWrite
             | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        dependency.dependencyFlags = vk::DependencyFlags();
 
         std::array<vk::AttachmentDescription, 2> attachments
             = {colorAttachment, depthAttachment};
 
         vk::RenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
+        renderPassInfo.pNext = VK_NULL_HANDLE;
+        renderPassInfo.flags = vk::RenderPassCreateFlags();
         renderPassInfo.attachmentCount = attachments.size();
         renderPassInfo.pAttachments    = attachments.data();
         renderPassInfo.subpassCount    = 1;
@@ -477,6 +445,8 @@ namespace Vortex
 
             vk::FramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
+            framebufferInfo.pNext = VK_NULL_HANDLE;
+            framebufferInfo.flags = vk::FramebufferCreateFlags();
             framebufferInfo.renderPass      = m_RenderPass;
             framebufferInfo.attachmentCount = attachments.size();
             framebufferInfo.pAttachments    = attachments.data();
@@ -508,10 +478,16 @@ namespace Vortex
             vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
         vk::ImageViewCreateInfo viewInfo{};
-        viewInfo.sType    = vk::StructureType::eImageViewCreateInfo;
-        viewInfo.image    = m_DepthImage;
-        viewInfo.viewType = vk::ImageViewType::e2D;
-        viewInfo.format   = depthFormat;
+        viewInfo.sType        = vk::StructureType::eImageViewCreateInfo;
+        viewInfo.pNext        = VK_NULL_HANDLE;
+        viewInfo.flags        = vk::ImageViewCreateFlags();
+        viewInfo.image        = m_DepthImage;
+        viewInfo.viewType     = vk::ImageViewType::e2D;
+        viewInfo.format       = depthFormat;
+        viewInfo.components.r = vk::ComponentSwizzle::eIdentity;
+        viewInfo.components.g = vk::ComponentSwizzle::eIdentity;
+        viewInfo.components.b = vk::ComponentSwizzle::eIdentity;
+        viewInfo.components.a = vk::ComponentSwizzle::eIdentity;
         viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
         viewInfo.subresourceRange.baseMipLevel   = 0;
         viewInfo.subresourceRange.levelCount     = 1;

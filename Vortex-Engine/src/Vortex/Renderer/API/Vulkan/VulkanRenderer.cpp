@@ -22,16 +22,46 @@ namespace Vortex
     {
         currentContext = std::dynamic_pointer_cast<VulkanContext>(
             window->GetRendererContext());
-        auto& swapchain = currentContext->GetSwapChain();
+        auto& swapChain = currentContext->GetSwapChain();
 
-        swapchain.BeginFrame();
+        swapChain.BeginFrame();
+
+        vk::CommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
+
+        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        VkCall(commandBuffer.begin(&beginInfo));
+
+        vk::RenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType      = vk::StructureType::eRenderPassBeginInfo;
+        renderPassInfo.renderPass = swapChain.GetRenderPass();
+        renderPassInfo.framebuffer
+            = swapChain.GetFrames()[swapChain.GetCurrentImageIndex()]
+                  .Framebuffer;
+        renderPassInfo.renderArea.offset.x = 0;
+        renderPassInfo.renderArea.offset.y = 0;
+        renderPassInfo.renderArea.extent   = swapChain.GetExtent();
+
+        std::array<vk::ClearValue, 2> clearValues;
+        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
+        clearValues[0].setColor(color);
+        clearValues[1].setDepthStencil({1.0, 0});
+        renderPassInfo.clearValueCount = clearValues.size();
+        renderPassInfo.pClearValues    = clearValues.data();
+
+        commandBuffer.beginRenderPass(&renderPassInfo,
+                                      vk::SubpassContents::eInline);
     }
     void VulkanRenderer::EndFrame()
     {
         VtAssertFrameStarted();
 
-        auto& swapchain = currentContext->GetSwapChain();
-        swapchain.EndFrame();
+        auto&             swapChain     = currentContext->GetSwapChain();
+
+        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        commandBuffer.endRenderPass();
+        commandBuffer.end();
+
         currentContext = nullptr;
     }
 

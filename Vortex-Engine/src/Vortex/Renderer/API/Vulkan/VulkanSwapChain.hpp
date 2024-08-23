@@ -38,7 +38,6 @@ namespace Vortex
         inline void                    SetVSync(bool vsync) { m_VSync = vsync; }
 
         void                           BeginFrame();
-        void                           EndFrame();
         void                           Present();
         void                           OnResize();
 
@@ -63,10 +62,9 @@ namespace Vortex
       private:
         VulkanSurface                       m_Surface;
         std::vector<Frame>                  m_Frames;
-        u32                                 m_CurrentFrameIndex  = 0;
-        u32                                 m_CurrentImageIndex  = 0;
-        inline static constexpr const u32   MAX_FRAMES_IN_FLIGHT = 2;
-        bool                                m_VSync              = false;
+        u32                                 m_CurrentFrameIndex = 0;
+        u32                                 m_CurrentImageIndex = 0;
+        bool                                m_VSync             = false;
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
@@ -76,19 +74,17 @@ namespace Vortex
         VulkanImage                         m_DepthImage;
         vk::ImageView                       m_DepthImageView = VK_NULL_HANDLE;
 
-        // TODO(v1tr10l7): remove public
-      public:
-        u32                AcquireNextImage();
+        u32                                 AcquireNextImage();
 
-        void               CreateImageViews();
-        void               CreateCommandBuffers();
-        void               CreateSyncObjects();
-        void               CreateRenderPass();
-        void               CreateFramebuffers();
-        void               CreateDepthBuffer();
+        void                                CreateImageViews();
+        void                                CreateCommandBuffers();
+        void                                CreateSyncObjects();
+        void                                CreateRenderPass();
+        void                                CreateFramebuffers();
+        void                                CreateDepthBuffer();
 
-        vk::PresentModeKHR ChooseSwapPresentMode(
-            const std::vector<vk::PresentModeKHR>& availablePresentModes)
+        vk::PresentModeKHR                  ChooseSwapPresentMode(
+                             const std::vector<vk::PresentModeKHR>& availablePresentModes)
         {
             for (const auto& availablePresentMode : availablePresentModes)
             {
