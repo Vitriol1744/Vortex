@@ -85,8 +85,8 @@ namespace Vortex
         barrier.dstAccessMask       = vk::AccessFlagBits::eNone;
         barrier.oldLayout           = oldLayout;
         barrier.newLayout           = newLayout;
-        barrier.srcQueueFamilyIndex = vk::QueueFamilyIgnored;
-        barrier.dstQueueFamilyIndex = vk::QueueFamilyIgnored;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image               = m_Image;
         barrier.subresourceRange.aspectMask   = vk::ImageAspectFlagBits::eColor;
         barrier.subresourceRange.baseMipLevel = 0;
