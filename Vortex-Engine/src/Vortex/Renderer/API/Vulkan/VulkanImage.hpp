@@ -30,7 +30,7 @@ namespace Vortex
         void   TransitionLayout(vk::ImageLayout oldLayout,
                                 vk::ImageLayout newLayout);
 
-        inline operator bool() const { return m_Image != VK_NULL_HANDLE; }
+        inline operator bool() const { return m_Image; }
         inline operator vk::Image() const { return m_Image; }
 
       private:
