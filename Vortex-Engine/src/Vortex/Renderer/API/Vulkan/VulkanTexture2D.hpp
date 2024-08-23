@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanImage.hpp"
 
 namespace Vortex
 {
@@ -22,17 +23,11 @@ namespace Vortex
         auto&       GetImageInfo() const { return m_ImageInfo; }
 
       private:
-        vk::Image               m_TextureImage;
+        VulkanImage             m_TextureImage;
+
         vk::ImageView           m_TextureView;
         vk::DeviceSize          m_Size;
         vk::DescriptorImageInfo m_ImageInfo;
         vk::Sampler             m_TextureSampler = VK_NULL_HANDLE;
-        VmaAllocation           m_Allocation     = VK_NULL_HANDLE;
-
-        void TransitionImageLayout(vk::Image image, vk::Format format,
-                                   vk::ImageLayout oldLayout,
-                                   vk::ImageLayout newLayout);
-        void CopyBufferToImage(vk::Buffer buffer, vk::Image image, u32 width,
-                               u32 height);
     };
 }; // namespace Vortex
