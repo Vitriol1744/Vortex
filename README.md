@@ -13,7 +13,7 @@ To be able to use Vortex you need to install a few dependencies:
 * Vulkan SDK 
 * Platform specific window server dev tools
 
-### Setup on Arch based derivates
+### Setup on Arch derivates
 ```
 sudo pacman -S git cmake base-devel vulkan-devel clang ninja libx11 wayland libxinerama 
 ```
@@ -42,7 +42,7 @@ cmake --build build
 The binaries are stored inside the ./bin directory
 
 ## Support
-Vortex currently supports only Linux with X11 or Wayland through XWayland compatibility layer
+Vortex currently supports Linux with wayland or Xlib and Windows
 
 ## Roadmap
 You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
@@ -52,14 +52,17 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 * v1tr10l7
 
 ### Credits
+* [assimp](https://github.com/assimp/assimp.git) - Open Asset Import Library is a library to load various 3d file formats into a shared, in-memory format. It supports more than 40 file formats for import and a growing selection of file formats for export.
 * [fmt](https://github.com/fmtlib/fmt.git) - {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams.
-* [magic_enum](https://github.com/Neargye/magic_enum.git) - Header-only C++17 library provides static reflection for enums, work with any enum type without any macro or boilerplate code.
-* [imgui](https://github.com/ocornut/imgui.git) - Dear ImGui is a bloat-free graphical user interface library for C++.
 * [glm](https://github.com/g-truc/glm.git) - OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [glfw](https://github.com/glfw/glfw.git) - GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development.
     It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
-* [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git) - Easy to integrate Vulkan memory allocation library.
+* [imgui](https://github.com/ocornut/imgui.git) - Dear ImGui is a bloat-free graphical user interface library for C++.
+* [magic_enum](https://github.com/Neargye/magic_enum.git) - Header-only C++17 library provides static reflection for enums, work with any enum type without any macro or boilerplate code.
 * [shaderc](https://github.com/google/shaderc.git) - A collection of tools, libraries and tests for shader compilation.
+* [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross.git) - SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader languages.
+* [stb](https://github.com/nothings/stb) - single-file public domain (or MIT licensed) libraries for C/C++
+* [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git) - Easy to integrate Vulkan memory allocation library.
 
 
 ## License
