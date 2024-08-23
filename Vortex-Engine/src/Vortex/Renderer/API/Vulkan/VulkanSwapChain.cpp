@@ -88,10 +88,11 @@ namespace Vortex
         }
 
         vk::Device device = VulkanContext::GetDevice();
-        VkCall(
-            device.createSwapchainKHR(&swapChainInfo, nullptr, &m_SwapChain));
+        VkCall(device.createSwapchainKHR(&swapChainInfo, VK_NULL_HANDLE,
+                                         &m_SwapChain));
 
-        VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount, nullptr));
+        VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount,
+                                            VK_NULL_HANDLE));
         m_Frames.resize(imageCount);
 
         std::vector<vk::Image> backbuffers(imageCount);
@@ -107,15 +108,16 @@ namespace Vortex
         if (oldSwapChain)
         {
             for (auto& frame : m_Frames)
-                device.destroyImageView(frame.ImageView, nullptr);
-            device.destroySwapchainKHR(oldSwapChain, nullptr);
+                device.destroyImageView(frame.ImageView, VK_NULL_HANDLE);
+            device.destroySwapchainKHR(oldSwapChain, VK_NULL_HANDLE);
         }
 
         CreateImageViews();
 
         CreateCommandBuffers();
         CreateSyncObjects();
-        CreateRenderPass();
+
+        if (!m_RenderPass) CreateRenderPass();
         CreateFramebuffers();
     }
     void VulkanSwapChain::Destroy()
@@ -125,22 +127,29 @@ namespace Vortex
         device.waitIdle();
 
         device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
+        m_RenderPass = VK_NULL_HANDLE;
+
         for (auto& frame : m_Frames)
         {
             VkCall(
                 device.waitForFences(1, &frame.WaitFence, VK_TRUE, UINT64_MAX));
             device.destroyFence(frame.WaitFence, VK_NULL_HANDLE);
+
             device.destroyCommandPool(frame.CommandPool);
             device.destroySemaphore(frame.ImageAvailableSemaphore,
                                     VK_NULL_HANDLE);
             device.destroySemaphore(frame.RenderFinishedSemaphore,
                                     VK_NULL_HANDLE);
+
             device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
-            device.destroyImageView(frame.ImageView, nullptr);
+            device.destroyImageView(frame.ImageView, VK_NULL_HANDLE);
+
+            std::memset(&frame, 0, sizeof(Frame));
         }
 
         if (m_SwapChain)
             device.destroySwapchainKHR(m_SwapChain, VK_NULL_HANDLE);
+        m_SwapChain = VK_NULL_HANDLE;
     }
 
     void VulkanSwapChain::BeginFrame()
@@ -172,7 +181,6 @@ namespace Vortex
 
         device.resetCommandPool(GetCurrentFrame().CommandPool,
                                 vk::CommandPoolResetFlags());
-        // GetCurrentFrame().CommandBuffer.reset(vk::CommandBufferResetFlags());
 
         vk::CommandBufferBeginInfo beginInfo{};
         beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
@@ -321,27 +329,27 @@ namespace Vortex
         vk::CommandPoolCreateInfo commandPoolInfo{};
         commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
         commandPoolInfo.pNext = VK_NULL_HANDLE;
-        // TODO(v1tr10l7): should be transient:
         commandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
         commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
                                                .GetQueueFamilyIndices()
                                                .Graphics.value();
+
+        vk::CommandBufferAllocateInfo commandBufferInfo{};
+        commandBufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
+        commandBufferInfo.pNext = VK_NULL_HANDLE;
+        commandBufferInfo.commandPool        = VK_NULL_HANDLE;
+        commandBufferInfo.level              = vk::CommandBufferLevel::ePrimary;
+        commandBufferInfo.commandBufferCount = 1;
+
         for (auto& frame : m_Frames)
         {
             if (frame.CommandPool) device.destroyCommandPool(frame.CommandPool);
+            frame.CommandPool = VK_NULL_HANDLE;
             VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
                                             &frame.CommandPool));
-        }
 
-        vk::CommandBufferAllocateInfo bufferInfo{};
-        bufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
-        bufferInfo.level = vk::CommandBufferLevel::ePrimary;
-        bufferInfo.commandBufferCount = 1;
-
-        for (auto& frame : m_Frames)
-        {
-            bufferInfo.commandPool = frame.CommandPool;
-            VkCall(device.allocateCommandBuffers(&bufferInfo,
+            commandBufferInfo.commandPool = frame.CommandPool;
+            VkCall(device.allocateCommandBuffers(&commandBufferInfo,
                                                  &frame.CommandBuffer));
         }
     }
@@ -352,39 +360,32 @@ namespace Vortex
 
         vk::SemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
+        semaphoreInfo.pNext = VK_NULL_HANDLE;
+        semaphoreInfo.flags = vk::SemaphoreCreateFlags();
 
         vk::FenceCreateInfo fenceInfo{};
         fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
+        fenceInfo.pNext = VK_NULL_HANDLE;
         fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
 
         for (auto& frame : m_Frames)
         {
-            if (frame.ImageAvailableSemaphore)
-            {
-                return;
-                device.destroySemaphore(frame.ImageAvailableSemaphore,
-                                        VK_NULL_HANDLE);
-                device.destroySemaphore(frame.RenderFinishedSemaphore,
-                                        VK_NULL_HANDLE);
-                device.destroyFence(frame.WaitFence, VK_NULL_HANDLE);
-            }
-
-            VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
-                                          &frame.ImageAvailableSemaphore));
-            VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
-                                          &frame.RenderFinishedSemaphore));
-
-            VkCall(device.createFence(&fenceInfo, VK_NULL_HANDLE,
-                                      &frame.WaitFence));
+            if (!frame.ImageAvailableSemaphore)
+                VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
+                                              &frame.ImageAvailableSemaphore));
+            if (!frame.RenderFinishedSemaphore)
+                VkCall(device.createSemaphore(&semaphoreInfo, VK_NULL_HANDLE,
+                                              &frame.RenderFinishedSemaphore));
+            if (!frame.WaitFence)
+                VkCall(device.createFence(&fenceInfo, VK_NULL_HANDLE,
+                                          &frame.WaitFence));
         }
     }
 
     void VulkanSwapChain::CreateRenderPass()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device                device = VulkanContext::GetDevice();
 
-        if (m_RenderPass)
-            return; // device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         vk::AttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format  = m_ImageFormat;
         colorAttachmentDescription.samples = vk::SampleCountFlagBits::e1;
@@ -442,13 +443,11 @@ namespace Vortex
 
         for (auto& frame : m_Frames)
         {
-            vk::ImageView             attachments[] = {frame.ImageView};
-
             vk::FramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
             framebufferInfo.renderPass      = m_RenderPass;
             framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments    = attachments;
+            framebufferInfo.pAttachments    = &frame.ImageView;
             framebufferInfo.width           = m_Extent.width;
             framebufferInfo.height          = m_Extent.height;
             framebufferInfo.layers          = 1;

@@ -10,6 +10,7 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
 
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 namespace Vortex
 {
@@ -242,10 +243,78 @@ namespace Vortex
         if (queueFamilyIndices.Transfer.has_value())
             m_Device.getQueue(queueFamilyIndices.Transfer.value(), 0,
                               &m_TransferQueue);
+
+        vk::CommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
+        poolInfo.pNext = VK_NULL_HANDLE;
+        poolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
+
+        u32 graphicsFamilyIndex
+            = m_PhysicalDevice.GetQueueFamilyIndices().Graphics.value();
+        u32 transferFamilyIndex
+            = m_PhysicalDevice.GetQueueFamilyIndices().Transfer.value();
+
+        poolInfo.queueFamilyIndex = graphicsFamilyIndex;
+        VkCall(m_Device.createCommandPool(&poolInfo, VK_NULL_HANDLE,
+                                          &m_GraphicsPool));
+
+        poolInfo.queueFamilyIndex = transferFamilyIndex;
+        VkCall(m_Device.createCommandPool(&poolInfo, VK_NULL_HANDLE,
+                                          &m_TransferPool));
     }
     void VulkanDevice::Destroy()
     {
         VtCoreTrace("Vulkan: Destroying logical device...");
-        m_Device.destroy(nullptr);
+        m_Device.waitIdle();
+        m_Device.destroyCommandPool(m_GraphicsPool);
+        m_Device.destroyCommandPool(m_TransferPool);
+
+        m_Device.destroy(VK_NULL_HANDLE);
+    }
+
+    vk::CommandBuffer
+    VulkanDevice::BeginOneTimeCommand(vk::CommandPool commandPool) const
+    {
+        vk::CommandBufferAllocateInfo commandBufferInfo{};
+        commandBufferInfo.sType = vk::StructureType::eCommandBufferAllocateInfo;
+        commandBufferInfo.pNext = VK_NULL_HANDLE;
+        commandBufferInfo.commandPool        = commandPool;
+        commandBufferInfo.level              = vk::CommandBufferLevel::ePrimary;
+        commandBufferInfo.commandBufferCount = 1;
+
+        vk::CommandBuffer commandBuffer      = VK_NULL_HANDLE;
+        VkCall(m_Device.allocateCommandBuffers(&commandBufferInfo,
+                                               &commandBuffer));
+
+        vk::CommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = vk::StructureType::eCommandBufferBeginInfo;
+        beginInfo.pNext = VK_NULL_HANDLE;
+        beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+        beginInfo.pInheritanceInfo = VK_NULL_HANDLE;
+
+        VkCall(commandBuffer.begin(&beginInfo));
+        return commandBuffer;
+    }
+    void VulkanDevice::EndOneTimeCommand(vk::CommandPool   commandPool,
+                                         vk::CommandBuffer commandBuffer,
+                                         vk::Queue         queue) const
+    {
+        commandBuffer.end();
+
+        vk::SubmitInfo submitInfo{};
+        submitInfo.sType                = vk::StructureType::eSubmitInfo;
+        submitInfo.pNext                = VK_NULL_HANDLE;
+        submitInfo.waitSemaphoreCount   = 0;
+        submitInfo.pWaitSemaphores      = VK_NULL_HANDLE;
+        submitInfo.pWaitDstStageMask    = 0;
+        submitInfo.commandBufferCount   = 1;
+        submitInfo.pCommandBuffers      = &commandBuffer;
+        submitInfo.signalSemaphoreCount = 0;
+        submitInfo.pSignalSemaphores    = VK_NULL_HANDLE;
+
+        VkCall(queue.submit(1, &submitInfo, VK_NULL_HANDLE));
+        m_Device.waitIdle();
+
+        m_Device.freeCommandBuffers(commandPool, 1, &commandBuffer);
     }
 }; // namespace Vortex

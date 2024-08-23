@@ -66,6 +66,39 @@ namespace Vortex
         inline vk::Queue GetComputeQueue() const { return m_ComputeQueue; }
         inline vk::Queue GetTransferQueue() const { return m_TransferQueue; }
 
+        inline vk::CommandPool GetGraphicsCommandPool() const
+        {
+            return m_GraphicsPool;
+        }
+        inline vk::CommandPool GetTransferCommandPool() const
+        {
+            return m_TransferPool;
+        }
+
+        vk::CommandBuffer
+             BeginOneTimeCommand(vk::CommandPool commandPool) const;
+        void EndOneTimeCommand(vk::CommandPool   commandPool,
+                               vk::CommandBuffer commandBuffer,
+                               vk::Queue         queue) const;
+
+        vk::CommandBuffer BeginOneTimeRenderCommand() const
+        {
+            return BeginOneTimeCommand(m_GraphicsPool);
+        }
+        void EndOneTimeRenderCommand(vk::CommandBuffer commandBuffer) const
+        {
+            EndOneTimeCommand(m_GraphicsPool, commandBuffer, m_GraphicsQueue);
+        }
+
+        vk::CommandBuffer BeginTransferCommand() const
+        {
+            return BeginOneTimeCommand(m_TransferPool);
+        }
+        void EndTransferCommand(vk::CommandBuffer commandBuffer) const
+        {
+            EndOneTimeCommand(m_TransferPool, commandBuffer, m_TransferQueue);
+        }
+
       private:
         VulkanPhysicalDevice m_PhysicalDevice;
 
@@ -74,5 +107,9 @@ namespace Vortex
         vk::Queue            m_PresentQueue  = VK_NULL_HANDLE;
         vk::Queue            m_ComputeQueue  = VK_NULL_HANDLE;
         vk::Queue            m_TransferQueue = VK_NULL_HANDLE;
+
+        // Command pools for one time commands
+        vk::CommandPool      m_GraphicsPool  = VK_NULL_HANDLE;
+        vk::CommandPool      m_TransferPool  = VK_NULL_HANDLE;
     };
 }; // namespace Vortex

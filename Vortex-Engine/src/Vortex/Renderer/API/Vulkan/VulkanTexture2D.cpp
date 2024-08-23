@@ -99,6 +99,9 @@ namespace Vortex
         m_ImageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
         m_ImageInfo.imageView   = m_TextureView;
         m_ImageInfo.sampler     = m_TextureSampler;
+
+        // TODO(v1tr10l7): this function sits here temporarily
+        stbi_image_free(m_Image.GetPixels());
     }
     VulkanTexture2D::~VulkanTexture2D()
     {

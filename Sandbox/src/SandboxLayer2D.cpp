@@ -49,7 +49,6 @@ const std::vector<Vertex> s_Vertices
        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
 
-// const std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
 const std::vector<u32> s_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 
 struct UniformBufferObject
@@ -117,8 +116,8 @@ void SandboxLayer2D::OnAttach()
     s_Shader->SetUniform("texSampler", s_Texture2D);
 
     Vec2 mousePos = s_Window->GetCursorPosition();
-    lightPos.x    = ((float)(mousePos.x * 16.0f / s_Window->GetWidth()));
-    lightPos.y    = (float)(9.0f - mousePos.y * 9.0f / s_Window->GetHeight());
+    lightPos.x    = ((f32)(mousePos.x * 16.0f / s_Window->GetWidth()));
+    lightPos.y    = (f32)(9.0f - mousePos.y * 9.0f / s_Window->GetHeight());
 }
 void SandboxLayer2D::OnDetach() {}
 
@@ -146,7 +145,7 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
     ImGui::Text("MousePos: { x: %f, y: %f }", mousePos.x, mousePos.y);
 
-    ImGui::SliderFloat2("lightPos", (float*)&lightPos, -10, 10);
+    ImGui::SliderFloat2("lightPos", (f32*)&lightPos, -10, 10);
     if (ImGui::Button("Close")) Application::Get()->Close();
     if (ImGui::Button("Restart")) Application::Get()->Restart();
     ImGui::Checkbox("vsync", &s_VSync);
@@ -156,22 +155,21 @@ void SandboxLayer2D::OnImGuiRender()
     static auto startTime    = std::chrono::high_resolution_clock::now();
 
     auto        currentTime  = std::chrono::high_resolution_clock::now();
-    f32 time = std::chrono::duration<float, std::chrono::seconds::period>(
+    f32         time = std::chrono::duration<f32, std::chrono::seconds::period>(
                    currentTime - startTime)
                    .count();
 
     UniformBufferObject ubo{};
     ubo.lightPos = mousePos;
-    ubo.Model    = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
-                               glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.View
-        = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                      glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.Model    = glm::rotate(Mat4(1.0f), time * glm::radians(90.0f),
+                               Vec3(0.0f, 0.0f, 1.0f));
+    ubo.View     = glm::lookAt(Vec3(2.0f, 2.0f, 2.0f), Vec3(0.0f, 0.0f, 0.0f),
+                               Vec3(0.0f, 0.0f, 1.0f));
 
     auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
     ubo.Projection       = glm::perspective(
         glm::radians(45.0f),
-        swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+        swapChainExtent.width / (f32)swapChainExtent.height, 0.1f, 10.0f);
 
     ubo.Projection[1][1] *= -1;
 
