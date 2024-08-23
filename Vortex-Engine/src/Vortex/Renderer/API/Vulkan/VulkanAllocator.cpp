@@ -25,7 +25,11 @@ namespace Vortex::VulkanAllocator
 
         vmaCreateAllocator(&createInfo, &s_Allocator);
     }
-    void          Shutdown() { vmaDestroyAllocator(s_Allocator); }
+    void Shutdown()
+    {
+        VtCoreTrace("Vulkan: Destroying the allocator...");
+        vmaDestroyAllocator(s_Allocator);
+    }
 
     VmaAllocation AllocateImage(vk::ImageCreateInfo imageInfo,
                                 VmaMemoryUsage usage, vk::Image& outImage,

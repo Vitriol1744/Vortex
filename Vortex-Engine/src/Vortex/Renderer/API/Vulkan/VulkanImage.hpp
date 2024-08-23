@@ -6,11 +6,12 @@
  */
 #pragma once
 
+#include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
 
 namespace Vortex
 {
-    class VulkanImage
+    class VulkanImage : public NonCopyable<VulkanImage>
     {
       public:
         VulkanImage() = default;
@@ -29,6 +30,7 @@ namespace Vortex
         void   TransitionLayout(vk::ImageLayout oldLayout,
                                 vk::ImageLayout newLayout);
 
+        inline operator bool() const { return m_Image != VK_NULL_HANDLE; }
         inline operator vk::Image() const { return m_Image; }
 
       private:

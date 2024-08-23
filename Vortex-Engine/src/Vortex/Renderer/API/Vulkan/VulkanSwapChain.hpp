@@ -7,11 +7,12 @@
 #pragma once
 
 #include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanImage.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
 namespace Vortex
 {
-    class VulkanSwapChain
+    class VulkanSwapChain : public NonCopyable<VulkanSwapChain>
     {
       public:
         struct Frame
@@ -71,10 +72,9 @@ namespace Vortex
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
         vk::Extent2D                        m_Extent;
         vk::Format                          m_ImageFormat;
-        vk::RenderPass                      m_RenderPass      = VK_NULL_HANDLE;
-        vk::Image                           m_DepthImage      = VK_NULL_HANDLE;
-        VmaAllocation                       m_DepthAllocation = VK_NULL_HANDLE;
-        vk::ImageView                       m_DepthImageView  = VK_NULL_HANDLE;
+        vk::RenderPass                      m_RenderPass = VK_NULL_HANDLE;
+        VulkanImage                         m_DepthImage;
+        vk::ImageView                       m_DepthImageView = VK_NULL_HANDLE;
 
         // TODO(v1tr10l7): remove public
       public:

@@ -9,6 +9,7 @@
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Export.hpp"
 #include "Vortex/Core/Log/Log.hpp"
+#include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Platform.hpp"
 #include "Vortex/Core/Types.hpp"
 

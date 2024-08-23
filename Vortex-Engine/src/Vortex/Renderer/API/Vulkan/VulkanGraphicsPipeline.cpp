@@ -163,6 +163,17 @@ namespace Vortex
         VkCall(device.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE,
                                            &m_PipelineLayout));
 
+        vk::PipelineDepthStencilStateCreateInfo depthInfo{};
+        depthInfo.sType
+            = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
+        depthInfo.depthTestEnable       = VK_TRUE;
+        depthInfo.depthWriteEnable      = VK_TRUE;
+        depthInfo.depthCompareOp        = vk::CompareOp::eLess;
+        depthInfo.depthBoundsTestEnable = VK_FALSE;
+        depthInfo.minDepthBounds        = 0.0f; // Optional
+        depthInfo.maxDepthBounds        = 1.0f; // Optional
+        depthInfo.stencilTestEnable     = VK_FALSE;
+
         vk::GraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
         pipelineInfo.stageCount          = 2;
@@ -171,6 +182,7 @@ namespace Vortex
         pipelineInfo.pInputAssemblyState = &inputAssembly;
         pipelineInfo.pViewportState      = &viewportState;
         pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pDepthStencilState  = &depthInfo;
         pipelineInfo.pMultisampleState   = &multisampling;
         pipelineInfo.pColorBlendState    = &colorBlending;
         pipelineInfo.pDynamicState       = &dynamicState;

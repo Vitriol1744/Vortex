@@ -113,6 +113,7 @@ namespace Vortex
         }
 
         CreateImageViews();
+        CreateDepthBuffer();
 
         CreateCommandBuffers();
         CreateSyncObjects();
@@ -122,13 +123,13 @@ namespace Vortex
     }
     void VulkanSwapChain::Destroy()
     {
-        VtCoreTrace("Vulkan: Destroying swapchain...");
         vk::Device device = VulkanContext::GetDevice();
         device.waitIdle();
 
         device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
         m_RenderPass = VK_NULL_HANDLE;
 
+        VtCoreTrace("Vulkan: Destroying swapChain frames...");
         for (auto& frame : m_Frames)
         {
             VkCall(
@@ -147,6 +148,11 @@ namespace Vortex
             std::memset(&frame, 0, sizeof(Frame));
         }
 
+        VtCoreTrace("Vulkan: Destroying the depth buffer...");
+        device.destroyImageView(m_DepthImageView);
+        m_DepthImage.Destroy();
+
+        VtCoreTrace("Vulkan: Destroying swapChain...");
         if (m_SwapChain)
             device.destroySwapchainKHR(m_SwapChain, VK_NULL_HANDLE);
         m_SwapChain = VK_NULL_HANDLE;
@@ -196,11 +202,12 @@ namespace Vortex
         renderPassInfo.renderArea.offset.y = 0;
         renderPassInfo.renderArea.extent   = m_Extent;
 
-        vk::ClearValue     clearValue;
-        std::array<f32, 4> color = {0.1f, 0.1f, 0.1f, 1.0f};
-        clearValue.setColor(color);
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues    = &clearValue;
+        std::array<vk::ClearValue, 2> clearValues;
+        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
+        clearValues[0].setColor(color);
+        clearValues[1].setDepthStencil({1.0, 0});
+        renderPassInfo.clearValueCount = clearValues.size();
+        renderPassInfo.pClearValues    = clearValues.data();
 
         commandBuffer.beginRenderPass(&renderPassInfo,
                                       vk::SubpassContents::eInline);
@@ -386,42 +393,64 @@ namespace Vortex
     {
         vk::Device                device = VulkanContext::GetDevice();
 
-        vk::AttachmentDescription colorAttachmentDescription{};
-        colorAttachmentDescription.format  = m_ImageFormat;
-        colorAttachmentDescription.samples = vk::SampleCountFlagBits::e1;
-        colorAttachmentDescription.loadOp  = vk::AttachmentLoadOp::eClear;
-        colorAttachmentDescription.storeOp = vk::AttachmentStoreOp::eStore;
-        colorAttachmentDescription.stencilLoadOp
-            = vk::AttachmentLoadOp::eDontCare;
-        colorAttachmentDescription.stencilStoreOp
-            = vk::AttachmentStoreOp::eDontCare;
-        colorAttachmentDescription.initialLayout = vk::ImageLayout::eUndefined;
-        colorAttachmentDescription.finalLayout
-            = vk::ImageLayout::ePresentSrcKHR;
+        vk::AttachmentDescription colorAttachment{};
+        colorAttachment.format         = m_ImageFormat;
+        colorAttachment.samples        = vk::SampleCountFlagBits::e1;
+        colorAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
+        colorAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
+        colorAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+        colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        colorAttachment.initialLayout  = vk::ImageLayout::eUndefined;
+        colorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+
+        vk::Format depthFormat
+            = VulkanContext::GetPhysicalDevice().FindDepthFormat();
+        vk::AttachmentDescription depthAttachment{};
+        depthAttachment.format         = depthFormat;
+        depthAttachment.samples        = vk::SampleCountFlagBits::e1;
+        depthAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
+        depthAttachment.storeOp        = vk::AttachmentStoreOp::eDontCare;
+        depthAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+        depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        depthAttachment.initialLayout  = vk::ImageLayout::eUndefined;
+        depthAttachment.finalLayout
+            = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
         vk::AttachmentReference colorReference{};
         colorReference.attachment = 0;
         colorReference.layout     = vk::ImageLayout::eColorAttachmentOptimal;
 
+        vk::AttachmentReference depthReference{};
+        depthReference.attachment = 1;
+        depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
         vk::SubpassDescription subpassDescription{};
         subpassDescription.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-        subpassDescription.colorAttachmentCount = 1;
-        subpassDescription.pColorAttachments    = &colorReference;
+        subpassDescription.colorAttachmentCount    = 1;
+        subpassDescription.pColorAttachments       = &colorReference;
+        subpassDescription.pDepthStencilAttachment = &depthReference;
 
         vk::SubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
         dependency.srcStageMask
-            = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            = vk::PipelineStageFlagBits::eColorAttachmentOutput
+            | vk::PipelineStageFlagBits::eEarlyFragmentTests;
         dependency.srcAccessMask = vk::AccessFlags();
         dependency.dstStageMask
-            = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-        dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+            = vk::PipelineStageFlagBits::eColorAttachmentOutput
+            | vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        dependency.dstAccessMask
+            = vk::AccessFlagBits::eColorAttachmentWrite
+            | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+        std::array<vk::AttachmentDescription, 2> attachments
+            = {colorAttachment, depthAttachment};
 
         vk::RenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments    = &colorAttachmentDescription;
+        renderPassInfo.attachmentCount = attachments.size();
+        renderPassInfo.pAttachments    = attachments.data();
         renderPassInfo.subpassCount    = 1;
         renderPassInfo.pSubpasses      = &subpassDescription;
         renderPassInfo.dependencyCount = 1;
@@ -443,11 +472,14 @@ namespace Vortex
 
         for (auto& frame : m_Frames)
         {
+            std::array<vk::ImageView, 2> attachments
+                = {frame.ImageView, m_DepthImageView};
+
             vk::FramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
             framebufferInfo.renderPass      = m_RenderPass;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments    = &frame.ImageView;
+            framebufferInfo.attachmentCount = attachments.size();
+            framebufferInfo.pAttachments    = attachments.data();
             framebufferInfo.width           = m_Extent.width;
             framebufferInfo.height          = m_Extent.height;
             framebufferInfo.layers          = 1;
@@ -462,24 +494,18 @@ namespace Vortex
         vk::Format depthFormat
             = VulkanContext::GetPhysicalDevice().FindDepthFormat();
 
-        vk::ImageCreateInfo imageInfo{};
-        imageInfo.sType         = vk::StructureType::eImageCreateInfo;
-        imageInfo.imageType     = vk::ImageType::e2D;
-        imageInfo.extent.width  = m_Extent.width;
-        imageInfo.extent.height = m_Extent.height;
-        imageInfo.extent.depth  = 1;
-        imageInfo.mipLevels     = 1;
-        imageInfo.arrayLayers   = 1;
-        imageInfo.format        = depthFormat;
-        imageInfo.tiling        = vk::ImageTiling::eOptimal;
-        imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-        imageInfo.usage       = vk::ImageUsageFlagBits::eDepthStencilAttachment;
-        imageInfo.samples     = vk::SampleCountFlagBits::e1;
-        imageInfo.sharingMode = vk::SharingMode::eExclusive;
-
-        vk::DeviceSize size;
-        m_DepthAllocation = VulkanAllocator::AllocateImage(
-            imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_DepthImage, size);
+        vk::Device device = VulkanContext::GetDevice();
+        if (m_DepthImage)
+        {
+            device.destroyImageView(m_DepthImageView);
+            m_DepthImage.Destroy();
+        }
+        m_DepthImage.Create(m_Extent.width, m_Extent.height, depthFormat,
+                            vk::ImageTiling::eOptimal,
+                            vk::ImageUsageFlagBits::eDepthStencilAttachment);
+        m_DepthImage.TransitionLayout(
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
         vk::ImageViewCreateInfo viewInfo{};
         viewInfo.sType    = vk::StructureType::eImageViewCreateInfo;
@@ -492,7 +518,6 @@ namespace Vortex
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount     = 1;
 
-        vk::Device device                        = VulkanContext::GetDevice();
         VkCall(device.createImageView(&viewInfo, VK_NULL_HANDLE,
                                       &m_DepthImageView));
     }

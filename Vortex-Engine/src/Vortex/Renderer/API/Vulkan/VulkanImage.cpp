@@ -38,7 +38,7 @@ namespace Vortex
     }
     void VulkanImage::Destroy()
     {
-        if (m_Image)
+        if (m_Allocation)
         {
             VulkanAllocator::DestroyImage(m_Image, m_Allocation);
             m_Image      = VK_NULL_HANDLE;
@@ -101,6 +101,7 @@ namespace Vortex
             && newLayout == vk::ImageLayout::eTransferDstOptimal)
         {
             barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
             srcStage              = vk::PipelineStageFlagBits::eTopOfPipe;
             dstStage              = vk::PipelineStageFlagBits::eTransfer;
         }
@@ -112,6 +113,23 @@ namespace Vortex
 
             srcStage              = vk::PipelineStageFlagBits::eTransfer;
             dstStage              = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (oldLayout == vk::ImageLayout::eUndefined
+                 && newLayout
+                        == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        {
+            barrier.dstAccessMask
+                = vk::AccessFlagBits::eDepthStencilAttachmentRead
+                | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+            srcStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            dstStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+
+            barrier.subresourceRange.aspectMask
+                = vk::ImageAspectFlagBits::eDepth;
+
+            barrier.subresourceRange.aspectMask
+                |= vk::ImageAspectFlagBits::eStencil;
         }
         else VtCoreAssert(false);
 

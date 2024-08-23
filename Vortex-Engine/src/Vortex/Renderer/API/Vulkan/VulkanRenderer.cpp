@@ -41,7 +41,7 @@ namespace Vortex
     {
         VtAssertFrameStarted();
 
-        auto              swapChain     = currentContext->GetSwapChain();
+        auto&             swapChain     = currentContext->GetSwapChain();
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         auto              vkPipeline
             = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(pipeline);
