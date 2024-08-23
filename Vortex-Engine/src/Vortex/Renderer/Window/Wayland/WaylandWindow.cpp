@@ -14,17 +14,19 @@
 namespace Vortex
 {
     wl_pointer_listener WaylandWindow::s_PointerListener = {
-        .enter                   = PointerHandleEnter,
-        .leave                   = PointerHandleLeave,
-        .motion                  = PointerHandleMotion,
-        .button                  = PointerHandleButton,
-        .axis                    = PointerHandleAxis,
-        .frame                   = PointerHandleFrame,
-        .axis_source             = PointerHandleAxisSource,
-        .axis_stop               = PointerHandleAxisStop,
-        .axis_discrete           = PointerHandleAxisDiscrete,
+        .enter         = PointerHandleEnter,
+        .leave         = PointerHandleLeave,
+        .motion        = PointerHandleMotion,
+        .button        = PointerHandleButton,
+        .axis          = PointerHandleAxis,
+        .frame         = PointerHandleFrame,
+        .axis_source   = PointerHandleAxisSource,
+        .axis_stop     = PointerHandleAxisStop,
+        .axis_discrete = PointerHandleAxisDiscrete,
+#if 0
         .axis_value120           = PointerHandleAxisValue120,
         .axis_relative_direction = PointerHandleAxisRelativeDirection,
+#endif
     };
     wl_keyboard_listener WaylandWindow::s_KeyboardListener = {
         .keymap      = KeyboardHandleKeymap,
