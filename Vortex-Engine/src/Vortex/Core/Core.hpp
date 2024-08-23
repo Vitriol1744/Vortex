@@ -17,6 +17,7 @@
 #define VT_TODO()                                                              \
     {                                                                          \
         std::source_location source = std::source_location::current();         \
+        VT_UNUSED(source);                                                     \
         VtCoreWarn("{} is not implemented", source.function_name());           \
     }
 
