@@ -8,14 +8,14 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
+#include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
 
 #ifdef VT_PLATFORM_LINUX
     #define VK_USE_PLATFORM_X11_KHR
     #define GLFW_EXPOSE_NATIVE_X11
     #include <X11/Xlib-xcb.h>
-    #include <vulkan/vulkan_xcb.h>
-    #define GLFW_EXPOSE_NATIVE_WAYLAND
     #include <vulkan/vulkan_wayland.h>
+    #include <vulkan/vulkan_xcb.h>
 #elifdef VT_PLATFORM_WINDOWS
     #define VK_USE_PLATFORM_WIN32_KHR
     #define GLFW_EXPOSE_NATIVE_WIN32
@@ -55,7 +55,7 @@ namespace Vortex
                 = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
             createInfo.pNext   = VK_NULL_HANDLE;
             createInfo.flags   = 0;
-            createInfo.display = glfwGetWaylandDisplay();
+            createInfo.display = Wayland::GetDisplay();
             createInfo.surface
                 = std::any_cast<wl_surface*>(window->GetNativeHandle());
 

@@ -9,28 +9,30 @@
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
 
+#include <linux/input-event-codes.h>
+#include <poll.h>
 #include <xkbcommon/xkbcommon.h>
+
+#include <GLFW/glfw3.h>
 
 namespace Vortex
 {
     usize WaylandWindow::s_WindowsCount = 0;
     namespace
     {
-        wl_display*       s_Display            = nullptr;
-        wl_registry*      s_Registry           = nullptr;
-        const char*       s_ProxyTag           = glfwGetVersionString();
-        xkb_context*      s_XkbContext         = nullptr;
-        wl_compositor*    s_Compositor         = nullptr;
-        wl_subcompositor* s_Subcompositor      = nullptr;
-        wl_shm*           s_Shm                = nullptr;
-        wl_seat*          s_Seat               = nullptr;
-        // Mouse pointer
-        wl_pointer*       s_Pointer            = nullptr;
-        wl_keyboard*      s_Keyboard           = nullptr;
+        wl_display*                  s_Display            = nullptr;
+        wl_registry*                 s_Registry           = nullptr;
+        [[maybe_unused]] const char* s_ProxyTag           = "Proxy tag";
+        xkb_context*                 s_XkbContext         = nullptr;
+        wl_compositor*               s_Compositor         = nullptr;
+        wl_subcompositor*            s_Subcompositor      = nullptr;
+        wl_shm*                      s_Shm                = nullptr;
+        wl_seat*                     s_Seat               = nullptr;
 
-        u32               s_Serial             = 0;
-        u32               s_PointerEnterSerial = 0;
-        WaylandWindow*    s_FocusedWindow      = nullptr;
+        u32                          s_Serial             = 0;
+        u32                          s_PointerEnterSerial = 0;
+        WaylandWindow*               s_FocusedWindow      = nullptr;
+        WaylandWindow*               s_KeyboardFocus      = nullptr;
     }; // namespace
 
     static void glfwErrorCallback(int code, const char* description)
@@ -43,143 +45,127 @@ namespace Vortex
     }
 
     using Input::KeyCode;
-    static KeyCode ToVtKeyCode(i32 key)
+
+    static KeyCode ToVtKeyCode(u32 scancode)
     {
-        KeyCode ret = KeyCode::eUnknown;
-        switch (key)
+        KeyCode keyCode = KeyCode::eUnknown;
+        switch (scancode)
         {
-            case GLFW_KEY_0: ret = KeyCode::eNum0; break;
-            case GLFW_KEY_1: ret = KeyCode::eNum1; break;
-            case GLFW_KEY_2: ret = KeyCode::eNum2; break;
-            case GLFW_KEY_3: ret = KeyCode::eNum3; break;
-            case GLFW_KEY_4: ret = KeyCode::eNum4; break;
-            case GLFW_KEY_5: ret = KeyCode::eNum5; break;
-            case GLFW_KEY_6: ret = KeyCode::eNum6; break;
-            case GLFW_KEY_7: ret = KeyCode::eNum7; break;
-            case GLFW_KEY_8: ret = KeyCode::eNum8; break;
-            case GLFW_KEY_9: ret = KeyCode::eNum9; break;
-            case GLFW_KEY_A: ret = KeyCode::eA; break;
-            case GLFW_KEY_B: ret = KeyCode::eB; break;
-            case GLFW_KEY_C: ret = KeyCode::eC; break;
-            case GLFW_KEY_D: ret = KeyCode::eD; break;
-            case GLFW_KEY_E: ret = KeyCode::eE; break;
-            case GLFW_KEY_F: ret = KeyCode::eF; break;
-            case GLFW_KEY_G: ret = KeyCode::eG; break;
-            case GLFW_KEY_H: ret = KeyCode::eH; break;
-            case GLFW_KEY_I: ret = KeyCode::eI; break;
-            case GLFW_KEY_J: ret = KeyCode::eJ; break;
-            case GLFW_KEY_K: ret = KeyCode::eK; break;
-            case GLFW_KEY_L: ret = KeyCode::eL; break;
-            case GLFW_KEY_M: ret = KeyCode::eM; break;
-            case GLFW_KEY_N: ret = KeyCode::eN; break;
-            case GLFW_KEY_O: ret = KeyCode::eO; break;
-            case GLFW_KEY_P: ret = KeyCode::eP; break;
-            case GLFW_KEY_Q: ret = KeyCode::eQ; break;
-            case GLFW_KEY_R: ret = KeyCode::eR; break;
-            case GLFW_KEY_S: ret = KeyCode::eS; break;
-            case GLFW_KEY_T: ret = KeyCode::eT; break;
-            case GLFW_KEY_U: ret = KeyCode::eU; break;
-            case GLFW_KEY_V: ret = KeyCode::eV; break;
-            case GLFW_KEY_W: ret = KeyCode::eW; break;
-            case GLFW_KEY_X: ret = KeyCode::eX; break;
-            case GLFW_KEY_Y: ret = KeyCode::eY; break;
-            case GLFW_KEY_Z: ret = KeyCode::eZ; break;
-            case GLFW_KEY_GRAVE_ACCENT: ret = KeyCode::eTilde; break;
-            case GLFW_KEY_F1: ret = KeyCode::eF1; break;
-            case GLFW_KEY_F2: ret = KeyCode::eF2; break;
-            case GLFW_KEY_F3: ret = KeyCode::eF3; break;
-            case GLFW_KEY_F4: ret = KeyCode::eF4; break;
-            case GLFW_KEY_F5: ret = KeyCode::eF5; break;
-            case GLFW_KEY_F6: ret = KeyCode::eF6; break;
-            case GLFW_KEY_F7: ret = KeyCode::eF7; break;
-            case GLFW_KEY_F8: ret = KeyCode::eF8; break;
-            case GLFW_KEY_F9: ret = KeyCode::eF9; break;
-            case GLFW_KEY_F10: ret = KeyCode::eF10; break;
-            case GLFW_KEY_F11: ret = KeyCode::eF11; break;
-            case GLFW_KEY_F12: ret = KeyCode::eF12; break;
-            case GLFW_KEY_F13: ret = KeyCode::eF13; break;
-            case GLFW_KEY_F14: ret = KeyCode::eF14; break;
-            case GLFW_KEY_F15: ret = KeyCode::eF15; break;
-            case GLFW_KEY_ESCAPE: ret = KeyCode::eEscape; break;
-            case GLFW_KEY_BACKSPACE: ret = KeyCode::eBackspace; break;
-            case GLFW_KEY_TAB: ret = KeyCode::eTab; break;
-            case GLFW_KEY_CAPS_LOCK: ret = KeyCode::eCapsLock; break;
-            case GLFW_KEY_ENTER: ret = KeyCode::eReturn; break;
-            case GLFW_KEY_KP_ENTER: ret = KeyCode::eEnter; break;
-            case GLFW_KEY_LEFT_SHIFT: ret = KeyCode::eLShift; break;
-            case GLFW_KEY_RIGHT_SHIFT: ret = KeyCode::eRShift; break;
-            case GLFW_KEY_LEFT_CONTROL: ret = KeyCode::eLCtrl; break;
-            case GLFW_KEY_RIGHT_CONTROL: ret = KeyCode::eRCtrl; break;
-            case GLFW_KEY_LEFT_ALT: ret = KeyCode::eLAlt; break;
-            case GLFW_KEY_RIGHT_ALT: ret = KeyCode::eRAlt; break;
-            case GLFW_KEY_LEFT_SUPER: ret = KeyCode::eLSystem; break;
-            case GLFW_KEY_RIGHT_SUPER: ret = KeyCode::eRSystem; break;
-            case GLFW_KEY_SPACE: ret = KeyCode::eSpace; break;
-            case GLFW_KEY_MINUS: ret = KeyCode::eHyphen; break;
-            case GLFW_KEY_EQUAL: ret = KeyCode::eEqual; break;
-            case GLFW_KEY_KP_DECIMAL: ret = KeyCode::eDecimal; break;
-            case GLFW_KEY_LEFT_BRACKET: ret = KeyCode::eLBracket; break;
-            case GLFW_KEY_RIGHT_BRACKET: ret = KeyCode::eRBracket; break;
-            case GLFW_KEY_SEMICOLON: ret = KeyCode::eSemicolon; break;
-            case GLFW_KEY_APOSTROPHE: ret = KeyCode::eApostrophe; break;
-            case GLFW_KEY_COMMA: ret = KeyCode::eComma; break;
-            case GLFW_KEY_PERIOD: ret = KeyCode::ePeriod; break;
-            case GLFW_KEY_SLASH: ret = KeyCode::eSlash; break;
-            case GLFW_KEY_BACKSLASH: ret = KeyCode::eBackslash; break;
-            case GLFW_KEY_UP: ret = KeyCode::eUp; break;
-            case GLFW_KEY_DOWN: ret = KeyCode::eDown; break;
-            case GLFW_KEY_LEFT: ret = KeyCode::eLeft; break;
-            case GLFW_KEY_RIGHT: ret = KeyCode::eRight; break;
-            case GLFW_KEY_KP_0: ret = KeyCode::eNumpad0; break;
-            case GLFW_KEY_KP_1: ret = KeyCode::eNumpad1; break;
-            case GLFW_KEY_KP_2: ret = KeyCode::eNumpad2; break;
-            case GLFW_KEY_KP_3: ret = KeyCode::eNumpad3; break;
-            case GLFW_KEY_KP_4: ret = KeyCode::eNumpad4; break;
-            case GLFW_KEY_KP_5: ret = KeyCode::eNumpad5; break;
-            case GLFW_KEY_KP_6: ret = KeyCode::eNumpad6; break;
-            case GLFW_KEY_KP_7: ret = KeyCode::eNumpad7; break;
-            case GLFW_KEY_KP_8: ret = KeyCode::eNumpad8; break;
-            case GLFW_KEY_KP_9: ret = KeyCode::eNumpad9; break;
-            case GLFW_KEY_KP_ADD: ret = KeyCode::eAdd; break;
-            case GLFW_KEY_KP_SUBTRACT: ret = KeyCode::eSubtract; break;
-            case GLFW_KEY_KP_MULTIPLY: ret = KeyCode::eMultiply; break;
-            case GLFW_KEY_KP_DIVIDE: ret = KeyCode::eDivide; break;
-            case GLFW_KEY_INSERT: ret = KeyCode::eInsert; break;
-            case GLFW_KEY_DELETE: ret = KeyCode::eDelete; break;
-            case GLFW_KEY_PAGE_UP: ret = KeyCode::ePageUp; break;
-            case GLFW_KEY_PAGE_DOWN: ret = KeyCode::ePageDown; break;
-            case GLFW_KEY_HOME: ret = KeyCode::eHome; break;
-            case GLFW_KEY_END: ret = KeyCode::eEnd; break;
-            case GLFW_KEY_SCROLL_LOCK: ret = KeyCode::eScrollLock; break;
-            case GLFW_KEY_NUM_LOCK: ret = KeyCode::eNumLock; break;
-            case GLFW_KEY_PRINT_SCREEN: ret = KeyCode::ePrintScreen; break;
-            case GLFW_KEY_PAUSE: ret = KeyCode::ePause; break;
-            case GLFW_KEY_MENU: ret = KeyCode::eMenu; break;
+            case KEY_0: keyCode = KeyCode::eNum0; break;
+            case KEY_1: keyCode = KeyCode::eNum1; break;
+            case KEY_2: keyCode = KeyCode::eNum2; break;
+            case KEY_3: keyCode = KeyCode::eNum3; break;
+            case KEY_4: keyCode = KeyCode::eNum4; break;
+            case KEY_5: keyCode = KeyCode::eNum5; break;
+            case KEY_6: keyCode = KeyCode::eNum6; break;
+            case KEY_7: keyCode = KeyCode::eNum7; break;
+            case KEY_8: keyCode = KeyCode::eNum8; break;
+            case KEY_9: keyCode = KeyCode::eNum9; break;
+            case KEY_A: keyCode = KeyCode::eA; break;
+            case KEY_B: keyCode = KeyCode::eB; break;
+            case KEY_C: keyCode = KeyCode::eC; break;
+            case KEY_D: keyCode = KeyCode::eD; break;
+            case KEY_E: keyCode = KeyCode::eE; break;
+            case KEY_F: keyCode = KeyCode::eF; break;
+            case KEY_G: keyCode = KeyCode::eG; break;
+            case KEY_H: keyCode = KeyCode::eH; break;
+            case KEY_I: keyCode = KeyCode::eI; break;
+            case KEY_J: keyCode = KeyCode::eJ; break;
+            case KEY_K: keyCode = KeyCode::eK; break;
+            case KEY_L: keyCode = KeyCode::eL; break;
+            case KEY_M: keyCode = KeyCode::eM; break;
+            case KEY_N: keyCode = KeyCode::eN; break;
+            case KEY_O: keyCode = KeyCode::eO; break;
+            case KEY_P: keyCode = KeyCode::eP; break;
+            case KEY_Q: keyCode = KeyCode::eQ; break;
+            case KEY_R: keyCode = KeyCode::eR; break;
+            case KEY_S: keyCode = KeyCode::eS; break;
+            case KEY_T: keyCode = KeyCode::eT; break;
+            case KEY_U: keyCode = KeyCode::eU; break;
+            case KEY_V: keyCode = KeyCode::eV; break;
+            case KEY_W: keyCode = KeyCode::eW; break;
+            case KEY_X: keyCode = KeyCode::eX; break;
+            case KEY_Y: keyCode = KeyCode::eY; break;
+            case KEY_Z: keyCode = KeyCode::eZ; break;
+            case KEY_GRAVE: keyCode = KeyCode::eTilde; break;
+            case KEY_F1: keyCode = KeyCode::eF1; break;
+            case KEY_F2: keyCode = KeyCode::eF2; break;
+            case KEY_F3: keyCode = KeyCode::eF3; break;
+            case KEY_F4: keyCode = KeyCode::eF4; break;
+            case KEY_F5: keyCode = KeyCode::eF5; break;
+            case KEY_F6: keyCode = KeyCode::eF6; break;
+            case KEY_F7: keyCode = KeyCode::eF7; break;
+            case KEY_F8: keyCode = KeyCode::eF8; break;
+            case KEY_F9: keyCode = KeyCode::eF9; break;
+            case KEY_F10: keyCode = KeyCode::eF10; break;
+            case KEY_F11: keyCode = KeyCode::eF11; break;
+            case KEY_F12: keyCode = KeyCode::eF12; break;
+            case KEY_F13: keyCode = KeyCode::eF13; break;
+            case KEY_F14: keyCode = KeyCode::eF14; break;
+            case KEY_F15: keyCode = KeyCode::eF15; break;
+            case KEY_ESC: keyCode = KeyCode::eEscape; break;
+            case KEY_BACKSPACE: keyCode = KeyCode::eBackspace; break;
+            case KEY_TAB: keyCode = KeyCode::eTab; break;
+            case KEY_CAPSLOCK: keyCode = KeyCode::eCapsLock; break;
+            case KEY_ENTER: keyCode = KeyCode::eReturn; break;
+            case KEY_KPENTER: keyCode = KeyCode::eEnter; break;
+            case KEY_LEFTSHIFT: keyCode = KeyCode::eLShift; break;
+            case KEY_RIGHTSHIFT: keyCode = KeyCode::eRShift; break;
+            case KEY_LEFTCTRL: keyCode = KeyCode::eLCtrl; break;
+            case KEY_RIGHTCTRL: keyCode = KeyCode::eRCtrl; break;
+            case KEY_LEFTALT: keyCode = KeyCode::eLAlt; break;
+            case KEY_RIGHTALT: keyCode = KeyCode::eRAlt; break;
+            case KEY_LEFTMETA: keyCode = KeyCode::eLSystem; break;
+            case KEY_RIGHTMETA: keyCode = KeyCode::eRSystem; break;
+            case KEY_SPACE: keyCode = KeyCode::eSpace; break;
+            case KEY_MINUS: keyCode = KeyCode::eHyphen; break;
+            case KEY_EQUAL: keyCode = KeyCode::eEqual; break;
+            case KEY_KPDOT: keyCode = KeyCode::eDecimal; break;
+            case KEY_LEFTBRACE: keyCode = KeyCode::eLBracket; break;
+            case KEY_RIGHTBRACE: keyCode = KeyCode::eRBracket; break;
+            case KEY_SEMICOLON: keyCode = KeyCode::eSemicolon; break;
+            case KEY_APOSTROPHE: keyCode = KeyCode::eApostrophe; break;
+            case KEY_COMMA: keyCode = KeyCode::eComma; break;
+            case KEY_DOT: keyCode = KeyCode::ePeriod; break;
+            case KEY_SLASH: keyCode = KeyCode::eSlash; break;
+            case KEY_BACKSLASH: keyCode = KeyCode::eBackslash; break;
+            case KEY_UP: keyCode = KeyCode::eUp; break;
+            case KEY_DOWN: keyCode = KeyCode::eDown; break;
+            case KEY_LEFT: keyCode = KeyCode::eLeft; break;
+            case KEY_RIGHT: keyCode = KeyCode::eRight; break;
+            case KEY_KP0: keyCode = KeyCode::eNumpad0; break;
+            case KEY_KP1: keyCode = KeyCode::eNumpad1; break;
+            case KEY_KP2: keyCode = KeyCode::eNumpad2; break;
+            case KEY_KP3: keyCode = KeyCode::eNumpad3; break;
+            case KEY_KP4: keyCode = KeyCode::eNumpad4; break;
+            case KEY_KP5: keyCode = KeyCode::eNumpad5; break;
+            case KEY_KP6: keyCode = KeyCode::eNumpad6; break;
+            case KEY_KP7: keyCode = KeyCode::eNumpad7; break;
+            case KEY_KP8: keyCode = KeyCode::eNumpad8; break;
+            case KEY_KP9: keyCode = KeyCode::eNumpad9; break;
+            case KEY_KPPLUS: keyCode = KeyCode::eAdd; break;
+            case KEY_KPMINUS: keyCode = KeyCode::eSubtract; break;
+            case KEY_KPASTERISK: keyCode = KeyCode::eMultiply; break;
+            case KEY_KPSLASH: keyCode = KeyCode::eDivide; break;
+            case KEY_INSERT: keyCode = KeyCode::eInsert; break;
+            case KEY_DELETE: keyCode = KeyCode::eDelete; break;
+            case KEY_PAGEUP: keyCode = KeyCode::ePageUp; break;
+            case KEY_PAGEDOWN: keyCode = KeyCode::ePageDown; break;
+            case KEY_HOME: keyCode = KeyCode::eHome; break;
+            case KEY_END: keyCode = KeyCode::eEnd; break;
+            case KEY_SCROLLLOCK: keyCode = KeyCode::eScrollLock; break;
+            case KEY_NUMLOCK: keyCode = KeyCode::eNumLock; break;
+            case KEY_PRINT: keyCode = KeyCode::ePrintScreen; break;
+            case KEY_PAUSE: keyCode = KeyCode::ePause; break;
+            case KEY_MENU: keyCode = KeyCode::eMenu; break;
 
             default: break;
         }
 
-        return ret;
+        return keyCode;
     }
 
     using Input::MouseCode;
-    static MouseCode ToVtMouseCode(i32 mouse)
-    {
-        MouseCode ret = MouseCode::eUnknown;
-        switch (mouse)
-        {
-            case GLFW_MOUSE_BUTTON_LEFT: ret = MouseCode::eLeft; break;
-            case GLFW_MOUSE_BUTTON_RIGHT: ret = MouseCode::eRight; break;
-            case GLFW_MOUSE_BUTTON_MIDDLE: ret = MouseCode::eMiddle; break;
-            case GLFW_MOUSE_BUTTON_4: ret = MouseCode::eX1; break;
-            case GLFW_MOUSE_BUTTON_5: ret = MouseCode::eX2; break;
-            case GLFW_MOUSE_BUTTON_6: ret = MouseCode::eX3; break;
-            case GLFW_MOUSE_BUTTON_7: ret = MouseCode::eX4; break;
-            case GLFW_MOUSE_BUTTON_8: ret = MouseCode::eX5; break;
-        }
-
-        return ret;
-    }
 
     WaylandWindow::WaylandWindow(const WindowSpecification& specification)
         : Window(specification)
@@ -187,7 +173,7 @@ namespace Vortex
         if (s_WindowsCount == 0)
         {
             VtCoreAssert(WaylandWindow::Initialize());
-            VtCoreInfo("GLFW: Successfully initialized, version: {}",
+            VtCoreInfo("Wayland: Successfully initialized, version: {}",
                        glfwGetVersionString());
         }
 
@@ -195,68 +181,71 @@ namespace Vortex
         i32         height = specification.VideoMode.Height;
         const char* title  = specification.Title.data();
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, specification.Visible);
-        m_Data.Visible = specification.Visible;
-        glfwWindowHint(GLFW_DECORATED, specification.Decorated);
-        m_Data.Decorated = specification.Decorated;
-        glfwWindowHint(GLFW_FOCUSED, specification.Focused);
-        m_Data.Focused = specification.Focused;
-        glfwWindowHint(GLFW_FLOATING, specification.AlwaysOnTop);
-        glfwWindowHint(GLFW_MAXIMIZED, specification.Maximized);
-        glfwWindowHint(GLFW_POSITION_X, specification.Position.x);
-        glfwWindowHint(GLFW_POSITION_Y, specification.Position.y);
-        m_Data.Position = specification.Position;
-        glfwWindowHint(GLFW_RED_BITS, specification.VideoMode.RedBits);
-        glfwWindowHint(GLFW_GREEN_BITS, specification.VideoMode.GreenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, specification.VideoMode.BlueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, specification.VideoMode.RefreshRate);
-        glfwWindowHint(GLFW_AUTO_ICONIFY, specification.AutoIconify);
+        m_Data.Visible     = specification.Visible;
+        m_Data.Decorated   = specification.Decorated;
+        m_Data.Focused     = specification.Focused;
+        m_Data.Position    = specification.Position;
         m_Data.AutoIconify = specification.AutoIconify;
-        glfwWindowHint(GLFW_CENTER_CURSOR, specification.CenterCursor);
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, specification.FocusOnShow);
-        m_Data.FocusOnShow   = specification.FocusOnShow;
+        m_Data.FocusOnShow = specification.FocusOnShow;
 
-        Ref<Monitor> monitor = specification.Monitor;
-        GLFWmonitor* monitorHandle
-            = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
-                      : nullptr;
+        static constexpr xdg_surface_listener wm_surface_listener{
+            .configure
+            = [](void*, xdg_surface* surface, uint32_t serial) noexcept
+            { xdg_surface_ack_configure(surface, serial); }};
 
-        m_Window = glfwCreateWindow(
-            width, height, title,
-            specification.Fullscreen ? monitorHandle : nullptr, nullptr);
-        m_WindowHandle                 = glfwGetWaylandWindow(m_Window);
+        static constexpr xdg_toplevel_listener toplevel_listener{
+            .configure =
+                [](void* data, xdg_toplevel*, i32 width, i32 height,
+                   wl_array*) noexcept
+            {
+                auto self = reinterpret_cast<WaylandWindow*>(data);
+
+                self->m_Data.VideoMode.Width  = width;
+                self->m_Data.VideoMode.Height = height;
+                WindowEvents::WindowResizedEvent(self, width, height);
+                self->m_RendererContext->OnResize();
+            },
+            .close =
+                [](void* data, xdg_toplevel*) noexcept
+            {
+                auto self           = reinterpret_cast<WaylandWindow*>(data);
+
+                self->m_Data.IsOpen = false;
+            },
+            .configure_bounds =
+                [](void*, xdg_toplevel*, int32_t, int32_t) noexcept {
+
+                },
+            .wm_capabilities =
+                [](void*, xdg_toplevel*, wl_array*) noexcept {
+
+                }};
+
+        auto surface = wl_compositor_create_surface(Wayland::GetCompositor());
+        wl_surface_set_user_data(surface, this);
+        m_WmSurface
+            = xdg_wm_base_get_xdg_surface(Wayland::GetWmBase(), surface);
+        xdg_surface_add_listener(m_WmSurface, &wm_surface_listener, this);
+        m_TopLevel = xdg_surface_get_toplevel(m_WmSurface);
+        xdg_toplevel_add_listener(m_TopLevel, &toplevel_listener, this);
+        wl_surface_commit(surface);
+        m_WindowHandle = surface;
+
+        if (Wayland::GetAlphaModifier())
+            m_AlphaModifierSurface = wp_alpha_modifier_v1_get_surface(
+                Wayland::GetAlphaModifier(), m_WindowHandle);
+
+        SetOpacity(1.0f);
+
         GetWindowMap()[m_WindowHandle] = this;
 
-        if (monitor)
-        {
-            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
-            VideoMode                         currentMode
-                = specification.Monitor->GetCurrentVideoMode();
-            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
-                                              + currentMode.GreenBits
-                                              + currentMode.BlueBits;
-            [[maybe_unused]] u16 redBits     = currentMode.RedBits;
-            [[maybe_unused]] u16 greenBits   = currentMode.GreenBits;
-            [[maybe_unused]] u16 blueBits    = currentMode.BlueBits;
-            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
-
-            VtCoreTrace(
-                "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
-                "({} "
-                "{} {}) {} Hz'}}",
-                monitorName, currentMode.Width, currentMode.Height,
-                bitsPerPixel, redBits, greenBits, blueBits, refreshRate);
-        }
         VtCoreTrace(
-            "GLFW: Created window {{ width: {}, height: {}, title: {} }}",
+            "Wayland: Created window {{ width: {}, height: {}, title: {} }}",
             width, height, title);
 
         ++s_WindowsCount;
         SetVisible(true);
-        m_Data.IsOpen = !glfwWindowShouldClose(m_Window);
-
-        glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
+        m_Data.IsOpen = true;
 
         SetupEvents();
 
@@ -268,12 +257,40 @@ namespace Vortex
     {
         m_RendererContext.reset();
         VtCoreTrace("Wayland: Destroying window...");
-        glfwDestroyWindow(m_Window);
+        wp_alpha_modifier_surface_v1_destroy(m_AlphaModifierSurface);
+        xdg_toplevel_destroy(m_TopLevel);
+        xdg_surface_destroy(m_WmSurface);
+        wl_surface_destroy(m_WindowHandle);
         --s_WindowsCount;
         if (s_WindowsCount == 0) Shutdown();
     }
 
-    void WaylandWindow::PollEvents() { glfwPollEvents(); }
+    void WaylandWindow::PollEvents()
+    {
+        auto pollSingle = [](i32 fd, i16 events, i32 timeout) -> u16
+        {
+            pollfd pfd{.fd = fd, .events = events, .revents = 0};
+            VtCoreSlowAssert(poll(&pfd, 1, timeout) >= 0);
+
+            return pfd.revents;
+        };
+
+        wl_display* display = Wayland::GetDisplay();
+        while (wl_display_prepare_read(display))
+            wl_display_dispatch_pending(display);
+
+        while (wl_display_flush(display) < 0 && EAGAIN == errno)
+            pollSingle(wl_display_get_fd(display), POLLOUT, -1);
+
+        if (POLLIN & pollSingle(wl_display_get_fd(display), POLLIN, 0))
+        {
+            wl_display_read_events(display);
+            wl_display_dispatch_pending(display);
+        }
+        else wl_display_cancel_read(display);
+
+        VtCoreAssert(wl_display_get_error(display) == 0);
+    }
     void WaylandWindow::Present()
     {
         if (m_RendererContext) m_RendererContext->Present();
@@ -282,15 +299,16 @@ namespace Vortex
     bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
     bool WaylandWindow::IsMinimized() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED);
+        VT_TODO();
+        return false;
     }
     bool WaylandWindow::IsHovered() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
+        return s_FocusedWindow == this;
     }
     std::string WaylandWindow::GetTitle() const noexcept
     {
-        return glfwGetWindowTitle(m_Window);
+        return m_Data.Title;
     }
     Vec2i WaylandWindow::GetPosition() const noexcept
     {
@@ -304,55 +322,31 @@ namespace Vortex
     }
     Vec2i WaylandWindow::GetFramebufferSize() const noexcept
     {
-        Vec2i ret;
-        glfwGetFramebufferSize(m_Window, &ret.x, &ret.y);
-
-        return ret;
+        return GetSize();
     }
     Vec2f WaylandWindow::GetContentScale() const noexcept
     {
-        Vec2f ret;
-        glfwGetWindowContentScale(m_Window, &ret.x, &ret.y);
-
-        return ret;
+        return {0.0f, 0.0f};
     }
     f32  WaylandWindow::GetOpacity() const noexcept { return 1.0f; }
 
-    void WaylandWindow::Close() noexcept
-    {
-        m_Data.IsOpen = false;
-        glfwWindowShouldClose(m_Window);
-    }
-    void WaylandWindow::RequestFocus() noexcept { glfwFocusWindow(m_Window); }
-    void WaylandWindow::RequestUserAttention() const noexcept
-    {
-        glfwRequestWindowAttention(m_Window);
-    }
-    void WaylandWindow::Maximize() noexcept { glfwMaximizeWindow(m_Window); }
-    void WaylandWindow::Minimize() noexcept { glfwIconifyWindow(m_Window); }
-    void WaylandWindow::Restore() noexcept { glfwRestoreWindow(m_Window); }
+    void WaylandWindow::Close() noexcept { m_Data.IsOpen = false; }
+    void WaylandWindow::RequestFocus() noexcept { VT_TODO(); }
+    void WaylandWindow::RequestUserAttention() const noexcept { VT_TODO(); }
+    void WaylandWindow::Maximize() noexcept { VT_TODO(); }
+    void WaylandWindow::Minimize() noexcept { VT_TODO(); }
+    void WaylandWindow::Restore() noexcept { VT_TODO(); }
     void WaylandWindow::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
-        glfwSetWindowTitle(m_Window, title.data());
+        VT_TODO();
     }
     void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
+        (void)icons;
+        (void)count;
         VtCoreWarn(
             "Wayland: The platform doesn't support setting the window icon");
-        return;
-        std::vector<GLFWimage> images;
-        images.reserve(count);
-        for (auto& icon : std::views::counted(icons, count))
-        {
-            GLFWimage image;
-            image.width  = icon.GetWidth();
-            image.height = icon.GetHeight();
-            image.pixels = icon.GetPixels();
-            images.push_back(image);
-        }
-
-        glfwSetWindowIcon(m_Window, count, images.data());
     }
     void WaylandWindow::SetPosition(i32 x, i32 y)
     {
@@ -366,17 +360,24 @@ namespace Vortex
     {
         m_Data.Numererator = numerator;
         m_Data.Denominator = denominator;
-        glfwSetWindowAspectRatio(m_Window, numerator, denominator);
+        VT_TODO();
     }
     void WaylandWindow::SetSize(const Vec2i& size) noexcept
     {
-        glfwSetWindowSize(m_Window, size.x, size.y);
+        (void)size;
+        VT_TODO();
     }
     void WaylandWindow::SetOpacity(f32 opacity)
     {
-        VT_UNUSED(opacity);
+        static constexpr f64 maxUint32 = std::numeric_limits<u32>::max();
+        u32                  alpha     = maxUint32 * opacity;
+
+        if (m_AlphaModifierSurface)
+            return wp_alpha_modifier_surface_v1_set_multiplier(
+                m_AlphaModifierSurface, alpha);
+
         VtCoreWarn(
-            "Wayland: The platform does not support setting the window "
+            "Wayland: The compositor does not support setting the window's "
             "opacity");
     }
     void WaylandWindow::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
@@ -386,13 +387,13 @@ namespace Vortex
         m_Data.MinHeight = minHeight;
         m_Data.MaxWidth  = maxWidth;
         m_Data.MaxHeight = maxHeight;
-        glfwSetWindowSizeLimits(m_Window, minWidth, minHeight, maxWidth,
-                                maxHeight);
+        VT_TODO();
     }
 
     void WaylandWindow::SetAutoIconify(bool autoIconify) const noexcept
     {
-        glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
+        VT_TODO();
+        (void)autoIconify;
     }
     void WaylandWindow::SetCursorPosition(Vec2d position) noexcept
     {
@@ -400,14 +401,8 @@ namespace Vortex
         VtCoreWarn(
             "Wayland: The platform does not support setting cursor position");
     }
-    void WaylandWindow::ShowCursor() const noexcept
-    {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-    void WaylandWindow::HideCursor() const noexcept
-    {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    }
+    void WaylandWindow::ShowCursor() const noexcept { VT_TODO(); }
+    void WaylandWindow::HideCursor() const noexcept { VT_TODO(); }
     void WaylandWindow::SetFullscreen(bool fullscreen)
     {
         (void)fullscreen;
@@ -418,12 +413,12 @@ namespace Vortex
     void WaylandWindow::SetResizable(bool resizable) noexcept
     {
         m_Data.Resizable = resizable;
-        glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, resizable);
+        VT_TODO();
     }
     void WaylandWindow::SetVisible(bool visible) const
     {
-        if (visible) return glfwShowWindow(m_Window);
-        glfwHideWindow(m_Window);
+        VT_TODO();
+        (void)visible;
     }
     void WaylandWindow::SetAlwaysOnTop(bool alwaysOnTop)
     {
@@ -432,153 +427,10 @@ namespace Vortex
             "Wayland: The platform does not support making a window floating");
     }
 
-    void WaylandWindow::SetupEvents()
-    {
-        using namespace WindowEvents;
-
-#define VtGetWindow(handle)                                                    \
-    reinterpret_cast<WaylandWindow*>(glfwGetWindowUserPointer(handle))
-#pragma region callbacks
-        auto positionCallback = [](GLFWwindow* handle, i32 xpos, i32 ypos)
-        {
-            auto window = VtGetWindow(handle);
-            WindowMovedEvent(window, xpos, ypos);
-
-            window->m_Data.Position.x = xpos;
-            window->m_Data.Position.y = ypos;
-        };
-        auto sizeCallback = [](GLFWwindow* handle, i32 width, i32 height)
-        {
-            auto window = VtGetWindow(handle);
-            WindowResizedEvent(window, width, height);
-
-            window->m_Data.VideoMode.Width  = width;
-            window->m_Data.VideoMode.Height = height;
-        };
-        auto closeCallback = [](GLFWwindow* handle)
-        {
-            auto window = VtGetWindow(handle);
-            WindowClosedEvent(window);
-
-            window->m_Data.IsOpen = false;
-        };
-        auto focusCallback = [](GLFWwindow* handle, i32 focused)
-        {
-            auto window = VtGetWindow(handle);
-            if (focused) WindowFocusedEvent(window);
-            else WindowFocusLostEvent(window);
-
-            window->m_Data.Focused = focused;
-        };
-        auto iconifyCallback = [](GLFWwindow* handle, i32 iconified)
-        {
-            auto window = VtGetWindow(handle);
-            WindowMinimizedEvent(window, iconified);
-        };
-        auto maximizeCallback = [](GLFWwindow* handle, i32 maximized)
-        {
-            auto window = VtGetWindow(handle);
-            WindowMaximizedEvent(window, maximized);
-        };
-        auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
-        {
-            auto window = VtGetWindow(handle);
-
-            if (window->m_RendererContext)
-                window->m_RendererContext->OnResize();
-
-            FramebufferResizedEvent(window, width, height);
-        };
-        auto keyCallback =
-            [](GLFWwindow* handle, i32 key, i32 scancode, i32 action, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::KeyCode;
-            KeyCode keycode = ToVtKeyCode(key);
-            (void)scancode;
-            (void)mods;
-
-            switch (action)
-            {
-                case GLFW_PRESS:
-                    KeyPressedEvent(window, keycode, 0);
-                    window->m_Data.Keys[std::to_underlying(keycode)] = true;
-                    break;
-                case GLFW_RELEASE:
-                    KeyReleasedEvent(window, keycode);
-                    window->m_Data.Keys[std::to_underlying(keycode)] = false;
-                    break;
-                case GLFW_REPEAT: KeyPressedEvent(window, keycode, 1); break;
-            }
-        };
-        auto charCallback = [](GLFWwindow* handle, u32 codepoint)
-        {
-            auto window = VtGetWindow(handle);
-            KeyTypedEvent(window, codepoint);
-        };
-        auto mouseButtonCallback
-            = [](GLFWwindow* handle, i32 button, i32 action, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::MouseCode;
-            MouseCode mousecode = ToVtMouseCode(button);
-            (void)mods;
-
-            if (action == GLFW_PRESS)
-            {
-                MouseButtonPressedEvent(window, mousecode);
-                window->m_Data.MouseButtons[std::to_underlying(mousecode)]
-                    = true;
-            }
-            else if (action == GLFW_RELEASE)
-            {
-                MouseButtonReleasedEvent(window, mousecode);
-                window->m_Data.MouseButtons[std::to_underlying(mousecode)]
-                    = false;
-            }
-        };
-        auto charModsCallback = [](GLFWwindow* handle, u32 codepoint, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::KeyCode;
-            KeyCode keycode = ToVtKeyCode(mods);
-            UnicodeKeyTypedEvent(window, codepoint, keycode);
-        };
-        auto dropCallback
-            = [](GLFWwindow* handle, i32 pathCount, const char** paths)
-        {
-            auto window = VtGetWindow(handle);
-            for (i32 i = 0; i < pathCount; i++)
-                FileDroppedEvent(window, paths[i]);
-        };
-        auto joystickCallback = [](i32 jid, i32 event)
-        {
-            if (event == GLFW_CONNECTED) GamepadConnectedEvent(jid);
-            else if (event == GLFW_DISCONNECTED) GamepadDisconnectedEvent(jid);
-        };
-        // TODO(v1tr10l7): Set cursor
-#pragma endregion
-
-#undef VtGetWindow
-        glfwSetWindowPosCallback(m_Window, positionCallback);
-        glfwSetWindowSizeCallback(m_Window, sizeCallback);
-        glfwSetWindowCloseCallback(m_Window, closeCallback);
-        glfwSetWindowFocusCallback(m_Window, focusCallback);
-        glfwSetWindowIconifyCallback(m_Window, iconifyCallback);
-        glfwSetWindowMaximizeCallback(m_Window, maximizeCallback);
-        glfwSetFramebufferSizeCallback(m_Window, framebufferCallback);
-        glfwSetKeyCallback(m_Window, keyCallback);
-        glfwSetCharCallback(m_Window, charCallback);
-        glfwSetMouseButtonCallback(m_Window, mouseButtonCallback);
-        glfwSetCharModsCallback(m_Window, charModsCallback);
-        glfwSetDropCallback(m_Window, dropCallback);
-        glfwSetJoystickCallback(joystickCallback);
-    }
+    void WaylandWindow::SetupEvents() { using namespace WindowEvents; }
 
     bool WaylandWindow::Initialize()
     {
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-
         glfwSetErrorCallback(glfwErrorCallback);
 
         bool status = glfwInit() == GLFW_TRUE;
@@ -590,9 +442,16 @@ namespace Vortex
         static wl_pointer_listener pointerListener{};
         pointerListener.enter  = PointerHandleEnter;
         pointerListener.leave  = PointerHandleLeave;
+        pointerListener.button = PointerHandleButton;
         pointerListener.motion = PointerHandleMotion;
         pointerListener.axis   = PointerHandleAxis;
         Wayland::SetPointerListener(&pointerListener);
+
+        static wl_keyboard_listener keyboardListener{};
+        keyboardListener.enter = KeyboardHandleEnter;
+        keyboardListener.leave = KeyboardHandleLeave;
+        keyboardListener.key   = KeyboardHandleKey;
+        Wayland::SetKeyboardListener(&keyboardListener);
 
         s_Compositor    = Wayland::GetCompositor();
         s_Subcompositor = Wayland::GetSubcompositor();
@@ -609,20 +468,8 @@ namespace Vortex
     }
     void WaylandWindow::Shutdown()
     {
-#define VtRelease(object, destroy_function)                                    \
-    if (object) destroy_function(object)
-
-        VtRelease(s_XkbContext, xkb_context_unref);
-        VtRelease(s_Subcompositor, wl_subcompositor_destroy);
-        VtRelease(s_Compositor, wl_compositor_destroy);
-        VtRelease(s_Shm, wl_shm_destroy);
-        VtRelease(s_Pointer, wl_pointer_destroy);
-        VtRelease(s_Keyboard, wl_keyboard_destroy);
-        VtRelease(s_Seat, wl_seat_destroy);
-        VtRelease(s_Registry, wl_registry_destroy);
-
         VtCoreTrace("Wayland: Shutting down");
-        glfwTerminate();
+        Wayland::Shutdown();
     }
 
     void WaylandWindow::PointerHandleEnter(void* userData, wl_pointer* pointer,
@@ -683,6 +530,13 @@ namespace Vortex
         VT_UNUSED(time);
         VT_UNUSED(button);
         VT_UNUSED(state);
+
+        WaylandWindow* window    = s_FocusedWindow;
+        MouseCode      mouseCode = static_cast<MouseCode>(button - BTN_LEFT);
+        if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+            WindowEvents::MouseButtonPressedEvent(window, mouseCode);
+        else if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+            WindowEvents::MouseButtonReleasedEvent(window, mouseCode);
     }
     void WaylandWindow::PointerHandleAxis(void* userData, wl_pointer* pointer,
                                           u32 time, u32 axis, wl_fixed_t value)
@@ -774,6 +628,9 @@ namespace Vortex
         VT_UNUSED(serial);
         VT_UNUSED(surface);
         VT_UNUSED(keys);
+
+        WaylandWindow* window = WaylandWindow::GetWindowMap()[surface];
+        s_KeyboardFocus       = window;
     }
     void WaylandWindow::KeyboardHandleLeave(void*        userData,
                                             wl_keyboard* keyboard, u32 serial,
@@ -783,6 +640,7 @@ namespace Vortex
         VT_UNUSED(keyboard);
         VT_UNUSED(serial);
         VT_UNUSED(surface);
+        s_KeyboardFocus = nullptr;
     }
     void WaylandWindow::KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
                                           u32 serial, u32 time, u32 scancode,
@@ -794,6 +652,16 @@ namespace Vortex
         VT_UNUSED(time);
         VT_UNUSED(scancode);
         VT_UNUSED(state);
+
+        KeyCode key = ToVtKeyCode(scancode);
+        if (state == WL_KEYBOARD_KEY_STATE_PRESSED && key == KeyCode::eEscape
+            && s_KeyboardFocus)
+            s_KeyboardFocus->m_Data.IsOpen = false;
+
+        if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+            WindowEvents::KeyPressedEvent(s_KeyboardFocus, key, 0);
+        else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
+            WindowEvents::KeyReleasedEvent(s_KeyboardFocus, key);
     }
     void WaylandWindow::KeyboardHandleModifiers(void*        userData,
                                                 wl_keyboard* keyboard,

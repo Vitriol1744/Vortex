@@ -25,9 +25,7 @@ namespace Vortex
     static WindowSubsystem ChooseSubsystem()
     {
 #ifdef VT_PLATFORM_LINUX
-        const char* xdgSessionType = std::getenv("XDG_SESSION_TYPE");
-        bool waylandAvailable = (std::strcmp(xdgSessionType, "wayland") == 0)
-                             && std::getenv("WAYLAND_DISPLAY");
+        bool        waylandAvailable = std::getenv("WAYLAND_DISPLAY");
         bool        xlibAvailable    = std::getenv("DISPLAY");
 
         const char* platformOverride = std::getenv("VT_PLATFORM_OVERRIDE");

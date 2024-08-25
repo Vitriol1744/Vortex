@@ -208,10 +208,13 @@ endif()
 
 if(VT_BUILD_WAYLAND AND UNIX)
   set(PROTOCOLS_DIR vendor/wayland-protocols)
-  ecm_add_wayland_client_protocol(
-    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
   ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
                                   ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
+    alpha-modifier-v1)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})

@@ -9,9 +9,7 @@
 #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#include <GLFW/glfw3.h>
-
-extern "C" wl_surface* glfwGetWaylandWindow(GLFWwindow* window);
+#include <wayland-xdg-shell-client-protocol.h>
 
 namespace Vortex
 {
@@ -26,7 +24,7 @@ namespace Vortex
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
-            return glfwGetWaylandWindow(m_Window);
+            return m_WindowHandle;
         }
         inline virtual bool IsOpen() const noexcept override
         {
@@ -84,16 +82,18 @@ namespace Vortex
         }
 
       public:
-        wl_surface*                m_WindowHandle = nullptr;
-        GLFWwindow*                m_Window;
-        Ref<class RendererContext> m_RendererContext = nullptr;
+        wl_surface*                   m_WindowHandle         = nullptr;
+        xdg_surface*                  m_WmSurface            = nullptr;
+        xdg_toplevel*                 m_TopLevel             = nullptr;
+        wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
+        Ref<class RendererContext>    m_RendererContext      = nullptr;
 
-        static usize               s_WindowsCount;
+        static usize                  s_WindowsCount;
 
-        void                       SetupEvents();
+        void                          SetupEvents();
 
-        static bool                Initialize();
-        static void                Shutdown();
+        static bool                   Initialize();
+        static void                   Shutdown();
 
         static void PointerHandleEnter(void* userData, wl_pointer* pointer,
                                        u32 serial, wl_surface* surface,

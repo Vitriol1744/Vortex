@@ -200,7 +200,11 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
     ImGui::Text("MousePos: { x: %f, y: %f }", mousePos.x, mousePos.y);
 
+    static f32 alpha = 0.5f;
+
     ImGui::SliderFloat2("lightPos", (f32*)&lightPos, -10, 10);
+    ImGui::SliderFloat("opacity", &alpha, 0.1f, 1.0f);
+    s_Window->SetOpacity(alpha);
     if (ImGui::Button("Close")) Application::Get()->Close();
     if (ImGui::Button("Restart")) Application::Get()->Restart();
     ImGui::Checkbox("vsync", &s_VSync);

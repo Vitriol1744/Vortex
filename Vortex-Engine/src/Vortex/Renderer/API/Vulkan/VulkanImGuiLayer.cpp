@@ -8,6 +8,7 @@
 
 #include "Vortex/Engine/Application.hpp"
 
+#include "Vortex/Core/Time.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
@@ -274,15 +275,10 @@ namespace Vortex
         bd->Time               = 0.0;
         bd->WantUpdateMonitors = true;
 
-        io.SetClipboardTextFn  = [](void* userData, const char* text) {
-            glfwSetClipboardString(reinterpret_cast<GLFWwindow*>(userData),
-                                    text);
-        };
-        io.GetClipboardTextFn = [](void* userData) -> const char* {
-            return glfwGetClipboardString(
-                reinterpret_cast<GLFWwindow*>(userData));
-        };
-        io.ClipboardUserData = window.get();
+        // TODO(v1tr10l7): Clipboard
+        io.SetClipboardTextFn  = [](void*, const char*) {};
+        io.GetClipboardTextFn  = [](void*) -> const char* { return ""; };
+        io.ClipboardUserData   = window.get();
         CreateCursors();
         SetUpEvents();
         UpdateMonitors();
@@ -397,7 +393,7 @@ namespace Vortex
                              / static_cast<f32>(windowSize.y));
         if (bd->WantUpdateMonitors) UpdateMonitors();
 
-        f64 currentTime = glfwGetTime();
+        f64 currentTime = Time::GetCurrentTime();
         if (currentTime <= bd->Time) currentTime = bd->Time + 0.00001f;
         io.DeltaTime = bd->Time > 0.0 ? (f32)(currentTime - bd->Time)
                                       : (f32)(1.0f / 60.0f);
@@ -586,10 +582,6 @@ namespace Vortex
                 }
             }
 
-            // const bool windowNoInput
-            //     = (viewport->Flags & ImGuiViewportFlags_NoInputs) != 0;
-            //  glfwSetWindowAttrib(window, GLFW_MOUSE_PASSTHROUGH,
-            //  windowNoInput);
             if (data->Window->IsHovered()) mouseViewportID = viewport->ID;
         }
 
@@ -622,9 +614,7 @@ namespace Vortex
 
         i32           monitorCount        = 0;
         GLFWmonitor** glfwMonitors        = glfwGetMonitors(&monitorCount);
-        if (monitorCount == 0) // Preserve existing monitor list if there are
-                               // none. Happens on macOS sleeping (#5683)
-            return;
+        if (monitorCount == 0) return;
 
         platformIO.Monitors.resize(0);
         for (i32 i = 0; i < monitorCount; i++)
