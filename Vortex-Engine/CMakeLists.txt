@@ -13,8 +13,17 @@ set(CMAKE_CXX_STANDARD 23)
 set(CXX_STANDARD_REQUIRED ON)
 
 option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
 
 find_package(Vulkan REQUIRED)
+
+if(VT_BUILD_WAYLAND)
+  find_package(ECM REQUIRED NO_MODULE)
+  set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+  find_package(Wayland REQUIRED COMPONENTS Client Cursor)
+  find_package(WaylandProtocols REQUIRED)
+  find_package(WaylandScanner REQUIRED)
+endif()
 
 set(GLFW_BUILD_DOCS
     OFF
@@ -81,7 +90,7 @@ add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
 add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
 set(INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex"
-                 vendor/imgui vendor/stb/include)
+                 vendor/imgui vendor/stb/include ${CMAKE_CURRENT_BINARY_DIR})
 set(PUBLIC_LIBS
     fmt::fmt-header-only
     magic_enum::magic_enum
@@ -143,10 +152,12 @@ if(UNIX)
   set(SOURCES
       ${SOURCES}
       src/Vortex/Core/Posix/PosixTime.cpp
+      src/Vortex/Renderer/Window/Wayland/Wayland.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandWindow.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandMonitor.cpp
       src/Vortex/Renderer/Window/X11/X11Window.cpp
       src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
+
 elseif(WIN32)
   set(SOURCES
       ${SOURCES} src/Vortex/Core/Win32/Win32Time.cpp
@@ -172,7 +183,9 @@ else()
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DVT_STATIC_LIBRARY)
 endif()
 
-target_precompile_headers(${PROJECT_NAME} PUBLIC src/vtpch.hpp)
+target_precompile_headers(
+  ${PROJECT_NAME} PUBLIC
+  "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/vtpch.hpp>")
 
 target_compile_options(
   ${PROJECT_NAME}
@@ -191,6 +204,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     ${PROJECT_NAME}
     PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libstdc++ -D__cpp_concepts=202002
            -Wno-builtin-macro-redefined -Wno-unused-command-line-argument>)
+endif()
+
+if(VT_BUILD_WAYLAND AND UNIX)
+  set(PROTOCOLS_DIR vendor/wayland-protocols)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
+  ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
+                                  ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})

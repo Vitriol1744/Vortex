@@ -41,21 +41,23 @@ namespace Vortex
         const VkDebugUtilsMessengerCallbackDataEXT* data, void* userData)
     {
         VT_UNUSED(type);
-        VT_UNUSED(data);
         VT_UNUSED(userData);
+        [[maybe_unused]] std::string str
+            = fmt::format("Vulkan: {}\n", data->pMessage);
+
         switch (severity)
         {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                VtCoreTrace("Vulkan: {}", data->pMessage);
+                VtCoreTrace("{}", str);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                VtCoreInfo("Vulkan: {}", data->pMessage);
+                VtCoreInfo("{}", str);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                VtCoreWarn("Vulkan: {}", data->pMessage);
+                VtCoreWarn("{}", str);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                VtCoreError("Vulkan: {}", data->pMessage);
+                VtCoreError("{}", str);
                 break;
 
             default: break;

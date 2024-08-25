@@ -13,172 +13,24 @@
 
 namespace Vortex
 {
-    wl_pointer_listener WaylandWindow::s_PointerListener = {
-        .enter         = PointerHandleEnter,
-        .leave         = PointerHandleLeave,
-        .motion        = PointerHandleMotion,
-        .button        = PointerHandleButton,
-        .axis          = PointerHandleAxis,
-        .frame         = PointerHandleFrame,
-        .axis_source   = PointerHandleAxisSource,
-        .axis_stop     = PointerHandleAxisStop,
-        .axis_discrete = PointerHandleAxisDiscrete,
-#if 0
-        .axis_value120           = PointerHandleAxisValue120,
-        .axis_relative_direction = PointerHandleAxisRelativeDirection,
-#endif
-    };
-    wl_keyboard_listener WaylandWindow::s_KeyboardListener = {
-        .keymap      = KeyboardHandleKeymap,
-        .enter       = KeyboardHandleEnter,
-        .leave       = KeyboardHandleLeave,
-        .key         = KeyboardHandleKey,
-        .modifiers   = KeyboardHandleModifiers,
-        .repeat_info = KeyboardHandleRepeatInfo,
-    };
     usize WaylandWindow::s_WindowsCount = 0;
     namespace
     {
-        void RegistryHandleGlobal(void* userData, wl_registry* registry,
-                                  u32 name, const char* interface, u32 version);
-        void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
-                                        u32 name);
-
-        void SeatHandleCapabilities(void* userData, wl_seat* seat,
-                                    u32 capabilities);
-        void SeatHandleName(void* userData, wl_seat* seat, const char* name);
-
-        wl_display*          s_Display          = nullptr;
-        wl_registry*         s_Registry         = nullptr;
-        wl_registry_listener s_RegistryListener = {
-            .global        = RegistryHandleGlobal,
-            .global_remove = RegistryHandleGlobalRemove,
-        };
-        const char*            s_ProxyTag      = glfwGetVersionString();
-        xkb_context*           s_XkbContext    = nullptr;
-        wl_compositor*         s_Compositor    = nullptr;
-        wl_subcompositor*      s_Subcompositor = nullptr;
-        wl_shm*                s_Shm           = nullptr;
-        wl_seat*               s_Seat          = nullptr;
-        const wl_seat_listener s_SeatListener  = {
-             .capabilities = SeatHandleCapabilities,
-             .name         = SeatHandleName,
-        };
+        wl_display*       s_Display            = nullptr;
+        wl_registry*      s_Registry           = nullptr;
+        const char*       s_ProxyTag           = glfwGetVersionString();
+        xkb_context*      s_XkbContext         = nullptr;
+        wl_compositor*    s_Compositor         = nullptr;
+        wl_subcompositor* s_Subcompositor      = nullptr;
+        wl_shm*           s_Shm                = nullptr;
+        wl_seat*          s_Seat               = nullptr;
         // Mouse pointer
-        wl_pointer*    s_Pointer            = nullptr;
-        wl_keyboard*   s_Keyboard           = nullptr;
-        // wl_touch*            s_Touch            = nullptr;
-        //  TODO(v1tr10l7): touchpad events
-        //  wl_touch_listener    s_TouchListener{};
-        u32            s_Serial             = 0;
-        u32            s_PointerEnterSerial = 0;
-        WaylandWindow* s_FocusedWindow      = nullptr;
+        wl_pointer*       s_Pointer            = nullptr;
+        wl_keyboard*      s_Keyboard           = nullptr;
 
-        void RegistryHandleGlobal(void* userData, wl_registry* registry,
-                                  u32 name, const char* interface, u32 version)
-        {
-            VT_UNUSED(userData);
-
-            if (std::strcmp(interface, "wl_compositor") == 0)
-                s_Compositor
-                    = reinterpret_cast<wl_compositor*>(wl_registry_bind(
-                        registry, name, &wl_compositor_interface, 1));
-            else if (std::strcmp(interface, "wl_subcompositor") == 0)
-                s_Subcompositor
-                    = reinterpret_cast<wl_subcompositor*>(wl_registry_bind(
-                        registry, name, &wl_subcompositor_interface, 1));
-            else if (std::strcmp(interface, "wl_shm") == 0)
-                s_Shm = reinterpret_cast<wl_shm*>(
-                    wl_registry_bind(registry, name, &wl_shm_interface, 1));
-            else if (std::strcmp(interface, "wl_output") == 0)
-            {
-                ; // TODO(v1tr10l7): detected new monitor, we should handle that
-                VtCoreInfo("Wayland: Detected monitor: {}", name);
-            }
-            else if (std::strcmp(interface, "wl_seat") == 0 && !s_Seat)
-            {
-                s_Seat = reinterpret_cast<wl_seat*>(wl_registry_bind(
-                    registry, name, &wl_seat_interface, version));
-                wl_seat_add_listener(s_Seat, &s_SeatListener, nullptr);
-
-                if (wl_seat_get_version(s_Seat)
-                    >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
-                    VtCoreWarn("WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION: {}",
-                               WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION);
-            }
-            else if (std::strcmp(interface, "wl_data_device_manager") == 0)
-                ;
-            else if (std::strcmp(interface, "xdg_wm_base") == 0)
-                ;
-            else if (std::strcmp(interface, "zxdg_decoration_manager_v1") == 0)
-                ;
-            else if (std::strcmp(interface, "wp_viewporter") == 0)
-                ;
-            else if (std::strcmp(interface, "zwp_relative_pointer_manager_v1")
-                     == 0)
-                ;
-            else if (std::strcmp(interface, "zwp_pointer_constraints_v1") == 0)
-                ;
-            else if (std::strcmp(interface, "zwp_idle_inhibit_manager_v1") == 0)
-                ;
-            else if (std::strcmp(interface, "xdg_activation_v1") == 0)
-                ;
-            else if (std::strcmp(interface, "wp_fractional_scale_manager_v1")
-                     == 0)
-                ;
-            VtCoreTrace("Wayland: Registry global: {}", interface);
-        }
-        void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
-                                        u32 name)
-        {
-            VT_UNUSED(userData);
-            VT_UNUSED(registry);
-            VT_UNUSED(name);
-            [[maybe_unused]] std::source_location source
-                = std::source_location::current();
-            VtCoreWarn("Wayland: {} is not implemented!",
-                       source.function_name());
-        }
-
-        void SeatHandleCapabilities(void* userData, wl_seat* seat,
-                                    u32 capabilities)
-        {
-            VT_UNUSED(userData);
-
-            if (capabilities & WL_SEAT_CAPABILITY_POINTER && !s_Pointer)
-            {
-                s_Pointer = wl_seat_get_pointer(seat);
-
-                wl_pointer_add_listener(
-                    s_Pointer, &WaylandWindow::s_PointerListener, nullptr);
-            }
-            else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && s_Pointer)
-            {
-                wl_pointer_destroy(s_Pointer);
-                s_Pointer = nullptr;
-            }
-
-            if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !s_Keyboard)
-            {
-                s_Keyboard = wl_seat_get_keyboard(seat);
-                wl_keyboard_add_listener(
-                    s_Keyboard, &WaylandWindow::s_KeyboardListener, nullptr);
-            }
-            else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD)
-                     && s_Keyboard)
-            {
-                wl_keyboard_destroy(s_Keyboard);
-                s_Keyboard = nullptr;
-            }
-
-            // if (capabilities & WL_SEAT_CAPABILITY_TOUCH)
-            //     ;
-        }
-        void SeatHandleName(void*, wl_seat*, const char* name)
-        {
-            VT_UNUSED(name);
-            VtCoreInfo("Wayland: Bound to seat: '{}'", name);
-        }
+        u32               s_Serial             = 0;
+        u32               s_PointerEnterSerial = 0;
+        WaylandWindow*    s_FocusedWindow      = nullptr;
     }; // namespace
 
     static void glfwErrorCallback(int code, const char* description)
@@ -414,10 +266,11 @@ namespace Vortex
     }
     WaylandWindow::~WaylandWindow()
     {
+        m_RendererContext.reset();
         VtCoreTrace("Wayland: Destroying window...");
         glfwDestroyWindow(m_Window);
         --s_WindowsCount;
-        // if (s_WindowsCount == 0) Shutdown();
+        if (s_WindowsCount == 0) Shutdown();
     }
 
     void WaylandWindow::PollEvents() { glfwPollEvents(); }
@@ -485,6 +338,9 @@ namespace Vortex
     }
     void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
+        VtCoreWarn(
+            "Wayland: The platform doesn't support setting the window icon");
+        return;
         std::vector<GLFWimage> images;
         images.reserve(count);
         for (auto& icon : std::views::counted(icons, count))
@@ -727,29 +583,25 @@ namespace Vortex
 
         bool status = glfwInit() == GLFW_TRUE;
 
-        s_Display   = glfwGetWaylandDisplay();
-        VtCoreAssertMsg(s_Display, "Wayland: Failed to open display");
-        s_Registry                      = wl_display_get_registry(s_Display);
-        s_PointerListener.enter         = PointerHandleEnter;
-        s_PointerListener.leave         = PointerHandleLeave;
-        s_PointerListener.motion        = PointerHandleMotion;
-        s_PointerListener.button        = PointerHandleButton;
-        s_PointerListener.axis          = PointerHandleAxis;
-        s_PointerListener.frame         = PointerHandleFrame;
-        s_PointerListener.axis_source   = PointerHandleAxisSource;
-        s_PointerListener.axis_stop     = PointerHandleAxisStop;
-        s_PointerListener.axis_discrete = PointerHandleAxisDiscrete;
+        Wayland::Initialize();
+        s_Display  = Wayland::GetDisplay();
+        s_Registry = Wayland::GetRegistry();
 
-        wl_registry_add_listener(s_Registry, &s_RegistryListener, nullptr);
-        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+        static wl_pointer_listener pointerListener{};
+        pointerListener.enter  = PointerHandleEnter;
+        pointerListener.leave  = PointerHandleLeave;
+        pointerListener.motion = PointerHandleMotion;
+        pointerListener.axis   = PointerHandleAxis;
+        Wayland::SetPointerListener(&pointerListener);
+
+        s_Compositor    = Wayland::GetCompositor();
+        s_Subcompositor = Wayland::GetSubcompositor();
+        s_Shm           = Wayland::GetShm();
+        s_Seat          = Wayland::GetSeat();
+
+        s_XkbContext    = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
         VtCoreAssertMsg(s_XkbContext,
                         "Wayland: Failed to initialize xkb context");
-
-        // Sync so we got all registry objects
-        wl_display_roundtrip(s_Display);
-
-        // Sync so we got all initial output events
-        wl_display_roundtrip(s_Display);
 
         VtCoreAssertMsg(s_Shm, "Failed to find wl_shm in the compositor");
 
@@ -769,6 +621,7 @@ namespace Vortex
         VtRelease(s_Seat, wl_seat_destroy);
         VtRelease(s_Registry, wl_registry_destroy);
 
+        VtCoreTrace("Wayland: Shutting down");
         glfwTerminate();
     }
 
@@ -799,9 +652,10 @@ namespace Vortex
 
         if (!surface) return;
 
-        WaylandWindow* window = WaylandWindow::GetWindowMap()[surface];
-        s_Serial              = serial;
-        s_FocusedWindow       = nullptr;
+        WaylandWindow* window  = WaylandWindow::GetWindowMap()[surface];
+        s_Serial               = serial;
+        window->m_Data.Focused = false;
+        s_FocusedWindow        = nullptr;
         WindowEvents::MouseLeftEvent(window);
     }
     void WaylandWindow::PointerHandleMotion(void* userData, wl_pointer* pointer,

@@ -6,11 +6,12 @@
  */
 #pragma once
 
+#include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#define GLFW_EXPOSE_NATIVE_WAYLAND
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
+
+extern "C" wl_surface* glfwGetWaylandWindow(GLFWwindow* window);
 
 namespace Vortex
 {
@@ -82,10 +83,7 @@ namespace Vortex
             return windowMap;
         }
 
-        static wl_pointer_listener  s_PointerListener;
-        static wl_keyboard_listener s_KeyboardListener;
-
-      private:
+      public:
         wl_surface*                m_WindowHandle = nullptr;
         GLFWwindow*                m_Window;
         Ref<class RendererContext> m_RendererContext = nullptr;
