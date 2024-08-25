@@ -27,7 +27,7 @@ jobs:
              sudo chmod u+x llvm.sh &&
              sudo sh -c "yes | ./llvm.sh 18" &&
              sudo apt update && sudo apt install -y ninja-build clang vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools libx11-dev libx11-xcb-dev
-             libwayland-bin libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config libwayland-dev libxkbcommon-dev libglvnd-dev
+             libwayland-bin libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config libwayland-dev libxkbcommon-dev libglvnd-dev extra-cmake-modules
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
