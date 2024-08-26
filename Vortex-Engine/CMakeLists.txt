@@ -207,7 +207,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(VT_BUILD_WAYLAND AND UNIX)
-  set(PROTOCOLS_DIR vendor/wayland-protocols)
+  set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
   ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
                                   ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
   ecm_add_wayland_client_protocol(
