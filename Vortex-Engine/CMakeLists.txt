@@ -17,13 +17,12 @@ option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
 
 find_package(Vulkan REQUIRED)
 
-if(VT_BUILD_WAYLAND)
-  find_package(ECM REQUIRED NO_MODULE)
-  set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
-  find_package(Wayland REQUIRED COMPONENTS Client Cursor)
-  find_package(WaylandProtocols REQUIRED)
-  find_package(WaylandScanner REQUIRED)
-endif()
+find_package(ECM REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+
+find_package(Wayland REQUIRED COMPONENTS Client Cursor)
+find_package(WaylandProtocols REQUIRED)
+find_package(WaylandScanner REQUIRED)
 
 set(GLFW_BUILD_DOCS
     OFF
@@ -206,16 +205,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
            -Wno-builtin-macro-redefined -Wno-unused-command-line-argument>)
 endif()
 
-if(VT_BUILD_WAYLAND AND UNIX)
-  set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
-  ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
-                                  ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
-  ecm_add_wayland_client_protocol(
-    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
-  ecm_add_wayland_client_protocol(
-    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
-    alpha-modifier-v1)
-endif()
+set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
+ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
+                                ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
+ecm_add_wayland_client_protocol(
+  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
+ecm_add_wayland_client_protocol(
+  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
+  alpha-modifier-v1)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include)
