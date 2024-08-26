@@ -208,6 +208,7 @@ endif()
 
 if(VT_BUILD_WAYLAND AND UNIX)
   set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
+  message(Generating wayland headers...)
   ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
                                   ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
   ecm_add_wayland_client_protocol(
