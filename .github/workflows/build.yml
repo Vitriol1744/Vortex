@@ -31,8 +31,7 @@ jobs:
 
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: sudo mkdir -p /usr/share/wayland-protocols/staging/alpha-modifier && 
-             sudo cp Vortex-Engine/vendor/wayland-protocols/alpha-modifier-v1.xml /usr/share/wayland-protocols/staging/alpha-modifier &&
+        run: chmod +x ./gen-wayland-headers.sh && ./gen-wayland-headers.sh &&
              (cd Vortex-Engine/vendor/shaderc && ./utils/git-sync-deps) && 
              cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=clang++-18
       

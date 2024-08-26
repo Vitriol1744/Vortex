@@ -206,17 +206,16 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
            -Wno-builtin-macro-redefined -Wno-unused-command-line-argument>)
 endif()
 
-# if(VT_BUILD_WAYLAND AND UNIX)
-set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
-message(Generating wayland headers...)
-ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
-                                ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
-ecm_add_wayland_client_protocol(
-  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
-ecm_add_wayland_client_protocol(
-  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
-  alpha-modifier-v1)
-# endif()
+if(VT_BUILD_WAYLAND AND UNIX)
+  set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
+  ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
+                                  ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
+    alpha-modifier-v1)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include)
