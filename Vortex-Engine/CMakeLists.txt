@@ -212,8 +212,8 @@ if(VT_BUILD_WAYLAND AND UNIX)
 
     add_custom_command(
       OUTPUT ${header_file}
-      COMMAND "${WAYLAND_SCANNER_EXECUTABLE}" client-header "${protocol_path}"
-              ${header_file}
+      COMMAND "${WAYLAND_SCANNER_EXECUTABLE}" -c client-header
+              "${protocol_path}" ${header_file}
       DEPENDS "${protocol_path}"
       VERBATIM)
 
