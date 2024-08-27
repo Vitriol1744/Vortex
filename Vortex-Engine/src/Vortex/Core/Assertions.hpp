@@ -85,12 +85,12 @@
         #define VtCoreSlowAssert(expr) VtCoreAssert(expr)
         #define VtSlowAssert(expr)     VtAssert(expr)
     #else
-        #define VtCoreSlowAssert(expr)
-        #define VtSlowAssert(expr)
+        #define VtCoreSlowAssert(expr) ((void)expr)
+        #define VtSlowAssert(expr)     ((void)expr)
     #endif
 #else
-    #define VtCoreAssert(expr, msg)     expr
-    #define VtAssert(expr, msg)         expr
+    #define VtCoreAssert(expr, msg)     ((void)expr)
+    #define VtAssert(expr, msg)         ((void)expr)
     #define VtCoreSlowAssert(expr, msg) VtCoreAssert(expr, msg)
     #define VtSlowAssert(expr, msg)     VtAssert(expr, msg)
 #endif
