@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Events/Event.hpp"
+#include "Vortex/Core/Math/Rectangle.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/NonCopyable.hpp"
 
@@ -70,9 +71,9 @@ namespace Vortex
         {
             return m_CurrentVideoMode;
         }
-        virtual Vec2i GetPosition() const = 0;
-        virtual Vec4i GetWorkArea() const = 0;
-        inline Vec2i  GetPhysicalSize() const
+        virtual Vec2i       GetPosition() const = 0;
+        virtual Rectangle<> GetWorkArea() const = 0;
+        inline Vec2i        GetPhysicalSize() const
         {
             return {m_PhysicalWidth, m_PhysicalHeight};
         }
@@ -120,4 +121,4 @@ namespace Vortex
         extern Event<Monitor*, MonitorState> MonitorStateChangedEvent;
 
     }; // namespace MonitorEvents
-}; // namespace Vortex
+};     // namespace Vortex

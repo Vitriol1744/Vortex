@@ -8,122 +8,157 @@
 
 #include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
 
+extern "C" wl_output* glfwGetWaylandMonitor(GLFWmonitor*);
+
 namespace Vortex
 {
-    WaylandMonitor::WaylandMonitor(GLFWmonitor* handle)
-        : m_Handle(handle)
+    WaylandMonitor::WaylandMonitor(wl_output* output)
+        : m_Output(output)
     {
+        static const wl_output_listener outputListener = {
+            .geometry    = OnOutputGeometry,
+            .mode        = OnOutputMode,
+            .done        = OnOutputDone,
+            .scale       = OnOutputScale,
+            .name        = OnOutputName,
+            .description = OnOutputDescription,
+        };
 
-        m_Name                            = glfwGetMonitorName(m_Handle);
-        m_MonitorHandle                   = glfwGetWaylandMonitor(m_Handle);
-
-        const GLFWvidmode* currentMode    = glfwGetVideoMode(m_Handle);
-        m_CurrentVideoMode.Width          = currentMode->width;
-        m_CurrentVideoMode.Height         = currentMode->height;
-        m_CurrentVideoMode.RedBits        = currentMode->redBits;
-        m_CurrentVideoMode.GreenBits      = currentMode->greenBits;
-        m_CurrentVideoMode.BlueBits       = currentMode->blueBits;
-        m_CurrentVideoMode.RefreshRate    = currentMode->refreshRate;
-
-        i32                videoModeCount = 0;
-        const GLFWvidmode* modes = glfwGetVideoModes(m_Handle, &videoModeCount);
-        m_VideoModes.reserve(videoModeCount);
-
-        for (i32 i = 0; i < videoModeCount; i++)
-        {
-            VideoMode   current;
-            GLFWvidmode glfwVideoMode = modes[i];
-            current.Width             = glfwVideoMode.width;
-            current.Height            = glfwVideoMode.height;
-            current.RedBits           = glfwVideoMode.redBits;
-            current.GreenBits         = glfwVideoMode.greenBits;
-            current.BlueBits          = glfwVideoMode.blueBits;
-            current.RefreshRate       = glfwVideoMode.refreshRate;
-            m_VideoModes.push_back(current);
-        }
-
-        glfwGetMonitorPhysicalSize(m_Handle, &m_PhysicalWidth,
-                                   &m_PhysicalHeight);
-
-        const GLFWgammaramp* ramp = glfwGetGammaRamp(m_Handle);
-        GammaRamp            currentRamp;
-        currentRamp.Red.resize(256);
-        currentRamp.Green.resize(256);
-        currentRamp.Blue.resize(256);
-
-        if (ramp)
-        {
-            i32 size = ramp->size > 256 ? 256 : ramp->size;
-            std::memcpy(currentRamp.Red.data(), ramp->red, size);
-            std::memcpy(currentRamp.Green.data(), ramp->green,
-                        size * sizeof(u16));
-            std::memcpy(currentRamp.Blue.data(), ramp->blue,
-                        size * sizeof(u16));
-            m_CurrentRamp  = currentRamp;
-            m_OriginalRamp = currentRamp;
-        }
-        glfwSetMonitorUserPointer(m_Handle, this);
+        auto gammaControlManager = Wayland::GetGammaControlManager();
+        if (gammaControlManager)
+            m_GammaControl = zwlr_gamma_control_manager_v1_get_gamma_control(
+                gammaControlManager, m_Output);
+        wl_output_add_listener(output, &outputListener, this);
+    }
+    WaylandMonitor::~WaylandMonitor()
+    {
+        VtCoreTrace("Wayland: Destroying wl_output...");
+        wl_output_destroy(m_Output);
     }
 
-    Vec2i WaylandMonitor::GetPosition() const
+    Vec2i       WaylandMonitor::GetPosition() const { return m_Position; }
+    Rectangle<> WaylandMonitor::GetWorkArea() const
     {
-        Vec2i ret;
-        glfwGetMonitorPos(m_Handle, &ret.x, &ret.y);
+        Rectangle<> workArea{};
+        workArea.X      = m_Position.x;
+        workArea.Y      = m_Position.y;
+        workArea.Width  = m_CurrentVideoMode.Width;
+        workArea.Height = m_CurrentVideoMode.Height;
 
-        return ret;
-    }
-    Vec4i WaylandMonitor::GetWorkArea() const
-    {
-        Vec4i ret;
-        glfwGetMonitorWorkarea(m_Handle, &ret.x, &ret.y, &ret.z, &ret.w);
-
-        return ret;
+        return workArea;
     }
     Vec2f WaylandMonitor::GetContentScale() const
     {
-        Vec2f ret;
-        glfwGetMonitorContentScale(m_Handle, &ret.x, &ret.y);
+        Vec2f contentScale;
+        contentScale.x = static_cast<f32>(m_ContentScale);
+        contentScale.y = static_cast<f32>(m_ContentScale);
 
-        return ret;
+        return contentScale;
     }
     void WaylandMonitor::SetGamma(f32 gamma) const
     {
-        glfwSetGamma(m_Handle, gamma);
+        VT_UNUSED(gamma);
+        VT_TODO();
     }
     void WaylandMonitor::SetGammaRamp(GammaRamp& gammaRamp)
     {
-        GLFWgammaramp ramp;
-        ramp.red      = gammaRamp.Red.data();
-        ramp.red      = gammaRamp.Red.data();
-        ramp.red      = gammaRamp.Red.data();
-        ramp.size     = 256;
-
-        m_CurrentRamp = gammaRamp;
-        glfwSetGammaRamp(m_Handle, &ramp);
+        VT_UNUSED(gammaRamp);
+        VT_TODO();
     }
 
     bool WaylandMonitor::Initialize(std::vector<Ref<Monitor>>& monitors)
     {
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-        VtCoreAssert(glfwInit());
-        i32           monitorCount;
-        GLFWmonitor** glfwMonitors = glfwGetMonitors(&monitorCount);
-        monitors.reserve(monitorCount);
+        Wayland::Initialize();
+        auto&        outputs  = Wayland::GetOutputs();
+        wl_registry* registry = Wayland::GetRegistry();
 
-        for (i32 i = 0; i < monitorCount; i++)
-            monitors.push_back(CreateRef<WaylandMonitor>(glfwMonitors[i]));
+        for (u32 outputName : outputs)
+        {
+            wl_output* output = reinterpret_cast<wl_output*>(wl_registry_bind(
+                registry, outputName, &wl_output_interface, 2));
+            monitors.push_back(CreateRef<WaylandMonitor>(output));
+        }
 
-        glfwSetMonitorCallback(
-            [](GLFWmonitor* handle, i32 event)
-            {
-                WaylandMonitor* monitor = reinterpret_cast<WaylandMonitor*>(
-                    glfwGetMonitorUserPointer(handle));
-                MonitorState state = MonitorState::eDisconnected;
-                if (event == GLFW_CONNECTED) state = MonitorState::eConnected;
-
-                MonitorEvents::MonitorStateChangedEvent(monitor, state);
-            });
+        // Sync so we got all initial output events
+        wl_display_roundtrip(Wayland::GetDisplay());
 
         return true;
     };
+
+    void WaylandMonitor::OnOutputGeometry(void* userData, wl_output* output,
+                                          i32 x, i32 y, i32 physicalWidth,
+                                          i32 physicalHeight, i32 subpixel,
+                                          const char* make, const char* model,
+                                          i32 transform)
+    {
+        VT_UNUSED(output);
+        VT_UNUSED(subpixel);
+        VT_UNUSED(transform);
+
+        auto monitor              = reinterpret_cast<WaylandMonitor*>(userData);
+        monitor->m_Position       = Vec2i(x, y);
+        monitor->m_PhysicalWidth  = physicalWidth;
+        monitor->m_PhysicalHeight = physicalHeight;
+        monitor->m_Name           = fmt::format("{} {}", make, model);
+
+        VtCoreInfo("Wayland: Monitor connected: {} {}", make, model);
+    }
+    void WaylandMonitor::OnOutputMode(void* userData, wl_output* output,
+                                      u32 flags, i32 width, i32 height,
+                                      i32 refreshRate)
+    {
+        VT_UNUSED(output);
+
+        auto      monitor = reinterpret_cast<WaylandMonitor*>(userData);
+        VideoMode videoMode{};
+
+        videoMode.Width       = width;
+        videoMode.Height      = height;
+        videoMode.RedBits     = 8;
+        videoMode.GreenBits   = 8;
+        videoMode.BlueBits    = 8;
+        videoMode.RefreshRate = std::round(refreshRate / 1000.0);
+
+        monitor->m_VideoModes.push_back(videoMode);
+        if (flags & WL_OUTPUT_MODE_CURRENT)
+            monitor->m_CurrentVideoMode = videoMode;
+    }
+    void WaylandMonitor::OnOutputDone(void* userData, wl_output* output)
+    {
+        VT_UNUSED(output);
+
+        auto monitor = reinterpret_cast<WaylandMonitor*>(userData);
+        if (monitor->m_PhysicalWidth <= 0 || monitor->m_PhysicalHeight <= 0)
+        {
+            VideoMode& currentMode = monitor->m_CurrentVideoMode;
+            monitor->m_PhysicalWidth
+                = static_cast<i32>(currentMode.Width * 25.4f / 96.0f);
+            monitor->m_PhysicalHeight
+                = static_cast<i32>(currentMode.Height * 25.4f / 96.0f);
+        }
+    }
+    void WaylandMonitor::OnOutputScale(void* userData, wl_output* output,
+                                       i32 factor)
+    {
+        VT_UNUSED(output);
+
+        auto monitor            = reinterpret_cast<WaylandMonitor*>(userData);
+        monitor->m_ContentScale = factor;
+    }
+
+    void WaylandMonitor::OnOutputName(void* userData, wl_output* output,
+                                      const char* name)
+    {
+        VT_UNUSED(output);
+
+        auto monitor    = reinterpret_cast<WaylandMonitor*>(userData);
+        monitor->m_Name = name;
+    }
+    void WaylandMonitor::OnOutputDescription(void* userData, wl_output* output,
+                                             const char* description)
+    {
+        VT_UNUSED(userData);
+        VT_UNUSED(output);
+        VT_UNUSED(description);
+    }
 }; // namespace Vortex

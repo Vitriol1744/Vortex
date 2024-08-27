@@ -12,22 +12,23 @@ namespace Vortex::Wayland
 {
     namespace
     {
-        wl_display*            s_Display       = nullptr;
-        wl_registry*           s_Registry      = nullptr;
-        wl_compositor*         s_Compositor    = nullptr;
-        wl_subcompositor*      s_Subcompositor = nullptr;
-        wl_shm*                s_Shm           = nullptr;
+        wl_display*                    s_Display       = nullptr;
+        wl_registry*                   s_Registry      = nullptr;
+        wl_compositor*                 s_Compositor    = nullptr;
+        wl_subcompositor*              s_Subcompositor = nullptr;
+        wl_shm*                        s_Shm           = nullptr;
 
-        std::forward_list<u32> s_OutputNames{};
-        wl_seat*               s_Seat             = nullptr;
-        wl_pointer*            s_Pointer          = nullptr;
-        wl_keyboard*           s_Keyboard         = nullptr;
+        std::forward_list<u32>         s_Outputs{};
+        wl_seat*                       s_Seat                = nullptr;
+        wl_pointer*                    s_Pointer             = nullptr;
+        wl_keyboard*                   s_Keyboard            = nullptr;
 
-        xdg_wm_base*           s_WmBase           = nullptr;
-        wp_alpha_modifier_v1*  s_AlphaModifier    = nullptr;
+        xdg_wm_base*                   s_WmBase              = nullptr;
+        wp_alpha_modifier_v1*          s_AlphaModifier       = nullptr;
+        zwlr_gamma_control_manager_v1* s_GammaControlManager = nullptr;
 
-        wl_pointer_listener*   s_PointerListener  = nullptr;
-        wl_keyboard_listener*  s_KeyboardListener = nullptr;
+        wl_pointer_listener*           s_PointerListener     = nullptr;
+        wl_keyboard_listener*          s_KeyboardListener    = nullptr;
 
         void SeatHandleCapabilities(void* userData, wl_seat* seat,
                                     u32 capabilities);
@@ -56,7 +57,7 @@ namespace Vortex::Wayland
             {
                 ; // TODO(v1tr10l7): detected new monitor, we should handle that
                 VtCoreInfo("Wayland: Detected monitor: {}", name);
-                s_OutputNames.push_front(name);
+                s_Outputs.push_front(name);
             }
             else if (interface == wl_seat_interface.name)
             {
@@ -104,11 +105,15 @@ namespace Vortex::Wayland
             else if (interface == "wp_fractional_scale_manager_v1")
                 ;
             else if (interface == wp_alpha_modifier_v1_interface.name)
-            {
                 s_AlphaModifier
                     = reinterpret_cast<wp_alpha_modifier_v1*>(wl_registry_bind(
                         registry, name, &wp_alpha_modifier_v1_interface, 1));
-            }
+            else if (interface == zwlr_gamma_control_manager_v1_interface.name)
+                s_GammaControlManager
+                    = reinterpret_cast<zwlr_gamma_control_manager_v1*>(
+                        wl_registry_bind(
+                            registry, name,
+                            &zwlr_gamma_control_manager_v1_interface, 1));
             VtCoreTrace("Wayland: Registry global: {}", interface);
         }
         void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
@@ -321,8 +326,17 @@ namespace Vortex::Wayland
 
     void Initialize()
     {
+        if (s_Display) return;
+
         s_Display = wl_display_connect(std::getenv("WAYLAND_DISPLAY"));
         VtCoreAssert(s_Display);
+
+        wl_display_listener displayListener = {
+            .error = [](void*, wl_display*, void*, u32, const char* description)
+            { VtCoreFatal("Wayland: {}", description); },
+            .delete_id = [](void*, wl_display*, u32) {},
+        };
+        wl_display_add_listener(s_Display, &displayListener, nullptr);
 
         static const wl_registry_listener registryListener = {
             .global        = RegistryHandleGlobal,
@@ -334,9 +348,6 @@ namespace Vortex::Wayland
         wl_registry_add_listener(s_Registry, &registryListener, nullptr);
 
         // Sync so we got all registry objects
-        wl_display_roundtrip(s_Display);
-
-        // Sync so we got all initial output events
         wl_display_roundtrip(s_Display);
 
         VtCoreAssert(s_Compositor);
@@ -362,12 +373,16 @@ namespace Vortex::Wayland
     wl_subcompositor*       GetSubcompositor() { return s_Subcompositor; }
     wl_shm*                 GetShm() { return s_Shm; }
 
-    std::forward_list<u32>& GetOutputNames() { return s_OutputNames; }
+    std::forward_list<u32>& GetOutputs() { return s_Outputs; }
     wl_seat*                GetSeat() { return s_Seat; }
     xdg_wm_base*            GetWmBase() { return s_WmBase; }
     wp_alpha_modifier_v1*   GetAlphaModifier() { return s_AlphaModifier; }
+    zwlr_gamma_control_manager_v1* GetGammaControlManager()
+    {
+        return s_GammaControlManager;
+    }
 
-    void                    SetPointerListener(wl_pointer_listener* listener)
+    void SetPointerListener(wl_pointer_listener* listener)
     {
         s_PointerListener = listener;
     }

@@ -183,8 +183,7 @@ namespace Vortex
         m_Data.FocusOnShow                  = specification.FocusOnShow;
 
         static constexpr xdg_surface_listener wm_surface_listener{
-            .configure
-            = [](void*, xdg_surface* surface, uint32_t serial) noexcept
+            .configure = [](void*, xdg_surface* surface, u32 serial) noexcept
             { xdg_surface_ack_configure(surface, serial); }};
 
         static constexpr xdg_toplevel_listener toplevel_listener{
@@ -207,7 +206,7 @@ namespace Vortex
                 self->m_Data.IsOpen = false;
             },
             .configure_bounds =
-                [](void*, xdg_toplevel*, int32_t, int32_t) noexcept {
+                [](void*, xdg_toplevel*, i32, i32) noexcept {
 
                 },
             .wm_capabilities =
@@ -264,7 +263,7 @@ namespace Vortex
         auto pollSingle = [](i32 fd, i16 events, i32 timeout) -> u16
         {
             pollfd pfd{.fd = fd, .events = events, .revents = 0};
-            VtCoreSlowAssert(poll(&pfd, 1, timeout) >= 0);
+            VtCoreAssert(poll(&pfd, 1, timeout) >= 0);
 
             return pfd.revents;
         };

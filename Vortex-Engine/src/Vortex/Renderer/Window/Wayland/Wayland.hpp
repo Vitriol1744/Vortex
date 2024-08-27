@@ -10,25 +10,27 @@
 
 #include <wayland-alpha-modifier-v1-client-protocol.h>
 #include <wayland-wayland-client-protocol.h>
+#include <wayland-wlr-gamma-control-unstable-v1-client-protocol.h>
 #include <wayland-xdg-shell-client-protocol.h>
 
 namespace Vortex
 {
     namespace Wayland
     {
-        void                    Initialize();
-        void                    Shutdown();
+        void                           Initialize();
+        void                           Shutdown();
 
-        wl_display*             GetDisplay();
-        wl_registry*            GetRegistry();
-        wl_compositor*          GetCompositor();
-        wl_subcompositor*       GetSubcompositor();
-        wl_shm*                 GetShm();
+        wl_display*                    GetDisplay();
+        wl_registry*                   GetRegistry();
+        wl_compositor*                 GetCompositor();
+        wl_subcompositor*              GetSubcompositor();
+        wl_shm*                        GetShm();
 
-        std::forward_list<u32>& GetOutputNames();
-        wl_seat*                GetSeat();
-        xdg_wm_base*            GetWmBase();
-        wp_alpha_modifier_v1*   GetAlphaModifier();
+        std::forward_list<u32>&        GetOutputs();
+        wl_seat*                       GetSeat();
+        xdg_wm_base*                   GetWmBase();
+        wp_alpha_modifier_v1*          GetAlphaModifier();
+        zwlr_gamma_control_manager_v1* GetGammaControlManager();
 
         void SetPointerListener(wl_pointer_listener* listener);
         void SetKeyboardListener(wl_keyboard_listener* listener);

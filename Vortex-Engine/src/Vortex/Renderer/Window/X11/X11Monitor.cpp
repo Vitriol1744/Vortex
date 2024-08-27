@@ -71,10 +71,11 @@ namespace Vortex
 
         return ret;
     }
-    Vec4i X11Monitor::GetWorkArea() const
+    Rectangle<> X11Monitor::GetWorkArea() const
     {
-        Vec4i ret;
-        glfwGetMonitorWorkarea(m_Handle, &ret.x, &ret.y, &ret.z, &ret.w);
+        Rectangle<> ret;
+        glfwGetMonitorWorkarea(m_Handle, &ret.X, &ret.Y, &ret.Width,
+                               &ret.Height);
 
         return ret;
     }

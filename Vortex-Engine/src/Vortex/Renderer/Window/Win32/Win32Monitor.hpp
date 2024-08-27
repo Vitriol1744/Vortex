@@ -17,15 +17,15 @@ namespace Vortex
       public:
         Win32Monitor(GLFWmonitor* handle);
 
-        virtual std::any GetNativeHandle() override { return m_Handle; }
+        virtual std::any    GetNativeHandle() override { return m_Handle; }
 
-        virtual Vec2i    GetPosition() const override;
-        virtual Vec4i    GetWorkArea() const override;
-        virtual Vec2f    GetContentScale() const override;
-        virtual void     SetGamma(f32 gamma) const override;
-        virtual void     SetGammaRamp(GammaRamp& gammaRamp) override;
+        virtual Vec2i       GetPosition() const override;
+        virtual Rectangle<> GetWorkArea() const override;
+        virtual Vec2f       GetContentScale() const override;
+        virtual void        SetGamma(f32 gamma) const override;
+        virtual void        SetGammaRamp(GammaRamp& gammaRamp) override;
 
-        static bool      Initialize(std::vector<Ref<Monitor>>& monitors);
+        static bool         Initialize(std::vector<Ref<Monitor>>& monitors);
 
       private:
         GLFWmonitor* m_Handle;
