@@ -17,14 +17,6 @@ option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
 
 find_package(Vulkan REQUIRED)
 
-if(VT_BUILD_WAYLAND)
-  find_package(ECM REQUIRED NO_MODULE)
-  set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
-  find_package(Wayland REQUIRED COMPONENTS Client Cursor)
-  find_package(WaylandProtocols REQUIRED)
-  find_package(WaylandScanner REQUIRED)
-endif()
-
 set(GLFW_BUILD_DOCS
     OFF
     CACHE BOOL "" FORCE)
@@ -207,14 +199,37 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(VT_BUILD_WAYLAND AND UNIX)
-  set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
-  ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
-                                  ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
-  ecm_add_wayland_client_protocol(
-    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
-  ecm_add_wayland_client_protocol(
-    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
-    alpha-modifier-v1)
+  macro(generate_wayland_protocol protocol_file)
+    set(protocol_path
+        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols/${protocol_file}")
+
+    string(REGEX REPLACE "\\.xml$" "-client-protocol.h" header_file
+                         ${protocol_file})
+    string(REGEX REPLACE "\\.xml$" "-client-protocol-code.c" code_file
+                         ${protocol_file})
+    set(header_file wayland-${header_file})
+    set(code_file wayland-${code_file})
+
+    add_custom_command(
+      OUTPUT ${header_file}
+      COMMAND "${WAYLAND_SCANNER_EXECUTABLE}" client-header "${protocol_path}"
+              ${header_file}
+      DEPENDS "${protocol_path}"
+      VERBATIM)
+
+    add_custom_command(
+      OUTPUT ${code_file}
+      COMMAND "${WAYLAND_SCANNER_EXECUTABLE}" private-code "${protocol_path}"
+              ${code_file}
+      DEPENDS "${protocol_path}"
+      VERBATIM)
+
+    target_sources(${PROJECT_NAME} PRIVATE ${header_file} ${code_file})
+  endmacro()
+
+  generate_wayland_protocol("wayland.xml")
+  generate_wayland_protocol("xdg-shell.xml")
+  generate_wayland_protocol("alpha-modifier-v1.xml")
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
