@@ -32,8 +32,7 @@ jobs:
       - name: Generate Cache
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: (cd Vortex-Engine/vendor/shaderc && ./utils/git-sync-deps) && 
-             cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=clang++-18 &&
-             chmod +x ./gen-wayland-headers.sh && ./gen-wayland-headers.sh 
+             cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=${{ matrix.build-configuration }} -DCMAKE_CXX_COMPILER=clang++-18
       
       - name: Build
         working-directory: ${{env.GITHUB_WORKSPACE}}
