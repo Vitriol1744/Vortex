@@ -332,8 +332,12 @@ namespace Vortex::Wayland
         VtCoreAssert(s_Display);
 
         wl_display_listener displayListener = {
-            .error = [](void*, wl_display*, void*, u32, const char* description)
-            { VtCoreFatal("Wayland: {}", description); },
+            .error =
+                [](void*, wl_display*, void*, u32, const char* description)
+            {
+                (void)description;
+                VtCoreFatal("Wayland: {}", description);
+            },
             .delete_id = [](void*, wl_display*, u32) {},
         };
         wl_display_add_listener(s_Display, &displayListener, nullptr);
