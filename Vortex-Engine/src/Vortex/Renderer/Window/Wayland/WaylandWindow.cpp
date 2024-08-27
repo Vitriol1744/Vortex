@@ -20,14 +20,8 @@ namespace Vortex
     usize WaylandWindow::s_WindowsCount = 0;
     namespace
     {
-        wl_display*                  s_Display            = nullptr;
-        wl_registry*                 s_Registry           = nullptr;
         [[maybe_unused]] const char* s_ProxyTag           = "Proxy tag";
         xkb_context*                 s_XkbContext         = nullptr;
-        wl_compositor*               s_Compositor         = nullptr;
-        wl_subcompositor*            s_Subcompositor      = nullptr;
-        wl_shm*                      s_Shm                = nullptr;
-        wl_seat*                     s_Seat               = nullptr;
 
         u32                          s_Serial             = 0;
         u32                          s_PointerEnterSerial = 0;
@@ -177,16 +171,16 @@ namespace Vortex
                        glfwGetVersionString());
         }
 
-        i32         width  = specification.VideoMode.Width;
-        i32         height = specification.VideoMode.Height;
-        const char* title  = specification.Title.data();
+        [[maybe_unused]] i32         width  = specification.VideoMode.Width;
+        [[maybe_unused]] i32         height = specification.VideoMode.Height;
+        [[maybe_unused]] const char* title  = specification.Title.data();
 
-        m_Data.Visible     = specification.Visible;
-        m_Data.Decorated   = specification.Decorated;
-        m_Data.Focused     = specification.Focused;
-        m_Data.Position    = specification.Position;
-        m_Data.AutoIconify = specification.AutoIconify;
-        m_Data.FocusOnShow = specification.FocusOnShow;
+        m_Data.Visible                      = specification.Visible;
+        m_Data.Decorated                    = specification.Decorated;
+        m_Data.Focused                      = specification.Focused;
+        m_Data.Position                     = specification.Position;
+        m_Data.AutoIconify                  = specification.AutoIconify;
+        m_Data.FocusOnShow                  = specification.FocusOnShow;
 
         static constexpr xdg_surface_listener wm_surface_listener{
             .configure
@@ -436,8 +430,6 @@ namespace Vortex
         bool status = glfwInit() == GLFW_TRUE;
 
         Wayland::Initialize();
-        s_Display  = Wayland::GetDisplay();
-        s_Registry = Wayland::GetRegistry();
 
         static wl_pointer_listener pointerListener{};
         pointerListener.enter  = PointerHandleEnter;
@@ -453,16 +445,9 @@ namespace Vortex
         keyboardListener.key   = KeyboardHandleKey;
         Wayland::SetKeyboardListener(&keyboardListener);
 
-        s_Compositor    = Wayland::GetCompositor();
-        s_Subcompositor = Wayland::GetSubcompositor();
-        s_Shm           = Wayland::GetShm();
-        s_Seat          = Wayland::GetSeat();
-
-        s_XkbContext    = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
         VtCoreAssertMsg(s_XkbContext,
                         "Wayland: Failed to initialize xkb context");
-
-        VtCoreAssertMsg(s_Shm, "Failed to find wl_shm in the compositor");
 
         return status;
     }

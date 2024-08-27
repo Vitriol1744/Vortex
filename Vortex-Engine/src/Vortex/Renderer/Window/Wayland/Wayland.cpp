@@ -12,19 +12,22 @@ namespace Vortex::Wayland
 {
     namespace
     {
-        wl_display*           s_Display          = nullptr;
-        wl_registry*          s_Registry         = nullptr;
-        wl_compositor*        s_Compositor       = nullptr;
-        wl_subcompositor*     s_Subcompositor    = nullptr;
-        wl_shm*               s_Shm              = nullptr;
-        wl_seat*              s_Seat             = nullptr;
-        wl_pointer*           s_Pointer          = nullptr;
-        wl_keyboard*          s_Keyboard         = nullptr;
-        xdg_wm_base*          s_WmBase           = nullptr;
-        wp_alpha_modifier_v1* s_AlphaModifier    = nullptr;
+        wl_display*            s_Display       = nullptr;
+        wl_registry*           s_Registry      = nullptr;
+        wl_compositor*         s_Compositor    = nullptr;
+        wl_subcompositor*      s_Subcompositor = nullptr;
+        wl_shm*                s_Shm           = nullptr;
 
-        wl_pointer_listener*  s_PointerListener  = nullptr;
-        wl_keyboard_listener* s_KeyboardListener = nullptr;
+        std::forward_list<u32> s_OutputNames{};
+        wl_seat*               s_Seat             = nullptr;
+        wl_pointer*            s_Pointer          = nullptr;
+        wl_keyboard*           s_Keyboard         = nullptr;
+
+        xdg_wm_base*           s_WmBase           = nullptr;
+        wp_alpha_modifier_v1*  s_AlphaModifier    = nullptr;
+
+        wl_pointer_listener*   s_PointerListener  = nullptr;
+        wl_keyboard_listener*  s_KeyboardListener = nullptr;
 
         void SeatHandleCapabilities(void* userData, wl_seat* seat,
                                     u32 capabilities);
@@ -53,6 +56,7 @@ namespace Vortex::Wayland
             {
                 ; // TODO(v1tr10l7): detected new monitor, we should handle that
                 VtCoreInfo("Wayland: Detected monitor: {}", name);
+                s_OutputNames.push_front(name);
             }
             else if (interface == wl_seat_interface.name)
             {
@@ -352,16 +356,18 @@ namespace Vortex::Wayland
         wl_display_disconnect(s_Display);
     }
 
-    wl_display*           GetDisplay() { return s_Display; }
-    wl_registry*          GetRegistry() { return s_Registry; }
-    wl_compositor*        GetCompositor() { return s_Compositor; }
-    wl_subcompositor*     GetSubcompositor() { return s_Subcompositor; }
-    wl_shm*               GetShm() { return s_Shm; }
-    wl_seat*              GetSeat() { return s_Seat; }
-    xdg_wm_base*          GetWmBase() { return s_WmBase; }
-    wp_alpha_modifier_v1* GetAlphaModifier() { return s_AlphaModifier; }
+    wl_display*             GetDisplay() { return s_Display; }
+    wl_registry*            GetRegistry() { return s_Registry; }
+    wl_compositor*          GetCompositor() { return s_Compositor; }
+    wl_subcompositor*       GetSubcompositor() { return s_Subcompositor; }
+    wl_shm*                 GetShm() { return s_Shm; }
 
-    void                  SetPointerListener(wl_pointer_listener* listener)
+    std::forward_list<u32>& GetOutputNames() { return s_OutputNames; }
+    wl_seat*                GetSeat() { return s_Seat; }
+    xdg_wm_base*            GetWmBase() { return s_WmBase; }
+    wp_alpha_modifier_v1*   GetAlphaModifier() { return s_AlphaModifier; }
+
+    void                    SetPointerListener(wl_pointer_listener* listener)
     {
         s_PointerListener = listener;
     }

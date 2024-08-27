@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3
 #
 cmake_minimum_required(VERSION 3.25)
-project(Vortex-Engine)
+project(Vortex-Engine VERSION 0.1)
 
 cmake_policy(SET CMP0092 NEW)
 
@@ -17,12 +17,13 @@ option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
 
 find_package(Vulkan REQUIRED)
 
-find_package(ECM REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
-
-find_package(Wayland REQUIRED COMPONENTS Client Cursor)
-find_package(WaylandProtocols REQUIRED)
-find_package(WaylandScanner REQUIRED)
+if(VT_BUILD_WAYLAND)
+  find_package(ECM REQUIRED NO_MODULE)
+  set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+  find_package(Wayland REQUIRED COMPONENTS Client Cursor)
+  find_package(WaylandProtocols REQUIRED)
+  find_package(WaylandScanner REQUIRED)
+endif()
 
 set(GLFW_BUILD_DOCS
     OFF
@@ -205,20 +206,23 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
            -Wno-builtin-macro-redefined -Wno-unused-command-line-argument>)
 endif()
 
-set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
-ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
-                                ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
-ecm_add_wayland_client_protocol(
-  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
-ecm_add_wayland_client_protocol(
-  ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
-  alpha-modifier-v1)
+if(VT_BUILD_WAYLAND AND UNIX)
+  set(PROTOCOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/wayland-protocols)
+  ecm_add_wayland_client_protocol(${PROJECT_NAME} PROTOCOL
+                                  ${PROTOCOLS_DIR}/wayland.xml BASENAME wayland)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/xdg-shell.xml BASENAME xdg-shell)
+  ecm_add_wayland_client_protocol(
+    ${PROJECT_NAME} PROTOCOL ${PROTOCOLS_DIR}/alpha-modifier-v1.xml BASENAME
+    alpha-modifier-v1)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include)
 target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Shcore)
