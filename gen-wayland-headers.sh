@@ -6,7 +6,7 @@ outpath=build/Vortex-Engine
 generate_header()
 {
     protocol=$1
-    wayland-scanner client-header $protocols_path/$protocol $outpath/wayland-"$protocol"-client-protocol.h
+    wayland-scanner client-header $protocols_path/"$protocol".xml $outpath/wayland-"$protocol"-client-protocol.h
 }
 
 mkdir -p build/Vortex-Engine
