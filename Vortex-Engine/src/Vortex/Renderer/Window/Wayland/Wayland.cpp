@@ -22,6 +22,7 @@ namespace Vortex::Wayland
         wl_seat*                       s_Seat                = nullptr;
         wl_pointer*                    s_Pointer             = nullptr;
         wl_keyboard*                   s_Keyboard            = nullptr;
+        xkb_context*                   s_XkbContext          = nullptr;
 
         xdg_wm_base*                   s_WmBase              = nullptr;
         wp_alpha_modifier_v1*          s_AlphaModifier       = nullptr;
@@ -87,7 +88,6 @@ namespace Vortex::Wayland
                 static const xdg_wm_base_listener wmBaseListener
                     = {.ping = onWmBasePing};
                 xdg_wm_base_add_listener(s_WmBase, &wmBaseListener, nullptr);
-                (void)s_WmBase;
             }
             else if (interface == "zxdg_decoration_manager_v1")
                 ;
@@ -357,9 +357,16 @@ namespace Vortex::Wayland
         VtCoreAssert(s_Subcompositor);
         VtCoreAssert(s_Shm);
         VtCoreAssert(s_Seat);
+        VtCoreAssert(s_WmBase);
+
+        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+        VtCoreAssertMsg(s_XkbContext,
+                        "Wayland: Failed to initialize xkb context");
     }
     void Shutdown()
     {
+        xkb_context_unref(s_XkbContext);
+
         wp_alpha_modifier_v1_destroy(s_AlphaModifier);
         xdg_wm_base_destroy(s_WmBase);
         wl_compositor_destroy(s_Compositor);
@@ -377,7 +384,9 @@ namespace Vortex::Wayland
     wl_shm*               GetShm() { return s_Shm; }
 
     wl_seat*              GetSeat() { return s_Seat; }
+    xkb_context*          GetXkbContexxt() { return s_XkbContext; }
     xdg_wm_base*          GetWmBase() { return s_WmBase; }
+
     wp_alpha_modifier_v1* GetAlphaModifier() { return s_AlphaModifier; }
     zwlr_gamma_control_manager_v1* GetGammaControlManager()
     {

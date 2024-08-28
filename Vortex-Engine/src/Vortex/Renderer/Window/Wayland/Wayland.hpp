@@ -13,6 +13,8 @@
 #include <wayland-wlr-gamma-control-unstable-v1-client-protocol.h>
 #include <wayland-xdg-shell-client-protocol.h>
 
+#include <xkbcommon/xkbcommon.h>
+
 namespace Vortex
 {
     namespace Wayland
@@ -27,7 +29,9 @@ namespace Vortex
         wl_shm*                        GetShm();
 
         wl_seat*                       GetSeat();
+        xkb_context*                   GetXkbContext();
         xdg_wm_base*                   GetWmBase();
+
         wp_alpha_modifier_v1*          GetAlphaModifier();
         zwlr_gamma_control_manager_v1* GetGammaControlManager();
 

@@ -92,7 +92,7 @@ namespace Vortex
 
         void                          SetupEvents();
 
-        static bool                   Initialize();
+        static void                   Initialize();
         static void                   Shutdown();
 
         static void PointerHandleEnter(void* userData, wl_pointer* pointer,

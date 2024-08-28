@@ -11,9 +11,6 @@
 
 #include <linux/input-event-codes.h>
 #include <poll.h>
-#include <xkbcommon/xkbcommon.h>
-
-#include <GLFW/glfw3.h>
 
 namespace Vortex
 {
@@ -21,22 +18,12 @@ namespace Vortex
     namespace
     {
         [[maybe_unused]] const char* s_ProxyTag           = "Proxy tag";
-        xkb_context*                 s_XkbContext         = nullptr;
 
         u32                          s_Serial             = 0;
         u32                          s_PointerEnterSerial = 0;
         WaylandWindow*               s_FocusedWindow      = nullptr;
         WaylandWindow*               s_KeyboardFocus      = nullptr;
     }; // namespace
-
-    static void glfwErrorCallback(int code, const char* description)
-    {
-        (void)code;
-        (void)description;
-        VtCoreError(
-            "GLFW: An error has occurred, ErrorCode: {}, Description: {}", code,
-            description);
-    }
 
     using Input::KeyCode;
 
@@ -166,9 +153,8 @@ namespace Vortex
     {
         if (s_WindowsCount == 0)
         {
-            VtCoreAssert(WaylandWindow::Initialize());
-            VtCoreInfo("Wayland: Successfully initialized, version: {}",
-                       glfwGetVersionString());
+            WaylandWindow::Initialize();
+            VtCoreInfo("Wayland: Successfully initialized");
         }
 
         [[maybe_unused]] i32         width  = specification.VideoMode.Width;
@@ -424,12 +410,8 @@ namespace Vortex
 
     void WaylandWindow::SetupEvents() { using namespace WindowEvents; }
 
-    bool WaylandWindow::Initialize()
+    void WaylandWindow::Initialize()
     {
-        glfwSetErrorCallback(glfwErrorCallback);
-
-        bool status = glfwInit() == GLFW_TRUE;
-
         Wayland::Initialize();
 
         static wl_pointer_listener pointerListener{};
@@ -445,12 +427,6 @@ namespace Vortex
         keyboardListener.leave = KeyboardHandleLeave;
         keyboardListener.key   = KeyboardHandleKey;
         Wayland::SetKeyboardListener(&keyboardListener);
-
-        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-        VtCoreAssertMsg(s_XkbContext,
-                        "Wayland: Failed to initialize xkb context");
-
-        return status;
     }
     void WaylandWindow::Shutdown()
     {

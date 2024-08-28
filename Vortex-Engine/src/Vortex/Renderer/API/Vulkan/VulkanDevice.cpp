@@ -11,6 +11,11 @@
 
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan_wayland.h>
+
+#ifdef VT_PLATFORM_LINUX
+    #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
+#endif
 
 namespace Vortex
 {
@@ -138,9 +143,21 @@ namespace Vortex
             if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics)
                 m_QueueFamilyIndices.Graphics = i;
 
-            if (queueFamilies[i].queueCount > 0
-                && glfwGetPhysicalDevicePresentationSupport(
-                    instance, m_PhysicalDevice, i))
+            bool presentationSupport = false;
+#ifdef VT_PLATFORM_LINUX
+            if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+                presentationSupport
+                    = vkGetPhysicalDeviceWaylandPresentationSupportKHR(
+                        m_PhysicalDevice, i, Wayland::GetDisplay());
+            else if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
+                presentationSupport = glfwGetPhysicalDevicePresentationSupport(
+                    instance, m_PhysicalDevice, i);
+#elifdef VT_PLATFORM_WINDOWS
+            presentationSupport = glfwGetPhysicalDevicePresentationSupport(
+                instance, m_PhysicalDevice, i);
+#endif
+
+            if (queueFamilies[i].queueCount > 0 && presentationSupport)
                 m_QueueFamilyIndices.Present = i;
             if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eCompute)
                 m_QueueFamilyIndices.Compute = i;

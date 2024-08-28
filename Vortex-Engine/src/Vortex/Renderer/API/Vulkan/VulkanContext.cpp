@@ -23,7 +23,6 @@ namespace Vortex
         VtCoreTrace("Vulkan: Creating context for the window");
         if (s_ContextCount == 0)
         {
-            VtCoreAssert(glfwVulkanSupported() == GLFW_TRUE);
             s_VulkanInstance.Initialize();
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
             s_Device.Initialize(s_PhysicalDevice);
