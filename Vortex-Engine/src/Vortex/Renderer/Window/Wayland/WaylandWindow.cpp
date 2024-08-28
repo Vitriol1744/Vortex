@@ -148,8 +148,8 @@ namespace Vortex
 
     using Input::MouseCode;
 
-    WaylandWindow::WaylandWindow(const WindowSpecification& specification)
-        : Window(specification)
+    WaylandWindow::WaylandWindow(const WindowSpecification& specs)
+        : Window(specs)
     {
         if (s_WindowsCount == 0)
         {
@@ -157,16 +157,15 @@ namespace Vortex
             VtCoreInfo("Wayland: Successfully initialized");
         }
 
-        [[maybe_unused]] i32         width  = specification.VideoMode.Width;
-        [[maybe_unused]] i32         height = specification.VideoMode.Height;
-        [[maybe_unused]] const char* title  = specification.Title.data();
+        [[maybe_unused]] i32         width  = specs.VideoMode.Width;
+        [[maybe_unused]] i32         height = specs.VideoMode.Height;
+        [[maybe_unused]] const char* title  = specs.Title.data();
 
-        m_Data.Visible                      = specification.Visible;
-        m_Data.Decorated                    = specification.Decorated;
-        m_Data.Focused                      = specification.Focused;
-        m_Data.Position                     = specification.Position;
-        m_Data.AutoIconify                  = specification.AutoIconify;
-        m_Data.FocusOnShow                  = specification.FocusOnShow;
+        m_Data.Decorated                    = specs.Decorated;
+        m_Data.Focused                      = specs.Focused;
+        m_Data.Position                     = specs.Position;
+        m_Data.AutoIconify                  = specs.AutoIconify;
+        m_Data.FocusOnShow                  = specs.FocusOnShow;
 
         static constexpr xdg_surface_listener wm_surface_listener{
             .configure = [](void*, xdg_surface* surface, u32 serial) noexcept
@@ -225,14 +224,15 @@ namespace Vortex
             width, height, title);
 
         ++s_WindowsCount;
-        SetVisible(true);
+        SetTitle(specs.Title);
+        SetVisible(specs.Visible);
+        SetFullscreen(specs.Fullscreen);
         m_Data.IsOpen = true;
 
         SetupEvents();
 
-        if (!specification.NoAPI)
-            m_RendererContext
-                = RendererContext::Create(this, specification.VSync);
+        if (!specs.NoAPI)
+            m_RendererContext = RendererContext::Create(this, specs.VSync);
     }
     WaylandWindow::~WaylandWindow()
     {
@@ -320,7 +320,8 @@ namespace Vortex
     void WaylandWindow::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
-        VT_TODO();
+        xdg_toplevel_set_title(m_TopLevel, title.data());
+        ;
     }
     void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
@@ -368,7 +369,9 @@ namespace Vortex
         m_Data.MinHeight = minHeight;
         m_Data.MaxWidth  = maxWidth;
         m_Data.MaxHeight = maxHeight;
-        VT_TODO();
+
+        xdg_toplevel_set_min_size(m_TopLevel, minWidth, minHeight);
+        xdg_toplevel_set_max_size(m_TopLevel, maxWidth, maxHeight);
     }
 
     void WaylandWindow::SetAutoIconify(bool autoIconify) const noexcept
@@ -386,10 +389,9 @@ namespace Vortex
     void WaylandWindow::HideCursor() const noexcept { VT_TODO(); }
     void WaylandWindow::SetFullscreen(bool fullscreen)
     {
-        (void)fullscreen;
-        VtCoreError(
-            "Vortex currently doesn't support switching fullscreen on this "
-            "platform.");
+        m_Data.Fullscreen = fullscreen;
+        if (fullscreen) xdg_toplevel_set_fullscreen(m_TopLevel, nullptr);
+        else xdg_toplevel_unset_fullscreen(m_TopLevel);
     }
     void WaylandWindow::SetResizable(bool resizable) noexcept
     {

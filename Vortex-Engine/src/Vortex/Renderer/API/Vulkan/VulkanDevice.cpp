@@ -11,10 +11,10 @@
 
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_wayland.h>
 
 #ifdef VT_PLATFORM_LINUX
     #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
+    #include <vulkan/vulkan_wayland.h>
 #endif
 
 namespace Vortex
