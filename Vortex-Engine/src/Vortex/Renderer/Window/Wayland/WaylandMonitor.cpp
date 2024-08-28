@@ -8,12 +8,11 @@
 
 #include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
 
-extern "C" wl_output* glfwGetWaylandMonitor(GLFWmonitor*);
-
 namespace Vortex
 {
-    WaylandMonitor::WaylandMonitor(wl_output* output)
-        : m_Output(output)
+    WaylandMonitor::WaylandMonitor(u32 outputName, wl_output* output)
+        : m_OutputName(outputName)
+        , m_Output(output)
     {
         static const wl_output_listener outputListener = {
             .geometry    = OnOutputGeometry,
@@ -66,24 +65,43 @@ namespace Vortex
         VT_TODO();
     }
 
-    bool WaylandMonitor::Initialize(std::vector<Ref<Monitor>>& monitors)
+    bool WaylandMonitor::Initialize()
     {
         Wayland::Initialize();
-        auto&        outputs  = Wayland::GetOutputs();
-        wl_registry* registry = Wayland::GetRegistry();
-
-        for (u32 outputName : outputs)
-        {
-            wl_output* output = reinterpret_cast<wl_output*>(wl_registry_bind(
-                registry, outputName, &wl_output_interface, 2));
-            monitors.push_back(CreateRef<WaylandMonitor>(output));
-        }
-
-        // Sync so we got all initial output events
-        wl_display_roundtrip(Wayland::GetDisplay());
 
         return true;
     };
+
+    void WaylandMonitor::Connect(u32 name, u32 version)
+    {
+        wl_registry* registry = Wayland::GetRegistry();
+        wl_output*   output   = reinterpret_cast<wl_output*>(
+            wl_registry_bind(registry, name, &wl_output_interface, version));
+
+        s_Monitors.push_back(CreateRef<WaylandMonitor>(name, output));
+    }
+    void WaylandMonitor::Disconnect(u32 name)
+    {
+        auto& monitors
+            = const_cast<std::vector<Ref<Monitor>>&>(Monitor::GetMonitors());
+
+        monitors.erase(std::remove_if(
+            monitors.begin(), monitors.end(),
+            [name](Ref<Monitor> monitor) -> bool
+            {
+                auto wlMonitor
+                    = std::dynamic_pointer_cast<WaylandMonitor>(monitor);
+
+                if (wlMonitor && wlMonitor->m_OutputName == name)
+                {
+                    MonitorEvents::MonitorStateChangedEvent(
+                        monitor.get(), MonitorState::eDisconnected);
+                    return true;
+                }
+
+                return false;
+            }));
+    }
 
     void WaylandMonitor::OnOutputGeometry(void* userData, wl_output* output,
                                           i32 x, i32 y, i32 physicalWidth,
@@ -100,8 +118,6 @@ namespace Vortex
         monitor->m_PhysicalWidth  = physicalWidth;
         monitor->m_PhysicalHeight = physicalHeight;
         monitor->m_Name           = fmt::format("{} {}", make, model);
-
-        VtCoreInfo("Wayland: Monitor connected: {} {}", make, model);
     }
     void WaylandMonitor::OnOutputMode(void* userData, wl_output* output,
                                       u32 flags, i32 width, i32 height,
@@ -136,6 +152,9 @@ namespace Vortex
             monitor->m_PhysicalHeight
                 = static_cast<i32>(currentMode.Height * 25.4f / 96.0f);
         }
+
+        MonitorEvents::MonitorStateChangedEvent(monitor,
+                                                MonitorState::eConnected);
     }
     void WaylandMonitor::OnOutputScale(void* userData, wl_output* output,
                                        i32 factor)

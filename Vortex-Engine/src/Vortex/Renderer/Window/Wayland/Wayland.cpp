@@ -7,18 +7,18 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
+#include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
 
 namespace Vortex::Wayland
 {
     namespace
     {
-        wl_display*                    s_Display       = nullptr;
-        wl_registry*                   s_Registry      = nullptr;
-        wl_compositor*                 s_Compositor    = nullptr;
-        wl_subcompositor*              s_Subcompositor = nullptr;
-        wl_shm*                        s_Shm           = nullptr;
+        wl_display*                    s_Display             = nullptr;
+        wl_registry*                   s_Registry            = nullptr;
+        wl_compositor*                 s_Compositor          = nullptr;
+        wl_subcompositor*              s_Subcompositor       = nullptr;
+        wl_shm*                        s_Shm                 = nullptr;
 
-        std::forward_list<u32>         s_Outputs{};
         wl_seat*                       s_Seat                = nullptr;
         wl_pointer*                    s_Pointer             = nullptr;
         wl_keyboard*                   s_Keyboard            = nullptr;
@@ -55,9 +55,8 @@ namespace Vortex::Wayland
                     wl_registry_bind(registry, name, &wl_shm_interface, 1));
             else if (interface == wl_output_interface.name)
             {
-                ; // TODO(v1tr10l7): detected new monitor, we should handle that
                 VtCoreInfo("Wayland: Detected monitor: {}", name);
-                s_Outputs.push_front(name);
+                WaylandMonitor::Connect(name, 2);
             }
             else if (interface == wl_seat_interface.name)
             {
@@ -121,11 +120,8 @@ namespace Vortex::Wayland
         {
             VT_UNUSED(userData);
             VT_UNUSED(registry);
-            VT_UNUSED(name);
-            [[maybe_unused]] std::source_location source
-                = std::source_location::current();
-            VtCoreWarn("Wayland: {} is not implemented!",
-                       source.function_name());
+
+            WaylandMonitor::Disconnect(name);
         }
 
         void PointerHandleEnter(void* userData, wl_pointer* pointer, u32 serial,
@@ -354,6 +350,9 @@ namespace Vortex::Wayland
         // Sync so we got all registry objects
         wl_display_roundtrip(s_Display);
 
+        // Sync so we got all initial output events
+        wl_display_roundtrip(s_Display);
+
         VtCoreAssert(s_Compositor);
         VtCoreAssert(s_Subcompositor);
         VtCoreAssert(s_Shm);
@@ -371,16 +370,15 @@ namespace Vortex::Wayland
         wl_display_disconnect(s_Display);
     }
 
-    wl_display*             GetDisplay() { return s_Display; }
-    wl_registry*            GetRegistry() { return s_Registry; }
-    wl_compositor*          GetCompositor() { return s_Compositor; }
-    wl_subcompositor*       GetSubcompositor() { return s_Subcompositor; }
-    wl_shm*                 GetShm() { return s_Shm; }
+    wl_display*           GetDisplay() { return s_Display; }
+    wl_registry*          GetRegistry() { return s_Registry; }
+    wl_compositor*        GetCompositor() { return s_Compositor; }
+    wl_subcompositor*     GetSubcompositor() { return s_Subcompositor; }
+    wl_shm*               GetShm() { return s_Shm; }
 
-    std::forward_list<u32>& GetOutputs() { return s_Outputs; }
-    wl_seat*                GetSeat() { return s_Seat; }
-    xdg_wm_base*            GetWmBase() { return s_WmBase; }
-    wp_alpha_modifier_v1*   GetAlphaModifier() { return s_AlphaModifier; }
+    wl_seat*              GetSeat() { return s_Seat; }
+    xdg_wm_base*          GetWmBase() { return s_WmBase; }
+    wp_alpha_modifier_v1* GetAlphaModifier() { return s_AlphaModifier; }
     zwlr_gamma_control_manager_v1* GetGammaControlManager()
     {
         return s_GammaControlManager;

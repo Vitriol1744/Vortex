@@ -26,7 +26,6 @@ namespace Vortex
         wl_subcompositor*              GetSubcompositor();
         wl_shm*                        GetShm();
 
-        std::forward_list<u32>&        GetOutputs();
         wl_seat*                       GetSeat();
         xdg_wm_base*                   GetWmBase();
         wp_alpha_modifier_v1*          GetAlphaModifier();

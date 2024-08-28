@@ -81,7 +81,14 @@ using namespace Vortex;
 std::vector<Vertex> vertices;
 std::vector<u32>    indices;
 
-void                ProcessMesh(aiMesh* mesh, const aiScene* scene)
+bool                OnMonitorStateChanged(Monitor*, MonitorState state)
+{
+    VtInfo("MonitorState: {}", magic_enum::enum_name(state));
+
+    return true;
+}
+
+void ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     for (usize i = 0; i < mesh->mNumVertices; i++)
     {
@@ -123,6 +130,8 @@ void SandboxLayer2D::OnAttach()
     s_Window->SetPosition({300, 300});
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
+
+    MonitorEvents::MonitorStateChangedEvent += OnMonitorStateChanged;
 
     Image image("assets/icon.bmp");
     s_Shader = CreateRef<VulkanShader>("assets/shaders/texture.glsl");

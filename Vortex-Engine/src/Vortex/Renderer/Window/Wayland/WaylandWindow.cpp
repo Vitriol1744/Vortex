@@ -215,6 +215,8 @@ namespace Vortex
                 }};
 
         auto surface = wl_compositor_create_surface(Wayland::GetCompositor());
+        VtCoreSlowAssert(surface);
+
         wl_surface_set_user_data(surface, this);
         m_WmSurface
             = xdg_wm_base_get_xdg_surface(Wayland::GetWmBase(), surface);

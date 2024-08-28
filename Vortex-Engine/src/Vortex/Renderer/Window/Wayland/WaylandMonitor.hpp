@@ -16,7 +16,7 @@ namespace Vortex
     class VT_API WaylandMonitor : public Monitor
     {
       public:
-        WaylandMonitor(wl_output* output);
+        WaylandMonitor(u32 outputName, wl_output* output);
         ~WaylandMonitor();
 
         virtual std::any    GetNativeHandle() override { return m_Output; }
@@ -27,9 +27,13 @@ namespace Vortex
         virtual void        SetGamma(f32 gamma) const override;
         virtual void        SetGammaRamp(GammaRamp& gammaRamp) override;
 
-        static bool         Initialize(std::vector<Ref<Monitor>>& monitors);
+        static bool         Initialize();
+
+        static void         Connect(u32 name, u32 version);
+        static void         Disconnect(u32 name);
 
       private:
+        u32                    m_OutputName   = 0;
         wl_output*             m_Output       = nullptr;
         zwlr_gamma_control_v1* m_GammaControl = nullptr;
         Vec2i                  m_Position     = {0, 0};

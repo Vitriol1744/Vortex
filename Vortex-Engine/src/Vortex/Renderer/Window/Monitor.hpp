@@ -101,18 +101,23 @@ namespace Vortex
         virtual void            SetGammaRamp(GammaRamp& gammaRamp) = 0;
 
       protected:
-        Monitor()                     = default;
+        Monitor()                               = default;
 
-        std::string            m_Name = "Unknown";
-        VideoMode              m_CurrentVideoMode;
+        std::string                      m_Name = "Unknown";
+        VideoMode                        m_CurrentVideoMode;
 
         // Monitor's physical dimensions in millimeters
-        i32                    m_PhysicalWidth  = 0;
-        i32                    m_PhysicalHeight = 0;
+        i32                              m_PhysicalWidth  = 0;
+        i32                              m_PhysicalHeight = 0;
 
-        std::vector<VideoMode> m_VideoModes;
-        GammaRamp              m_OriginalRamp;
-        GammaRamp              m_CurrentRamp;
+        std::vector<VideoMode>           m_VideoModes;
+        GammaRamp                        m_OriginalRamp;
+        GammaRamp                        m_CurrentRamp;
+
+        static std::vector<Ref<Monitor>> s_Monitors;
+
+      private:
+        static void Initialize();
     };
 
     namespace MonitorEvents

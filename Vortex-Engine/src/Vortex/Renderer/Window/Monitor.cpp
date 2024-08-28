@@ -20,9 +20,10 @@
 
 namespace Vortex
 {
-    static Ref<Monitor>              s_PrimaryMonitor = nullptr;
-    static std::vector<Ref<Monitor>> s_Monitors;
-    static void                      Initialize()
+    static Ref<Monitor>       s_PrimaryMonitor = nullptr;
+    std::vector<Ref<Monitor>> Monitor::s_Monitors{};
+
+    void                      Monitor::Initialize()
     {
         static bool initialized = false;
         if (initialized) return;
@@ -32,7 +33,7 @@ namespace Vortex
         if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
             initialized = X11Monitor::Initialize(s_Monitors);
         else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
-            initialized = WaylandMonitor::Initialize(s_Monitors);
+            initialized = WaylandMonitor::Initialize();
 #elifdef VT_PLATFORM_WINDOWS
         initialized = Win32Monitor::Initialize(s_Monitors);
 #endif
@@ -41,7 +42,6 @@ namespace Vortex
 
         s_PrimaryMonitor = s_Monitors[0];
         VtCoreInfo("Found {} monitors", s_Monitors.size());
-        initialized = false;
     }
 
     Ref<Monitor> Monitor::GetPrimaryMonitor()
