@@ -25,10 +25,31 @@ namespace Vortex
             , Height(height)
         {
         }
+        template <typename U>
+        explicit Rectangle(const Rectangle<U>& other)
+            : X(static_cast<T>(other.X))
+            , Y(static_cast<T>(other.Y))
+            , Width(static_cast<T>(other.Width))
+            , Height(static_cast<T>(other.Height))
+        {
+        }
 
         T X      = 0;
         T Y      = 0;
         T Width  = 0;
         T Height = 0;
     };
+
+    template <typename T>
+    inline bool operator==(const Rectangle<T>& left, const Rectangle<T>& right)
+    {
+        return left.X == right.X && left.Y == right.Y
+            && left.Width == right.Width && left.Height == right.Height;
+    }
+    template <typename T>
+    inline bool operator!=(const Rectangle<T>& left, const Rectangle<T>& right)
+    {
+        return left.X != right.X && left.Y != right.Y
+            && left.Width != right.Width && left.Height != right.Height;
+    }
 }; // namespace Vortex

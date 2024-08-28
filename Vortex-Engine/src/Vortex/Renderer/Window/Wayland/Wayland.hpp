@@ -12,6 +12,7 @@
 #include <wayland-wayland-client-protocol.h>
 #include <wayland-wlr-gamma-control-unstable-v1-client-protocol.h>
 #include <wayland-xdg-shell-client-protocol.h>
+#include <wayland-xdg-toplevel-icon-v1-client-protocol.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -30,8 +31,9 @@ namespace Vortex
 
         wl_seat*                       GetSeat();
         xkb_context*                   GetXkbContext();
-        xdg_wm_base*                   GetWmBase();
 
+        xdg_wm_base*                   GetWmBase();
+        xdg_toplevel_icon_manager_v1*  GetIconManager();
         wp_alpha_modifier_v1*          GetAlphaModifier();
         zwlr_gamma_control_manager_v1* GetGammaControlManager();
 

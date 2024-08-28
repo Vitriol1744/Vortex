@@ -9,8 +9,6 @@
 #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#include <wayland-xdg-shell-client-protocol.h>
-
 namespace Vortex
 {
     class WaylandWindow : public Window
@@ -85,8 +83,13 @@ namespace Vortex
         wl_surface*                   m_WindowHandle         = nullptr;
         xdg_surface*                  m_WmSurface            = nullptr;
         xdg_toplevel*                 m_TopLevel             = nullptr;
+        xdg_toplevel_icon_v1*         m_Icon                 = nullptr;
+        wl_shm_pool*                  m_IconPool             = nullptr;
         wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
         Ref<class RendererContext>    m_RendererContext      = nullptr;
+
+        bool                          m_Maximized            = false;
+        bool                          m_Minimized            = false;
 
         static usize                  s_WindowsCount;
 

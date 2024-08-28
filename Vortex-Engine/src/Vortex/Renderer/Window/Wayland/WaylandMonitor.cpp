@@ -56,13 +56,13 @@ namespace Vortex
     }
     void WaylandMonitor::SetGamma(f32 gamma) const
     {
-        VT_UNUSED(gamma);
-        VT_TODO();
+        VtUnused(gamma);
+        VtTodo();
     }
     void WaylandMonitor::SetGammaRamp(GammaRamp& gammaRamp)
     {
-        VT_UNUSED(gammaRamp);
-        VT_TODO();
+        VtUnused(gammaRamp);
+        VtTodo();
     }
 
     bool WaylandMonitor::Initialize()
@@ -109,9 +109,9 @@ namespace Vortex
                                           const char* make, const char* model,
                                           i32 transform)
     {
-        VT_UNUSED(output);
-        VT_UNUSED(subpixel);
-        VT_UNUSED(transform);
+        VtUnused(output);
+        VtUnused(subpixel);
+        VtUnused(transform);
 
         auto monitor              = reinterpret_cast<WaylandMonitor*>(userData);
         monitor->m_Position       = Vec2i(x, y);
@@ -123,7 +123,7 @@ namespace Vortex
                                       u32 flags, i32 width, i32 height,
                                       i32 refreshRate)
     {
-        VT_UNUSED(output);
+        VtUnused(output);
 
         auto      monitor = reinterpret_cast<WaylandMonitor*>(userData);
         VideoMode videoMode{};
@@ -141,7 +141,7 @@ namespace Vortex
     }
     void WaylandMonitor::OnOutputDone(void* userData, wl_output* output)
     {
-        VT_UNUSED(output);
+        VtUnused(output);
 
         auto monitor = reinterpret_cast<WaylandMonitor*>(userData);
         if (monitor->m_PhysicalWidth <= 0 || monitor->m_PhysicalHeight <= 0)
@@ -159,7 +159,7 @@ namespace Vortex
     void WaylandMonitor::OnOutputScale(void* userData, wl_output* output,
                                        i32 factor)
     {
-        VT_UNUSED(output);
+        VtUnused(output);
 
         auto monitor            = reinterpret_cast<WaylandMonitor*>(userData);
         monitor->m_ContentScale = factor;
@@ -168,7 +168,7 @@ namespace Vortex
     void WaylandMonitor::OnOutputName(void* userData, wl_output* output,
                                       const char* name)
     {
-        VT_UNUSED(output);
+        VtUnused(output);
 
         auto monitor    = reinterpret_cast<WaylandMonitor*>(userData);
         monitor->m_Name = name;
@@ -176,8 +176,8 @@ namespace Vortex
     void WaylandMonitor::OnOutputDescription(void* userData, wl_output* output,
                                              const char* description)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(output);
-        VT_UNUSED(description);
+        VtUnused(userData);
+        VtUnused(output);
+        VtUnused(description);
     }
 }; // namespace Vortex

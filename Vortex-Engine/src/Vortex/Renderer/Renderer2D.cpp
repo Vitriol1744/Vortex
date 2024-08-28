@@ -35,8 +35,8 @@ namespace Vortex::Renderer
 
     void Initialize()
     {
-        VT_UNUSED(MAX_VERTICES);
-        VT_UNUSED(MAX_INDICES);
+        VtUnused(MAX_VERTICES);
+        VtUnused(MAX_INDICES);
     }
     void Shutdown() {}
 }; // namespace Vortex::Renderer

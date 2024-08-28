@@ -25,6 +25,7 @@ namespace Vortex::Wayland
         xkb_context*                   s_XkbContext          = nullptr;
 
         xdg_wm_base*                   s_WmBase              = nullptr;
+        xdg_toplevel_icon_manager_v1*  s_IconManager         = nullptr;
         wp_alpha_modifier_v1*          s_AlphaModifier       = nullptr;
         zwlr_gamma_control_manager_v1* s_GammaControlManager = nullptr;
 
@@ -39,7 +40,7 @@ namespace Vortex::Wayland
                                   u32 name, const char* interfaceName,
                                   u32 version)
         {
-            VT_UNUSED(userData);
+            VtUnused(userData);
 
             std::string_view interface = interfaceName;
 
@@ -89,20 +90,10 @@ namespace Vortex::Wayland
                     = {.ping = onWmBasePing};
                 xdg_wm_base_add_listener(s_WmBase, &wmBaseListener, nullptr);
             }
-            else if (interface == "zxdg_decoration_manager_v1")
-                ;
-            else if (interface == "wp_viewporter")
-                ;
-            else if (interface == "zwp_relative_pointer_manager_v1")
-                ;
-            else if (interface == "zwp_pointer_constraints_v1")
-                ;
-            else if (interface == "zwp_idle_inhibit_manager_v1")
-                ;
-            else if (interface == "xdg_activation_v1")
-                ;
-            else if (interface == "wp_fractional_scale_manager_v1")
-                ;
+            else if (interface == xdg_toplevel_icon_v1_interface.name)
+                s_IconManager = reinterpret_cast<xdg_toplevel_icon_manager_v1*>(
+                    wl_registry_bind(registry, name,
+                                     &xdg_toplevel_icon_v1_interface, 1));
             else if (interface == wp_alpha_modifier_v1_interface.name)
                 s_AlphaModifier
                     = reinterpret_cast<wp_alpha_modifier_v1*>(wl_registry_bind(
@@ -118,8 +109,8 @@ namespace Vortex::Wayland
         void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
                                         u32 name)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(registry);
+            VtUnused(userData);
+            VtUnused(registry);
 
             WaylandMonitor::Disconnect(name);
         }
@@ -160,59 +151,59 @@ namespace Vortex::Wayland
         }
         void PointerHandleFrame(void* userData, wl_pointer* pointer)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
+            VtUnused(userData);
+            VtUnused(pointer);
         }
         void PointerHandleAxisSource(void* userData, wl_pointer* pointer,
                                      u32 axisSource)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axisSource);
+            VtUnused(userData);
+            VtUnused(pointer);
+            VtUnused(axisSource);
         }
         void PointerHandleAxisStop(void* userData, wl_pointer* pointer,
                                    u32 time, u32 axis)
         {
 
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(time);
-            VT_UNUSED(axis);
+            VtUnused(userData);
+            VtUnused(pointer);
+            VtUnused(time);
+            VtUnused(axis);
         }
         void PointerHandleAxisDiscrete(void* userData, wl_pointer* pointer,
                                        u32 axis, i32 discrete)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(discrete);
+            VtUnused(userData);
+            VtUnused(pointer);
+            VtUnused(axis);
+            VtUnused(discrete);
         }
         void PointerHandleAxisValue120(void* userData, wl_pointer* pointer,
                                        u32 axis, i32 value120)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(value120);
+            VtUnused(userData);
+            VtUnused(pointer);
+            VtUnused(axis);
+            VtUnused(value120);
         }
         void PointerHandleAxisRelativeDirection(void*       userData,
                                                 wl_pointer* pointer, u32 axis,
                                                 u32 direction)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(pointer);
-            VT_UNUSED(axis);
-            VT_UNUSED(direction);
+            VtUnused(userData);
+            VtUnused(pointer);
+            VtUnused(axis);
+            VtUnused(direction);
         }
 
         void KeyboardHandleKeymap(void* userData, wl_keyboard* keyboard,
                                   u32 format, int fd, u32 size)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(format);
-            VT_UNUSED(fd);
-            VT_UNUSED(size);
+            VtUnused(userData);
+            VtUnused(keyboard);
+            VtUnused(format);
+            VtUnused(fd);
+            VtUnused(size);
         }
         void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
                                  u32 serial, wl_surface* surface,
@@ -240,27 +231,27 @@ namespace Vortex::Wayland
                                      u32 serial, u32 modsDepressed,
                                      u32 modsLatched, u32 modsLocked, u32 group)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(serial);
-            VT_UNUSED(modsDepressed);
-            VT_UNUSED(modsLatched);
-            VT_UNUSED(modsLocked);
-            VT_UNUSED(group);
+            VtUnused(userData);
+            VtUnused(keyboard);
+            VtUnused(serial);
+            VtUnused(modsDepressed);
+            VtUnused(modsLatched);
+            VtUnused(modsLocked);
+            VtUnused(group);
         }
         void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
                                       i32 rate, i32 delay)
         {
-            VT_UNUSED(userData);
-            VT_UNUSED(keyboard);
-            VT_UNUSED(rate);
-            VT_UNUSED(delay);
+            VtUnused(userData);
+            VtUnused(keyboard);
+            VtUnused(rate);
+            VtUnused(delay);
         }
 
         void SeatHandleCapabilities(void* userData, wl_seat* seat,
                                     u32 capabilities)
         {
-            VT_UNUSED(userData);
+            VtUnused(userData);
 
             static const wl_pointer_listener pointerListener = {
                 .enter                   = PointerHandleEnter,
@@ -315,7 +306,7 @@ namespace Vortex::Wayland
         }
         void SeatHandleName(void*, wl_seat*, const char* name)
         {
-            VT_UNUSED(name);
+            VtUnused(name);
             VtCoreInfo("Wayland: Bound to seat: '{}'", name);
         }
     }; // namespace
@@ -367,7 +358,8 @@ namespace Vortex::Wayland
     {
         xkb_context_unref(s_XkbContext);
 
-        wp_alpha_modifier_v1_destroy(s_AlphaModifier);
+        if (s_AlphaModifier) wp_alpha_modifier_v1_destroy(s_AlphaModifier);
+        if (s_IconManager) xdg_toplevel_icon_manager_v1_destroy(s_IconManager);
         xdg_wm_base_destroy(s_WmBase);
         wl_compositor_destroy(s_Compositor);
         wl_subcompositor_destroy(s_Subcompositor);
@@ -377,17 +369,18 @@ namespace Vortex::Wayland
         wl_display_disconnect(s_Display);
     }
 
-    wl_display*           GetDisplay() { return s_Display; }
-    wl_registry*          GetRegistry() { return s_Registry; }
-    wl_compositor*        GetCompositor() { return s_Compositor; }
-    wl_subcompositor*     GetSubcompositor() { return s_Subcompositor; }
-    wl_shm*               GetShm() { return s_Shm; }
+    wl_display*                   GetDisplay() { return s_Display; }
+    wl_registry*                  GetRegistry() { return s_Registry; }
+    wl_compositor*                GetCompositor() { return s_Compositor; }
+    wl_subcompositor*             GetSubcompositor() { return s_Subcompositor; }
+    wl_shm*                       GetShm() { return s_Shm; }
 
-    wl_seat*              GetSeat() { return s_Seat; }
-    xkb_context*          GetXkbContexxt() { return s_XkbContext; }
-    xdg_wm_base*          GetWmBase() { return s_WmBase; }
+    wl_seat*                      GetSeat() { return s_Seat; }
+    xkb_context*                  GetXkbContexxt() { return s_XkbContext; }
 
-    wp_alpha_modifier_v1* GetAlphaModifier() { return s_AlphaModifier; }
+    xdg_wm_base*                  GetWmBase() { return s_WmBase; }
+    xdg_toplevel_icon_manager_v1* GetIconManager() { return s_IconManager; }
+    wp_alpha_modifier_v1*         GetAlphaModifier() { return s_AlphaModifier; }
     zwlr_gamma_control_manager_v1* GetGammaControlManager()
     {
         return s_GammaControlManager;

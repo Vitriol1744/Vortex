@@ -231,6 +231,7 @@ if(VT_BUILD_WAYLAND AND UNIX)
   generate_wayland_protocol("xdg-shell.xml")
   generate_wayland_protocol("alpha-modifier-v1.xml")
   generate_wayland_protocol("wlr-gamma-control-unstable-v1.xml")
+  generate_wayland_protocol("xdg-toplevel-icon-v1.xml")
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})

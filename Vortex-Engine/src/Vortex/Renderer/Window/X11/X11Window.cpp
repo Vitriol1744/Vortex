@@ -288,11 +288,8 @@ namespace Vortex
     {
         return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
     }
-    std::string X11Window::GetTitle() const noexcept
-    {
-        return glfwGetWindowTitle(m_Window);
-    }
-    Vec2i X11Window::GetPosition() const noexcept
+    std::string X11Window::GetTitle() const noexcept { return m_Data.Title; }
+    Vec2i       X11Window::GetPosition() const noexcept
     {
         Vec2i    position;
         ::Window dummy;
@@ -438,7 +435,7 @@ namespace Vortex
     void X11Window::SetFullscreen(bool fullscreen)
     {
         (void)fullscreen;
-        VtCoreError(
+        VtCoreWarnOnce(
             "Vortex currently doesn't support switching fullscreen on this "
             "platform.");
     }

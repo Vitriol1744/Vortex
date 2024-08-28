@@ -59,11 +59,18 @@ namespace Vortex::Log
     #define VtCoreError(...) Log::GetCoreLogger().Error(__VA_ARGS__);
     #define VtCoreFatal(...) Log::GetCoreLogger().Fatal(__VA_ARGS__);
 
-    #define VtTrace(...)     Vortex::Log::Trace(__VA_ARGS__);
-    #define VtInfo(...)      Vortex::Log::Info(__VA_ARGS__);
-    #define VtWarn(...)      Vortex::Log::Warn(__VA_ARGS__);
-    #define VtError(...)     Vortex::Log::Error(__VA_ARGS__);
-    #define VtFatal(...)     Vortex::Log::Fatal(__VA_ARGS__);
+    #define VtCoreWarnOnce(...)                                                \
+        {                                                                      \
+            static bool warned = false;                                        \
+            if (!warned) VtCoreWarn(__VA_ARGS__);                              \
+            warned = true;                                                     \
+        }
+
+    #define VtTrace(...) Vortex::Log::Trace(__VA_ARGS__);
+    #define VtInfo(...)  Vortex::Log::Info(__VA_ARGS__);
+    #define VtWarn(...)  Vortex::Log::Warn(__VA_ARGS__);
+    #define VtError(...) Vortex::Log::Error(__VA_ARGS__);
+    #define VtFatal(...) Vortex::Log::Fatal(__VA_ARGS__);
 #else
     #define VtCoreTrace(...)
     #define VtCoreInfo(...)

@@ -9,11 +9,98 @@
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
 
+#include <cstdlib>
+#include <fcntl.h>
 #include <linux/input-event-codes.h>
 #include <poll.h>
+#include <sys/mman.h>
 
 namespace Vortex
 {
+    static i32 CreateTmpFileCloexec(char* name)
+    {
+        int fd = mkostemp(name, O_CLOEXEC);
+        if (fd >= 0) unlink(name);
+
+        return fd;
+    }
+    static i32 CreateAnonymousFile(usize size)
+    {
+        static const char templ[] = "/vortex-shared-XXXXXX";
+        const char*       path;
+        char*             name;
+        i32 fd = memfd_create("vortex-shared", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+        if (fd >= 0) fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_SEAL);
+        else
+        {
+            path = std::getenv("XDG_RUNTIME_DIR");
+            if (!path)
+            {
+                errno = ENOENT;
+                return -1;
+            }
+
+            name = (char*)calloc(strlen(path) + sizeof(templ), 1);
+            strcpy(name, path);
+            strcat(name, templ);
+
+            fd = CreateTmpFileCloexec(name);
+            if (fd < 0) return -1;
+        }
+
+        auto ret = ftruncate(fd, size);
+        if (ret != 0)
+        {
+            close(fd);
+            errno = ret;
+            return -1;
+        }
+        return fd;
+    }
+
+    static wl_buffer* CreateShmBuffer(Icon* icon)
+    {
+        const i32 stride = icon->GetWidth() * 4;
+        const i32 length = icon->GetWidth() * icon->GetHeight() * 4;
+
+        const i32 fd     = CreateAnonymousFile(length);
+        VtCoreAssert(fd >= 0);
+        void* data
+            = mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (data == MAP_FAILED)
+        {
+            VtCoreError("Wayland: Failed to map file: {}", strerror(errno));
+            close(fd);
+            return nullptr;
+        }
+
+        wl_shm_pool* pool = wl_shm_create_pool(Wayland::GetShm(), fd, length);
+        close(fd);
+
+        unsigned char* source = icon->GetPixels();
+        unsigned char* target = (unsigned char*)data;
+
+        for (int i = 0; i < icon->GetWidth() * icon->GetHeight();
+             i++, source += 4)
+        {
+            unsigned int alpha = source[3];
+
+            *target++          = (unsigned char)((source[2] * alpha) / 255);
+            *target++          = (unsigned char)((source[1] * alpha) / 255);
+            *target++          = (unsigned char)((source[0] * alpha) / 255);
+            *target++          = (unsigned char)alpha;
+        }
+
+        struct wl_buffer* buffer = wl_shm_pool_create_buffer(
+            pool, 0, icon->GetWidth(), icon->GetHeight(), stride,
+            WL_SHM_FORMAT_ARGB8888);
+
+        munmap(data, length);
+        wl_shm_pool_destroy(pool);
+
+        return buffer;
+    }
+
     usize WaylandWindow::s_WindowsCount = 0;
     namespace
     {
@@ -280,7 +367,7 @@ namespace Vortex
     bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
     bool WaylandWindow::IsMinimized() const noexcept
     {
-        VT_TODO();
+        VtTodo();
         return false;
     }
     bool WaylandWindow::IsHovered() const noexcept
@@ -312,29 +399,55 @@ namespace Vortex
     f32  WaylandWindow::GetOpacity() const noexcept { return 1.0f; }
 
     void WaylandWindow::Close() noexcept { m_Data.IsOpen = false; }
-    void WaylandWindow::RequestFocus() noexcept { VT_TODO(); }
-    void WaylandWindow::RequestUserAttention() const noexcept { VT_TODO(); }
-    void WaylandWindow::Maximize() noexcept { VT_TODO(); }
-    void WaylandWindow::Minimize() noexcept { VT_TODO(); }
-    void WaylandWindow::Restore() noexcept { VT_TODO(); }
+    void WaylandWindow::RequestFocus() noexcept { VtTodo(); }
+    void WaylandWindow::RequestUserAttention() const noexcept { VtTodo(); }
+    void WaylandWindow::Maximize() noexcept
+    {
+        xdg_toplevel_set_maximized(m_TopLevel);
+        m_Maximized = true;
+    }
+    void WaylandWindow::Minimize() noexcept
+    {
+        xdg_toplevel_set_minimized(m_TopLevel);
+    }
+    void WaylandWindow::Restore() noexcept
+    {
+        if (m_Data.Fullscreen) return;
+
+        if (m_Maximized)
+        {
+            xdg_toplevel_unset_maximized(m_TopLevel);
+            m_Maximized = false;
+        }
+    }
     void WaylandWindow::SetTitle(std::string_view title)
     {
         m_Data.Title = title;
         xdg_toplevel_set_title(m_TopLevel, title.data());
-        ;
     }
     void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
+        auto iconManager = Wayland::GetIconManager();
+        if (iconManager)
+        {
+            m_Icon = xdg_toplevel_icon_manager_v1_create_icon(iconManager);
+            xdg_toplevel_icon_v1_add_buffer(m_Icon,
+                                            CreateShmBuffer((Icon*)icons), 1);
+
+            xdg_toplevel_icon_manager_v1_set_icon(iconManager, m_TopLevel,
+                                                  m_Icon);
+        }
+
         (void)icons;
         (void)count;
-        VtCoreWarn(
+        VtCoreWarnOnce(
             "Wayland: The platform doesn't support setting the window icon");
     }
     void WaylandWindow::SetPosition(i32 x, i32 y)
     {
-        VT_UNUSED(x);
-        VT_UNUSED(y);
-        VtCoreWarn(
+        VtUnused(x);
+        VtUnused(y);
+        VtCoreWarnOnce(
             "Wayland: The platform does not support setting the window "
             "position");
     }
@@ -342,12 +455,12 @@ namespace Vortex
     {
         m_Data.Numererator = numerator;
         m_Data.Denominator = denominator;
-        VT_TODO();
+        VtTodo();
     }
     void WaylandWindow::SetSize(const Vec2i& size) noexcept
     {
         (void)size;
-        VT_TODO();
+        VtTodo();
     }
     void WaylandWindow::SetOpacity(f32 opacity)
     {
@@ -358,7 +471,7 @@ namespace Vortex
             return wp_alpha_modifier_surface_v1_set_multiplier(
                 m_AlphaModifierSurface, alpha);
 
-        VtCoreWarn(
+        VtCoreWarnOnce(
             "Wayland: The compositor does not support setting the window's "
             "opacity");
     }
@@ -376,17 +489,17 @@ namespace Vortex
 
     void WaylandWindow::SetAutoIconify(bool autoIconify) const noexcept
     {
-        VT_TODO();
+        VtTodo();
         (void)autoIconify;
     }
     void WaylandWindow::SetCursorPosition(Vec2d position) noexcept
     {
-        VT_UNUSED(position);
+        VtUnused(position);
         VtCoreWarn(
             "Wayland: The platform does not support setting cursor position");
     }
-    void WaylandWindow::ShowCursor() const noexcept { VT_TODO(); }
-    void WaylandWindow::HideCursor() const noexcept { VT_TODO(); }
+    void WaylandWindow::ShowCursor() const noexcept { VtTodo(); }
+    void WaylandWindow::HideCursor() const noexcept { VtTodo(); }
     void WaylandWindow::SetFullscreen(bool fullscreen)
     {
         m_Data.Fullscreen = fullscreen;
@@ -396,16 +509,16 @@ namespace Vortex
     void WaylandWindow::SetResizable(bool resizable) noexcept
     {
         m_Data.Resizable = resizable;
-        VT_TODO();
+        VtTodo();
     }
     void WaylandWindow::SetVisible(bool visible) const
     {
-        VT_TODO();
+        VtTodo();
         (void)visible;
     }
     void WaylandWindow::SetAlwaysOnTop(bool alwaysOnTop)
     {
-        VT_UNUSED(alwaysOnTop);
+        VtUnused(alwaysOnTop);
         VtCoreWarn(
             "Wayland: The platform does not support making a window floating");
     }
@@ -441,10 +554,10 @@ namespace Vortex
                                            wl_fixed_t xOffset,
                                            wl_fixed_t yOffset)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(xOffset);
-        VT_UNUSED(yOffset);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(xOffset);
+        VtUnused(yOffset);
 
         if (!surface) return;
 
@@ -458,8 +571,8 @@ namespace Vortex
     void WaylandWindow::PointerHandleLeave(void* userData, wl_pointer* pointer,
                                            u32 serial, wl_surface* surface)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
+        VtUnused(userData);
+        VtUnused(pointer);
 
         if (!surface) return;
 
@@ -473,9 +586,9 @@ namespace Vortex
                                             u32 time, wl_fixed_t xOffset,
                                             wl_fixed_t yOffset)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(time);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(time);
 
         f64            xpos   = wl_fixed_to_double(xOffset);
         f64            ypos   = wl_fixed_to_double(yOffset);
@@ -488,12 +601,12 @@ namespace Vortex
                                             u32 serial, u32 time, u32 button,
                                             u32 state)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(serial);
-        VT_UNUSED(time);
-        VT_UNUSED(button);
-        VT_UNUSED(state);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(serial);
+        VtUnused(time);
+        VtUnused(button);
+        VtUnused(state);
 
         WaylandWindow* window    = s_FocusedWindow;
         MouseCode      mouseCode = static_cast<MouseCode>(button - BTN_LEFT);
@@ -505,11 +618,11 @@ namespace Vortex
     void WaylandWindow::PointerHandleAxis(void* userData, wl_pointer* pointer,
                                           u32 time, u32 axis, wl_fixed_t value)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(time);
-        VT_UNUSED(axis);
-        VT_UNUSED(value);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(time);
+        VtUnused(axis);
+        VtUnused(value);
 
         auto window = s_FocusedWindow;
         if (!window) return;
@@ -523,75 +636,75 @@ namespace Vortex
     }
     void WaylandWindow::PointerHandleFrame(void* userData, wl_pointer* pointer)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
+        VtUnused(userData);
+        VtUnused(pointer);
     }
     void WaylandWindow::PointerHandleAxisSource(void*       userData,
                                                 wl_pointer* pointer,
                                                 u32         axisSource)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axisSource);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(axisSource);
     }
     void WaylandWindow::PointerHandleAxisStop(void*       userData,
                                               wl_pointer* pointer, u32 time,
                                               u32 axis)
     {
 
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(time);
-        VT_UNUSED(axis);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(time);
+        VtUnused(axis);
     }
     void WaylandWindow::PointerHandleAxisDiscrete(void*       userData,
                                                   wl_pointer* pointer, u32 axis,
                                                   i32 discrete)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axis);
-        VT_UNUSED(discrete);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(axis);
+        VtUnused(discrete);
     }
     void WaylandWindow::PointerHandleAxisValue120(void*       userData,
                                                   wl_pointer* pointer, u32 axis,
                                                   i32 value120)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axis);
-        VT_UNUSED(value120);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(axis);
+        VtUnused(value120);
     }
     void WaylandWindow::PointerHandleAxisRelativeDirection(void*       userData,
                                                            wl_pointer* pointer,
                                                            u32         axis,
                                                            u32 direction)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(pointer);
-        VT_UNUSED(axis);
-        VT_UNUSED(direction);
+        VtUnused(userData);
+        VtUnused(pointer);
+        VtUnused(axis);
+        VtUnused(direction);
     }
 
     void WaylandWindow::KeyboardHandleKeymap(void*        userData,
                                              wl_keyboard* keyboard, u32 format,
                                              int fd, u32 size)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(format);
-        VT_UNUSED(fd);
-        VT_UNUSED(size);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(format);
+        VtUnused(fd);
+        VtUnused(size);
     }
     void WaylandWindow::KeyboardHandleEnter(void*        userData,
                                             wl_keyboard* keyboard, u32 serial,
                                             wl_surface* surface, wl_array* keys)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(serial);
-        VT_UNUSED(surface);
-        VT_UNUSED(keys);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(serial);
+        VtUnused(surface);
+        VtUnused(keys);
 
         WaylandWindow* window = WaylandWindow::GetWindowMap()[surface];
         s_KeyboardFocus       = window;
@@ -600,27 +713,24 @@ namespace Vortex
                                             wl_keyboard* keyboard, u32 serial,
                                             wl_surface* surface)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(serial);
-        VT_UNUSED(surface);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(serial);
+        VtUnused(surface);
         s_KeyboardFocus = nullptr;
     }
     void WaylandWindow::KeyboardHandleKey(void* userData, wl_keyboard* keyboard,
                                           u32 serial, u32 time, u32 scancode,
                                           u32 state)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(serial);
-        VT_UNUSED(time);
-        VT_UNUSED(scancode);
-        VT_UNUSED(state);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(serial);
+        VtUnused(time);
+        VtUnused(scancode);
+        VtUnused(state);
 
         KeyCode key = ToVtKeyCode(scancode);
-        if (state == WL_KEYBOARD_KEY_STATE_PRESSED && key == KeyCode::eEscape
-            && s_KeyboardFocus)
-            s_KeyboardFocus->m_Data.IsOpen = false;
 
         if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
             WindowEvents::KeyPressedEvent(s_KeyboardFocus, key, 0);
@@ -633,21 +743,21 @@ namespace Vortex
                                                 u32 modsLatched, u32 modsLocked,
                                                 u32 group)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(serial);
-        VT_UNUSED(modsDepressed);
-        VT_UNUSED(modsLatched);
-        VT_UNUSED(modsLocked);
-        VT_UNUSED(group);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(serial);
+        VtUnused(modsDepressed);
+        VtUnused(modsLatched);
+        VtUnused(modsLocked);
+        VtUnused(group);
     }
     void WaylandWindow::KeyboardHandleRepeatInfo(void*        userData,
                                                  wl_keyboard* keyboard,
                                                  i32 rate, i32 delay)
     {
-        VT_UNUSED(userData);
-        VT_UNUSED(keyboard);
-        VT_UNUSED(rate);
-        VT_UNUSED(delay);
+        VtUnused(userData);
+        VtUnused(keyboard);
+        VtUnused(rate);
+        VtUnused(delay);
     }
 }; // namespace Vortex

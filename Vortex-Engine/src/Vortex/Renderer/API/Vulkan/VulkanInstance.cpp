@@ -40,8 +40,8 @@ namespace Vortex
         VkDebugUtilsMessageTypeFlagsEXT             type,
         const VkDebugUtilsMessengerCallbackDataEXT* data, void* userData)
     {
-        VT_UNUSED(type);
-        VT_UNUSED(userData);
+        VtUnused(type);
+        VtUnused(userData);
         [[maybe_unused]] std::string str
             = fmt::format("Vulkan: {}\n", data->pMessage);
 
@@ -82,10 +82,10 @@ namespace Vortex
         u32 vulkanVersionMajor = VK_VERSION_MAJOR(vulkanVersion);
         u32 vulkanVersionMinor = VK_VERSION_MINOR(vulkanVersion);
         u32 vulkanVersionPatch = VK_VERSION_PATCH(vulkanVersion);
-        VT_UNUSED(vulkanVersion);
-        VT_UNUSED(vulkanVersionMajor);
-        VT_UNUSED(vulkanVersionMinor);
-        VT_UNUSED(vulkanVersionPatch);
+        VtUnused(vulkanVersion);
+        VtUnused(vulkanVersionMajor);
+        VtUnused(vulkanVersionMinor);
+        VtUnused(vulkanVersionPatch);
 
         VtCoreAssert(vulkanVersion >= s_MinimumVulkanVersionSupported);
         VtCoreInfo("Vulkan: API version: {}.{}.{}", vulkanVersionMajor,

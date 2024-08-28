@@ -9,8 +9,6 @@
 #include "Vortex/Renderer/Window/Monitor.hpp"
 #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
 
-#include <GLFW/glfw3.h>
-
 namespace Vortex
 {
     class VT_API WaylandMonitor : public Monitor
