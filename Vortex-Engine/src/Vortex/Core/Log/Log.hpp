@@ -77,6 +77,7 @@ namespace Vortex::Log
     #define VtCoreWarn(...)
     #define VtCoreError(...)
     #define VtCoreFatal(...)
+    #define VtCoreWarnOnce(...)
 
     #define VtTrace(...)
     #define VtInfo(...)
