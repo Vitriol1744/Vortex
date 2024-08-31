@@ -40,18 +40,18 @@ namespace Vortex
             VtCoreInfo("X11: Successfully initialized");
         }
 
-        i32         width  = specification.VideoMode.Width;
-        i32         height = specification.VideoMode.Height;
-        const char* title  = specification.Title.data();
+        [[maybe_unused]] i32         width  = specification.VideoMode.Width;
+        [[maybe_unused]] i32         height = specification.VideoMode.Height;
+        [[maybe_unused]] const char* title  = specification.Title.data();
 
-        m_Data.Visible     = specification.Visible;
-        m_Data.Decorated   = specification.Decorated;
-        m_Data.Focused     = specification.Focused;
-        m_Data.Position    = specification.Position;
-        m_Data.AutoIconify = specification.AutoIconify;
-        m_Data.FocusOnShow = specification.FocusOnShow;
+        m_Data.Visible                      = specification.Visible;
+        m_Data.Decorated                    = specification.Decorated;
+        m_Data.Focused                      = specification.Focused;
+        m_Data.Position                     = specification.Position;
+        m_Data.AutoIconify                  = specification.AutoIconify;
+        m_Data.FocusOnShow                  = specification.FocusOnShow;
 
-        long eventMask     = StructureNotifyMask | KeyPressMask | KeyReleaseMask
+        long eventMask = StructureNotifyMask | KeyPressMask | KeyReleaseMask
                        | PointerMotionMask | ButtonPressMask | ButtonReleaseMask
                        | ExposureMask | FocusChangeMask | VisibilityChangeMask
                        | EnterWindowMask | LeaveWindowMask | PropertyChangeMask;
