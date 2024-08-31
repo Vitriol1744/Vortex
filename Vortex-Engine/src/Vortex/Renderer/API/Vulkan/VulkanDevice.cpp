@@ -14,13 +14,42 @@
 
 #ifdef VT_PLATFORM_LINUX
     #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
+    #include "Vortex/Renderer/Window/X11/X11.hpp"
     #include <vulkan/vulkan_wayland.h>
+    #include <vulkan/vulkan_xcb.h>
 #endif
 
 namespace Vortex
 {
     static std::array<const char*, 1> s_DeviceExtensions
         = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+    static bool
+    getPhysicalDevicePresentationSupport(vk::PhysicalDevice physicalDevice,
+                                         u32                queueFamily)
+    {
+        bool presentationSupport = false;
+
+#ifdef VT_PLATFORM_LINUX
+        if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
+        {
+            VisualID visualID = XVisualIDFromVisual(
+                DefaultVisual(X11::GetDisplay(), X11::GetScreen()));
+
+            presentationSupport = vkGetPhysicalDeviceXcbPresentationSupportKHR(
+                physicalDevice, queueFamily, X11::GetConnection(), visualID);
+        }
+        else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+            presentationSupport
+                = vkGetPhysicalDeviceWaylandPresentationSupportKHR(
+                    physicalDevice, queueFamily, Wayland::GetDisplay());
+#elifdef VT_PLATFORM_WINDOWS
+        vk::Instance instance = VulkanContext::GetInstance();
+        presentationSupport   = glfwGetPhysicalDevicePresentationSupport(
+            instance, physicalDevice, queueFamily);
+#endif
+        return presentationSupport;
+    }
 
     VulkanPhysicalDevice VulkanPhysicalDevice::Pick()
     {
@@ -137,25 +166,13 @@ namespace Vortex
         m_PhysicalDevice.getQueueFamilyProperties(&queueFamilyCount,
                                                   queueFamilies.data());
 
-        VkInstance instance = vk::Instance(VulkanContext::GetInstance());
         for (u32 i = 0; i < queueFamilies.size(); i++)
         {
             if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eGraphics)
                 m_QueueFamilyIndices.Graphics = i;
 
-            bool presentationSupport = false;
-#ifdef VT_PLATFORM_LINUX
-            if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
-                presentationSupport
-                    = vkGetPhysicalDeviceWaylandPresentationSupportKHR(
-                        m_PhysicalDevice, i, Wayland::GetDisplay());
-            else if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
-                presentationSupport = glfwGetPhysicalDevicePresentationSupport(
-                    instance, m_PhysicalDevice, i);
-#elifdef VT_PLATFORM_WINDOWS
-            presentationSupport = glfwGetPhysicalDevicePresentationSupport(
-                instance, m_PhysicalDevice, i);
-#endif
+            bool presentationSupport
+                = getPhysicalDevicePresentationSupport(m_PhysicalDevice, i);
 
             if (queueFamilies[i].queueCount > 0 && presentationSupport)
                 m_QueueFamilyIndices.Present = i;

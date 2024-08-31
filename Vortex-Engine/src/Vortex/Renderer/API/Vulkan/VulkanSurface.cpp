@@ -12,17 +12,14 @@
 
 #ifdef VT_PLATFORM_LINUX
     #define VK_USE_PLATFORM_X11_KHR
-    #define GLFW_EXPOSE_NATIVE_X11
+    #include "Vortex/Renderer/Window/X11/X11.hpp"
     #include <X11/Xlib-xcb.h>
     #include <vulkan/vulkan_wayland.h>
     #include <vulkan/vulkan_xcb.h>
 #elifdef VT_PLATFORM_WINDOWS
     #define VK_USE_PLATFORM_WIN32_KHR
-    #define GLFW_EXPOSE_NATIVE_WIN32
     #include <vulkan/vulkan_win32.h>
 #endif
-
-#include <GLFW/glfw3native.h>
 
 namespace Vortex
 {
@@ -38,15 +35,14 @@ namespace Vortex
             VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
             surfaceCreateInfo.sType
                 = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-            surfaceCreateInfo.pNext = VK_NULL_HANDLE;
-            surfaceCreateInfo.flags = 0;
-            surfaceCreateInfo.connection
-                = XGetXCBConnection(glfwGetX11Display());
+            surfaceCreateInfo.pNext      = VK_NULL_HANDLE;
+            surfaceCreateInfo.flags      = 0;
+            surfaceCreateInfo.connection = X11::GetConnection();
             surfaceCreateInfo.window
-                = std::any_cast<::Window>(window->GetNativeHandle());
+                = std::any_cast<xcb_window_t>(window->GetNativeHandle());
 
-            vkCreateXcbSurfaceKHR(vkInstance, &surfaceCreateInfo,
-                                  VK_NULL_HANDLE, &surface);
+            VkCall(vk::Result(vkCreateXcbSurfaceKHR(
+                vkInstance, &surfaceCreateInfo, VK_NULL_HANDLE, &surface)));
         }
         else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
         {

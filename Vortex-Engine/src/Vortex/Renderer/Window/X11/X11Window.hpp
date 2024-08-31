@@ -8,11 +8,11 @@
 
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#define GLFW_EXPOSE_NATIVE_X11
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
+#include "Vortex/Renderer/Window/X11/X11.hpp"
 
-#include <X11/Xlib-xcb.h>
+#include <X11/Xatom.h>
+#include <X11/Xmd.h>
+#include <X11/Xutil.h>
 
 namespace Vortex
 {
@@ -27,7 +27,7 @@ namespace Vortex
 
         inline virtual std::any GetNativeHandle() const noexcept override
         {
-            return glfwGetX11Window(m_Window);
+            return m_WindowHandle;
         }
         inline virtual bool IsOpen() const noexcept override
         {
@@ -42,6 +42,7 @@ namespace Vortex
         virtual Vec2i       GetFramebufferSize() const noexcept override;
         virtual Vec2f       GetContentScale() const noexcept override;
         virtual f32         GetOpacity() const noexcept override;
+        virtual Vec2d       GetCursorPosition() const noexcept override;
 
         virtual Ref<RendererContext>
         GetRendererContext() const noexcept override
@@ -78,20 +79,21 @@ namespace Vortex
 
       private:
         xcb_window_t               m_WindowHandle;
-        GLFWwindow*                m_Window;
+        XIC                        m_InputContext = nullptr;
+        xcb_window_t               m_Parent;
+        bool                       m_MouseHovered    = false;
         Ref<class RendererContext> m_RendererContext = nullptr;
+        Vec2i                      m_LastCursorPos   = {0, 0};
         Vec2i                      m_WarpCursorPos   = {0, 0};
 
-        static Display*            s_Display;
-        static i32                 s_Screen;
-        static ::Window            s_RootWindow;
-        static XContext            s_Context;
-        static xcb_connection_t*   s_XcbConnection;
         static usize               s_WindowsCount;
 
-        void                       SetupEvents();
+        static auto&               GetWindowMap()
+        {
+            static std::unordered_map<::Window, X11Window*> windowMap = {};
 
-        static bool                Initialize();
-        static void                Shutdown();
+            return windowMap;
+        }
+        static void ProcessEvent(XEvent& event);
     };
 }; // namespace Vortex

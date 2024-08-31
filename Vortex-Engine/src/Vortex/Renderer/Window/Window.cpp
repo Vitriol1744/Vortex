@@ -10,10 +10,6 @@
 #include "Vortex/Renderer/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    // NOTE(v1tr10l7): if we don't expose both api's, compiler will start
-    // complaining about missing glfw native calls to either wayland or glfw
-    #define GLFW_EXPOSE_NATIVE_WAYLAND
-    #define GLFW_EXPOSE_NATIVE_X11
     #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
     #include "Vortex/Renderer/Window/X11/X11Window.hpp"
 #elifdef VT_PLATFORM_WINDOWS

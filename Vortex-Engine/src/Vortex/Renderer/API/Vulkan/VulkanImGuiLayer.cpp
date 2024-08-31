@@ -612,51 +612,16 @@ namespace Vortex
         ImGuiPlatformIO&       platformIO = ImGui::GetPlatformIO();
         bd->WantUpdateMonitors            = false;
 
-        i32           monitorCount        = 0;
-        GLFWmonitor** glfwMonitors        = glfwGetMonitors(&monitorCount);
+        i32 monitorCount                  = 1;
         if (monitorCount == 0) return;
 
+        // TODO(v1tr10l7): Temporary
         platformIO.Monitors.resize(0);
-        for (i32 i = 0; i < monitorCount; i++)
-        {
-            ImGuiPlatformMonitor monitor;
-            i32                  x, y;
-            glfwGetMonitorPos(glfwMonitors[i], &x, &y);
-            const GLFWvidmode* videoMode = glfwGetVideoMode(glfwMonitors[i]);
-            if (!videoMode)
-                continue; // Failed to get Video mode (e.g.
-                          // Emscripten does not support this
-                          // function)
-            monitor.MainPos = monitor.WorkPos
-                = ImVec2(static_cast<f32>(x), static_cast<f32>(y));
-            monitor.MainSize = monitor.WorkSize
-                = ImVec2(static_cast<f32>(videoMode->width),
-                         static_cast<f32>(videoMode->height));
-            i32 w, h;
-            glfwGetMonitorWorkarea(glfwMonitors[i], &x, &y, &w, &h);
-            if (w > 0 && h > 0) // Workaround a small GLFW issue reporting
-                                // zero on monitor changes:
-                                // https://github.com/glfw/glfw/pull/1761
-            {
-                monitor.WorkPos
-                    = ImVec2(static_cast<f32>(x), static_cast<f32>(y));
-                monitor.WorkSize
-                    = ImVec2(static_cast<f32>(w), static_cast<f32>(h));
-            }
-            // Warning: the validity of monitor DPI information on
-            // Windows depends on the application DPI awareness
-            // settings, which generally needs to be set in the
-            // manifest or at runtime.
-            f32 xScale, yScale;
-            glfwGetMonitorContentScale(glfwMonitors[i], &xScale, &yScale);
-            monitor.DpiScale       = xScale;
-            monitor.PlatformHandle = reinterpret_cast<void*>(
-                glfwMonitors[i]); // [...] GLFW doc states:
-                                  // "guaranteed to be valid
-                                  // only until the monitor
-                                  // configuration changes"
-            platformIO.Monitors.push_back(monitor);
-        }
+        ImGuiPlatformMonitor monitor{};
+        monitor.MainPos = monitor.WorkPos
+            = ImVec2(static_cast<f32>(0), static_cast<f32>(0));
+        monitor.MainSize = monitor.WorkSize = ImVec2(1600, 900);
+        platformIO.Monitors.push_back(monitor);
     }
 
     bool VulkanImGuiLayer::OnKeyPressed(Window* window, KeyCode key,

@@ -39,17 +39,21 @@ namespace Vortex
         virtual Vec2i       GetFramebufferSize() const noexcept override;
         virtual Vec2f       GetContentScale() const noexcept override;
         virtual f32         GetOpacity() const noexcept override;
+        virtual Vec2d       GetCursorPosition() const noexcept override
+        {
+            return m_Data.MousePosition;
+        }
 
-        virtual void        Close() noexcept override;
-        virtual void        RequestFocus() noexcept override;
-        virtual void        RequestUserAttention() const noexcept override;
-        virtual void        Maximize() noexcept override;
-        virtual void        Minimize() noexcept override;
-        virtual void        Restore() noexcept override;
+        virtual void Close() noexcept override;
+        virtual void RequestFocus() noexcept override;
+        virtual void RequestUserAttention() const noexcept override;
+        virtual void Maximize() noexcept override;
+        virtual void Minimize() noexcept override;
+        virtual void Restore() noexcept override;
 
-        virtual void        SetTitle(std::string_view title) override;
-        virtual void        SetIcon(const Icon* icons, usize count) override;
-        virtual void        SetPosition(i32 x, i32 y) override;
+        virtual void SetTitle(std::string_view title) override;
+        virtual void SetIcon(const Icon* icons, usize count) override;
+        virtual void SetPosition(i32 x, i32 y) override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
         virtual void SetSize(const Vec2i& size) noexcept override;
 

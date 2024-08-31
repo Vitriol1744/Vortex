@@ -6,18 +6,21 @@
  */
 #pragma once
 
+#include "Vortex/Core/Core.hpp"
 #include "Vortex/Renderer/Window/Monitor.hpp"
-
-#include <GLFW/glfw3.h>
 
 namespace Vortex
 {
     class VT_API X11Monitor : public Monitor
     {
       public:
-        X11Monitor(GLFWmonitor* handle);
+        X11Monitor();
 
-        virtual std::any    GetNativeHandle() override { return m_Handle; }
+        virtual std::any GetNativeHandle() override
+        {
+            VtTodo();
+            return nullptr;
+        }
 
         virtual Vec2i       GetPosition() const override;
         virtual Rectangle<> GetWorkArea() const override;
@@ -28,6 +31,5 @@ namespace Vortex
         static bool         Initialize(std::vector<Ref<Monitor>>& monitors);
 
       private:
-        GLFWmonitor* m_Handle;
     };
 }; // namespace Vortex

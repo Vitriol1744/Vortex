@@ -11,7 +11,6 @@
 
 #include "Vortex/Renderer/Window/Window.hpp"
 
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #undef CreateWindow
 

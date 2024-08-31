@@ -9,8 +9,6 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 
-#include <GLFW/glfw3.h>
-
 namespace Vortex
 {
     usize                VulkanContext::s_ContextCount   = 0;

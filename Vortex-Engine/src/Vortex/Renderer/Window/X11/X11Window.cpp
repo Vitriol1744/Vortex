@@ -10,246 +10,85 @@
 #include "Vortex/Renderer/Window/X11/X11Window.hpp"
 
 #include <X11/Xresource.h>
+#include <xcb/xproto.h>
 
 namespace Vortex
 {
-    Display*          X11Window::s_Display       = nullptr;
-    i32               X11Window::s_Screen        = 0;
-    ::Window          X11Window::s_RootWindow    = 0;
-    XContext          X11Window::s_Context       = 0;
-    xcb_connection_t* X11Window::s_XcbConnection = nullptr;
-    usize             X11Window::s_WindowsCount  = 0;
+    usize X11Window::s_WindowsCount = 0;
+    u32   errorCode                 = 0;
 
     namespace
     {
         ::Cursor s_BlankCursor = 0;
-    }
+        i32      XlibErrorHandler(Display* display, XErrorEvent* event)
+        {
+            if (display == X11::GetDisplay()) errorCode = event->error_code;
 
-    static void glfwErrorCallback(int code, const char* description)
-    {
-        (void)code;
-        (void)description;
-        VtCoreError(
-            "GLFW: An error has occurred, ErrorCode: {}, Description: {}", code,
-            description);
-    }
+            return 0;
+        }
+    } // namespace
 
     using Input::KeyCode;
-    static KeyCode ToVtKeyCode(i32 key)
-    {
-        KeyCode ret = KeyCode::eUnknown;
-        switch (key)
-        {
-            case GLFW_KEY_0: ret = KeyCode::eNum0; break;
-            case GLFW_KEY_1: ret = KeyCode::eNum1; break;
-            case GLFW_KEY_2: ret = KeyCode::eNum2; break;
-            case GLFW_KEY_3: ret = KeyCode::eNum3; break;
-            case GLFW_KEY_4: ret = KeyCode::eNum4; break;
-            case GLFW_KEY_5: ret = KeyCode::eNum5; break;
-            case GLFW_KEY_6: ret = KeyCode::eNum6; break;
-            case GLFW_KEY_7: ret = KeyCode::eNum7; break;
-            case GLFW_KEY_8: ret = KeyCode::eNum8; break;
-            case GLFW_KEY_9: ret = KeyCode::eNum9; break;
-            case GLFW_KEY_A: ret = KeyCode::eA; break;
-            case GLFW_KEY_B: ret = KeyCode::eB; break;
-            case GLFW_KEY_C: ret = KeyCode::eC; break;
-            case GLFW_KEY_D: ret = KeyCode::eD; break;
-            case GLFW_KEY_E: ret = KeyCode::eE; break;
-            case GLFW_KEY_F: ret = KeyCode::eF; break;
-            case GLFW_KEY_G: ret = KeyCode::eG; break;
-            case GLFW_KEY_H: ret = KeyCode::eH; break;
-            case GLFW_KEY_I: ret = KeyCode::eI; break;
-            case GLFW_KEY_J: ret = KeyCode::eJ; break;
-            case GLFW_KEY_K: ret = KeyCode::eK; break;
-            case GLFW_KEY_L: ret = KeyCode::eL; break;
-            case GLFW_KEY_M: ret = KeyCode::eM; break;
-            case GLFW_KEY_N: ret = KeyCode::eN; break;
-            case GLFW_KEY_O: ret = KeyCode::eO; break;
-            case GLFW_KEY_P: ret = KeyCode::eP; break;
-            case GLFW_KEY_Q: ret = KeyCode::eQ; break;
-            case GLFW_KEY_R: ret = KeyCode::eR; break;
-            case GLFW_KEY_S: ret = KeyCode::eS; break;
-            case GLFW_KEY_T: ret = KeyCode::eT; break;
-            case GLFW_KEY_U: ret = KeyCode::eU; break;
-            case GLFW_KEY_V: ret = KeyCode::eV; break;
-            case GLFW_KEY_W: ret = KeyCode::eW; break;
-            case GLFW_KEY_X: ret = KeyCode::eX; break;
-            case GLFW_KEY_Y: ret = KeyCode::eY; break;
-            case GLFW_KEY_Z: ret = KeyCode::eZ; break;
-            case GLFW_KEY_GRAVE_ACCENT: ret = KeyCode::eTilde; break;
-            case GLFW_KEY_F1: ret = KeyCode::eF1; break;
-            case GLFW_KEY_F2: ret = KeyCode::eF2; break;
-            case GLFW_KEY_F3: ret = KeyCode::eF3; break;
-            case GLFW_KEY_F4: ret = KeyCode::eF4; break;
-            case GLFW_KEY_F5: ret = KeyCode::eF5; break;
-            case GLFW_KEY_F6: ret = KeyCode::eF6; break;
-            case GLFW_KEY_F7: ret = KeyCode::eF7; break;
-            case GLFW_KEY_F8: ret = KeyCode::eF8; break;
-            case GLFW_KEY_F9: ret = KeyCode::eF9; break;
-            case GLFW_KEY_F10: ret = KeyCode::eF10; break;
-            case GLFW_KEY_F11: ret = KeyCode::eF11; break;
-            case GLFW_KEY_F12: ret = KeyCode::eF12; break;
-            case GLFW_KEY_F13: ret = KeyCode::eF13; break;
-            case GLFW_KEY_F14: ret = KeyCode::eF14; break;
-            case GLFW_KEY_F15: ret = KeyCode::eF15; break;
-            case GLFW_KEY_ESCAPE: ret = KeyCode::eEscape; break;
-            case GLFW_KEY_BACKSPACE: ret = KeyCode::eBackspace; break;
-            case GLFW_KEY_TAB: ret = KeyCode::eTab; break;
-            case GLFW_KEY_CAPS_LOCK: ret = KeyCode::eCapsLock; break;
-            case GLFW_KEY_ENTER: ret = KeyCode::eReturn; break;
-            case GLFW_KEY_KP_ENTER: ret = KeyCode::eEnter; break;
-            case GLFW_KEY_LEFT_SHIFT: ret = KeyCode::eLShift; break;
-            case GLFW_KEY_RIGHT_SHIFT: ret = KeyCode::eRShift; break;
-            case GLFW_KEY_LEFT_CONTROL: ret = KeyCode::eLCtrl; break;
-            case GLFW_KEY_RIGHT_CONTROL: ret = KeyCode::eRCtrl; break;
-            case GLFW_KEY_LEFT_ALT: ret = KeyCode::eLAlt; break;
-            case GLFW_KEY_RIGHT_ALT: ret = KeyCode::eRAlt; break;
-            case GLFW_KEY_LEFT_SUPER: ret = KeyCode::eLSystem; break;
-            case GLFW_KEY_RIGHT_SUPER: ret = KeyCode::eRSystem; break;
-            case GLFW_KEY_SPACE: ret = KeyCode::eSpace; break;
-            case GLFW_KEY_MINUS: ret = KeyCode::eHyphen; break;
-            case GLFW_KEY_EQUAL: ret = KeyCode::eEqual; break;
-            case GLFW_KEY_KP_DECIMAL: ret = KeyCode::eDecimal; break;
-            case GLFW_KEY_LEFT_BRACKET: ret = KeyCode::eLBracket; break;
-            case GLFW_KEY_RIGHT_BRACKET: ret = KeyCode::eRBracket; break;
-            case GLFW_KEY_SEMICOLON: ret = KeyCode::eSemicolon; break;
-            case GLFW_KEY_APOSTROPHE: ret = KeyCode::eApostrophe; break;
-            case GLFW_KEY_COMMA: ret = KeyCode::eComma; break;
-            case GLFW_KEY_PERIOD: ret = KeyCode::ePeriod; break;
-            case GLFW_KEY_SLASH: ret = KeyCode::eSlash; break;
-            case GLFW_KEY_BACKSLASH: ret = KeyCode::eBackslash; break;
-            case GLFW_KEY_UP: ret = KeyCode::eUp; break;
-            case GLFW_KEY_DOWN: ret = KeyCode::eDown; break;
-            case GLFW_KEY_LEFT: ret = KeyCode::eLeft; break;
-            case GLFW_KEY_RIGHT: ret = KeyCode::eRight; break;
-            case GLFW_KEY_KP_0: ret = KeyCode::eNumpad0; break;
-            case GLFW_KEY_KP_1: ret = KeyCode::eNumpad1; break;
-            case GLFW_KEY_KP_2: ret = KeyCode::eNumpad2; break;
-            case GLFW_KEY_KP_3: ret = KeyCode::eNumpad3; break;
-            case GLFW_KEY_KP_4: ret = KeyCode::eNumpad4; break;
-            case GLFW_KEY_KP_5: ret = KeyCode::eNumpad5; break;
-            case GLFW_KEY_KP_6: ret = KeyCode::eNumpad6; break;
-            case GLFW_KEY_KP_7: ret = KeyCode::eNumpad7; break;
-            case GLFW_KEY_KP_8: ret = KeyCode::eNumpad8; break;
-            case GLFW_KEY_KP_9: ret = KeyCode::eNumpad9; break;
-            case GLFW_KEY_KP_ADD: ret = KeyCode::eAdd; break;
-            case GLFW_KEY_KP_SUBTRACT: ret = KeyCode::eSubtract; break;
-            case GLFW_KEY_KP_MULTIPLY: ret = KeyCode::eMultiply; break;
-            case GLFW_KEY_KP_DIVIDE: ret = KeyCode::eDivide; break;
-            case GLFW_KEY_INSERT: ret = KeyCode::eInsert; break;
-            case GLFW_KEY_DELETE: ret = KeyCode::eDelete; break;
-            case GLFW_KEY_PAGE_UP: ret = KeyCode::ePageUp; break;
-            case GLFW_KEY_PAGE_DOWN: ret = KeyCode::ePageDown; break;
-            case GLFW_KEY_HOME: ret = KeyCode::eHome; break;
-            case GLFW_KEY_END: ret = KeyCode::eEnd; break;
-            case GLFW_KEY_SCROLL_LOCK: ret = KeyCode::eScrollLock; break;
-            case GLFW_KEY_NUM_LOCK: ret = KeyCode::eNumLock; break;
-            case GLFW_KEY_PRINT_SCREEN: ret = KeyCode::ePrintScreen; break;
-            case GLFW_KEY_PAUSE: ret = KeyCode::ePause; break;
-            case GLFW_KEY_MENU: ret = KeyCode::eMenu; break;
-
-            default: break;
-        }
-
-        return ret;
-    }
-
     using Input::MouseCode;
-    MouseCode ToVtMouseCode(i32 mouse)
-    {
-        MouseCode ret = MouseCode::eUnknown;
-        switch (mouse)
-        {
-            case GLFW_MOUSE_BUTTON_LEFT: ret = MouseCode::eLeft; break;
-            case GLFW_MOUSE_BUTTON_RIGHT: ret = MouseCode::eRight; break;
-            case GLFW_MOUSE_BUTTON_MIDDLE: ret = MouseCode::eMiddle; break;
-            case GLFW_MOUSE_BUTTON_4: ret = MouseCode::eX1; break;
-            case GLFW_MOUSE_BUTTON_5: ret = MouseCode::eX2; break;
-            case GLFW_MOUSE_BUTTON_6: ret = MouseCode::eX3; break;
-            case GLFW_MOUSE_BUTTON_7: ret = MouseCode::eX4; break;
-            case GLFW_MOUSE_BUTTON_8: ret = MouseCode::eX5; break;
-        }
-
-        return ret;
-    }
 
     X11Window::X11Window(const WindowSpecification& specification)
         : Window(specification)
     {
         if (s_WindowsCount == 0)
         {
-            VtCoreAssert(X11Window::Initialize());
-            VtCoreInfo("GLFW: Successfully initialized, version: {}",
-                       glfwGetVersionString());
+            X11::Initialize();
+            VtCoreInfo("X11: Successfully initialized");
         }
 
         i32         width  = specification.VideoMode.Width;
         i32         height = specification.VideoMode.Height;
         const char* title  = specification.Title.data();
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, specification.Visible);
-        m_Data.Visible = specification.Visible;
-        glfwWindowHint(GLFW_DECORATED, specification.Decorated);
-        m_Data.Decorated = specification.Decorated;
-        glfwWindowHint(GLFW_FOCUSED, specification.Focused);
-        m_Data.Focused = specification.Focused;
-        glfwWindowHint(GLFW_FLOATING, specification.AlwaysOnTop);
-        glfwWindowHint(GLFW_MAXIMIZED, specification.Maximized);
-        glfwWindowHint(GLFW_POSITION_X, specification.Position.x);
-        glfwWindowHint(GLFW_POSITION_Y, specification.Position.y);
-        m_Data.Position = specification.Position;
-        glfwWindowHint(GLFW_RED_BITS, specification.VideoMode.RedBits);
-        glfwWindowHint(GLFW_GREEN_BITS, specification.VideoMode.GreenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, specification.VideoMode.BlueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, specification.VideoMode.RefreshRate);
-        glfwWindowHint(GLFW_AUTO_ICONIFY, specification.AutoIconify);
+        m_Data.Visible     = specification.Visible;
+        m_Data.Decorated   = specification.Decorated;
+        m_Data.Focused     = specification.Focused;
+        m_Data.Position    = specification.Position;
         m_Data.AutoIconify = specification.AutoIconify;
-        glfwWindowHint(GLFW_CENTER_CURSOR, specification.CenterCursor);
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, specification.FocusOnShow);
-        m_Data.FocusOnShow   = specification.FocusOnShow;
+        m_Data.FocusOnShow = specification.FocusOnShow;
+
+        long eventMask     = StructureNotifyMask | KeyPressMask | KeyReleaseMask
+                       | PointerMotionMask | ButtonPressMask | ButtonReleaseMask
+                       | ExposureMask | FocusChangeMask | VisibilityChangeMask
+                       | EnterWindowMask | LeaveWindowMask | PropertyChangeMask;
 
         Ref<Monitor> monitor = specification.Monitor;
-        GLFWmonitor* monitorHandle
-            = monitor ? std::any_cast<GLFWmonitor*>(monitor->GetNativeHandle())
-                      : nullptr;
 
-        m_Window = glfwCreateWindow(
-            width, height, title,
-            specification.Fullscreen ? monitorHandle : nullptr, nullptr);
-        m_WindowHandle = glfwGetX11Window(m_Window);
+        i32          x       = specification.Position.x;
+        i32          y       = specification.Position.y;
 
-        if (monitor)
-        {
-            [[maybe_unused]] std::string_view monitorName = monitor->GetName();
-            VideoMode                         currentMode
-                = specification.Monitor->GetCurrentVideoMode();
-            [[maybe_unused]] u32 bitsPerPixel = currentMode.RedBits
-                                              + currentMode.GreenBits
-                                              + currentMode.BlueBits;
-            [[maybe_unused]] u16 redBits     = currentMode.RedBits;
-            [[maybe_unused]] u16 greenBits   = currentMode.GreenBits;
-            [[maybe_unused]] u16 blueBits    = currentMode.BlueBits;
-            [[maybe_unused]] u32 refreshRate = currentMode.RefreshRate;
+        Visual*      visual  = DefaultVisual(X11::GetDisplay(),
+                                             DefaultScreen(X11::GetDisplay()));
+        int          depth
+            = DefaultDepth(X11::GetDisplay(), DefaultScreen(X11::GetDisplay()));
+        XSetWindowAttributes attributes{};
+        attributes.colormap = XCreateColormap(
+            X11::GetDisplay(), X11::GetRootWindow(), visual, AllocNone);
+        attributes.event_mask        = eventMask;
+        attributes.override_redirect = false;
 
-            VtCoreTrace(
-                "GLFW: Using monitor: {{ name: {}, currentMode: '{} x {} x {} "
-                "({} "
-                "{} {}) {} Hz'}}",
-                monitorName, currentMode.Width, currentMode.Height,
-                bitsPerPixel, redBits, greenBits, blueBits, refreshRate);
-        }
+        m_WindowHandle               = XCreateWindow(
+            X11::GetDisplay(), X11::GetRootWindow(), x, y, width, height, 0,
+            depth, InputOutput, visual,
+            CWEventMask | CWBorderPixel | CWColormap, &attributes);
+        m_InputContext
+            = XCreateIC(X11::GetInputMethod(), XNClientWindow, m_WindowHandle,
+                        XNFocusWindow, m_WindowHandle, XNInputStyle,
+                        XIMPreeditNothing | XIMStatusNothing, nullptr);
+        m_Parent                       = X11::GetRootWindow();
+        GetWindowMap()[m_WindowHandle] = this;
+
         VtCoreTrace(
-            "GLFW: Created window {{ width: {}, height: {}, title: {} }}",
-            width, height, title);
+            "X11: Created window {{ width: {}, height: {}, title: {} }}", width,
+            height, title);
 
         ++s_WindowsCount;
-        SetVisible(true);
-        m_Data.IsOpen = !glfwWindowShouldClose(m_Window);
-
-        glfwSetWindowUserPointer(m_Window, reinterpret_cast<void*>(this));
-
-        SetupEvents();
+        SetVisible(specification.Visible);
+        m_Data.IsOpen = true;
 
         if (!specification.NoAPI)
             m_RendererContext
@@ -260,74 +99,122 @@ namespace Vortex
             // Create Blank Cursor
             char   data[1]           = {0};
             Pixmap blankCursorPixMap = XCreateBitmapFromData(
-                s_Display, DefaultRootWindow(s_Display), data, 1, 1);
+                X11::GetDisplay(), DefaultRootWindow(X11::GetDisplay()), data,
+                1, 1);
             XColor blankCursorColor;
             s_BlankCursor = XCreatePixmapCursor(
-                s_Display, blankCursorPixMap, blankCursorPixMap,
+                X11::GetDisplay(), blankCursorPixMap, blankCursorPixMap,
                 &blankCursorColor, &blankCursorColor, 0, 0);
 
-            XFreePixmap(s_Display, blankCursorPixMap);
+            XFreePixmap(X11::GetDisplay(), blankCursorPixMap);
         }
     }
     X11Window::~X11Window()
     {
-        glfwDestroyWindow(m_Window);
+        m_RendererContext.reset();
+        GetWindowMap().erase(m_WindowHandle);
+        XDestroyWindow(X11::GetDisplay(), m_WindowHandle);
         --s_WindowsCount;
-        if (s_WindowsCount == 0) Shutdown();
+        if (s_WindowsCount == 0) X11::Shutdown();
     }
 
-    void X11Window::PollEvents() { glfwPollEvents(); }
+    void X11Window::PollEvents()
+    {
+        Display* display = X11::GetDisplay();
+        XPending(display);
+
+        while (QLength(X11::GetDisplay()))
+        {
+            XEvent event;
+            XNextEvent(X11::GetDisplay(), &event);
+            ProcessEvent(event);
+        }
+
+        XFlush(display);
+    }
     void X11Window::Present() { m_RendererContext->Present(); }
 
     bool X11Window::IsFocused() const noexcept { return m_Data.Focused; }
     bool X11Window::IsMinimized() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_ICONIFIED);
+        VtTodo();
+        return false;
     }
     bool X11Window::IsHovered() const noexcept
     {
-        return glfwGetWindowAttrib(m_Window, GLFW_HOVERED);
+        auto releaseHandler = [](auto oldHandler)
+        {
+            XSync(X11::GetDisplay(), False);
+            XSetErrorHandler(oldHandler);
+        };
+
+        ::Window w = X11::GetRootWindow();
+        while (w)
+        {
+            ::Window   root;
+            i32        rootX, rootY, childX, childY;
+            u32        mask;
+
+            auto       oldHandler = XSetErrorHandler(XlibErrorHandler);
+
+            const Bool result
+                = XQueryPointer(X11::GetDisplay(), w, &root, &w, &rootX, &rootY,
+                                &childX, &childY, &mask);
+            releaseHandler(oldHandler);
+
+            if (errorCode == BadWindow) w = X11::GetRootWindow();
+            else if (!result) return false;
+            else if (w == m_WindowHandle) return true;
+        }
+
+        return false;
     }
     std::string X11Window::GetTitle() const noexcept { return m_Data.Title; }
     Vec2i       X11Window::GetPosition() const noexcept
     {
         Vec2i    position;
         ::Window dummy;
-        XTranslateCoordinates(s_Display, m_WindowHandle, s_RootWindow, 0, 0,
-                              &position.x, &position.y, &dummy);
+        XTranslateCoordinates(X11::GetDisplay(), m_WindowHandle,
+                              X11::GetRootWindow(), 0, 0, &position.x,
+                              &position.y, &dummy);
 
         return position;
     }
     inline Vec2i X11Window::GetSize() const noexcept
     {
         XWindowAttributes attributes{};
-        XGetWindowAttributes(s_Display, m_WindowHandle, &attributes);
+        XGetWindowAttributes(X11::GetDisplay(), m_WindowHandle, &attributes);
 
         return Vec2i(attributes.width, attributes.height);
     }
     Vec2i X11Window::GetFramebufferSize() const noexcept { return GetSize(); }
     Vec2f X11Window::GetContentScale() const noexcept
     {
-        Vec2f ret;
-        glfwGetWindowContentScale(m_Window, &ret.x, &ret.y);
-
-        return ret;
+        VtTodo();
+        return {1.0f, 1.0f};
     }
     f32 X11Window::GetOpacity() const noexcept
     {
-        return glfwGetWindowOpacity(m_Window);
+        f32 opacity = 1.0f;
+
+        VtTodo();
+        return opacity;
+    }
+    Vec2d X11Window::GetCursorPosition() const noexcept
+    {
+        ::Window root, child;
+        i32      rootX, rootY, childX, childY;
+        u32      mask;
+
+        XQueryPointer(X11::GetDisplay(), m_WindowHandle, &root, &child, &rootX,
+                      &rootY, &childX, &childY, &mask);
+        return Vec2d(static_cast<f64>(childX), static_cast<f64>(childY));
     }
 
-    void X11Window::Close() noexcept
-    {
-        m_Data.IsOpen = false;
-        glfwWindowShouldClose(m_Window);
-    }
+    void X11Window::Close() noexcept { m_Data.IsOpen = false; }
     void X11Window::RequestFocus() noexcept
     {
-        return glfwFocusWindow(m_Window);
-        Atom netActiveWindow
-            = XInternAtom(s_Display, "_NET_ACTIVE_WINDOW", true);
+        Atom netActiveWindow = X11::GetAtom("_NET_ACTIVE_WINDOW", true);
 
         if (netActiveWindow)
         {
@@ -341,313 +228,286 @@ namespace Vortex
             event.xclient.data.l[2]    = 0;
 
             int mask = SubstructureNotifyMask | SubstructureRedirectMask;
-            VtCoreAssert(XSendEvent(s_Display, DefaultRootWindow(s_Display),
-                                    false, mask, &event));
+            VtCoreAssert(XSendEvent(X11::GetDisplay(),
+                                    DefaultRootWindow(X11::GetDisplay()), false,
+                                    mask, &event));
         }
         else
         {
-            XSetInputFocus(s_Display, m_WindowHandle, RevertToPointerRoot,
-                           CurrentTime);
-            XRaiseWindow(s_Display, m_WindowHandle);
+            XSetInputFocus(X11::GetDisplay(), m_WindowHandle,
+                           RevertToPointerRoot, CurrentTime);
+            XRaiseWindow(X11::GetDisplay(), m_WindowHandle);
         }
     }
-    void X11Window::RequestUserAttention() const noexcept
-    {
-        glfwRequestWindowAttention(m_Window);
-    }
-    void X11Window::Maximize() noexcept { glfwMaximizeWindow(m_Window); }
-    void X11Window::Minimize() noexcept { glfwIconifyWindow(m_Window); }
-    void X11Window::Restore() noexcept { glfwRestoreWindow(m_Window); }
+    void X11Window::RequestUserAttention() const noexcept { VtTodo(); }
+    void X11Window::Maximize() noexcept { VtTodo(); }
+    void X11Window::Minimize() noexcept { VtTodo(); }
+    void X11Window::Restore() noexcept { VtTodo(); }
     void X11Window::SetTitle(std::string_view title)
     {
-        m_Data.Title = title;
-
-        glfwSetWindowTitle(m_Window, title.data());
+        VtUnused(title);
+        VtTodo();
     }
     void X11Window::SetIcon(const Icon* icons, usize count)
     {
-        std::vector<GLFWimage> images;
-        images.reserve(count);
-        for (auto& icon : std::views::counted(icons, count))
-        {
-            GLFWimage image;
-            image.width  = icon.GetWidth();
-            image.height = icon.GetHeight();
-            image.pixels = icon.GetPixels();
-            images.push_back(image);
-        }
-
-        glfwSetWindowIcon(m_Window, count, images.data());
+        VtUnused(icons);
+        VtUnused(count);
+        VtTodo();
     }
     void X11Window::SetPosition(i32 x, i32 y)
     {
-
-        XMoveWindow(s_Display, m_WindowHandle, x, y);
+        XMoveWindow(X11::GetDisplay(), m_WindowHandle, x, y);
         m_Data.Position.x = x;
         m_Data.Position.y = y;
     }
     void X11Window::SetAspectRatio(i32 numerator, i32 denominator)
     {
-        m_Data.Numererator = numerator;
-        m_Data.Denominator = denominator;
-        glfwSetWindowAspectRatio(m_Window, numerator, denominator);
+        VtUnused(numerator);
+        VtUnused(denominator);
+        VtTodo();
     }
     void X11Window::SetSize(const Vec2i& size) noexcept
     {
-        glfwSetWindowSize(m_Window, size.x, size.y);
+        VtUnused(size);
+        VtTodo();
     }
     void X11Window::SetOpacity(f32 opacity)
     {
-        glfwSetWindowOpacity(m_Window, opacity);
+        const CARD32 value
+            = static_cast<CARD32>(0xffffffffu * static_cast<f64>(opacity));
+        XChangeProperty(X11::GetDisplay(), m_WindowHandle,
+                        X11::GetAtom("_NET_WM_WINDOW_OPACITY"), XA_CARDINAL, 32,
+                        PropModeReplace, reinterpret_cast<const u8*>(&value),
+                        1);
     }
+
     void X11Window::SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                  i32 maxHeight)
     {
-        m_Data.MinWidth  = minWidth;
-        m_Data.MinHeight = minHeight;
-        m_Data.MaxWidth  = maxWidth;
-        m_Data.MaxHeight = maxHeight;
-        glfwSetWindowSizeLimits(m_Window, minWidth, minHeight, maxWidth,
-                                maxHeight);
+        VtUnused(minWidth);
+        VtUnused(minHeight);
+        VtUnused(maxWidth);
+        VtUnused(maxHeight);
+        VtTodo();
     }
 
     void X11Window::SetAutoIconify(bool autoIconify) const noexcept
     {
-        glfwSetWindowAttrib(m_Window, GLFW_AUTO_ICONIFY, autoIconify);
+        VtUnused(autoIconify);
+        VtTodo();
     }
     void X11Window::SetCursorPosition(Vec2d position) noexcept
     {
         m_WarpCursorPos.x = static_cast<i32>(position.x);
         m_WarpCursorPos.y = static_cast<i32>(position.y);
 
-        XWarpPointer(s_Display, None, m_WindowHandle, 0, 0, 0, 0,
+        XWarpPointer(X11::GetDisplay(), None, m_WindowHandle, 0, 0, 0, 0,
                      m_WarpCursorPos.x, m_WarpCursorPos.y);
-        XFlush(s_Display);
+        XFlush(X11::GetDisplay());
     }
     void X11Window::ShowCursor() const noexcept
     {
-        XDefineCursor(s_Display, m_WindowHandle, None);
+        XDefineCursor(X11::GetDisplay(), m_WindowHandle, None);
     }
     void X11Window::HideCursor() const noexcept
     {
-        XDefineCursor(s_Display, m_WindowHandle, s_BlankCursor);
+        XDefineCursor(X11::GetDisplay(), m_WindowHandle, s_BlankCursor);
     }
     void X11Window::SetFullscreen(bool fullscreen)
     {
-        (void)fullscreen;
-        VtCoreWarnOnce(
-            "Vortex currently doesn't support switching fullscreen on this "
-            "platform.");
+        VtUnused(fullscreen);
+        VtTodo();
     }
     void X11Window::SetResizable(bool resizable) noexcept
     {
-        m_Data.Resizable = resizable;
-        glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, resizable);
+        VtUnused(resizable);
+        VtTodo();
     }
     void X11Window::SetVisible(bool visible) const
     {
-        if (visible) return glfwShowWindow(m_Window);
-        glfwHideWindow(m_Window);
+        if (visible) XMapWindow(X11::GetDisplay(), m_WindowHandle);
+        VtTodo();
     }
     void X11Window::SetAlwaysOnTop(bool alwaysOnTop)
     {
-        glfwSetWindowAttrib(m_Window, GLFW_FLOATING, alwaysOnTop);
+        VtUnused(alwaysOnTop);
+        VtTodo();
     }
 
-    void X11Window::SetupEvents()
+    void X11Window::ProcessEvent(XEvent& event)
     {
-        using namespace WindowEvents;
-
-#define VtGetWindow(handle)                                                    \
-    reinterpret_cast<X11Window*>(glfwGetWindowUserPointer(handle))
-#pragma region callbacks
-        auto positionCallback = [](GLFWwindow* handle, i32 xpos, i32 ypos)
+        switch (event.type)
         {
-            auto window = VtGetWindow(handle);
-            WindowMovedEvent(window, xpos, ypos);
-
-            window->m_Data.Position.x = xpos;
-            window->m_Data.Position.y = ypos;
-        };
-        auto sizeCallback = [](GLFWwindow* handle, i32 width, i32 height)
-        {
-            auto window = VtGetWindow(handle);
-            WindowResizedEvent(window, width, height);
-
-            window->m_Data.VideoMode.Width  = width;
-            window->m_Data.VideoMode.Height = height;
-        };
-        auto closeCallback = [](GLFWwindow* handle)
-        {
-            auto window = VtGetWindow(handle);
-            WindowClosedEvent(window);
-
-            window->m_Data.IsOpen = false;
-        };
-        auto focusCallback = [](GLFWwindow* handle, i32 focused)
-        {
-            auto window = VtGetWindow(handle);
-            if (focused) WindowFocusedEvent(window);
-            else WindowFocusLostEvent(window);
-
-            window->m_Data.Focused = focused;
-        };
-        auto iconifyCallback = [](GLFWwindow* handle, i32 iconified)
-        {
-            auto window = VtGetWindow(handle);
-            WindowMinimizedEvent(window, iconified);
-        };
-        auto maximizeCallback = [](GLFWwindow* handle, i32 maximized)
-        {
-            auto window = VtGetWindow(handle);
-            WindowMaximizedEvent(window, maximized);
-        };
-        auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
-        {
-            auto window = VtGetWindow(handle);
-
-            if (window->m_RendererContext)
-                window->m_RendererContext->OnResize();
-
-            FramebufferResizedEvent(window, width, height);
-        };
-        auto keyCallback =
-            [](GLFWwindow* handle, i32 key, i32 scancode, i32 action, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::KeyCode;
-            KeyCode keycode = ToVtKeyCode(key);
-            (void)scancode;
-            (void)mods;
-
-            switch (action)
+            case ButtonPress:
             {
-                case GLFW_PRESS:
-                    KeyPressedEvent(window, keycode, 0);
-                    window->m_Data.Keys[std::to_underlying(keycode)] = true;
-                    break;
-                case GLFW_RELEASE:
-                    KeyReleasedEvent(window, keycode);
-                    window->m_Data.Keys[std::to_underlying(keycode)] = false;
-                    break;
-                case GLFW_REPEAT: KeyPressedEvent(window, keycode, 1); break;
+                auto window = GetWindowMap()[event.xbutton.window];
+                if (!window) return;
+                switch (event.xbutton.button)
+                {
+                    case Button1:
+                        WindowEvents::MouseButtonPressedEvent(window,
+                                                              MouseCode::eLeft);
+                        break;
+                    case Button2:
+                        WindowEvents::MouseButtonPressedEvent(
+                            window, MouseCode::eMiddle);
+                        break;
+                    case Button3:
+                        WindowEvents::MouseButtonPressedEvent(
+                            window, MouseCode::eRight);
+                        break;
+                    case Button4:
+                        WindowEvents::MouseScrolledEvent(window, 1, 0);
+                        break;
+                    case Button5:
+                        WindowEvents::MouseScrolledEvent(window, -1, 0);
+                        break;
+                    case Button5 + 1:
+                        WindowEvents::MouseScrolledEvent(window, 0, 1);
+                        break;
+                    case Button5 + 2:
+                        WindowEvents::MouseScrolledEvent(window, 0, -1);
+                        break;
+                        // TODO(v1tr10l7): handle extra mouse buttons
+                }
+                break;
             }
-        };
-        auto charCallback = [](GLFWwindow* handle, u32 codepoint)
-        {
-            auto window = VtGetWindow(handle);
-            KeyTypedEvent(window, codepoint);
-        };
-        auto mouseButtonCallback
-            = [](GLFWwindow* handle, i32 button, i32 action, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::MouseCode;
-            MouseCode mousecode = ToVtMouseCode(button);
-            (void)mods;
-
-            if (action == GLFW_PRESS)
+            case ButtonRelease:
             {
-                MouseButtonPressedEvent(window, mousecode);
-                window->m_Data.MouseButtons[std::to_underlying(mousecode)]
-                    = true;
+                auto window = GetWindowMap()[event.xbutton.window];
+                if (!window) return;
+                MouseCode button = MouseCode::eUnknown;
+                switch (event.xbutton.button)
+                {
+                    case Button1: button = MouseCode::eLeft; break;
+                    case Button2: button = MouseCode::eMiddle; break;
+                    case Button3: button = MouseCode::eRight; break;
+                }
+
+                WindowEvents::MouseButtonReleasedEvent(window, button);
+                break;
             }
-            else if (action == GLFW_RELEASE)
+            case ClientMessage:
             {
-                MouseButtonReleasedEvent(window, mousecode);
-                window->m_Data.MouseButtons[std::to_underlying(mousecode)]
-                    = false;
+                auto window = GetWindowMap()[event.xbutton.window];
+                if (!window) return;
+                static Atom wmProtocols = X11::GetAtom("WM_PROTOCOLS");
+                if (event.xclient.message_type == wmProtocols)
+                {
+                    static Atom wmDeleteWindow
+                        = X11::GetAtom("WM_DELETE_WINDOW");
+                    [[maybe_unused]] static Atom wmPing
+                        = X11::GetAtom("_NET_WM_PING", true);
+
+                    if (event.xclient.format == 32
+                        && event.xclient.data.l[0]
+                               == static_cast<long>(wmDeleteWindow))
+                    {
+                        window->m_Data.IsOpen = false;
+                        WindowEvents::WindowClosedEvent(window);
+                    }
+                }
+
+                break;
             }
-        };
-        auto cursorEnterCallback = [](GLFWwindow* handle, i32 entered)
-        {
-            auto window = VtGetWindow(handle);
-            if (entered) MouseEnteredEvent(window);
-            else MouseLeftEvent(window);
-        };
-        auto scrollCallback = [](GLFWwindow* handle, f64 xoffset, f64 yoffset)
-        {
-            auto window = VtGetWindow(handle);
-            MouseScrolledEvent(window, xoffset, yoffset);
-        };
-        auto cursorPosCallback = [](GLFWwindow* handle, f64 xpos, f64 ypos)
-        {
-            auto window = VtGetWindow(handle);
-            MouseMovedEvent(window, xpos, ypos);
-            window->m_Data.MousePosition = {xpos, ypos};
-        };
-        auto charModsCallback = [](GLFWwindow* handle, u32 codepoint, i32 mods)
-        {
-            auto window = VtGetWindow(handle);
-            using Input::KeyCode;
-            KeyCode keycode = ToVtKeyCode(mods);
-            UnicodeKeyTypedEvent(window, codepoint, keycode);
-        };
-        auto dropCallback
-            = [](GLFWwindow* handle, i32 pathCount, const char** paths)
-        {
-            auto window = VtGetWindow(handle);
-            for (i32 i = 0; i < pathCount; i++)
-                FileDroppedEvent(window, paths[i]);
-        };
-        auto joystickCallback = [](i32 jid, i32 event)
-        {
-            if (event == GLFW_CONNECTED) GamepadConnectedEvent(jid);
-            else if (event == GLFW_DISCONNECTED) GamepadDisconnectedEvent(jid);
-        };
-        // TODO(v1tr10l7): Set cursor
-#pragma endregion
-
-#undef VtGetWindow
-        glfwSetWindowPosCallback(m_Window, positionCallback);
-        glfwSetWindowSizeCallback(m_Window, sizeCallback);
-        glfwSetWindowCloseCallback(m_Window, closeCallback);
-        glfwSetWindowFocusCallback(m_Window, focusCallback);
-        glfwSetWindowIconifyCallback(m_Window, iconifyCallback);
-        glfwSetWindowMaximizeCallback(m_Window, maximizeCallback);
-        glfwSetFramebufferSizeCallback(m_Window, framebufferCallback);
-        glfwSetKeyCallback(m_Window, keyCallback);
-        glfwSetCharCallback(m_Window, charCallback);
-        glfwSetMouseButtonCallback(m_Window, mouseButtonCallback);
-        glfwSetCursorEnterCallback(m_Window, cursorEnterCallback);
-        glfwSetScrollCallback(m_Window, scrollCallback);
-        glfwSetCursorPosCallback(m_Window, cursorPosCallback);
-        glfwSetCharModsCallback(m_Window, charModsCallback);
-        glfwSetDropCallback(m_Window, dropCallback);
-        glfwSetJoystickCallback(joystickCallback);
-    }
-
-    bool X11Window::Initialize()
-    {
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-        glfwInitHint(GLFW_X11_XCB_VULKAN_SURFACE, GLFW_TRUE);
-
-        glfwSetErrorCallback(glfwErrorCallback);
-
-        XInitThreads();
-        XrmInitialize();
-        bool status = glfwInit() == GLFW_TRUE;
-        s_Display   = XOpenDisplay(nullptr);
-        if (!s_Display)
-        {
-            std::string str     = fmt::format("");
-            const char* display = std::getenv("DISPLAY");
-            if (display)
+            case ConfigureNotify:
             {
-                VtCoreAssertFormat(false, "X11: Failed to open display {}",
-                                   display);
+                auto window = GetWindowMap()[event.xbutton.window];
+                if (!window) return;
+
+                i32 width  = event.xconfigure.width;
+                i32 height = event.xconfigure.height;
+                if (window->m_Data.VideoMode.Width != width
+                    || window->m_Data.VideoMode.Height != height)
+                {
+                    window->m_Data.VideoMode.Width  = width;
+                    window->m_Data.VideoMode.Height = height;
+                    if (window->m_RendererContext)
+                        window->m_RendererContext->OnResize();
+
+                    WindowEvents::FramebufferResizedEvent(window, width,
+                                                          height);
+                    WindowEvents::WindowResizedEvent(window, width, height);
+                }
+
+                i32      xpos       = event.xconfigure.x;
+                i32      ypos       = event.xconfigure.y;
+                ::Window rootWindow = X11::GetRootWindow();
+                if (!event.xany.send_event && window->m_Parent != rootWindow)
+                {
+                    ::Window dummy;
+                    XTranslateCoordinates(X11::GetDisplay(), window->m_Parent,
+                                          rootWindow, xpos, ypos, &xpos, &ypos,
+                                          &dummy);
+                }
+                if (window->m_Data.Position.x != xpos
+                    || window->m_Data.Position.y != ypos)
+                {
+                    window->m_Data.Position.x = xpos;
+                    window->m_Data.Position.y = ypos;
+                    WindowEvents::WindowMovedEvent(window, xpos, ypos);
+                }
+                break;
             }
-            else
-                VtCoreAssertMsg(
-                    false, "X11: The DISPLAY environment variable is not set.");
+            case EnterNotify:
+            {
+                auto window = GetWindowMap()[event.xcrossing.window];
+                if (!window) return;
+                const i32 x            = event.xcrossing.x;
+                const i32 y            = event.xcrossing.y;
+
+                window->m_MouseHovered = true;
+                WindowEvents::MouseEnteredEvent(window);
+                WindowEvents::MouseMovedEvent(window, x, y);
+                window->m_LastCursorPos.x = window->m_Data.MousePosition.x = x;
+                window->m_LastCursorPos.y = window->m_Data.MousePosition.y = y;
+                break;
+            }
+            case FocusIn:
+            {
+                auto window = GetWindowMap()[event.xfocus.window];
+                if (!window) return;
+                window->m_Data.Focused = true;
+                WindowEvents::WindowFocusedEvent(window);
+                break;
+            }
+            case FocusOut:
+            {
+                auto window = GetWindowMap()[event.xfocus.window];
+                if (!window) return;
+                window->m_Data.Focused = false;
+                WindowEvents::WindowFocusLostEvent(window);
+                break;
+            }
+            case LeaveNotify:
+            {
+                auto window = GetWindowMap()[event.xcrossing.window];
+                if (!window) return;
+                window->m_MouseHovered = false;
+                WindowEvents::MouseLeftEvent(window);
+                break;
+            }
+            case MotionNotify:
+            {
+                auto window = GetWindowMap()[event.xmotion.window];
+                if (!window) return;
+
+                const i32 x = event.xmotion.x;
+                const i32 y = event.xmotion.y;
+                if (x != window->m_WarpCursorPos.x
+                    && y != window->m_WarpCursorPos.y)
+                {
+                    WindowEvents::MouseMovedEvent(window, event.xmotion.x,
+                                                  event.xmotion.y);
+                }
+                window->m_Data.MousePosition.x = window->m_LastCursorPos.x = x;
+                window->m_Data.MousePosition.y = window->m_LastCursorPos.y = y;
+                break;
+            }
+            case ReparentNotify:
+            {
+            }
+            default: break;
         }
-
-        s_Screen        = DefaultScreen(s_Display);
-        s_RootWindow    = RootWindow(s_Display, s_Screen);
-        s_Context       = XUniqueContext();
-        s_XcbConnection = XGetXCBConnection(s_Display);
-
-        return status;
     }
-    void X11Window::Shutdown() { glfwTerminate(); }
 }; // namespace Vortex

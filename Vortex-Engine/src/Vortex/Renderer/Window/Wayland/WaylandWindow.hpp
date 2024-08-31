@@ -37,6 +37,10 @@ namespace Vortex
         virtual Vec2i       GetFramebufferSize() const noexcept override;
         virtual Vec2f       GetContentScale() const noexcept override;
         virtual f32         GetOpacity() const noexcept override;
+        virtual Vec2d       GetCursorPosition() const noexcept override
+        {
+            return m_Data.MousePosition;
+        }
 
         virtual Ref<RendererContext>
         GetRendererContext() const noexcept override

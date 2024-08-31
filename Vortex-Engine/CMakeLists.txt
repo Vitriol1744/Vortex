@@ -100,7 +100,7 @@ set(PUBLIC_LIBS
     assimp)
 
 if(UNIX)
-  set(PUBLIC_LIBS ${PUBLIC_LIBS} X11 X11-xcb wayland-client xkbcommon)
+  set(PUBLIC_LIBS ${PUBLIC_LIBS} xcb X11 X11-xcb xkbcommon wayland-client)
 endif()
 
 set(SOURCES
@@ -147,6 +147,7 @@ if(UNIX)
       src/Vortex/Renderer/Window/Wayland/Wayland.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandWindow.cpp
       src/Vortex/Renderer/Window/Wayland/WaylandMonitor.cpp
+      src/Vortex/Renderer/Window/X11/X11.cpp
       src/Vortex/Renderer/Window/X11/X11Window.cpp
       src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
 
