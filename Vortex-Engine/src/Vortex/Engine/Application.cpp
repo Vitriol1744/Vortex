@@ -12,6 +12,8 @@
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 
+#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+
 namespace Vortex
 {
     Application* Application::s_Instance = nullptr;
@@ -59,20 +61,24 @@ namespace Vortex
             }
 
             Window::PollEvents();
-            for (auto layer : m_LayerStack) layer->OnUpdate();
 
-            Renderer::BeginFrame(m_MainWindow);
+            if (!m_MainWindow->IsMinimized())
+            {
+                for (auto layer : m_LayerStack) layer->OnUpdate();
 
-            for (auto layer : m_LayerStack) layer->OnRender();
+                Renderer::BeginFrame(m_MainWindow);
 
-            m_ImGuiLayer->Begin();
-            for (auto layer : m_LayerStack) layer->OnImGuiRender();
-            m_ImGuiLayer->End();
+                for (auto layer : m_LayerStack) layer->OnRender();
 
-            Renderer::EndFrame();
-            ++frames;
+                m_ImGuiLayer->Begin();
+                for (auto layer : m_LayerStack) layer->OnImGuiRender();
+                m_ImGuiLayer->End();
 
-            m_MainWindow->Present();
+                Renderer::EndFrame();
+                ++frames;
+
+                m_MainWindow->Present();
+            }
             EventSystem::PollEvents();
             if (!m_MainWindow->IsOpen()) break;
             m_DeltaTime = deltaTimer.Restart();
