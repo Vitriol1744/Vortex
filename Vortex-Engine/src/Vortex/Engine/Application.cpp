@@ -68,11 +68,11 @@ namespace Vortex
 
                 Renderer::BeginFrame(m_MainWindow);
 
+                Renderer::BeginRenderPass();
                 for (auto layer : m_LayerStack) layer->OnRender();
+                Renderer::EndRenderPass();
 
-                m_ImGuiLayer->Begin();
-                for (auto layer : m_LayerStack) layer->OnImGuiRender();
-                m_ImGuiLayer->End();
+                RenderImGui();
 
                 Renderer::EndFrame();
                 ++frames;
@@ -92,5 +92,12 @@ namespace Vortex
     {
         m_ShouldRestart = true;
         Close();
+    }
+
+    void Application::RenderImGui()
+    {
+        m_ImGuiLayer->Begin();
+        for (auto layer : m_LayerStack) layer->OnImGuiRender();
+        m_ImGuiLayer->End();
     }
 }; // namespace Vortex

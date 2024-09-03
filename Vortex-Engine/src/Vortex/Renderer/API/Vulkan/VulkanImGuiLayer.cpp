@@ -13,6 +13,7 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
+#include <vulkan/vulkan_core.h>
 
 namespace Vortex
 {
@@ -411,78 +412,46 @@ namespace Vortex
             window->GetRendererContext());
         VulkanSwapChain&  swapChain     = context->GetSwapChain();
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
-        (void)commandBuffer;
         ImGui::Render();
+
+#if 1
+        vk::Extent2D                  extent = swapChain.GetExtent();
+        std::array<vk::ClearValue, 2> clearValues;
+        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
+        clearValues[0].setColor(color);
+        clearValues[1].setDepthStencil({1.0, 0});
+
+        vk::RenderPassBeginInfo beginInfo{};
+        beginInfo.sType             = vk::StructureType::eRenderPassBeginInfo;
+        beginInfo.pNext             = VK_NULL_HANDLE;
+        beginInfo.renderPass        = swapChain.GetRenderPass();
+        beginInfo.renderArea.offset = vk::Offset2D(0, 0);
+        beginInfo.renderArea.extent = extent;
+        beginInfo.clearValueCount   = clearValues.size();
+        beginInfo.pClearValues      = clearValues.data();
+        beginInfo.framebuffer       = swapChain.GetCurrentFrame().Framebuffer;
+        commandBuffer.beginRenderPass(&beginInfo, vk::SubpassContents::eInline);
+
+        vk::Viewport viewport{};
+        viewport.x        = 0.0f;
+        viewport.y        = 0.0f;
+        viewport.width    = static_cast<f32>(extent.width);
+        viewport.height   = static_cast<f32>(extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        commandBuffer.setViewport(0, 1, &viewport);
+
+        vk::Rect2D scissor{};
+        scissor.offset = vk::Offset2D(0, 0);
+        scissor.extent = extent;
+        commandBuffer.setScissor(0, 1, &scissor);
+
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
-#if 0
-        ImGui::Render();
-        vk::CommandBufferBeginInfo commandBegin{};
-        commandBegin.sType = vk::StructureType::eCommandBufferBeginInfo;
-        commandBegin.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-        commandBegin.pNext = VK_NULL_HANDLE;
-        VkCall(commandBuffer.begin(&commandBegin));
-
-        vk::ClearValue clearValues[2];
-        clearValues[0].setColor({0.1f, 0.1f, 0.1f, 1.0f});
-        clearValues[1].setDepthStencil({1.0f, 0});
-
-        vk::RenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType      = vk::StructureType::eRenderPassBeginInfo;
-        renderPassInfo.pNext      = VK_NULL_HANDLE;
-        renderPassInfo.renderPass = swapChain.GetRenderPass();
-        renderPassInfo.renderArea.offset.x = 0;
-        renderPassInfo.renderArea.offset.y = 0;
-        auto extent                        = swapChain.GetExtent();
-        renderPassInfo.renderArea.extent   = extent;
-        renderPassInfo.clearValueCount     = 2;
-        renderPassInfo.pClearValues        = clearValues;
-        renderPassInfo.framebuffer = swapChain.GetCurrentFrame().Framebuffer;
-
-        commandBuffer.beginRenderPass(
-            &renderPassInfo, vk::SubpassContents::eSecondaryCommandBuffers);
-
-        vk::CommandBufferInheritanceInfo inheritanceInfo{};
-        inheritanceInfo.sType
-            = vk::StructureType::eCommandBufferInheritanceInfo;
-        inheritanceInfo.renderPass  = swapChain.GetRenderPass();
-        inheritanceInfo.framebuffer = swapChain.GetCurrentFrame().Framebuffer;
-
-        vk::CommandBufferBeginInfo imguiBegin{};
-        imguiBegin.sType = vk::StructureType::eCommandBufferBeginInfo;
-        imguiBegin.flags = vk::CommandBufferUsageFlagBits::eRenderPassContinue;
-        imguiBegin.pInheritanceInfo = &inheritanceInfo;
-        auto currentFrame           = swapChain.GetCurrentFrameIndex();
-        VkCall(m_CommandBuffers[currentFrame].begin(&imguiBegin));
-
-        vk::Viewport viewport = {};
-        viewport.x            = 0.0f;
-        viewport.y            = (float)extent.height;
-        viewport.height       = -(float)extent.height;
-        viewport.width        = (float)extent.width;
-        viewport.minDepth     = 0.0f;
-        viewport.maxDepth     = 1.0f;
-        m_CommandBuffers[currentFrame].setViewport(0, 1, &viewport);
-
-        vk::Rect2D scissor = {};
-        scissor.extent     = extent;
-        scissor.offset.x   = 0;
-        scissor.offset.y   = 0;
-        m_CommandBuffers[currentFrame].setScissor(0, 1, &scissor);
-
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
-                                        m_CommandBuffers[currentFrame]);
-
-        m_CommandBuffers[currentFrame].end();
-
-        std::vector<vk::CommandBuffer> commandBuffers;
-        commandBuffers.push_back(m_CommandBuffers[currentFrame]);
-
-        commandBuffer.executeCommands(u32(commandBuffers.size()),
-                                      commandBuffers.data());
-
         commandBuffer.endRenderPass();
-        commandBuffer.end();
+
+#else
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 #endif
 
         ImGuiIO io = ImGui::GetIO();

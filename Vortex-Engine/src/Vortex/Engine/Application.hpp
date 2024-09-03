@@ -88,6 +88,8 @@ namespace Vortex
         Ref<VulkanImGuiLayer> m_ImGuiLayer = nullptr;
 
         static Application*   s_Instance;
+
+        void                  RenderImGui();
     };
 
     // To be defined by Client

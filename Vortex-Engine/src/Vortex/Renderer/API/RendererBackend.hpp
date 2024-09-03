@@ -21,6 +21,9 @@ namespace Vortex
 
         virtual void BeginFrame(Ref<Window> window) = 0;
         virtual void EndFrame()                     = 0;
+        // TODO(v1tr10l7): implement custom render passes
+        virtual void BeginRenderPass()              = 0;
+        virtual void EndRenderPass()                = 0;
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,

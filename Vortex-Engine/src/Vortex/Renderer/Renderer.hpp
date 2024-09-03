@@ -27,6 +27,8 @@ namespace Vortex
 
         void                 BeginFrame(Ref<class Window> window);
         void                 EndFrame();
+        void                 BeginRenderPass();
+        void                 EndRenderPass();
 
         void                 Draw(Ref<GraphicsPipeline> pipeline,
                                   Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer);

@@ -13,12 +13,12 @@ namespace Vortex
     template <typename T>
     class VT_API NonCopyable
     {
+      public:
+        NonCopyable(const NonCopyable&) = delete;
+        T& operator=(const T&)          = delete;
+
       protected:
         NonCopyable()          = default;
         virtual ~NonCopyable() = default;
-
-      private:
-        NonCopyable(const NonCopyable&) = delete;
-        T& operator=(const T&)          = delete;
     };
 }; // namespace Vortex

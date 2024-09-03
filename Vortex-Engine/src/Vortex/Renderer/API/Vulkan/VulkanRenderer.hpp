@@ -17,8 +17,10 @@ namespace Vortex
       public:
         virtual ~VulkanRenderer() = default;
 
-        void         BeginFrame(Ref<Window> window) override;
-        void         EndFrame() override;
+        virtual void BeginFrame(Ref<Window> window) override;
+        virtual void EndFrame() override;
+        virtual void BeginRenderPass() override;
+        virtual void EndRenderPass() override;
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,

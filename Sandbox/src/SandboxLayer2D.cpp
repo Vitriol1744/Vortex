@@ -13,6 +13,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "Vortex/Core/Delegate.hpp"
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Timer.hpp"
@@ -31,8 +32,6 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include <chrono>
 
 using namespace Vortex;
 struct Vertex
@@ -81,14 +80,7 @@ using namespace Vortex;
 std::vector<Vertex> vertices;
 std::vector<u32>    indices;
 
-bool                OnMonitorStateChanged(Monitor*, MonitorState state)
-{
-    VtInfo("MonitorState: {}", magic_enum::enum_name(state));
-
-    return true;
-}
-
-void ProcessMesh(aiMesh* mesh, const aiScene* scene)
+void                ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     for (usize i = 0; i < mesh->mNumVertices; i++)
     {
@@ -131,8 +123,6 @@ void SandboxLayer2D::OnAttach()
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
         s_Window->GetRendererContext());
 
-    MonitorEvents::MonitorStateChangedEvent += OnMonitorStateChanged;
-
     Image image("assets/icon.bmp");
     s_Shader = CreateRef<VulkanShader>("assets/shaders/texture.glsl");
 
@@ -156,17 +146,10 @@ void SandboxLayer2D::OnAttach()
 
     s_GraphicsPipeline   = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(
         GraphicsPipeline::Create(specification));
-#if 0
-    s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
-        (void*)s_Vertices.data(), s_Vertices.size() * sizeof(s_Vertices[0]));
-    s_IndexBuffer = CreateRef<VulkanIndexBuffer>(
-        (void*)s_Indices.data(), s_Indices.size() * sizeof(u32));
-#else
     s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
         (void*)vertices.data(), vertices.size() * sizeof(vertices[0]));
     s_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(),
                                                  indices.size() * sizeof(u32));
-#endif
     s_UniformBuffer
         = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
 
@@ -222,13 +205,9 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::Checkbox("VSync", &s_VSync);
     swapChain.SetVSync(s_VSync);
 
-    auto        currentFrame = swapChain.GetCurrentFrameIndex();
-    static auto startTime    = std::chrono::high_resolution_clock::now();
-
-    auto        currentTime  = std::chrono::high_resolution_clock::now();
-    f32         time = std::chrono::duration<f32, std::chrono::seconds::period>(
-                   currentTime - startTime)
-                   .count();
+    auto                currentFrame = swapChain.GetCurrentFrameIndex();
+    static auto         startTime    = Time::GetCurrentTime();
+    f32                 time         = Time::GetCurrentTime() - startTime;
 
     UniformBufferObject ubo{};
     ubo.lightPos = mousePos;

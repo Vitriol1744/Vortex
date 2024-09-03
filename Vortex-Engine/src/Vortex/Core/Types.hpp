@@ -27,6 +27,19 @@ namespace Vortex
     using f32      = float;
     using f64      = double;
 
+    inline u64 operator""_kb(unsigned long long kilobytes)
+    {
+        return 1024 * kilobytes;
+    }
+    inline u64 operator""_mb(unsigned long long megabytes)
+    {
+        return megabytes * 1024_kb;
+    }
+    inline u64 operator""_gb(unsigned long long gigabytes)
+    {
+        return 1024_mb * gigabytes;
+    }
+
     template <typename T>
     using Scope = std::unique_ptr<T>;
     template <typename T, typename... Args>
