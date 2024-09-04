@@ -429,7 +429,9 @@ namespace Vortex
         beginInfo.renderArea.extent = extent;
         beginInfo.clearValueCount   = clearValues.size();
         beginInfo.pClearValues      = clearValues.data();
-        beginInfo.framebuffer       = swapChain.GetCurrentFrame().Framebuffer;
+        beginInfo.framebuffer
+            = swapChain.GetFrames()[swapChain.GetCurrentImageIndex()]
+                  .Framebuffer;
         commandBuffer.beginRenderPass(&beginInfo, vk::SubpassContents::eInline);
 
         vk::Viewport viewport{};

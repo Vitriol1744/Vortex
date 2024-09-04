@@ -265,10 +265,14 @@ namespace Vortex
             {
                 auto self = reinterpret_cast<WaylandWindow*>(data);
 
-                self->m_Data.VideoMode.Width  = width;
-                self->m_Data.VideoMode.Height = height;
-                WindowEvents::WindowResizedEvent(self, width, height);
-                self->m_RendererContext->OnResize();
+                if (self->m_Data.VideoMode.Width != width
+                    && self->m_Data.VideoMode.Height != height)
+                {
+                    self->m_Data.VideoMode.Width  = width;
+                    self->m_Data.VideoMode.Height = height;
+                    WindowEvents::WindowResizedEvent(self, width, height);
+                    self->m_RendererContext->OnResize();
+                }
             },
             .close =
                 [](void* data, xdg_toplevel*) noexcept
@@ -436,9 +440,9 @@ namespace Vortex
 
             xdg_toplevel_icon_manager_v1_set_icon(iconManager, m_TopLevel,
                                                   m_Icon);
+            return;
         }
 
-        (void)icons;
         (void)count;
         VtCoreWarnOnce(
             "Wayland: The platform doesn't support setting the window icon");

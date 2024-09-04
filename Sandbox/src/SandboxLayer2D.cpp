@@ -13,7 +13,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#include "Vortex/Core/Delegate.hpp"
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Timer.hpp"
