@@ -318,7 +318,6 @@ namespace Vortex
         vk::CommandPoolCreateInfo commandPoolInfo{};
         commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
         commandPoolInfo.pNext = VK_NULL_HANDLE;
-        // TODO(v1tr10l7): should be transient:
         commandPoolInfo.flags
             = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
         commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()

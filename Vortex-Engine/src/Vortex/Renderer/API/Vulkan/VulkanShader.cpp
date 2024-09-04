@@ -283,7 +283,7 @@ namespace Vortex
             descriptorWrite.dstSet          = m_DescriptorSets[0].Sets[i];
             descriptorWrite.dstArrayElement = 0;
             descriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
-            descriptorWrite.pBufferInfo    = &buffer->m_BufferInfos[i];
+            descriptorWrite.pBufferInfo    = &buffer->GetBufferInfos()[i];
 
             device.updateDescriptorSets(1, &descriptorWrite, 0, VK_NULL_HANDLE);
         }

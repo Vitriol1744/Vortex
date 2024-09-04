@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Renderer/API/UniformBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanCommon.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
 
 namespace Vortex
 {
@@ -20,9 +20,13 @@ namespace Vortex
         virtual void SetData(const void* data, usize size,
                              usize offset = 0) override;
 
+        inline const std::vector<vk::DescriptorBufferInfo>&
+        GetBufferInfos() const
+        {
+            return m_BufferInfos;
+        }
+
       private:
-        // TODO(v1tr10l7): should be private
-      public:
         usize                                 m_Size = 0;
         std::vector<vk::Buffer>               m_Buffers{};
         std::vector<VmaAllocation>            m_Allocations{};

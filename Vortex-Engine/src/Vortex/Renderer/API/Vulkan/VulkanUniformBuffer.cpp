@@ -6,25 +6,24 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 
 namespace Vortex
 {
-    // TODO(v1tr10l7): hardcoded here for now
-
     VulkanUniformBuffer::VulkanUniformBuffer(usize size)
         : m_Size(size)
     {
-        m_Buffers.resize(VT_MAX_FRAMES_IN_FLIGHT);
-        m_Allocations.resize(VT_MAX_FRAMES_IN_FLIGHT);
-        m_MappedAreas.resize(VT_MAX_FRAMES_IN_FLIGHT);
-        m_BufferInfos.resize(VT_MAX_FRAMES_IN_FLIGHT);
+        u32 maxFramesInFlight = Renderer::GetConfiguration().MaxFramesInFlight;
+
+        m_Buffers.resize(maxFramesInFlight);
+        m_Allocations.resize(maxFramesInFlight);
+        m_MappedAreas.resize(maxFramesInFlight);
+        m_BufferInfos.resize(maxFramesInFlight);
 
         vk::BufferCreateInfo bufferInfo{};
         bufferInfo.sType       = vk::StructureType::eBufferCreateInfo;
-        bufferInfo.size        = 1024;
+        bufferInfo.size        = size;
         bufferInfo.usage       = vk::BufferUsageFlagBits::eUniformBuffer;
         bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
@@ -42,13 +41,14 @@ namespace Vortex
     }
     VulkanUniformBuffer::~VulkanUniformBuffer()
     {
-        for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
+        for (usize i = 0; i < m_Buffers.size(); i++)
             VulkanAllocator::DestroyBuffer(m_Buffers[i], m_Allocations[i]);
     }
 
     void VulkanUniformBuffer::SetData(const void* data, usize size,
                                       usize offset)
     {
+        VtCoreAssert((size + offset) <= m_Size);
         // TODO(v1tr10l7): it would be better ideaa to only change the current's
         // frame uniform buffer
         for (u32 i = 0; i < m_Allocations.size(); i++)
