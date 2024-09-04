@@ -6,7 +6,6 @@
  */
 #include "SandboxLayer2D.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
 #include <imgui.h>
 
 #include <assimp/Importer.hpp>
@@ -15,18 +14,16 @@
 
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
-#include "Vortex/Core/Timer.hpp"
+#include "Vortex/Core/Time.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
+#include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
-#include "Vortex/Utility/ImageLoader.hpp"
+#include "Vortex/Renderer/Renderer2D.hpp"
+
+#include "ImGuiPanels.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -40,19 +37,6 @@ struct Vertex
     Vec2 TexCoords;
 };
 
-const std::vector<Vertex> s_Vertices
-    = {{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-       {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-       {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-       {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-       {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-       {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-       {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-       {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
-
-const std::vector<u32> s_Indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
-
 struct UniformBufferObject
 {
     alignas(16) Mat4 Model;
@@ -61,25 +45,22 @@ struct UniformBufferObject
     alignas(8) Vec2 lightPos;
 };
 
-static Ref<Window>                    s_Window           = nullptr;
-static Ref<VulkanContext>             s_Context          = nullptr;
-static Ref<VulkanShader>              s_Shader           = nullptr;
-static Ref<VulkanGraphicsPipeline>    s_GraphicsPipeline = nullptr;
-static Ref<VulkanVertexBuffer>        s_VertexBuffer     = nullptr;
-static Ref<VulkanIndexBuffer>         s_IndexBuffer      = nullptr;
-static Ref<VulkanUniformBuffer>       s_UniformBuffer    = nullptr;
-static std::vector<vk::DescriptorSet> s_DescriptorSets;
-static Scope<Pixel[]>                 pixels      = nullptr;
-static Ref<VulkanTexture2D>           s_Texture2D = nullptr;
-static bool                           s_VSync     = false;
-Vec2                                  lightPos;
+static Ref<Window>           s_Window           = nullptr;
+static Ref<VulkanContext>    s_Context          = nullptr;
+static Ref<Shader>           s_Shader           = nullptr;
+static Ref<GraphicsPipeline> s_GraphicsPipeline = nullptr;
+static Ref<VertexBuffer>     s_VertexBuffer     = nullptr;
+static Ref<IndexBuffer>      s_IndexBuffer      = nullptr;
+static Ref<UniformBuffer>    s_UniformBuffer    = nullptr;
+static Ref<Texture2D>        s_Texture2D        = nullptr;
+Vec2                         lightPos;
 
 using namespace Vortex;
 
-std::vector<Vertex> vertices;
-std::vector<u32>    indices;
+static std::vector<Vertex> vertices;
+static std::vector<u32>    indices;
 
-void                ProcessMesh(aiMesh* mesh, const aiScene* scene)
+void                       ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     for (usize i = 0; i < mesh->mNumVertices; i++)
     {
@@ -123,7 +104,7 @@ void SandboxLayer2D::OnAttach()
         s_Window->GetRendererContext());
 
     Image image("assets/icon.bmp");
-    s_Shader = CreateRef<VulkanShader>("assets/shaders/texture.glsl");
+    s_Shader = Shader::Create("assets/shaders/texture.glsl");
 
     s_Window->SetIcon(image);
     s_Window->ShowCursor();
@@ -143,27 +124,25 @@ void SandboxLayer2D::OnAttach()
     specification.Shader = s_Shader;
     specification.Layout = layout;
 
-    s_GraphicsPipeline   = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(
-        GraphicsPipeline::Create(specification));
-    s_VertexBuffer = CreateRef<VulkanVertexBuffer>(
+    s_GraphicsPipeline   = GraphicsPipeline::Create(specification);
+    s_VertexBuffer       = VertexBuffer::Create(
         (void*)vertices.data(), vertices.size() * sizeof(vertices[0]));
-    s_IndexBuffer = CreateRef<VulkanIndexBuffer>((void*)indices.data(),
-                                                 indices.size() * sizeof(u32));
-    s_UniformBuffer
-        = CreateRef<VulkanUniformBuffer>(sizeof(UniformBufferObject));
+    s_IndexBuffer
+        = IndexBuffer::Create(indices.data(), indices.size() * sizeof(u32));
+    s_UniformBuffer   = UniformBuffer::Create(sizeof(UniformBufferObject));
 
-    s_Texture2D = CreateRef<VulkanTexture2D>("assets/textures/viking_room.png");
+    s_Texture2D       = Texture2D::Create("assets/textures/viking_room.png");
 
     vk::Device device = VulkanContext::GetDevice();
     VtCoreInfo("Frames in flight: {}", VT_MAX_FRAMES_IN_FLIGHT);
 
-    s_DescriptorSets = s_Shader->GetDescriptorSets()[0].Sets;
     s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
     s_Shader->SetUniform("texSampler", s_Texture2D);
 
     Vec2 mousePos = s_Window->GetCursorPosition();
     lightPos.x    = ((f32)(mousePos.x * 16.0f / s_Window->GetWidth()));
     lightPos.y    = (f32)(9.0f - mousePos.y * 9.0f / s_Window->GetHeight());
+    Renderer2D::Initialize();
 }
 void SandboxLayer2D::OnDetach() {}
 
@@ -171,14 +150,21 @@ void SandboxLayer2D::OnUpdate() {}
 void SandboxLayer2D::OnRender()
 {
     Renderer::Draw(s_GraphicsPipeline, s_VertexBuffer, s_IndexBuffer);
+
+    Renderer2D::DrawQuad(glm::vec2(-1.0f, 0.0f), glm::vec2(0.8f, 0.8f),
+                         Vec4(1.0f, 0.0f, 1.0f, 1.0f));
+    Renderer2D::DrawQuad(glm::vec2(0.5f, -0.5f), glm::vec2(0.5f, 0.75f),
+                         Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    Renderer2D::DrawQuad(glm::vec2(1.5f, -0.5f), glm::vec2(0.2f, 0.45f),
+                         Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    Renderer2D::Flush();
 }
 void SandboxLayer2D::OnImGuiRender()
 {
-    VulkanSwapChain&  swapChain     = s_Context->GetSwapChain();
+    VulkanSwapChain& swapChain = s_Context->GetSwapChain();
 
-    vk::Extent2D      extent        = swapChain.GetExtent();
-    vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
-    Vec2              mousePos      = s_Window->GetCursorPosition();
+    vk::Extent2D     extent    = swapChain.GetExtent();
+    Vec2             mousePos  = s_Window->GetCursorPosition();
     mousePos.x -= s_Window->GetWidth() / 2.f;
     mousePos.y -= s_Window->GetHeight() / 2.f;
     mousePos.x /= s_Window->GetWidth();
@@ -191,18 +177,8 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
     ImGui::Text("MousePos: { x: %f, y: %f }", mousePos.x, mousePos.y);
 
-    static f32  alpha      = 0.5f;
-    static bool fullscreen = false;
-
     ImGui::SliderFloat2("lightPos", (f32*)&lightPos, -10, 10);
-    ImGui::SliderFloat("opacity", &alpha, 0.1f, 1.0f);
-    s_Window->SetOpacity(alpha);
-    if (ImGui::Button("Close")) Application::Get()->Close();
-    if (ImGui::Button("Restart")) Application::Get()->Restart();
-    ImGui::Checkbox("Fullscreen", &fullscreen);
-    s_Window->SetFullscreen(fullscreen);
-    ImGui::Checkbox("VSync", &s_VSync);
-    swapChain.SetVSync(s_VSync);
+    ImGuiPanels::DrawWindowOptions(s_Window);
 
     auto                currentFrame = swapChain.GetCurrentFrameIndex();
     static auto         startTime    = Time::GetCurrentTime();
@@ -222,8 +198,5 @@ void SandboxLayer2D::OnImGuiRender()
 
     ubo.Projection[1][1] *= -1;
 
-    void* dest = VulkanAllocator::MapMemory(
-        s_UniformBuffer->m_Allocations[currentFrame]);
-    std::memcpy(dest, &ubo, sizeof(ubo));
-    VulkanAllocator::UnmapMemory(s_UniformBuffer->m_Allocations[currentFrame]);
+    s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
 }

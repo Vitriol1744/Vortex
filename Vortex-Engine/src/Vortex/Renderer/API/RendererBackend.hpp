@@ -27,7 +27,7 @@ namespace Vortex
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,
-                          Ref<IndexBuffer>      indexBuffer)
+                          Ref<IndexBuffer> indexBuffer, u32 indexCount)
             = 0;
     };
 }; // namespace Vortex

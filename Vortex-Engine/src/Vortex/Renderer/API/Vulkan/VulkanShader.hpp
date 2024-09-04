@@ -50,9 +50,10 @@ namespace Vortex
                      std::string_view fragmentPath);
         virtual ~VulkanShader();
 
-        void SetUniform(const std::string&       name,
-                        Ref<VulkanUniformBuffer> buffer);
-        void SetUniform(const std::string& name, Ref<VulkanTexture2D> texture);
+        void                    SetUniform(const std::string& name,
+                                           Ref<UniformBuffer> buffer) override;
+        void                    SetUniform(const std::string& name,
+                                           Ref<Texture2D>     texture) override;
 
         inline vk::ShaderModule GetVertexShader() const
         {

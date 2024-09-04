@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 
 #include <libshaderc_util/file_finder.h>
 #include <shaderc/shaderc.hpp>
@@ -268,14 +269,16 @@ namespace Vortex
         device.destroyShaderModule(m_FragmentShader, VK_NULL_HANDLE);
     }
 
-    void VulkanShader::SetUniform(const std::string&       name,
-                                  Ref<VulkanUniformBuffer> buffer)
+    void VulkanShader::SetUniform(const std::string& name,
+                                  Ref<UniformBuffer> uniform)
     {
+        auto buffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(uniform);
         vk::Device              device = VulkanContext::GetDevice();
         vk::WriteDescriptorSet& descriptorWrite
             = m_DescriptorSets[0].WriteDescriptorSets[name];
 
-        for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
+        for (usize i = 0; i < Renderer::GetConfiguration().MaxFramesInFlight;
+             i++)
         {
             descriptorWrite.dstSet          = m_DescriptorSets[0].Sets[i];
             descriptorWrite.dstArrayElement = 0;
@@ -285,12 +288,15 @@ namespace Vortex
             device.updateDescriptorSets(1, &descriptorWrite, 0, VK_NULL_HANDLE);
         }
     }
-    void VulkanShader::SetUniform(const std::string&   name,
-                                  Ref<VulkanTexture2D> texture)
+    void VulkanShader::SetUniform(const std::string& name,
+                                  Ref<Texture2D>     texture)
     {
         vk::Device              device = VulkanContext::GetDevice();
         vk::WriteDescriptorSet& descriptorWrite
             = m_DescriptorSets[0].WriteDescriptorSets[name];
+
+        auto vulkanTexture
+            = std::dynamic_pointer_cast<VulkanTexture2D>(texture);
 
         for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -298,7 +304,7 @@ namespace Vortex
             descriptorWrite.dstArrayElement = 0;
             descriptorWrite.descriptorType
                 = vk::DescriptorType::eCombinedImageSampler;
-            descriptorWrite.pImageInfo = &texture->GetImageInfo();
+            descriptorWrite.pImageInfo = &vulkanTexture->GetImageInfo();
 
             device.updateDescriptorSets(1, &descriptorWrite, 0, VK_NULL_HANDLE);
         }

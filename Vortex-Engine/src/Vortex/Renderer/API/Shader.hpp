@@ -16,6 +16,13 @@ namespace Vortex
         Shader()          = default;
         virtual ~Shader() = default;
 
+        virtual void SetUniform(const std::string&       name,
+                                Ref<class UniformBuffer> buffer)
+            = 0;
+        virtual void SetUniform(const std::string&   name,
+                                Ref<class Texture2D> texture)
+            = 0;
+
         static Ref<Shader> Create(std::string_view path);
         static Ref<Shader> Create(std::string_view vertexPath,
                                   std::string_view fragmentPath);

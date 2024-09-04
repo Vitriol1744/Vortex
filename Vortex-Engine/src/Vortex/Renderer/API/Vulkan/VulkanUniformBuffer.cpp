@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 
 namespace Vortex
 {
@@ -27,7 +28,8 @@ namespace Vortex
         bufferInfo.usage       = vk::BufferUsageFlagBits::eUniformBuffer;
         bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-        for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
+        for (usize i = 0; i < Renderer::GetConfiguration().MaxFramesInFlight;
+             i++)
         {
             vk::DescriptorBufferInfo& descriptorBufferInfo = m_BufferInfos[i];
             m_Allocations[i] = VulkanAllocator::AllocateBuffer(
@@ -47,9 +49,15 @@ namespace Vortex
     void VulkanUniformBuffer::SetData(const void* data, usize size,
                                       usize offset)
     {
-        (void)data;
-        (void)size;
-        (void)offset;
+        // TODO(v1tr10l7): it would be better ideaa to only change the current's
+        // frame uniform buffer
+        for (u32 i = 0; i < m_Allocations.size(); i++)
+        {
+            void* dest = VulkanAllocator::MapMemory(m_Allocations[i]);
+            std::memcpy(reinterpret_cast<u8*>(dest) + offset,
+                        reinterpret_cast<const u8*>(data) + offset, size);
+            VulkanAllocator::UnmapMemory(m_Allocations[i]);
+        }
     }
 
 }; // namespace Vortex

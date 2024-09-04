@@ -99,7 +99,7 @@ namespace Vortex
 
     void VulkanRenderer::Draw(Ref<GraphicsPipeline> pipeline,
                               Ref<VertexBuffer>     vertexBuffer,
-                              Ref<IndexBuffer>      indexBuffer)
+                              Ref<IndexBuffer> indexBuffer, u32 indexCount)
     {
         VtAssertFrameStarted();
 
@@ -128,6 +128,6 @@ namespace Vortex
         commandBuffer.bindDescriptorSets(
             vk::PipelineBindPoint::eGraphics, vkPipeline->GetLayout(), 0, 1,
             &descriptorSets[currentFrame], 0, VK_NULL_HANDLE);
-        commandBuffer.drawIndexed(indexBuffer->GetCount(), 1, 0, 0, 0);
+        commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 }; // namespace Vortex

@@ -31,6 +31,14 @@ namespace Vortex
         void                 EndRenderPass();
 
         void                 Draw(Ref<GraphicsPipeline> pipeline,
-                                  Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer);
+                                  Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
+                                  u32 indexCount);
+
+        inline void          Draw(Ref<GraphicsPipeline> pipeline,
+                                  Ref<VertexBuffer>     vertexBuffer,
+                                  Ref<IndexBuffer>      indexBuffer)
+        {
+            Draw(pipeline, vertexBuffer, indexBuffer, indexBuffer->GetCount());
+        }
     }; // namespace Renderer
 };     // namespace Vortex

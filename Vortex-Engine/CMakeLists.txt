@@ -113,6 +113,7 @@ set(SOURCES
     src/Vortex/Renderer/Camera.cpp
     src/Vortex/Renderer/Image.cpp
     src/Vortex/Renderer/Renderer.cpp
+    src/Vortex/Renderer/Renderer2D.cpp
     src/Vortex/Renderer/API/IndexBuffer.cpp
     src/Vortex/Renderer/API/GraphicsPipeline.cpp
     src/Vortex/Renderer/API/RendererContext.cpp

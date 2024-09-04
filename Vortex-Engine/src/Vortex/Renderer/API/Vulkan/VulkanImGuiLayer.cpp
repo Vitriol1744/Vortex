@@ -414,46 +414,34 @@ namespace Vortex
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         ImGui::Render();
 
-#if 1
-        vk::Extent2D                  extent = swapChain.GetExtent();
-        std::array<vk::ClearValue, 2> clearValues;
-        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
-        clearValues[0].setColor(color);
-        clearValues[1].setDepthStencil({1.0, 0});
+#if 0
+        auto         currentImageIndex = swapChain.GetCurrentImageIndex();
+        vk::Extent2D extent            = swapChain.GetExtent();
 
-        vk::RenderPassBeginInfo beginInfo{};
-        beginInfo.sType             = vk::StructureType::eRenderPassBeginInfo;
-        beginInfo.pNext             = VK_NULL_HANDLE;
-        beginInfo.renderPass        = swapChain.GetRenderPass();
-        beginInfo.renderArea.offset = vk::Offset2D(0, 0);
-        beginInfo.renderArea.extent = extent;
-        beginInfo.clearValueCount   = clearValues.size();
-        beginInfo.pClearValues      = clearValues.data();
-        beginInfo.framebuffer
-            = swapChain.GetFrames()[swapChain.GetCurrentImageIndex()]
-                  .Framebuffer;
-        commandBuffer.beginRenderPass(&beginInfo, vk::SubpassContents::eInline);
+        vk::RenderingAttachmentInfoKHR colorAttachmentInfo{};
+        colorAttachmentInfo.sType
+            = vk::StructureType::eRenderingAttachmentInfoKHR;
+        colorAttachmentInfo.imageView
+            = swapChain.GetFrames()[currentImageIndex].ImageView;
+        colorAttachmentInfo.imageLayout = vk::ImageLayout::eAttachmentOptimal;
+        colorAttachmentInfo.loadOp      = vk::AttachmentLoadOp::eLoad;
+        colorAttachmentInfo.storeOp     = vk::AttachmentStoreOp::eStore;
 
-        vk::Viewport viewport{};
-        viewport.x        = 0.0f;
-        viewport.y        = 0.0f;
-        viewport.width    = static_cast<f32>(extent.width);
-        viewport.height   = static_cast<f32>(extent.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        commandBuffer.setViewport(0, 1, &viewport);
+        vk::RenderingInfoKHR renderingInfo{};
+        renderingInfo.sType             = vk::StructureType::eRenderingInfoKHR;
+        renderingInfo.renderArea.offset = vk::Offset2D(0, 0);
+        renderingInfo.renderArea.extent = extent;
+        renderingInfo.layerCount        = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments    = &colorAttachmentInfo;
 
-        vk::Rect2D scissor{};
-        scissor.offset = vk::Offset2D(0, 0);
-        scissor.extent = extent;
-        commandBuffer.setScissor(0, 1, &scissor);
+        commandBuffer.beginRenderingKHR(&renderingInfo);
+#endif
 
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 
-        commandBuffer.endRenderPass();
-
-#else
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+#if 0
+        commandBuffer.endRenderingKHR();
 #endif
 
         ImGuiIO io = ImGui::GetIO();

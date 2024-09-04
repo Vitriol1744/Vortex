@@ -15,11 +15,11 @@ namespace Vortex
       public:
         virtual ~IndexBuffer() = default;
 
-        virtual void  SetData(void* data, usize size, usize offset = 0) = 0;
+        virtual void  SetData(u32* data, usize size, usize offset = 0) = 0;
 
-        virtual usize GetSize() const                                   = 0;
-        virtual u32   GetCount() const                                  = 0;
+        virtual usize GetSize() const                                  = 0;
+        virtual u32   GetCount() const                                 = 0;
 
-        static Ref<IndexBuffer> Create(u8* indices, usize size);
+        static Ref<IndexBuffer> Create(u32* indices, usize size);
     };
 }; // namespace Vortex

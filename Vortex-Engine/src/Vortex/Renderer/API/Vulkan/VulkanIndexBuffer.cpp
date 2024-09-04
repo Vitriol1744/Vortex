@@ -12,7 +12,7 @@
 
 namespace Vortex
 {
-    VulkanIndexBuffer::VulkanIndexBuffer(void* data, usize size)
+    VulkanIndexBuffer::VulkanIndexBuffer(u32* data, usize size)
         : m_Size(size)
     {
         vk::BufferCreateInfo stagingInfo{};

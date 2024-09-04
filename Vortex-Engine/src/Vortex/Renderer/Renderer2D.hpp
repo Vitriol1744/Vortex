@@ -7,12 +7,16 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/Math/Math.hpp"
 
 namespace Vortex
 {
-    namespace Renderer
+    namespace Renderer2D
     {
         void Initialize();
         void Shutdown();
-    }; // namespace Renderer
+
+        void DrawQuad(const Vec2& pos, const Vec2& scale, const Vec4& color);
+        void Flush();
+    }; // namespace Renderer2D
 };     // namespace Vortex

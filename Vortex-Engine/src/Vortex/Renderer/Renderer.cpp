@@ -34,9 +34,10 @@ namespace Vortex
         void EndRenderPass() { s_Backend->EndRenderPass(); }
 
         void Draw(Ref<GraphicsPipeline> pipeline,
-                  Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer)
+                  Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
+                  u32 indexCount)
         {
-            s_Backend->Draw(pipeline, vertexBuffer, indexBuffer);
+            s_Backend->Draw(pipeline, vertexBuffer, indexBuffer, indexCount);
         }
     }; // namespace Renderer
 };     // namespace Vortex

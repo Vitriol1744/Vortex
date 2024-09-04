@@ -24,7 +24,8 @@ namespace Vortex
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,
-                          Ref<IndexBuffer>      indexBuffer) override;
+                          Ref<IndexBuffer>      indexBuffer,
+                          u32                   indexCount) override;
 
       private:
         Ref<VulkanContext> currentContext = nullptr;

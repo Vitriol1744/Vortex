@@ -21,8 +21,8 @@
 
 namespace Vortex
 {
-    static std::array<const char*, 1> s_DeviceExtensions
-        = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    static std::array<const char*, 2> s_DeviceExtensions
+        = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_dynamic_rendering"};
 
     static bool
     getPhysicalDevicePresentationSupport(vk::PhysicalDevice physicalDevice,
@@ -248,10 +248,15 @@ namespace Vortex
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
+        vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeature{};
+        dynamicRenderingFeature.sType
+            = vk::StructureType::ePhysicalDeviceDynamicRenderingFeaturesKHR;
+        dynamicRenderingFeature.dynamicRendering    = VK_TRUE;
+
         vk::DeviceCreateInfo       deviceCreateInfo = {};
         vk::PhysicalDeviceFeatures features;
         deviceCreateInfo.sType = vk::StructureType::eDeviceCreateInfo;
-        deviceCreateInfo.pNext = nullptr;
+        deviceCreateInfo.pNext = &dynamicRenderingFeature;
         deviceCreateInfo.flags = vk::DeviceCreateFlagBits();
         deviceCreateInfo.queueCreateInfoCount
             = static_cast<u32>(queueCreateInfos.size());

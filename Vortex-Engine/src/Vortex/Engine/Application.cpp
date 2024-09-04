@@ -70,10 +70,10 @@ namespace Vortex
 
                 Renderer::BeginRenderPass();
                 for (auto layer : m_LayerStack) layer->OnRender();
-                Renderer::EndRenderPass();
 
                 RenderImGui();
 
+                Renderer::EndRenderPass();
                 Renderer::EndFrame();
                 ++frames;
 

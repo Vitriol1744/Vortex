@@ -14,13 +14,13 @@ namespace Vortex
     class VT_API VulkanIndexBuffer : public IndexBuffer
     {
       public:
-        VulkanIndexBuffer(void* data, usize size);
+        VulkanIndexBuffer(u32* data, usize size);
 
         virtual ~VulkanIndexBuffer() override;
 
         inline vk::Buffer GetBuffer() const { return m_IndexBuffer; }
 
-        virtual void SetData(void* data, usize size, usize offset = 0) override
+        virtual void SetData(u32* data, usize size, usize offset = 0) override
         {
             (void)data;
             (void)size;

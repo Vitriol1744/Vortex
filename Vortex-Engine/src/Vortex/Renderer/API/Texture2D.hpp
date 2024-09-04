@@ -16,11 +16,11 @@ namespace Vortex
     {
       public:
         Texture2D(PathView path) { m_Image = Image(path); }
-        virtual ~Texture2D()              = default;
+        virtual ~Texture2D()                     = default;
 
-        virtual u32    GetMipLevelCount() = 0;
+        virtual u32           GetMipLevelCount() = 0;
 
-        Ref<Texture2D> Create(PathView path);
+        static Ref<Texture2D> Create(PathView path);
 
       protected:
         Image m_Image;

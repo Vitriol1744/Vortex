@@ -174,8 +174,20 @@ namespace Vortex
         depthInfo.maxDepthBounds        = 1.0f; // Optional
         depthInfo.stencilTestEnable     = VK_FALSE;
 
+#if 0
+        vk::PipelineRenderingCreateInfoKHR renderingInfo{};
+        renderingInfo.sType = vk::StructureType::ePipelineRenderingCreateInfo;
+        renderingInfo.colorAttachmentCount = 1;
+
+        auto imageFormat = context->GetSwapChain().GetImageFormat();
+        renderingInfo.pColorAttachmentFormats = &imageFormat;
+#endif
+
         vk::GraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = vk::StructureType::eGraphicsPipelineCreateInfo;
+#if 0
+        pipelineInfo.pNext = &renderingInfo;
+#endif
         pipelineInfo.stageCount          = 2;
         pipelineInfo.pStages             = shaderStages;
         pipelineInfo.pVertexInputState   = &vertexInputInfo;

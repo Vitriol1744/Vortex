@@ -12,7 +12,7 @@
 namespace Vortex
 {
 
-    Ref<IndexBuffer> IndexBuffer::Create(u8* data, usize size)
+    Ref<IndexBuffer> IndexBuffer::Create(u32* data, usize size)
     {
         return CreateRef<VulkanIndexBuffer>(data, size);
     }

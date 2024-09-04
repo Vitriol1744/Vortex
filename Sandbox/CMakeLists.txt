@@ -20,6 +20,6 @@ endif()
 add_definitions(-DVT_ENABLE_ASSERTIONS)
 add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
-set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp)
+set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp src/ImGuiPanels.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Vortex-Engine)
