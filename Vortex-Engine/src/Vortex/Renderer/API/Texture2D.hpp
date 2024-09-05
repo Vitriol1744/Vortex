@@ -15,14 +15,10 @@ namespace Vortex
     class VT_API Texture2D : public NonCopyable<Texture2D>
     {
       public:
-        Texture2D(PathView path) { m_Image = Image(path); }
         virtual ~Texture2D()                     = default;
 
         virtual u32           GetMipLevelCount() = 0;
 
         static Ref<Texture2D> Create(PathView path);
-
-      protected:
-        Image m_Image;
     };
 }; // namespace Vortex

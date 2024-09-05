@@ -13,16 +13,15 @@ namespace Vortex
 {
     Image::Image(PathView path)
     {
-        int channels;
-        m_Pixels = stbi_load(path.c_str(), (int*)&m_Width, (int*)&m_Height,
-                             &channels, STBI_rgb_alpha);
-        m_BitsPerPixel = channels * 8;
+        m_Pixels = stbi_load(path.c_str(), (i32*)&m_Width, (i32*)&m_Height,
+                             (i32*)&m_Channels, STBI_rgb_alpha);
+
+        m_BitsPerPixel = m_Channels * 8;
 
         VtCoreAssert(m_Pixels);
     }
     Image::~Image()
     {
-        return;
         // FIXME(v1tr10l7): crashes for some reason
         if (m_Pixels) stbi_image_free(m_Pixels);
         m_Pixels = nullptr;

@@ -123,27 +123,28 @@ void SandboxLayer2D::OnAttach()
         = importer.ReadFile("assets/models/viking_room.obj",
                             aiProcess_Triangulate | aiProcess_FlipUVs);
     ProcessNode(scene->mRootNode, scene);
+    importer.FreeScene();
 
-    GraphicsPipelineSpecification specification{};
-    specification.Window = Application::Get()->GetWindow();
-    specification.Shader = s_Shader;
-    specification.Layout = layout;
+    // GraphicsPipelineSpecification specification{};
+    // specification.Window = Application::Get()->GetWindow();
+    // specification.Shader = s_Shader;
+    // specification.Layout = layout;
 
-    s_GraphicsPipeline   = GraphicsPipeline::Create(specification);
-    s_VertexBuffer       = VertexBuffer::Create(
-        (void*)vertices.data(), vertices.size() * sizeof(vertices[0]));
-    s_IndexBuffer
-        = IndexBuffer::Create(indices.data(), indices.size() * sizeof(u32));
-    s_UniformBuffer   = UniformBuffer::Create(sizeof(UniformBufferObject));
+    // s_GraphicsPipeline   = GraphicsPipeline::Create(specification);
+    // s_VertexBuffer       = VertexBuffer::Create(
+    //(void*)vertices.data(), vertices.size() * sizeof(vertices[0]));
+    // s_IndexBuffer
+    //   = IndexBuffer::Create(indices.data(), indices.size() * sizeof(u32));
+    // s_UniformBuffer   = UniformBuffer::Create(sizeof(UniformBufferObject));
 
-    s_Texture2D       = Texture2D::Create("assets/textures/viking_room.png");
+    // s_Texture2D       = Texture2D::Create("assets/textures/viking_room.png");
 
-    vk::Device device = VulkanContext::GetDevice();
+    // vk::Device device = VulkanContext::GetDevice();
     VtCoreInfo("Frames in flight: {}",
                Renderer::GetConfiguration().MaxFramesInFlight);
 
-    s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
-    s_Shader->SetUniform("texSampler", s_Texture2D);
+    // s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
+    // s_Shader->SetUniform("texSampler", s_Texture2D);
 
     f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
                     / static_cast<f32>(s_Window->GetHeight());
@@ -230,7 +231,7 @@ void SandboxLayer2D::OnImGuiRender()
 
     ubo.ViewProjection = s_Camera.GetViewProjection();
 
-    s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
+    // s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
 
     Renderer2D::EndScene();
 }

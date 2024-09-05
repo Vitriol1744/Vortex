@@ -27,8 +27,7 @@ namespace Vortex
         bufferInfo.usage       = vk::BufferUsageFlagBits::eUniformBuffer;
         bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
-        for (usize i = 0; i < Renderer::GetConfiguration().MaxFramesInFlight;
-             i++)
+        for (usize i = 0; i < m_Buffers.size(); i++)
         {
             vk::DescriptorBufferInfo& descriptorBufferInfo = m_BufferInfos[i];
             m_Allocations[i] = VulkanAllocator::AllocateBuffer(

@@ -32,6 +32,8 @@ namespace Vortex
     WaylandMonitor::~WaylandMonitor()
     {
         VtCoreTrace("Wayland: Destroying wl_output...");
+        if (m_GammaControl) zwlr_gamma_control_v1_destroy(m_GammaControl);
+
         wl_output_destroy(m_Output);
     }
 

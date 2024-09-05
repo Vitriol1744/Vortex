@@ -12,9 +12,9 @@
 namespace Vortex
 {
     VulkanTexture2D::VulkanTexture2D(PathView path)
-        : Texture2D(path)
     {
-        usize size = m_Image.GetSize();
+        Image image(path);
+        usize size = image.GetSize();
         m_Size     = size;
 
         vk::BufferCreateInfo stagingInfo{};
@@ -28,17 +28,17 @@ namespace Vortex
             stagingInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
         u8* dest = VulkanAllocator::MapMemory<u8*>(stagingAllocation);
-        std::memcpy(dest, m_Image.GetPixels(), size);
+        std::memcpy(dest, image.GetPixels(), size);
         VulkanAllocator::UnmapMemory(stagingAllocation);
 
-        m_TextureImage.Create(m_Image.GetWidth(), m_Image.GetHeight(),
+        m_TextureImage.Create(image.GetWidth(), image.GetHeight(),
                               vk::Format::eR8G8B8A8Srgb,
                               vk::ImageTiling::eOptimal,
                               vk::ImageUsageFlagBits::eTransferDst
                                   | vk::ImageUsageFlagBits::eSampled);
 
-        m_TextureImage.CopyFrom(stagingBuffer, m_Image.GetWidth(),
-                                m_Image.GetHeight());
+        m_TextureImage.CopyFrom(stagingBuffer, image.GetWidth(),
+                                image.GetHeight());
         VulkanAllocator::DestroyBuffer(stagingBuffer, stagingAllocation);
 
         vk::ImageViewCreateInfo viewInfo{};
