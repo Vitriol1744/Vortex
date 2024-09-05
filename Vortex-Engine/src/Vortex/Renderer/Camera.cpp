@@ -24,9 +24,13 @@ namespace Vortex
                                  f32 near, f32 far)
     {
         m_Projection = glm::ortho(left, right, bottom, top, near, far);
+        m_Projection[1][1] *= -1;
+        m_Dirty = true;
     }
     void Camera::SetPerspective(f32 fov, f32 aspectRatio, f32 near, f32 far)
     {
         m_Projection = glm::perspective(fov, aspectRatio, near, far);
+        m_Projection[1][1] *= -1;
+        m_Dirty = true;
     }
 }; // namespace Vortex

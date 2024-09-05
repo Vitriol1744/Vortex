@@ -14,7 +14,7 @@ namespace Vortex
 {
     using Pixel = unsigned char;
 
-    class VT_API Image
+    class VT_API Image : public NonCopyable<Image>
     {
       public:
         Image() = default;

@@ -9,6 +9,13 @@
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/Math/Math.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace Vortex
 {
     enum class ProjectionType
@@ -20,6 +27,7 @@ namespace Vortex
     class VT_API Camera
     {
       public:
+        Camera() = default;
         Camera(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
         Camera(f32 fov, f32 aspectRatio, f32 near, f32 far);
 
@@ -31,21 +39,56 @@ namespace Vortex
         {
             return m_ProjectionType;
         }
-        inline Vec3 GetPosition() const { return m_Position; }
-        inline Quat GetRotation() const { return m_Rotation; }
-        inline Vec3 GetScale() const { return m_Scale; }
-        inline Mat4 GetProjectionMatrix() const { return m_Projection; }
+        inline const Vec3& GetPosition() const { return m_Position; }
+        inline const Quat& GetRotation() const { return m_Rotation; }
+        inline const Vec3& GetScale() const { return m_Scale; }
+        inline const Mat4& GetProjection() const { return m_Projection; }
+        inline const Mat4& GetView()
+        {
+            Recalculate();
+            return m_View;
+        }
+        inline const Mat4& GetViewProjection()
+        {
+            Recalculate();
+            return m_ViewProjection;
+        }
 
-        inline void SetPosition(Vec3 position) { m_Position = position; }
-        inline void SetRotation(Quat rotation) { m_Rotation = rotation; }
-        inline void SetScale(Vec3 scale) { m_Scale = scale; }
+        inline void SetPosition(const Vec3& position)
+        {
+            m_Dirty    = true;
+            m_Position = position;
+        }
+        inline void SetRotation(const Quat& rotation)
+        {
+            m_Dirty    = true;
+            m_Rotation = rotation;
+        }
+        inline void SetScale(const Vec3& scale)
+        {
+            m_Dirty = true;
+            m_Scale = scale;
+        }
 
       private:
         ProjectionType m_ProjectionType{};
+        bool           m_Dirty    = false;
         Vec3           m_Position = {0.0f, 0.0f, 0.0f};
         Quat           m_Rotation;
-        Vec3           m_Scale      = {1.0f, 1.0f, 1.0f};
+        Vec3           m_Scale          = {1.0f, 1.0f, 1.0f};
 
-        Mat4           m_Projection = Mat4(1.0f);
+        Mat4           m_Projection     = Mat4(1.0f);
+        Mat4           m_View           = Mat4(1.0f);
+        Mat4           m_ViewProjection = Mat4(1.0f);
+
+        void           Recalculate()
+        {
+            if (!m_Dirty) return;
+
+            m_View = glm::mat4_cast(m_Rotation)
+                   * glm::translate(Mat4(1.0f), -m_Position);
+            m_ViewProjection = m_Projection * m_View;
+            m_Dirty          = false;
+        }
     };
 }; // namespace Vortex

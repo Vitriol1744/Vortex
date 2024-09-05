@@ -16,6 +16,7 @@
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Time.hpp"
 #include "Vortex/Engine/Application.hpp"
+#include "Vortex/Input/Keyboard.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
@@ -37,12 +38,15 @@ struct Vertex
     Vec2 TexCoords;
 };
 
+static f32       s_MovementSpeed = 0.5f;
+static glm::vec3 s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
+
+static f32       s_ZoomLevel     = 3.0f;
+
 struct UniformBufferObject
 {
     alignas(16) Mat4 Model;
-    alignas(16) Mat4 View;
-    alignas(16) Mat4 Projection;
-    alignas(8) Vec2 lightPos;
+    alignas(16) Mat4 ViewProjection;
 };
 
 static Ref<Window>           s_Window           = nullptr;
@@ -53,7 +57,8 @@ static Ref<VertexBuffer>     s_VertexBuffer     = nullptr;
 static Ref<IndexBuffer>      s_IndexBuffer      = nullptr;
 static Ref<UniformBuffer>    s_UniformBuffer    = nullptr;
 static Ref<Texture2D>        s_Texture2D        = nullptr;
-Vec2                         lightPos;
+
+static Camera                s_Camera;
 
 using namespace Vortex;
 
@@ -134,69 +139,98 @@ void SandboxLayer2D::OnAttach()
     s_Texture2D       = Texture2D::Create("assets/textures/viking_room.png");
 
     vk::Device device = VulkanContext::GetDevice();
-    VtCoreInfo("Frames in flight: {}", VT_MAX_FRAMES_IN_FLIGHT);
+    VtCoreInfo("Frames in flight: {}",
+               Renderer::GetConfiguration().MaxFramesInFlight);
 
     s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
     s_Shader->SetUniform("texSampler", s_Texture2D);
 
+    f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
+                    / static_cast<f32>(s_Window->GetHeight());
+    f32 zoomLevel = 3.0f;
+
+    s_Camera.SetOrthographic(aspectRatio * zoomLevel, -aspectRatio * zoomLevel,
+                             zoomLevel, -zoomLevel, 0.0f, 1.0f);
+
     Vec2 mousePos = s_Window->GetCursorPosition();
-    lightPos.x    = ((f32)(mousePos.x * 16.0f / s_Window->GetWidth()));
-    lightPos.y    = (f32)(9.0f - mousePos.y * 9.0f / s_Window->GetHeight());
     Renderer2D::Initialize();
+
+    static auto onMouseScrolled = [](Window*, f64, f64 deltaY) -> bool
+    {
+        s_ZoomLevel += deltaY * Application::Get()->GetDeltaTime();
+        return false;
+    };
+
+    WindowEvents::MouseScrolledEvent += onMouseScrolled;
 }
 void SandboxLayer2D::OnDetach() {}
 
-void SandboxLayer2D::OnUpdate() {}
+void SandboxLayer2D::OnUpdate()
+{
+    f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
+                    / static_cast<f32>(s_Window->GetHeight());
+    s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
+                             -aspectRatio * s_ZoomLevel, s_ZoomLevel,
+                             -s_ZoomLevel, 0.0f, 1.0f);
+
+    using namespace Input;
+    if (Keyboard::IsKeyPressed(KeyCode::eA))
+        s_Translation.x += s_MovementSpeed * Application::Get()->GetDeltaTime();
+    else if (Keyboard::IsKeyPressed(KeyCode::eD))
+        s_Translation.x -= s_MovementSpeed * Application::Get()->GetDeltaTime();
+    else if (Keyboard::IsKeyPressed(KeyCode::eW))
+        s_Translation.y -= s_MovementSpeed * Application::Get()->GetDeltaTime();
+    else if (Keyboard::IsKeyPressed(KeyCode::eS))
+        s_Translation.y += s_MovementSpeed * Application::Get()->GetDeltaTime();
+
+    s_Camera.SetPosition(s_Translation);
+}
 void SandboxLayer2D::OnRender()
 {
-    Renderer::Draw(s_GraphicsPipeline, s_VertexBuffer, s_IndexBuffer);
+    // Renderer::Draw(s_GraphicsPipeline, s_VertexBuffer, s_IndexBuffer);
 
+    Renderer2D::BeginScene(s_Camera);
     Renderer2D::DrawQuad(glm::vec2(-1.0f, 0.0f), glm::vec2(0.8f, 0.8f),
                          Vec4(1.0f, 0.0f, 1.0f, 1.0f));
     Renderer2D::DrawQuad(glm::vec2(0.5f, -0.5f), glm::vec2(0.5f, 0.75f),
                          Vec4(0.0f, 1.0f, 1.0f, 1.0f));
     Renderer2D::DrawQuad(glm::vec2(1.5f, -0.5f), glm::vec2(0.2f, 0.45f),
                          Vec4(0.0f, 1.0f, 1.0f, 1.0f));
-    Renderer2D::Flush();
 }
 void SandboxLayer2D::OnImGuiRender()
 {
-    VulkanSwapChain& swapChain = s_Context->GetSwapChain();
+    VulkanSwapChain& swapChain  = s_Context->GetSwapChain();
 
-    vk::Extent2D     extent    = swapChain.GetExtent();
-    Vec2             mousePos  = s_Window->GetCursorPosition();
-    mousePos.x -= s_Window->GetWidth() / 2.f;
-    mousePos.y -= s_Window->GetHeight() / 2.f;
-    mousePos.x /= s_Window->GetWidth();
-    mousePos.y /= s_Window->GetHeight();
-    mousePos.x *= -1;
+    vk::Extent2D     extent     = swapChain.GetExtent();
 
-    bool showWindow = true;
+    bool             showWindow = true;
     ImGui::ShowDemoWindow(&showWindow);
     ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
-    ImGui::Text("MousePos: { x: %f, y: %f }", mousePos.x, mousePos.y);
 
-    ImGui::SliderFloat2("lightPos", (f32*)&lightPos, -10, 10);
     ImGuiPanels::DrawWindowOptions(s_Window);
+
+    ImGui::SliderFloat3("View", (float*)&s_Translation, -10, 10);
+    ImGui::SliderFloat("MovementSpeed", &s_MovementSpeed, 0.1f, 10.0f);
 
     auto                currentFrame = swapChain.GetCurrentFrameIndex();
     static auto         startTime    = Time::GetCurrentTime();
     f32                 time         = Time::GetCurrentTime() - startTime;
 
     UniformBufferObject ubo{};
-    ubo.lightPos = mousePos;
-    ubo.Model    = glm::rotate(Mat4(1.0f), time * glm::radians(90.0f),
-                               Vec3(0.0f, 0.0f, 1.0f));
-    ubo.View     = glm::lookAt(Vec3(2.0f, 2.0f, 2.0f), Vec3(0.0f, 0.0f, 0.0f),
-                               Vec3(0.0f, 0.0f, 1.0f));
+    ubo.Model          = glm::rotate(Mat4(1.0f), time * glm::radians(90.0f),
+                                     Vec3(0.0f, 0.0f, 1.0f));
+    /*Mat4 view = glm::lookAt(Vec3(2.0f, 2.0f, 2.0f), Vec3(0.0f, 0.0f, 0.0f),
+                            Vec3(0.0f, 0.0f, 1.0f));
 
     auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
-    ubo.Projection       = glm::perspective(
+    Mat4 projection      = glm::perspective(
         glm::radians(45.0f),
-        swapChainExtent.width / (f32)swapChainExtent.height, 0.1f, 10.0f);
+        swapChainExtent.width / (f32)swapChainExtent.height, 0.1f, 10.0f);*/
 
-    ubo.Projection[1][1] *= -1;
+    ubo.ViewProjection = s_Camera.GetViewProjection();
 
     s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
+
+    Renderer2D::EndScene();
 }

@@ -12,7 +12,7 @@
 
 namespace Vortex
 {
-    class VT_API Texture2D
+    class VT_API Texture2D : public NonCopyable<Texture2D>
     {
       public:
         Texture2D(PathView path) { m_Image = Image(path); }

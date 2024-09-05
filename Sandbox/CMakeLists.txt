@@ -18,7 +18,6 @@ elseif(CMAKE_BUILD_TYPE MATCHES Dist)
   add_definitions(-DVT_DIST)
 endif()
 add_definitions(-DVT_ENABLE_ASSERTIONS)
-add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
 set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp src/ImGuiPanels.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})

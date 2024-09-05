@@ -79,7 +79,6 @@ endif()
 
 add_definitions(-DVT_ENABLE_ASSERTIONS)
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
-add_definitions(-DVT_MAX_FRAMES_IN_FLIGHT=2)
 
 set(INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex"
                  vendor/imgui vendor/stb/include ${CMAKE_CURRENT_BINARY_DIR})
@@ -110,6 +109,7 @@ set(SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
+    src/Vortex/Input/Keyboard.cpp
     src/Vortex/Renderer/Camera.cpp
     src/Vortex/Renderer/Image.cpp
     src/Vortex/Renderer/Renderer.cpp
@@ -242,6 +242,7 @@ target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Shcore)

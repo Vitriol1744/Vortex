@@ -9,6 +9,7 @@
 #include "Vortex/Core/Math/Math.hpp"
 
 #include "Vortex/Engine/Application.hpp"
+#include "Vortex/Input/Keyboard.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
@@ -37,15 +38,14 @@ namespace Vortex::Renderer2D
         struct UniformBufferObject
         {
             alignas(16) Mat4 Model;
-            alignas(16) Mat4 View;
-            alignas(16) Mat4 Projection;
-            alignas(8) Vec2 lightPos;
+            alignas(16) Mat4 ViewProjection;
         };
 
         inline constexpr u32      MAX_QUADS             = 20000;
         inline constexpr u32      MAX_VERTICES          = MAX_QUADS * 4;
         inline constexpr u32      MAX_INDICES           = MAX_QUADS * 6;
 
+        Mat4                      s_ViewProjection      = Mat4(1.0f);
         Ref<GraphicsPipeline>     s_QuadPipeline        = nullptr;
         Ref<VertexBuffer>         s_QuadVertexBuffer    = nullptr;
         Vertex*                   s_QuadVerticesBase    = nullptr;
@@ -57,7 +57,9 @@ namespace Vortex::Renderer2D
         static Ref<UniformBuffer> s_UniformBuffer       = nullptr;
     }; // namespace
 
-    void Initialize()
+    static void Flush();
+
+    void        Initialize()
     {
         std::initializer_list<VertexBufferElement> elements
             = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
@@ -99,6 +101,30 @@ namespace Vortex::Renderer2D
     }
     void Shutdown() { delete[] s_QuadVerticesBase; }
 
+    void BeginScene(Camera& camera)
+    {
+        s_ViewProjection = camera.GetViewProjection();
+    }
+    void        EndScene() { Flush(); }
+
+    static void Flush()
+    {
+        u32 dataSize
+            = u32((u8*)s_QuadVerticesPointer - (u8*)s_QuadVerticesBase);
+        s_QuadVertexBuffer = VertexBuffer::Create(s_QuadVerticesBase, dataSize);
+
+        UniformBufferObject ubo{};
+        //  TODO(v1tr10l7): do it on begin scene
+        ubo.Model          = glm::mat4(1.0f);
+        ubo.ViewProjection = s_ViewProjection;
+        s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
+
+        Renderer::Draw(s_QuadPipeline, s_QuadVertexBuffer, s_QuadIndexBuffer,
+                       s_IndexCount);
+        s_QuadVerticesPointer = s_QuadVerticesBase;
+        s_IndexCount          = 0;
+    }
+
     void DrawQuad(const Vec2& pos, const Vec2& scale, const Vec4& color)
     {
         constexpr size_t    quadVertexCount = 4;
@@ -128,35 +154,5 @@ namespace Vortex::Renderer2D
 
         s_IndexCount += 6;
     }
-    void Flush()
-    {
-        u32 dataSize
-            = u32((u8*)s_QuadVerticesPointer - (u8*)s_QuadVerticesBase);
-        s_QuadVertexBuffer = VertexBuffer::Create(s_QuadVerticesBase, dataSize);
 
-        auto window        = Application::Get()->GetWindow();
-        Vec2 mousePos      = window->GetCursorPosition();
-        mousePos.x -= window->GetWidth() / 2.f;
-        mousePos.y -= window->GetHeight() / 2.f;
-        mousePos.x /= window->GetWidth();
-        mousePos.y /= window->GetHeight();
-        mousePos.x *= -1;
-
-        UniformBufferObject ubo{};
-        ubo.lightPos = mousePos;
-        ubo.Model    = glm::mat4(1.0f);
-        ubo.View = glm::lookAt(Vec3(2.0f, 2.0f, 2.0f), Vec3(0.0f, 0.0f, 0.0f),
-                               Vec3(0.0f, 0.0f, 1.0f));
-        // TODO(v1tr10l7): do it on begin scene
-        f32 aspectRatio = f32(window->GetWidth()) / f32(window->GetHeight());
-        ubo.Projection
-            = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-        ubo.Projection[1][1] *= -1;
-        s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
-
-        Renderer::Draw(s_QuadPipeline, s_QuadVertexBuffer, s_QuadIndexBuffer,
-                       s_IndexCount);
-        s_QuadVerticesPointer = s_QuadVerticesBase;
-        s_IndexCount          = 0;
-    }
 }; // namespace Vortex::Renderer2D

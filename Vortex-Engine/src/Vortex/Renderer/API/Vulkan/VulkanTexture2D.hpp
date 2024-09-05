@@ -18,9 +18,12 @@ namespace Vortex
         VulkanTexture2D(PathView path);
         virtual ~VulkanTexture2D();
 
-        virtual u32 GetMipLevelCount() override { return 0; }
+        virtual u32                    GetMipLevelCount() override { return 0; }
 
-        auto&       GetImageInfo() const { return m_ImageInfo; }
+        const vk::DescriptorImageInfo& GetImageInfo() const
+        {
+            return m_ImageInfo;
+        }
 
       private:
         VulkanImage             m_TextureImage;

@@ -9,6 +9,8 @@
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/Math/Math.hpp"
 
+#include "Vortex/Renderer/Camera.hpp"
+
 namespace Vortex
 {
     namespace Renderer2D
@@ -16,7 +18,9 @@ namespace Vortex
         void Initialize();
         void Shutdown();
 
+        void BeginScene(Camera& camera);
+        void EndScene();
+
         void DrawQuad(const Vec2& pos, const Vec2& scale, const Vec4& color);
-        void Flush();
     }; // namespace Renderer2D
 };     // namespace Vortex

@@ -59,6 +59,7 @@ namespace Vortex
                                                  &m_FragmentShader));
         }
 
+        u32 maxFramesInFlight = Renderer::GetConfiguration().MaxFramesInFlight;
         for (auto&& [set, shaderDescriptorSet] : m_DescriptorSets)
         {
             if (shaderDescriptorSet.UniformDescriptors.size())
@@ -68,7 +69,7 @@ namespace Vortex
                 typeCount.type = vk::DescriptorType::eUniformBuffer;
                 typeCount.descriptorCount
                     = shaderDescriptorSet.UniformDescriptors.size()
-                    * VT_MAX_FRAMES_IN_FLIGHT;
+                    * maxFramesInFlight;
                 VtCoreTrace("size: {}", typeCount.descriptorCount);
             }
             if (shaderDescriptorSet.ImageSamplers.size())
@@ -78,7 +79,7 @@ namespace Vortex
                 typeCount.type = vk::DescriptorType::eCombinedImageSampler;
                 typeCount.descriptorCount
                     = shaderDescriptorSet.ImageSamplers.size()
-                    * VT_MAX_FRAMES_IN_FLIGHT;
+                    * maxFramesInFlight;
                 VtCoreTrace("size: {}", typeCount.descriptorCount);
             }
 
@@ -149,7 +150,7 @@ namespace Vortex
             poolInfo.sType   = vk::StructureType::eDescriptorPoolCreateInfo;
             poolInfo.pNext   = VK_NULL_HANDLE;
             poolInfo.flags   = vk::DescriptorPoolCreateFlags();
-            poolInfo.maxSets = VT_MAX_FRAMES_IN_FLIGHT;
+            poolInfo.maxSets = maxFramesInFlight;
             poolInfo.poolSizeCount             = set.second.PoolSizes.size();
             poolInfo.pPoolSizes                = set.second.PoolSizes.data();
 
@@ -164,14 +165,13 @@ namespace Vortex
             allocInfo.sType = vk::StructureType::eDescriptorSetAllocateInfo;
             allocInfo.descriptorPool
                 = m_DescriptorSets[descriptorSet.first].Pool;
-            allocInfo.descriptorSetCount = VT_MAX_FRAMES_IN_FLIGHT;
+            allocInfo.descriptorSetCount = maxFramesInFlight;
 
             std::vector<vk::DescriptorSetLayout> layouts(
-                VT_MAX_FRAMES_IN_FLIGHT,
-                m_DescriptorSetLayouts[descriptorSet.first]);
+                maxFramesInFlight, m_DescriptorSetLayouts[descriptorSet.first]);
             allocInfo.pSetLayouts = layouts.data();
 
-            descriptorSet.second.Sets.resize(VT_MAX_FRAMES_IN_FLIGHT);
+            descriptorSet.second.Sets.resize(maxFramesInFlight);
             VkCall(device.allocateDescriptorSets(
                 &allocInfo, descriptorSet.second.Sets.data()));
         }
@@ -298,7 +298,8 @@ namespace Vortex
         auto vulkanTexture
             = std::dynamic_pointer_cast<VulkanTexture2D>(texture);
 
-        for (usize i = 0; i < VT_MAX_FRAMES_IN_FLIGHT; i++)
+        u32 maxFramesInFlight = Renderer::GetConfiguration().MaxFramesInFlight;
+        for (usize i = 0; i < maxFramesInFlight; i++)
         {
             descriptorWrite.dstSet          = m_DescriptorSets[0].Sets[i];
             descriptorWrite.dstArrayElement = 0;
