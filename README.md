@@ -4,7 +4,7 @@
 
 
 ## Description
-Low level game engine being written in modern C++23 utilizing powerfull Vulkan API
+Low level game engine being written in modern C++23 utilizing powerful Vulkan API
 
 ## Dependencies
 To be able to use Vortex you need to install a few dependencies:
