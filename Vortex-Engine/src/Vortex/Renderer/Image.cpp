@@ -20,4 +20,5 @@ namespace Vortex
 
         VtCoreAssert(m_Pixels);
     }
+    Image::~Image() { stbi_image_free(m_Pixels); }
 }; // namespace Vortex

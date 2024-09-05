@@ -19,6 +19,7 @@ namespace Vortex
       public:
         Image() = default;
         Image(PathView path);
+        ~Image();
 
         inline Pixel* GetPixels() const { return m_Pixels; }
         inline isize  GetSize() const
