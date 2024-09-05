@@ -104,26 +104,13 @@ namespace Vortex::Renderer2D
     void BeginScene(Camera& camera)
     {
         s_ViewProjection = camera.GetViewProjection();
-    }
-    void        EndScene() { Flush(); }
-
-    static void Flush()
-    {
-        u32 dataSize
-            = u32((u8*)s_QuadVerticesPointer - (u8*)s_QuadVerticesBase);
-        s_QuadVertexBuffer = VertexBuffer::Create(s_QuadVerticesBase, dataSize);
 
         UniformBufferObject ubo{};
-        //  TODO(v1tr10l7): do it on begin scene
         ubo.Model          = glm::mat4(1.0f);
         ubo.ViewProjection = s_ViewProjection;
         s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
-
-        Renderer::Draw(s_QuadPipeline, s_QuadVertexBuffer, s_QuadIndexBuffer,
-                       s_IndexCount);
-        s_QuadVerticesPointer = s_QuadVerticesBase;
-        s_IndexCount          = 0;
     }
+    void EndScene() { Flush(); }
 
     void DrawQuad(const Vec2& pos, const Vec2& scale, const Vec4& color)
     {
@@ -155,4 +142,15 @@ namespace Vortex::Renderer2D
         s_IndexCount += 6;
     }
 
+    static void Flush()
+    {
+        u32 dataSize
+            = u32((u8*)s_QuadVerticesPointer - (u8*)s_QuadVerticesBase);
+        s_QuadVertexBuffer = VertexBuffer::Create(s_QuadVerticesBase, dataSize);
+
+        Renderer::Draw(s_QuadPipeline, s_QuadVertexBuffer, s_QuadIndexBuffer,
+                       s_IndexCount);
+        s_QuadVerticesPointer = s_QuadVerticesBase;
+        s_IndexCount          = 0;
+    }
 }; // namespace Vortex::Renderer2D

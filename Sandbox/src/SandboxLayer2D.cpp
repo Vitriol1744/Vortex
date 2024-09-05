@@ -200,7 +200,6 @@ void SandboxLayer2D::OnRender()
 void SandboxLayer2D::OnImGuiRender()
 {
     VulkanSwapChain& swapChain  = s_Context->GetSwapChain();
-
     vk::Extent2D     extent     = swapChain.GetExtent();
 
     bool             showWindow = true;
@@ -210,7 +209,8 @@ void SandboxLayer2D::OnImGuiRender()
 
     ImGuiPanels::DrawWindowOptions(s_Window);
 
-    ImGui::SliderFloat3("View", (float*)&s_Translation, -10, 10);
+    ImGui::SliderFloat3("View", reinterpret_cast<float*>(&s_Translation), -10,
+                        10);
     ImGui::SliderFloat("MovementSpeed", &s_MovementSpeed, 0.1f, 10.0f);
 
     auto                currentFrame = swapChain.GetCurrentFrameIndex();
