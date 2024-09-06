@@ -62,6 +62,7 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 * [shaderc](https://github.com/google/shaderc.git) - A collection of tools, libraries and tests for shader compilation.
 * [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross.git) - SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader languages.
 * [stb](https://github.com/nothings/stb) - single-file public domain (or MIT licensed) libraries for C/C++
+* [tracy](https://github.com/wolfpld/tracy) - A real time, nanosecond resolution, remote telemetry, hybrid frame and sampling profiler for games and other applications.
 * [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git) - Easy to integrate Vulkan memory allocation library.
 
 

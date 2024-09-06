@@ -26,3 +26,6 @@
 [submodule "Vortex-Engine/vendor/assimp"]
 	path = Vortex-Engine/vendor/assimp
 	url = https://github.com/assimp/assimp
+[submodule "Vortex-Engine/vendor/tracy"]
+	path = Vortex-Engine/vendor/tracy
+	url = https://github.com/wolfpld/tracy.git

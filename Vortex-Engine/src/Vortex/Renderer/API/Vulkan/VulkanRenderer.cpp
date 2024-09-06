@@ -20,11 +20,11 @@ namespace Vortex
 {
     VulkanRenderer::VulkanRenderer()
     {
-        memoryBudget.sType
+        memoryBudgetProperties.sType
             = vk::StructureType::ePhysicalDeviceMemoryBudgetPropertiesEXT;
         memoryProperties.sType
             = vk::StructureType::ePhysicalDeviceMemoryProperties2;
-        memoryProperties.pNext = &memoryBudget;
+        memoryProperties.pNext = &memoryBudgetProperties;
     }
 
     void VulkanRenderer::BeginFrame(Ref<Window> window)
@@ -144,12 +144,28 @@ namespace Vortex
     {
         usize              memoryUsage = 0;
 
+        // FIXME(v1tr10l7): memoryBudgetProperties contains overlapping heaps,
+        // so memory usage is not accurate
         vk::PhysicalDevice physDevice  = VulkanContext::GetPhysicalDevice();
         physDevice.getMemoryProperties2(&memoryProperties);
         for (u32 i = 0; i < memoryProperties.memoryProperties.memoryHeapCount;
              i++)
-            memoryUsage += memoryBudget.heapUsage[i];
+            memoryUsage += memoryBudgetProperties.heapUsage[i];
 
         return memoryUsage;
+    }
+    usize VulkanRenderer::GetMemoryBudget()
+    {
+        usize              memoryBudget = 0;
+
+        // FIXME(v1tr10l7): memoryBudgetProperties contains overlapping heaps,
+        // so memory budget is not accurate
+        vk::PhysicalDevice physDevice   = VulkanContext::GetPhysicalDevice();
+        physDevice.getMemoryProperties2(&memoryProperties);
+        for (u32 i = 0; i < memoryProperties.memoryProperties.memoryHeapCount;
+             i++)
+            memoryBudget += memoryBudgetProperties.heapBudget[i];
+
+        return memoryBudget;
     }
 }; // namespace Vortex

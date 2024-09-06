@@ -41,5 +41,6 @@ namespace Vortex
         }
 
         usize GetMemoryUsage() { return s_Backend->GetMemoryUsage(); }
+        usize GetMemoryBudget() { return s_Backend->GetMemoryBudget(); }
     }; // namespace Renderer
 };     // namespace Vortex

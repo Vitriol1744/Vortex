@@ -42,5 +42,6 @@ namespace Vortex
         }
 
         usize GetMemoryUsage();
+        usize GetMemoryBudget();
     }; // namespace Renderer
 };     // namespace Vortex

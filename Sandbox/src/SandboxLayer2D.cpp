@@ -14,6 +14,7 @@
 
 #include "Vortex/Core/Log/Log.hpp"
 #include "Vortex/Core/Math/Matrix.hpp"
+#include "Vortex/Core/Profiler.hpp"
 #include "Vortex/Core/Time.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Input/Keyboard.hpp"
@@ -106,6 +107,7 @@ void ProcessNode(aiNode* node, const aiScene* scene)
 
 void SandboxLayer2D::OnAttach()
 {
+    VtProfileFunction();
     s_Window = Application::Get()->GetWindow();
     s_Window->SetPosition({300, 300});
     s_Context = std::dynamic_pointer_cast<VulkanContext>(
@@ -171,6 +173,7 @@ void SandboxLayer2D::OnDetach() {}
 
 void SandboxLayer2D::OnUpdate()
 {
+    VtProfileFunction();
     f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
                     / static_cast<f32>(s_Window->GetHeight());
     s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
@@ -193,6 +196,7 @@ void SandboxLayer2D::OnUpdate()
 }
 void SandboxLayer2D::OnRender()
 {
+    VtProfileFunction();
     // Renderer::Draw(s_GraphicsPipeline, s_VertexBuffer, s_IndexBuffer);
 
     Renderer2D::BeginScene(s_Camera);
@@ -222,6 +226,7 @@ void SandboxLayer2D::OnRender()
 }
 void SandboxLayer2D::OnImGuiRender()
 {
+    VtProfileFunction();
     VulkanSwapChain& swapChain  = s_Context->GetSwapChain();
     vk::Extent2D     extent     = swapChain.GetExtent();
 
@@ -235,7 +240,10 @@ void SandboxLayer2D::OnImGuiRender()
     std::getline(ifs, cpuUsage);
 
     ImGui::Text("CPU: %s", cpuUsage.c_str());
-    ImGui::Text("VRAM: %luMB", Renderer::GetMemoryUsage() / 1024 / 1024);
+    ImGui::Text("VRAM: %luMB/%luMB", Renderer::GetMemoryUsage() / 1024 / 1024,
+                Renderer::GetMemoryBudget() / 1024 / 1024);
+    ImGui::Text("Memory Budget: %luMB",
+                Renderer::GetMemoryBudget() / 1024 / 1024);
 
     ImGuiPanels::DrawWindowOptions(s_Window);
 

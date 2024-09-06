@@ -29,10 +29,11 @@ namespace Vortex
                            u32                   indexCount) override;
 
         virtual usize GetMemoryUsage() override;
+        virtual usize GetMemoryBudget() override;
 
       private:
         Ref<VulkanContext>                          currentContext = nullptr;
         vk::PhysicalDeviceMemoryProperties2         memoryProperties{};
-        vk::PhysicalDeviceMemoryBudgetPropertiesEXT memoryBudget{};
+        vk::PhysicalDeviceMemoryBudgetPropertiesEXT memoryBudgetProperties{};
     };
 }; // namespace Vortex

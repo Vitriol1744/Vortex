@@ -8,6 +8,7 @@
 
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Events/EventSystem.hpp"
+#include "Vortex/Core/Profiler.hpp"
 #include "Vortex/Core/Timer.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Input/Keyboard.hpp"
@@ -21,6 +22,7 @@ namespace Vortex
 
     Application::Application(const ApplicationSpecification& specification)
     {
+        tracy::SetThreadName("Main Thread");
         VtCoreAssertMsg(s_Instance == nullptr,
                         "Only one instance of application might exist.");
         s_Instance                = this;

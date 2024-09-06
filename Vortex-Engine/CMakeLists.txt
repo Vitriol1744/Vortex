@@ -60,14 +60,23 @@ set(ASSIMP_WARNINGS_AS_ERRORS
     OFF
     CACHE BOOL "" FORCE)
 
+if(NOT CMAKE_BUILD_TYPE MATCHES Release)
+  option(TRACY_ENABLE " " ON)
+  option(TRACY_ON_DEMAND " " OFF)
+else()
+  option(TRACY_ENABLE " " OFF)
+  option(TRACY_ON_DEMAND " " OFF)
+endif()
+
+add_subdirectory(vendor/assimp)
 add_subdirectory(vendor/fmt)
-add_subdirectory(vendor/magic_enum)
-add_subdirectory(vendor/glm)
 add_subdirectory(vendor/glfw)
-add_subdirectory(vendor/VulkanMemoryAllocator)
+add_subdirectory(vendor/glm)
+add_subdirectory(vendor/magic_enum)
 add_subdirectory(vendor/shaderc)
 add_subdirectory(vendor/SPIRV-Cross)
-add_subdirectory(vendor/assimp)
+add_subdirectory(vendor/tracy)
+add_subdirectory(vendor/VulkanMemoryAllocator)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DVT_DEBUG)
@@ -97,6 +106,10 @@ set(PUBLIC_LIBS
     spirv-cross-glsl
     spirv-cross-cpp
     assimp)
+
+if(NOT CMAKE_BUILD_TYPE MATCHES Release)
+  set(PUBLIC_LIBS ${PUBLIC_LIBS} Tracy::TracyClient)
+endif()
 
 if(UNIX)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} xcb X11 X11-xcb xkbcommon wayland-client)
