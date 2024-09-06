@@ -12,7 +12,8 @@
 namespace Vortex
 {
     void VulkanImage::Create(u32 width, u32 height, vk::Format format,
-                             vk::ImageTiling tiling, vk::ImageUsageFlags usage)
+                             vk::ImageTiling tiling, vk::ImageUsageFlags usage,
+                             u32 mipLevels)
     {
         vk::ImageCreateInfo imageInfo{};
         imageInfo.sType                 = vk::StructureType::eImageCreateInfo;
@@ -23,7 +24,7 @@ namespace Vortex
         imageInfo.extent.width          = width;
         imageInfo.extent.height         = height;
         imageInfo.extent.depth          = 1;
-        imageInfo.mipLevels             = 1;
+        imageInfo.mipLevels             = mipLevels;
         imageInfo.arrayLayers           = 1;
         imageInfo.samples               = vk::SampleCountFlagBits::e1;
         imageInfo.tiling                = tiling;
@@ -35,6 +36,7 @@ namespace Vortex
 
         m_Allocation                    = VulkanAllocator::AllocateImage(
             imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_Image, m_Size);
+        m_MipLevels = mipLevels;
     }
     void VulkanImage::Destroy()
     {
@@ -48,9 +50,6 @@ namespace Vortex
 
     void VulkanImage::CopyFrom(vk::Buffer buffer, u32 width, u32 height)
     {
-        TransitionLayout(vk::ImageLayout::eUndefined,
-                         vk::ImageLayout::eTransferDstOptimal);
-
         const VulkanDevice& device        = VulkanContext::GetDevice();
         vk::CommandBuffer   commandBuffer = device.BeginTransferCommand();
 
@@ -68,12 +67,9 @@ namespace Vortex
         commandBuffer.copyBufferToImage(
             buffer, m_Image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
         device.EndTransferCommand(commandBuffer);
-
-        TransitionLayout(vk::ImageLayout::eTransferDstOptimal,
-                         vk::ImageLayout::eShaderReadOnlyOptimal);
     }
     void VulkanImage::TransitionLayout(vk::ImageLayout oldLayout,
-                                       vk::ImageLayout newLayout)
+                                       vk::ImageLayout newLayout, u32 mipLevels)
     {
         const VulkanDevice& device        = VulkanContext::GetDevice();
         vk::CommandBuffer   commandBuffer = device.BeginOneTimeRenderCommand();
@@ -90,7 +86,7 @@ namespace Vortex
         barrier.image               = m_Image;
         barrier.subresourceRange.aspectMask   = vk::ImageAspectFlagBits::eColor;
         barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount   = 1;
+        barrier.subresourceRange.levelCount   = mipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount     = 1;
 
@@ -137,6 +133,83 @@ namespace Vortex
                                       vk::DependencyFlags(0), 0, VK_NULL_HANDLE,
                                       0, VK_NULL_HANDLE, 1, &barrier);
 
+        device.EndOneTimeRenderCommand(commandBuffer);
+    }
+
+    void VulkanImage::GenerateMipMaps(i32 width, i32 height, u32 mipLevels)
+    {
+        auto&             device        = VulkanContext::GetDevice();
+        vk::CommandBuffer commandBuffer = device.BeginOneTimeRenderCommand();
+
+        vk::ImageMemoryBarrier barrier{};
+        barrier.sType               = vk::StructureType::eImageMemoryBarrier;
+        barrier.image               = m_Image;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount     = 1;
+        barrier.subresourceRange.levelCount     = 1;
+        barrier.subresourceRange.baseMipLevel   = 0;
+
+        i32 mipWidth                            = width;
+        i32 mipHeight                           = height;
+        for (u32 i = 1; i < mipLevels; i++)
+        {
+            barrier.subresourceRange.baseMipLevel = i - 1;
+            barrier.oldLayout     = vk::ImageLayout::eTransferDstOptimal;
+            barrier.newLayout     = vk::ImageLayout::eTransferSrcOptimal;
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+            commandBuffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eTransfer,
+                vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), 0,
+                VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1, &barrier);
+
+            vk::ImageBlit blit{};
+            blit.srcOffsets[0] = vk::Offset3D(0, 0, 0);
+            blit.srcOffsets[1] = vk::Offset3D(mipWidth, mipHeight, 1);
+            blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+            blit.srcSubresource.mipLevel   = i - 1;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount     = 1;
+            blit.dstOffsets[0]                 = vk::Offset3D(0, 0, 0);
+            blit.dstOffsets[1]
+                = vk::Offset3D(mipWidth > 1 ? mipWidth / 2 : 1,
+                               mipHeight > 1 ? mipHeight / 2 : 1, 1);
+            blit.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+            blit.dstSubresource.mipLevel   = i;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount     = 1;
+            commandBuffer.blitImage(
+                m_Image, vk::ImageLayout::eTransferSrcOptimal, m_Image,
+                vk::ImageLayout::eTransferDstOptimal, 1, &blit,
+                vk::Filter::eLinear);
+            barrier.oldLayout     = vk::ImageLayout::eTransferSrcOptimal;
+            barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            commandBuffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eTransfer,
+                vk::PipelineStageFlagBits::eFragmentShader,
+                vk::DependencyFlags(), 0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1,
+                &barrier);
+
+            if (mipWidth > 1) mipWidth /= 2;
+            if (mipHeight > 1) mipHeight /= 2;
+        }
+
+        barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+        barrier.oldLayout     = vk::ImageLayout::eTransferDstOptimal;
+        barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
+        barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        commandBuffer.pipelineBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eFragmentShader, vk::DependencyFlags(),
+            0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 1, &barrier);
         device.EndOneTimeRenderCommand(commandBuffer);
     }
 }; // namespace Vortex

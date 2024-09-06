@@ -38,10 +38,13 @@ struct Vertex
     Vec2 TexCoords;
 };
 
-static f32       s_MovementSpeed = 0.5f;
-static glm::vec3 s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
+static f32                s_MovementSpeed = 0.5f;
+static glm::vec3          s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
 
-static f32       s_ZoomLevel     = 3.0f;
+static f32                s_ZoomLevel     = 3.0f;
+
+static unsigned long long lastTotalUser, lastTotalUserLow, lastTotalSys,
+    lastTotalIdle;
 
 struct UniformBufferObject
 {
@@ -197,6 +200,23 @@ void SandboxLayer2D::OnRender()
                          Vec4(0.0f, 1.0f, 1.0f, 1.0f));
     Renderer2D::DrawQuad(glm::vec2(1.5f, -0.5f), glm::vec2(0.2f, 0.45f),
                          Vec4(0.0f, 1.0f, 1.0f, 1.0f));
+
+    Vec4 redColor(1.0f, 0.0f, 0.0f, 1.0f);
+    Vec4 blueColor(0.0f, 0.0f, 1.0f, 1.0f);
+
+    Vec3 scale(0.1f);
+
+    for (i32 y = 0; y < 20; y++)
+    {
+        for (i32 x = 0; x < 20; x++)
+        {
+            Vec2 pos(x * 0.11f, y * 0.11f);
+            // Mat4 transform = glm::translate(Mat4(1.0f), pos) * scale;
+            Vec4 color = redColor;
+            if (x % 2 == 0) color = blueColor;
+            Renderer2D::DrawQuad(pos, scale, color);
+        }
+    }
 }
 void SandboxLayer2D::OnImGuiRender()
 {
@@ -207,6 +227,12 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::ShowDemoWindow(&showWindow);
     ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
+
+    std::ifstream ifs("/proc/stat");
+    std::string   cpuUsage;
+    std::getline(ifs, cpuUsage);
+
+    ImGui::Text("CPU: %s", cpuUsage.c_str());
 
     ImGuiPanels::DrawWindowOptions(s_Window);
 

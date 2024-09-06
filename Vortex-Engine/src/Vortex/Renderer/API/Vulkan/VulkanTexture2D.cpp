@@ -13,9 +13,14 @@ namespace Vortex
 {
     VulkanTexture2D::VulkanTexture2D(PathView path)
     {
-        Image image(path);
-        usize size = image.GetSize();
-        m_Size     = size;
+        Image          image(path);
+        usize          size       = image.GetSize();
+        constexpr bool useMipMaps = true;
+        u32            mipLevels  = static_cast<u32>(std::floor(std::log2(
+                            std::max(image.GetWidth(), image.GetHeight()))))
+                      + 1;
+        if (!useMipMaps) mipLevels = 1;
+        m_Size = size;
 
         vk::BufferCreateInfo stagingInfo{};
         stagingInfo.sType       = vk::StructureType::eBufferCreateInfo;
@@ -34,11 +39,23 @@ namespace Vortex
         m_TextureImage.Create(image.GetWidth(), image.GetHeight(),
                               vk::Format::eR8G8B8A8Srgb,
                               vk::ImageTiling::eOptimal,
-                              vk::ImageUsageFlagBits::eTransferDst
-                                  | vk::ImageUsageFlagBits::eSampled);
+                              vk::ImageUsageFlagBits::eTransferSrc
+                                  | vk::ImageUsageFlagBits::eTransferDst
+                                  | vk::ImageUsageFlagBits::eSampled,
+                              mipLevels);
 
+        m_TextureImage.TransitionLayout(vk::ImageLayout::eUndefined,
+                                        vk::ImageLayout::eTransferDstOptimal,
+                                        mipLevels);
         m_TextureImage.CopyFrom(stagingBuffer, image.GetWidth(),
                                 image.GetHeight());
+        // TODO(v1tr10l7): Check support for mip mapping
+        m_TextureImage.TransitionLayout(vk::ImageLayout::eUndefined,
+                                        vk::ImageLayout::eTransferDstOptimal,
+                                        mipLevels);
+        m_TextureImage.GenerateMipMaps(image.GetWidth(), image.GetHeight(),
+                                       mipLevels);
+
         VulkanAllocator::DestroyBuffer(stagingBuffer, stagingAllocation);
 
         vk::ImageViewCreateInfo viewInfo{};
@@ -48,7 +65,7 @@ namespace Vortex
         viewInfo.format   = vk::Format::eR8G8B8A8Srgb;
         viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
         viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.levelCount     = 1;
+        viewInfo.subresourceRange.levelCount     = mipLevels;
         viewInfo.subresourceRange.layerCount     = 1;
 
         vk::Device device                        = VulkanContext::GetDevice();
@@ -71,7 +88,7 @@ namespace Vortex
         samplerInfo.mipmapMode              = vk::SamplerMipmapMode::eLinear;
         samplerInfo.mipLodBias              = 0.0f;
         samplerInfo.minLod                  = 0.0f;
-        samplerInfo.maxLod                  = 0.0f;
+        samplerInfo.maxLod = useMipMaps ? static_cast<f32>(mipLevels) : 0.0f;
         VkCall(device.createSampler(&samplerInfo, VK_NULL_HANDLE,
                                     &m_TextureSampler));
 
