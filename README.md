@@ -29,9 +29,9 @@ sudo chmod u+x llvm.sh
 
 
 ## Building
-The first thing you have to do is to generate CMake Cache for the build system of your choice, e.g. Ninja like this:
+The first thing you have to do is to sync shaderc dependencies and generate the CMake Cache for the build system of your choice, e.g. Ninja like this:
 ```
-cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug
+(cd Vortex-Engine/vendor/shaderc && ./utils/git-sync-deps) && cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug
 ```
 
 Afterwards you can build the engine using:
