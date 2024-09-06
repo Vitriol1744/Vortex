@@ -243,9 +243,8 @@ void SandboxLayer2D::OnImGuiRender()
                         10);
     ImGui::SliderFloat("MovementSpeed", &s_MovementSpeed, 0.1f, 10.0f);
 
-    auto                currentFrame = swapChain.GetCurrentFrameIndex();
-    static auto         startTime    = Time::GetCurrentTime();
-    f32                 time         = Time::GetCurrentTime() - startTime;
+    static auto         startTime = Time::GetCurrentTime();
+    f32                 time      = Time::GetCurrentTime() - startTime;
 
     UniformBufferObject ubo{};
     ubo.Model          = glm::rotate(Mat4(1.0f), time * glm::radians(90.0f),
@@ -253,10 +252,9 @@ void SandboxLayer2D::OnImGuiRender()
     /*Mat4 view = glm::lookAt(Vec3(2.0f, 2.0f, 2.0f), Vec3(0.0f, 0.0f, 0.0f),
                             Vec3(0.0f, 0.0f, 1.0f));
 
-    auto swapChainExtent = s_Context->GetSwapChain().GetExtent();
     Mat4 projection      = glm::perspective(
         glm::radians(45.0f),
-        swapChainExtent.width / (f32)swapChainExtent.height, 0.1f, 10.0f);*/
+        extent.width / (f32)extent.height, 0.1f, 10.0f);*/
 
     ubo.ViewProjection = s_Camera.GetViewProjection();
 

@@ -55,12 +55,14 @@ namespace Vortex::Renderer2D
         Ref<Texture2D>            s_WhiteTexture        = nullptr;
         u32                       s_IndexCount          = 0;
         static Ref<UniformBuffer> s_UniformBuffer       = nullptr;
+        static bool               s_Initialized         = false;
     }; // namespace
 
     static void Flush();
 
     void        Initialize()
     {
+        if (s_Initialized) return;
         std::initializer_list<VertexBufferElement> elements
             = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
                ShaderDataType::eFloat2};
@@ -98,8 +100,26 @@ namespace Vortex::Renderer2D
 
         s_TextureShader->SetUniform("UniformBufferObject", s_UniformBuffer);
         s_TextureShader->SetUniform("texSampler", s_WhiteTexture);
+        s_Initialized = true;
     }
-    void Shutdown() { delete[] s_QuadVerticesBase; }
+    void Shutdown()
+    {
+        if (!s_Initialized) return;
+
+        s_ViewProjection = Mat4(1.0f);
+        s_QuadPipeline.reset();
+        s_QuadVertexBuffer.reset();
+        delete[] s_QuadVerticesBase;
+        s_QuadVerticesBase    = nullptr;
+        s_QuadVerticesPointer = nullptr;
+        s_QuadIndexBuffer.reset();
+        s_TextureShader.reset();
+        s_WhiteTexture.reset();
+        s_IndexCount = 0;
+        s_UniformBuffer.reset();
+
+        s_Initialized = false;
+    }
 
     void BeginScene(Camera& camera)
     {
