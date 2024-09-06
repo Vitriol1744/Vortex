@@ -18,6 +18,15 @@
 
 namespace Vortex
 {
+    VulkanRenderer::VulkanRenderer()
+    {
+        memoryBudget.sType
+            = vk::StructureType::ePhysicalDeviceMemoryBudgetPropertiesEXT;
+        memoryProperties.sType
+            = vk::StructureType::ePhysicalDeviceMemoryProperties2;
+        memoryProperties.pNext = &memoryBudget;
+    }
+
     void VulkanRenderer::BeginFrame(Ref<Window> window)
     {
         currentContext = std::dynamic_pointer_cast<VulkanContext>(
@@ -129,5 +138,18 @@ namespace Vortex
             vk::PipelineBindPoint::eGraphics, vkPipeline->GetLayout(), 0, 1,
             &descriptorSets[currentFrame], 0, VK_NULL_HANDLE);
         commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
+    }
+
+    usize VulkanRenderer::GetMemoryUsage()
+    {
+        usize              memoryUsage = 0;
+
+        vk::PhysicalDevice physDevice  = VulkanContext::GetPhysicalDevice();
+        physDevice.getMemoryProperties2(&memoryProperties);
+        for (u32 i = 0; i < memoryProperties.memoryProperties.memoryHeapCount;
+             i++)
+            memoryUsage += memoryBudget.heapUsage[i];
+
+        return memoryUsage;
     }
 }; // namespace Vortex

@@ -39,5 +39,7 @@ namespace Vortex
         {
             s_Backend->Draw(pipeline, vertexBuffer, indexBuffer, indexCount);
         }
+
+        usize GetMemoryUsage() { return s_Backend->GetMemoryUsage(); }
     }; // namespace Renderer
 };     // namespace Vortex

@@ -177,6 +177,8 @@ void SandboxLayer2D::OnUpdate()
                              -aspectRatio * s_ZoomLevel, s_ZoomLevel,
                              -s_ZoomLevel, 0.0f, 1.0f);
 
+    vk::PhysicalDevice physDevice = VulkanContext::GetPhysicalDevice();
+
     using namespace Input;
     if (Keyboard::IsKeyPressed(KeyCode::eA))
         s_Translation.x += s_MovementSpeed * Application::Get()->GetDeltaTime();
@@ -233,6 +235,7 @@ void SandboxLayer2D::OnImGuiRender()
     std::getline(ifs, cpuUsage);
 
     ImGui::Text("CPU: %s", cpuUsage.c_str());
+    ImGui::Text("VRAM: %luMB", Renderer::GetMemoryUsage() / 1024 / 1024);
 
     ImGuiPanels::DrawWindowOptions(s_Window);
 

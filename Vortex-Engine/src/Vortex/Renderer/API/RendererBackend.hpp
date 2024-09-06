@@ -29,5 +29,7 @@ namespace Vortex
                           Ref<VertexBuffer>     vertexBuffer,
                           Ref<IndexBuffer> indexBuffer, u32 indexCount)
             = 0;
+
+        virtual usize GetMemoryUsage() = 0;
     };
 }; // namespace Vortex

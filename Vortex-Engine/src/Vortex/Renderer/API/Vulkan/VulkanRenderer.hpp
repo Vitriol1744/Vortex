@@ -15,19 +15,24 @@ namespace Vortex
     class VulkanRenderer : public RendererBackend
     {
       public:
+        VulkanRenderer();
         virtual ~VulkanRenderer() = default;
 
-        virtual void BeginFrame(Ref<Window> window) override;
-        virtual void EndFrame() override;
-        virtual void BeginRenderPass() override;
-        virtual void EndRenderPass() override;
+        virtual void  BeginFrame(Ref<Window> window) override;
+        virtual void  EndFrame() override;
+        virtual void  BeginRenderPass() override;
+        virtual void  EndRenderPass() override;
 
-        virtual void Draw(Ref<GraphicsPipeline> pipeline,
-                          Ref<VertexBuffer>     vertexBuffer,
-                          Ref<IndexBuffer>      indexBuffer,
-                          u32                   indexCount) override;
+        virtual void  Draw(Ref<GraphicsPipeline> pipeline,
+                           Ref<VertexBuffer>     vertexBuffer,
+                           Ref<IndexBuffer>      indexBuffer,
+                           u32                   indexCount) override;
+
+        virtual usize GetMemoryUsage() override;
 
       private:
-        Ref<VulkanContext> currentContext = nullptr;
+        Ref<VulkanContext>                          currentContext = nullptr;
+        vk::PhysicalDeviceMemoryProperties2         memoryProperties{};
+        vk::PhysicalDeviceMemoryBudgetPropertiesEXT memoryBudget{};
     };
 }; // namespace Vortex

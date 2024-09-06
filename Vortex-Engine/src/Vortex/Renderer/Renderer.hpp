@@ -40,5 +40,7 @@ namespace Vortex
         {
             Draw(pipeline, vertexBuffer, indexBuffer, indexBuffer->GetCount());
         }
+
+        usize GetMemoryUsage();
     }; // namespace Renderer
 };     // namespace Vortex

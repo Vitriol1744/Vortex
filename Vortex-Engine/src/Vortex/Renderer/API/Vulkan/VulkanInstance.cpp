@@ -101,7 +101,7 @@ namespace Vortex
 
         vk::ApplicationInfo appInfo{};
         appInfo.sType              = vk::StructureType::eApplicationInfo;
-        appInfo.pNext              = nullptr;
+        appInfo.pNext              = VK_NULL_HANDLE;
         appInfo.pApplicationName   = Application::Get()->GetName().data();
         appInfo.applicationVersion = VK_MAKE_VERSION(
             appVersion.Major, appVersion.Minor, appVersion.Patch);
@@ -127,6 +127,9 @@ namespace Vortex
         extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #endif
 
+        extensions.push_back(
+            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
         if (s_UseValidationLayers)
         {
             extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -140,7 +143,7 @@ namespace Vortex
             = s_UseValidationLayers
                 ? reinterpret_cast<vk::DebugUtilsMessengerCreateInfoEXT*>(
                     &debugCreateInfo)
-                : nullptr;
+                : VK_NULL_HANDLE;
         instanceInfo.flags            = vk::InstanceCreateFlags();
         instanceInfo.pApplicationInfo = &appInfo;
         instanceInfo.enabledLayerCount
@@ -154,7 +157,7 @@ namespace Vortex
             = static_cast<u32>(extensions.size());
         instanceInfo.ppEnabledExtensionNames = extensions.data();
 
-        VkCall(vk::createInstance(&instanceInfo, nullptr, &m_Instance));
+        VkCall(vk::createInstance(&instanceInfo, VK_NULL_HANDLE, &m_Instance));
         VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 
         if (m_Instance) VtCoreTrace("Vulkan: Instance created successfully");
@@ -167,9 +170,9 @@ namespace Vortex
         auto dldi
             = vk::DispatchLoaderDynamic(m_Instance, vkGetInstanceProcAddr);
         if (m_DebugMessenger)
-            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr,
-                                                     dldi);
-        if (m_Instance) m_Instance.destroy(nullptr, dldi);
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger,
+                                                     VK_NULL_HANDLE, dldi);
+        if (m_Instance) m_Instance.destroy(VK_NULL_HANDLE, dldi);
 
         m_DebugMessenger = VK_NULL_HANDLE;
         m_Instance       = VK_NULL_HANDLE;
@@ -200,7 +203,7 @@ namespace Vortex
             = GetDebugMessengerCreateInfo();
 
         VkCall(m_Instance.createDebugUtilsMessengerEXT(
-            &debugMessengerInfo, nullptr, &m_DebugMessenger, dldi));
+            &debugMessengerInfo, VK_NULL_HANDLE, &m_DebugMessenger, dldi));
         if (m_DebugMessenger)
             VtCoreTrace("Vulkan: Debug messenger created successfully");
     }
@@ -208,7 +211,8 @@ namespace Vortex
     vk::Bool32 VulkanInstance::ValidationLayersSupported()
     {
         u32 layerCount = 0;
-        VkCall(vk::enumerateInstanceLayerProperties(&layerCount, nullptr));
+        VkCall(
+            vk::enumerateInstanceLayerProperties(&layerCount, VK_NULL_HANDLE));
 
         std::vector<vk::LayerProperties> availableLayers(layerCount);
         VkCall(vk::enumerateInstanceLayerProperties(&layerCount,
@@ -239,7 +243,7 @@ namespace Vortex
         vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo{};
         debugMessengerInfo.sType
             = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
-        debugMessengerInfo.pNext = nullptr;
+        debugMessengerInfo.pNext = VK_NULL_HANDLE;
         debugMessengerInfo.flags = vk::DebugUtilsMessengerCreateFlagBitsEXT();
         debugMessengerInfo.messageSeverity
             = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
