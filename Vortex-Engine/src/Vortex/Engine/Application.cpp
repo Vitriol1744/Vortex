@@ -22,7 +22,7 @@ namespace Vortex
 
     Application::Application(const ApplicationSpecification& specification)
     {
-        tracy::SetThreadName("Main Thread");
+        VtProfilerSetThreadName("Main Thread");
         VtCoreAssertMsg(s_Instance == nullptr,
                         "Only one instance of application might exist.");
         s_Instance                = this;

@@ -9,9 +9,11 @@
 #ifndef VT_DIST
     #include <tracy/Tracy.hpp>
 
-    #define VtProfileFunction(...) ZoneScoped##__VA_OPT__(N(__VA_ARGS__))
-    #define VtProfileScope(...)    VtProfileFunction(__VA_ARGS__)
+    #define VtProfileFunction(...)        ZoneScoped##__VA_OPT__(N(__VA_ARGS__))
+    #define VtProfileScope(...)           VtProfileFunction(__VA_ARGS__)
+    #define VtProfilerSetThreadName(name) tracy::SetThreadName(name);
 #else
     #define VtProfileFunction(...)
     #define VtProfileScope(...)
+    #define VtProfilerSetThreadName(name)
 #endif
