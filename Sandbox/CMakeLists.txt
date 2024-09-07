@@ -10,13 +10,6 @@ project(SandboxApp)
 set(CMAKE_CXX_STANDARD 23)
 set(CXX_STANDARD_REQUIRED ON)
 
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-  add_definitions(-DVT_DEBUG)
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
-  add_definitions(-DVT_RELEASE)
-elseif(CMAKE_BUILD_TYPE MATCHES Dist)
-  add_definitions(-DVT_DIST)
-endif()
 add_definitions(-DVT_ENABLE_ASSERTIONS)
 
 set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp src/ImGuiPanels.cpp)

@@ -311,6 +311,7 @@ namespace Vortex
         m_Device.destroyCommandPool(m_GraphicsPool);
         m_Device.destroyCommandPool(m_TransferPool);
 
+        m_Device.waitIdle();
         m_Device.destroy(VK_NULL_HANDLE);
     }
 
