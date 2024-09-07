@@ -7,7 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
-#include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
+#include "Vortex/Window/Wayland/WaylandWindow.hpp"
 
 #include <cstdlib>
 #include <fcntl.h>

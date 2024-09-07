@@ -142,26 +142,26 @@ set(SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanTexture2D.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.cpp
-    src/Vortex/Renderer/Window/Monitor.cpp
-    src/Vortex/Renderer/Window/Window.cpp
+    src/Vortex/Window/Monitor.cpp
+    src/Vortex/Window/Window.cpp
     src/Vortex/Utility/ImageLoader.cpp)
 
 if(UNIX)
   set(SOURCES
       ${SOURCES}
       src/Vortex/Core/Posix/PosixTime.cpp
-      src/Vortex/Renderer/Window/Wayland/Wayland.cpp
-      src/Vortex/Renderer/Window/Wayland/WaylandWindow.cpp
-      src/Vortex/Renderer/Window/Wayland/WaylandMonitor.cpp
-      src/Vortex/Renderer/Window/X11/X11.cpp
-      src/Vortex/Renderer/Window/X11/X11Window.cpp
-      src/Vortex/Renderer/Window/X11/X11Monitor.cpp)
+      src/Vortex/Window/Wayland/Wayland.cpp
+      src/Vortex/Window/Wayland/WaylandWindow.cpp
+      src/Vortex/Window/Wayland/WaylandMonitor.cpp
+      src/Vortex/Window/X11/X11.cpp
+      src/Vortex/Window/X11/X11Window.cpp
+      src/Vortex/Window/X11/X11Monitor.cpp)
 
 elseif(WIN32)
   set(SOURCES
       ${SOURCES} src/Vortex/Core/Win32/Win32Time.cpp
-      src/Vortex/Renderer/Window/Win32/Win32Window.cpp
-      src/Vortex/Renderer/Window/Win32/Win32Monitor.cpp)
+      src/Vortex/Window/Win32/Win32Window.cpp
+      src/Vortex/Window/Win32/Win32Monitor.cpp)
 endif()
 
 # ImGui
@@ -247,8 +247,8 @@ target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-  target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
-  target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
+  # target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
+  # target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -DVT_DEBUG)

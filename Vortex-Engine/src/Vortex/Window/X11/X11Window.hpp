@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
-#include "Vortex/Renderer/Window/X11/X11.hpp"
+#include "Vortex/Window/X11/X11.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xmd.h>

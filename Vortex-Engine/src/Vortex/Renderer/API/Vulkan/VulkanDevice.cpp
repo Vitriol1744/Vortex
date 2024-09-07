@@ -13,8 +13,8 @@
 #include <vulkan/vulkan_core.h>
 
 #ifdef VT_PLATFORM_LINUX
-    #include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
-    #include "Vortex/Renderer/Window/X11/X11.hpp"
+    #include "Vortex/Window/Wayland/Wayland.hpp"
+    #include "Vortex/Window/X11/X11.hpp"
     #include <vulkan/vulkan_wayland.h>
     #include <vulkan/vulkan_xcb.h>
 #endif

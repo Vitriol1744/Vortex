@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Win32/Windows.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 #include <GLFW/glfw3.h>
 

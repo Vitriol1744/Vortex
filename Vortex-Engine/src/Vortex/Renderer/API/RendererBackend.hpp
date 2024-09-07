@@ -10,7 +10,7 @@
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 namespace Vortex
 {

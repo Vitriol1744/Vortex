@@ -8,7 +8,7 @@
 
 #include "Vortex/Core/LayerStack.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 namespace Vortex
 {

@@ -8,11 +8,11 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
-#include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
+#include "Vortex/Window/Wayland/Wayland.hpp"
 
 #ifdef VT_PLATFORM_LINUX
     #define VK_USE_PLATFORM_X11_KHR
-    #include "Vortex/Renderer/Window/X11/X11.hpp"
+    #include "Vortex/Window/X11/X11.hpp"
     #include <X11/Xlib-xcb.h>
     #include <vulkan/vulkan_wayland.h>
     #include <vulkan/vulkan_xcb.h>

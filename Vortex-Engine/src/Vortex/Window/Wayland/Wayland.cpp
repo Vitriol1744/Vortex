@@ -6,8 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
-#include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
+#include "Vortex/Window/Wayland/Wayland.hpp"
+#include "Vortex/Window/Wayland/WaylandMonitor.hpp"
 
 namespace Vortex::Wayland
 {

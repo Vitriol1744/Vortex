@@ -6,14 +6,14 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/Monitor.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Monitor.hpp"
+#include "Vortex/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    #include "Vortex/Renderer/Window/Wayland/WaylandMonitor.hpp"
-    #include "Vortex/Renderer/Window/X11/X11Monitor.hpp"
+    #include "Vortex/Window/Wayland/WaylandMonitor.hpp"
+    #include "Vortex/Window/X11/X11Monitor.hpp"
 #elifdef VT_PLATFORM_WINDOWS
-    #include "Vortex/Renderer/Window/Win32/Win32Monitor.hpp"
+    #include "Vortex/Window/Win32/Win32Monitor.hpp"
 #else
     #error "Platform not supported!"
 #endif

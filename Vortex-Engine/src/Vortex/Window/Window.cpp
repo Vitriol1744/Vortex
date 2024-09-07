@@ -7,13 +7,13 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Platform.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 #ifdef VT_PLATFORM_LINUX
-    #include "Vortex/Renderer/Window/Wayland/WaylandWindow.hpp"
-    #include "Vortex/Renderer/Window/X11/X11Window.hpp"
+    #include "Vortex/Window/Wayland/WaylandWindow.hpp"
+    #include "Vortex/Window/X11/X11Window.hpp"
 #elifdef VT_PLATFORM_WINDOWS
-    #include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
+    #include "Vortex/Window/Win32/Win32Window.hpp"
 #endif
 
 namespace Vortex

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Types.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 namespace ImGuiPanels
 {

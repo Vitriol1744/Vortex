@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include "Vortex/Renderer/Window/Wayland/Wayland.hpp"
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Wayland/Wayland.hpp"
+#include "Vortex/Window/Window.hpp"
 
 namespace Vortex
 {

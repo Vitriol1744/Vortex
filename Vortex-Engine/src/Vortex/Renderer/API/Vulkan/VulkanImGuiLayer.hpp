@@ -9,7 +9,7 @@
 #include "Vortex/Core/Core.hpp"
 #include "Vortex/Core/Layer.hpp"
 
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 #include <imgui.h>
 #undef CreateWindow

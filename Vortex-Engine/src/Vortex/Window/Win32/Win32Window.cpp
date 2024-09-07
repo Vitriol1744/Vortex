@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/Win32/Win32Window.hpp"
+#include "Vortex/Window/Win32/Win32Window.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
 #include "Vortex/Core/Utf.hpp"

@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/X11/X11.hpp"
+#include "Vortex/Window/X11/X11.hpp"
 
 namespace Vortex::X11
 {

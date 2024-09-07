@@ -15,7 +15,7 @@
 
 #include "Vortex/Renderer/API/RendererContext.hpp"
 #include "Vortex/Renderer/Image.hpp"
-#include "Vortex/Renderer/Window/Monitor.hpp"
+#include "Vortex/Window/Monitor.hpp"
 
 namespace Vortex
 {

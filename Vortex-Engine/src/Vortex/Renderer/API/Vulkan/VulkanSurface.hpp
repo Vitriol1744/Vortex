@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Vortex/Renderer/Window/Window.hpp"
+#include "Vortex/Window/Window.hpp"
 
 namespace Vortex
 {

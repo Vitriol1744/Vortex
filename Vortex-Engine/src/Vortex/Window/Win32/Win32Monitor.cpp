@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/Window/Win32/Win32Monitor.hpp"
+#include "Vortex/Window/Win32/Win32Monitor.hpp"
 
 namespace Vortex
 {

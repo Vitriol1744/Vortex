@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
-#include "Vortex/Renderer/Window/Monitor.hpp"
+#include "Vortex/Window/Monitor.hpp"
 
 namespace Vortex
 {

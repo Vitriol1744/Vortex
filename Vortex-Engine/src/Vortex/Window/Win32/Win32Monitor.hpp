@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Vortex/Renderer/Window/Monitor.hpp"
+#include "Vortex/Window/Monitor.hpp"
 
 #include <GLFW/glfw3.h>
 

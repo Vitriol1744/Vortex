@@ -7,7 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Core/Assertions.hpp"
-#include "Vortex/Renderer/Window/X11/X11Window.hpp"
+#include "Vortex/Window/X11/X11Window.hpp"
 
 #include <X11/Xresource.h>
 #include <xcb/xproto.h>
