@@ -7,7 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 
 namespace Vortex::VulkanAllocator
 {
@@ -17,11 +17,11 @@ namespace Vortex::VulkanAllocator
     {
         VmaAllocatorCreateInfo createInfo{};
         createInfo.vulkanApiVersion
-            = VulkanContext::GetInstance().GetUsedApiVersion();
+            = VulkanRenderer::GetVulkanInstance().GetUsedApiVersion();
         createInfo.physicalDevice
             = vk::PhysicalDevice(VulkanContext::GetPhysicalDevice());
         createInfo.device   = vk::Device(VulkanContext::GetDevice());
-        createInfo.instance = vk::Instance(VulkanContext::GetInstance());
+        createInfo.instance = vk::Instance(VulkanRenderer::GetVulkanInstance());
 
         vmaCreateAllocator(&createInfo, &s_Allocator);
     }

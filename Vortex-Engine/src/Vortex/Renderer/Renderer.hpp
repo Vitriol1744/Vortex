@@ -25,7 +25,7 @@ namespace Vortex
 
         const Configuration& GetConfiguration();
 
-        void                 BeginFrame(Ref<class Window> window);
+        void                 BeginFrame(Window& window);
         void                 EndFrame();
         void                 BeginRenderPass();
         void                 EndRenderPass();

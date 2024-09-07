@@ -27,13 +27,8 @@ namespace Vortex
             m_SwapChain.SetVSync(vsync);
         }
 
-        VulkanSwapChain&             GetSwapChain() { return m_SwapChain; }
+        VulkanSwapChain& GetSwapChain() { return m_SwapChain; }
 
-        static const VulkanInstance& GetInstance()
-        {
-            VtCoreAssert(s_VulkanInstance);
-            return s_VulkanInstance;
-        }
         static const VulkanPhysicalDevice& GetPhysicalDevice()
         {
             return s_PhysicalDevice;
@@ -44,7 +39,6 @@ namespace Vortex
         VulkanSwapChain             m_SwapChain;
 
         static usize                s_ContextCount;
-        static VulkanInstance       s_VulkanInstance;
         static VulkanPhysicalDevice s_PhysicalDevice;
         static VulkanDevice         s_Device;
     };

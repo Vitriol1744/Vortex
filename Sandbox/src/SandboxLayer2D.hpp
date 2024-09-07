@@ -8,6 +8,8 @@
 
 #include "Vortex/Core/Layer.hpp"
 
+#include "Vortex/Window/Window.hpp"
+
 class SandboxLayer2D : public Vortex::Layer
 {
   public:

@@ -16,19 +16,21 @@ namespace Vortex
         static RendererBackend* s_Backend = nullptr;
         static Configuration    s_Configuration;
 
-        void Initialize() { s_Backend = new VulkanRenderer(); }
+        void                    Initialize()
+        {
+            s_Backend = new VulkanRenderer();
+            s_Backend->Initialize();
+        }
         void Shutdown()
         {
+            s_Backend->Shutdown();
             delete s_Backend;
             s_Backend = nullptr;
         }
 
         const Configuration& GetConfiguration() { return s_Configuration; }
 
-        void                 BeginFrame(Ref<class Window> window)
-        {
-            s_Backend->BeginFrame(window);
-        }
+        void BeginFrame(Window& window) { s_Backend->BeginFrame(window); }
         void EndFrame() { s_Backend->EndFrame(); }
         void BeginRenderPass() { s_Backend->BeginRenderPass(); }
         void EndRenderPass() { s_Backend->EndRenderPass(); }

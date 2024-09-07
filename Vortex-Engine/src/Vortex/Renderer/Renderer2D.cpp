@@ -70,7 +70,7 @@ namespace Vortex::Renderer2D
         s_TextureShader = Shader::Create("assets/shaders/texture.glsl");
         VertexBufferLayout            layout(elements);
         GraphicsPipelineSpecification specification{};
-        specification.Window  = Application::Get()->GetWindow();
+        specification.Window  = &Application::Get()->GetWindow();
         specification.Shader  = s_TextureShader;
         specification.Layout  = layout;
 

@@ -12,7 +12,6 @@
 namespace Vortex
 {
     usize                VulkanContext::s_ContextCount   = 0;
-    VulkanInstance       VulkanContext::s_VulkanInstance = {};
     VulkanPhysicalDevice VulkanContext::s_PhysicalDevice = {};
     VulkanDevice         VulkanContext::s_Device         = {};
 
@@ -21,7 +20,6 @@ namespace Vortex
         VtCoreTrace("Vulkan: Creating context for the window");
         if (s_ContextCount == 0)
         {
-            s_VulkanInstance.Initialize();
             s_PhysicalDevice = VulkanPhysicalDevice::Pick();
             s_Device.Initialize(s_PhysicalDevice);
             VulkanAllocator::Initialize();
@@ -44,7 +42,6 @@ namespace Vortex
         {
             VulkanAllocator::Shutdown();
             s_Device.Destroy();
-            s_VulkanInstance.Destroy();
         }
     }
 

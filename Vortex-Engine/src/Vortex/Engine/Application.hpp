@@ -69,7 +69,7 @@ namespace Vortex
 
         inline std::string_view GetName() const { return m_Name; }
         inline const Version&   GetVersion() const { return m_Version; }
-        inline Ref<Window>      GetWindow() { return m_MainWindow; }
+        inline Window&          GetWindow() { return *m_MainWindow; }
         inline u64              GetFPSCounter() { return m_FpsCounter; }
         inline f64              GetDeltaTime() { return m_DeltaTime; }
 
@@ -80,7 +80,7 @@ namespace Vortex
         bool                  m_ShouldRestart = false;
         std::string           m_Name;
         Version               m_Version    = {0, 1, 0};
-        Ref<Window>           m_MainWindow = nullptr;
+        Scope<Window>         m_MainWindow = nullptr;
         u64                   m_FpsCounter = 0;
         f64                   m_DeltaTime  = 0.0;
 

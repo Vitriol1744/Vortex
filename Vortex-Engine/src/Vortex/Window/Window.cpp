@@ -81,17 +81,17 @@ namespace Vortex
 #endif
     }
 
-    Ref<Window> Window::Create(const WindowSpecification& specs)
+    Scope<Window> Window::Create(const WindowSpecification& specs)
     {
-        Ref<Window> ret = nullptr;
+        Scope<Window> ret = nullptr;
 #ifdef VT_PLATFORM_LINUX
         WindowSubsystem subsystem = GetWindowSubsystem();
         if (subsystem == WindowSubsystem::eX11)
-            ret = CreateRef<X11Window>(specs);
+            ret = CreateScope<X11Window>(specs);
         else if (subsystem == WindowSubsystem::eWayland)
-            ret = CreateRef<WaylandWindow>(specs);
+            ret = CreateScope<WaylandWindow>(specs);
 #elifdef VT_PLATFORM_WINDOWS
-        ret = CreateRef<Win32Window>(specs);
+        ret = CreateScope<Win32Window>(specs);
 #endif
 
         return ret;

@@ -7,11 +7,11 @@
 #pragma once
 
 #include "Vortex/Core/Events/Event.hpp"
-#include "Vortex/Window/Input/KeyCode.hpp"
-#include "Vortex/Window/Input/MouseCode.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
+#include "Vortex/Window/Input/KeyCode.hpp"
+#include "Vortex/Window/Input/MouseCode.hpp"
 
 #include "Vortex/Renderer/API/RendererContext.hpp"
 #include "Vortex/Renderer/Image.hpp"
@@ -126,14 +126,15 @@ namespace Vortex
         virtual void SetVisible(bool visible) const                  = 0;
         virtual void SetAlwaysOnTop(bool alwaysOnTop)                = 0;
 
-        static Ref<Window>
+        static Scope<Window>
         Create(const WindowSpecification& windowSpecification);
-        static Ref<Window> Create(const VideoMode& videoMode,
-                                  std::string_view title)
+        static Scope<Window> Create(const VideoMode& videoMode,
+                                    std::string_view title)
         {
             return Create(WindowSpecification(videoMode, title));
         }
-        static Ref<Window> Create(u32 width, u32 height, std::string_view title)
+        static Scope<Window> Create(u32 width, u32 height,
+                                    std::string_view title)
         {
             return Create(VideoMode(width, height), title);
         }

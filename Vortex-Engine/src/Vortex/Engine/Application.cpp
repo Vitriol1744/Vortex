@@ -25,8 +25,10 @@ namespace Vortex
         VtProfilerSetThreadName("Main Thread");
         VtCoreAssertMsg(s_Instance == nullptr,
                         "Only one instance of application might exist.");
-        s_Instance                = this;
-        m_Name                    = specification.Name;
+        s_Instance = this;
+        m_Name     = specification.Name;
+
+        Renderer::Initialize();
 
         WindowSpecification specs = {};
         specs.VideoMode           = {800, 600};
@@ -38,7 +40,6 @@ namespace Vortex
         specs.Decorated           = true;
 
         m_MainWindow              = Window::Create(specs);
-        Renderer::Initialize();
         m_ImGuiLayer = CreateRef<VulkanImGuiLayer>("VulkanImGuiLayer");
         PushOverlay(m_ImGuiLayer);
 
@@ -46,6 +47,7 @@ namespace Vortex
     }
     Application::~Application()
     {
+        m_MainWindow.reset();
         Renderer::Shutdown();
         s_Instance = nullptr;
     }
@@ -71,7 +73,7 @@ namespace Vortex
             {
                 for (auto layer : m_LayerStack) layer->OnUpdate();
 
-                Renderer::BeginFrame(m_MainWindow);
+                Renderer::BeginFrame(*m_MainWindow);
 
                 Renderer::BeginRenderPass();
                 for (auto layer : m_LayerStack) layer->OnRender();
@@ -90,6 +92,7 @@ namespace Vortex
         } while (m_Running);
 
         for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
+        m_LayerStack.Clear();
         return m_ShouldRestart;
     }
     void Application::Close() { m_Running = false; }

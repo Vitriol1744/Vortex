@@ -6,8 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
@@ -44,7 +44,7 @@ namespace Vortex
                 = vkGetPhysicalDeviceWaylandPresentationSupportKHR(
                     physicalDevice, queueFamily, Wayland::GetDisplay());
 #elifdef VT_PLATFORM_WINDOWS
-        vk::Instance instance = VulkanContext::GetInstance();
+        vk::Instance instance = VulkanRenderer::GetVulkanInstance();
         presentationSupport   = glfwGetPhysicalDevicePresentationSupport(
             instance, physicalDevice, queueFamily);
 #endif
@@ -55,9 +55,10 @@ namespace Vortex
     {
         VtCoreTrace("Vulkan: Picking physical device");
         VulkanPhysicalDevice ret;
-        vk::Instance vkInstance = vk::Instance(VulkanContext::GetInstance());
+        vk::Instance         vkInstance
+            = vk::Instance(VulkanRenderer::GetVulkanInstance());
 
-        u32          gpuCount   = 0;
+        u32 gpuCount = 0;
         VkCall(vkInstance.enumeratePhysicalDevices(&gpuCount, VK_NULL_HANDLE));
         VtCoreAssert(gpuCount > 0);
         std::vector<vk::PhysicalDevice> physicalDevices(gpuCount);

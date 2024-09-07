@@ -9,8 +9,8 @@
 #include "Vortex/Engine/Application.hpp"
 
 #include "Vortex/Core/Time.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
 #include <vulkan/vulkan_core.h>
@@ -195,9 +195,9 @@ namespace Vortex
 
     void VulkanImGuiLayer::OnAttach()
     {
-        auto window  = Application::Get()->GetWindow();
-        auto context = std::dynamic_pointer_cast<VulkanContext>(
-            window->GetRendererContext());
+        auto& window  = Application::Get()->GetWindow();
+        auto  context = std::dynamic_pointer_cast<VulkanContext>(
+            window.GetRendererContext());
         vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
 
         vk::DescriptorPoolSize poolSizes[] = {
@@ -272,14 +272,14 @@ namespace Vortex
                                                           // with correct data
                                                           // (optional)
 
-        bd->MainWindow         = window.get();
+        bd->MainWindow         = &window;
         bd->Time               = 0.0;
         bd->WantUpdateMonitors = true;
 
         // TODO(v1tr10l7): Clipboard
         io.SetClipboardTextFn  = [](void*, const char*) {};
         io.GetClipboardTextFn  = [](void*) -> const char* { return ""; };
-        io.ClipboardUserData   = window.get();
+        io.ClipboardUserData   = &window;
         CreateCursors();
         SetUpEvents();
         UpdateMonitors();
@@ -295,7 +295,7 @@ namespace Vortex
         mainViewport->PlatformHandle = reinterpret_cast<void*>(bd->MainWindow);
 
         ImGui_ImplVulkan_InitInfo initInfo = {};
-        initInfo.Instance = vk::Instance(VulkanContext::GetInstance());
+        initInfo.Instance = vk::Instance(VulkanRenderer::GetVulkanInstance());
         initInfo.PhysicalDevice
             = vk::PhysicalDevice(VulkanContext::GetPhysicalDevice());
         initInfo.Device         = device;
@@ -406,9 +406,9 @@ namespace Vortex
     }
     void VulkanImGuiLayer::End()
     {
-        auto window  = Application::Get()->GetWindow();
-        auto context = std::dynamic_pointer_cast<VulkanContext>(
-            window->GetRendererContext());
+        auto& window  = Application::Get()->GetWindow();
+        auto  context = std::dynamic_pointer_cast<VulkanContext>(
+            window.GetRendererContext());
         VulkanSwapChain&  swapChain     = context->GetSwapChain();
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         ImGui::Render();
@@ -784,7 +784,7 @@ namespace Vortex
         if (auto data = GetViewportData(viewport))
         {
             if (data->WindowOwned
-                && data->Window != Application::Get()->GetWindow().get())
+                && data->Window != &Application::Get()->GetWindow())
             {
                 // Release any keys that were pressed in the window being
                 // destroyed and are still held down, because we will not

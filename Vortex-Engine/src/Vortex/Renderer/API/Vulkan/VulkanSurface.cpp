@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 #include "Vortex/Window/Wayland/Wayland.hpp"
 
@@ -26,8 +26,9 @@ namespace Vortex
     void VulkanSurface::Create(Window*            window,
                                vk::PhysicalDevice physicalDevice)
     {
-        VkInstance   vkInstance = (vk::Instance)VulkanContext::GetInstance();
-        VkSurfaceKHR surface    = VK_NULL_HANDLE;
+        VkInstance vkInstance
+            = (vk::Instance)VulkanRenderer::GetVulkanInstance();
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
 
 #ifdef VT_PLATFORM_LINUX
         if (Window::GetWindowSubsystem() == WindowSubsystem::eX11)
@@ -99,7 +100,8 @@ namespace Vortex
     }
     void VulkanSurface::Destroy()
     {
-        vk::Instance instance = vk::Instance(VulkanContext::GetInstance());
+        vk::Instance instance
+            = vk::Instance(VulkanRenderer::GetVulkanInstance());
         instance.destroySurfaceKHR(m_Surface, nullptr);
     }
 

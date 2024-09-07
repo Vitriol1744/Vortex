@@ -247,8 +247,8 @@ target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-  # target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
-  # target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
+  target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
+  target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -DVT_DEBUG)

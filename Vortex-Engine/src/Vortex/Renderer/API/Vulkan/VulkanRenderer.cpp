@@ -13,25 +13,38 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 
 #define VtAssertFrameStarted()                                                 \
-    VtCoreAssertMsg(currentContext != nullptr,                                 \
+    VtCoreAssertMsg(m_CurrentContext != nullptr,                               \
                     "Did you forget to call Renderer::BeginFrame()?");
 
 namespace Vortex
 {
-    VulkanRenderer::VulkanRenderer()
+    VulkanInstance VulkanRenderer::s_VkInstance{};
+
+    VulkanRenderer::VulkanRenderer() {}
+
+    void VulkanRenderer::Initialize()
     {
-        memoryBudgetProperties.sType
+        VtCoreAssertMsg(!s_VkInstance, "Vulkan: Renderer already initialized");
+        s_VkInstance.Initialize();
+
+        m_MemoryBudgetProperties.sType
             = vk::StructureType::ePhysicalDeviceMemoryBudgetPropertiesEXT;
-        memoryProperties.sType
+        m_MemoryProperties.sType
             = vk::StructureType::ePhysicalDeviceMemoryProperties2;
-        memoryProperties.pNext = &memoryBudgetProperties;
+        m_MemoryProperties.pNext = &m_MemoryBudgetProperties;
+    }
+    void VulkanRenderer::Shutdown()
+    {
+        VtCoreAssertMsg(s_VkInstance,
+                        "Vulkan: Renderer is not initialized, cannot shutdown");
+        s_VkInstance.Destroy();
     }
 
-    void VulkanRenderer::BeginFrame(Ref<Window> window)
+    void VulkanRenderer::BeginFrame(Window& window)
     {
-        currentContext = std::dynamic_pointer_cast<VulkanContext>(
-            window->GetRendererContext());
-        auto& swapChain = currentContext->GetSwapChain();
+        m_CurrentContext = std::dynamic_pointer_cast<VulkanContext>(
+            window.GetRendererContext());
+        auto& swapChain = m_CurrentContext->GetSwapChain();
 
         swapChain.BeginFrame();
 
@@ -48,18 +61,18 @@ namespace Vortex
     {
         VtAssertFrameStarted();
 
-        auto&             swapChain     = currentContext->GetSwapChain();
+        auto&             swapChain     = m_CurrentContext->GetSwapChain();
 
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         commandBuffer.end();
 
-        currentContext = nullptr;
+        m_CurrentContext = nullptr;
     }
 
     void VulkanRenderer::BeginRenderPass()
     {
         VtAssertFrameStarted();
-        auto&                   swapChain = currentContext->GetSwapChain();
+        auto&                   swapChain = m_CurrentContext->GetSwapChain();
         auto                    extent    = swapChain.GetExtent();
 
         vk::RenderPassBeginInfo renderPassInfo{};
@@ -101,7 +114,7 @@ namespace Vortex
     {
         VtAssertFrameStarted();
         vk::CommandBuffer commandBuffer
-            = currentContext->GetSwapChain().GetCurrentCommandBuffer();
+            = m_CurrentContext->GetSwapChain().GetCurrentCommandBuffer();
 
         commandBuffer.endRenderPass();
     }
@@ -112,7 +125,7 @@ namespace Vortex
     {
         VtAssertFrameStarted();
 
-        auto&             swapChain     = currentContext->GetSwapChain();
+        auto&             swapChain     = m_CurrentContext->GetSwapChain();
         vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
         auto              vkPipeline
             = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(pipeline);
@@ -144,27 +157,30 @@ namespace Vortex
     {
         usize              memoryUsage = 0;
 
-        // FIXME(v1tr10l7): memoryBudgetProperties contains overlapping heaps,
-        // so memory usage is not accurate
         vk::PhysicalDevice physDevice  = VulkanContext::GetPhysicalDevice();
-        physDevice.getMemoryProperties2(&memoryProperties);
-        for (u32 i = 0; i < memoryProperties.memoryProperties.memoryHeapCount;
+        physDevice.getMemoryProperties2(&m_MemoryProperties);
+        for (u32 i = 0; i < m_MemoryProperties.memoryProperties.memoryHeapCount;
              i++)
-            memoryUsage += memoryBudgetProperties.heapUsage[i];
-
+        {
+            if (m_MemoryProperties.memoryProperties.memoryHeaps[i].flags
+                & vk::MemoryHeapFlagBits::eDeviceLocal)
+                memoryUsage += m_MemoryBudgetProperties.heapUsage[i];
+        }
         return memoryUsage;
     }
     usize VulkanRenderer::GetMemoryBudget()
     {
         usize              memoryBudget = 0;
 
-        // FIXME(v1tr10l7): memoryBudgetProperties contains overlapping heaps,
-        // so memory budget is not accurate
         vk::PhysicalDevice physDevice   = VulkanContext::GetPhysicalDevice();
-        physDevice.getMemoryProperties2(&memoryProperties);
-        for (u32 i = 0; i < memoryProperties.memoryProperties.memoryHeapCount;
+        physDevice.getMemoryProperties2(&m_MemoryProperties);
+        for (u32 i = 0; i < m_MemoryProperties.memoryProperties.memoryHeapCount;
              i++)
-            memoryBudget += memoryBudgetProperties.heapBudget[i];
+        {
+            if (m_MemoryProperties.memoryProperties.memoryHeaps[i].flags
+                & vk::MemoryHeapFlagBits::eDeviceLocal)
+                memoryBudget += m_MemoryBudgetProperties.heapBudget[i];
+        }
 
         return memoryBudget;
     }

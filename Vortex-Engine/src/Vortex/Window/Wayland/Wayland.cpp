@@ -356,6 +356,7 @@ namespace Vortex::Wayland
     }
     void Shutdown()
     {
+        WaylandMonitor::Shutdown();
         xkb_context_unref(s_XkbContext);
 
         if (s_AlphaModifier) wp_alpha_modifier_v1_destroy(s_AlphaModifier);

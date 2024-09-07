@@ -13,7 +13,7 @@ namespace Vortex
 {
     struct GraphicsPipelineSpecification
     {
-        Ref<class Window>  Window = nullptr;
+        class Window*      Window = nullptr;
         Ref<class Shader>  Shader = nullptr;
         VertexBufferLayout Layout;
     };

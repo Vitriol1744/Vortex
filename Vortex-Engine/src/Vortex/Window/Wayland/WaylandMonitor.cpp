@@ -29,12 +29,16 @@ namespace Vortex
                 gammaControlManager, m_Output);
         wl_output_add_listener(output, &outputListener, this);
     }
-    WaylandMonitor::~WaylandMonitor()
+    WaylandMonitor::~WaylandMonitor() { Destroy(); }
+
+    void WaylandMonitor::Destroy()
     {
         VtCoreTrace("Wayland: Destroying wl_output...");
         if (m_GammaControl) zwlr_gamma_control_v1_destroy(m_GammaControl);
+        m_GammaControl = nullptr;
 
-        wl_output_destroy(m_Output);
+        if (m_Output) wl_output_destroy(m_Output);
+        m_Output = nullptr;
     }
 
     Vec2i       WaylandMonitor::GetPosition() const { return m_Position; }

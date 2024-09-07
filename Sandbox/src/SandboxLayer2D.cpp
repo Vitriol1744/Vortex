@@ -20,7 +20,6 @@
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
@@ -53,8 +52,6 @@ struct UniformBufferObject
     alignas(16) Mat4 ViewProjection;
 };
 
-static Ref<Window>           s_Window           = nullptr;
-static Ref<VulkanContext>    s_Context          = nullptr;
 static Ref<Shader>           s_Shader           = nullptr;
 static Ref<GraphicsPipeline> s_GraphicsPipeline = nullptr;
 static Ref<VertexBuffer>     s_VertexBuffer     = nullptr;
@@ -108,16 +105,14 @@ void ProcessNode(aiNode* node, const aiScene* scene)
 void SandboxLayer2D::OnAttach()
 {
     VtProfileFunction();
-    s_Window = Application::Get()->GetWindow();
-    s_Window->SetPosition({300, 300});
-    s_Context = std::dynamic_pointer_cast<VulkanContext>(
-        s_Window->GetRendererContext());
+    auto& window = Application::Get()->GetWindow();
+    window.SetPosition({300, 300});
 
     Image image("assets/icon.bmp");
     s_Shader = Shader::Create("assets/shaders/texture.glsl");
 
-    s_Window->SetIcon(image);
-    s_Window->ShowCursor();
+    window.SetIcon(image);
+    window.ShowCursor();
 
     std::initializer_list<VertexBufferElement> elements
         = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
@@ -151,14 +146,14 @@ void SandboxLayer2D::OnAttach()
     // s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
     // s_Shader->SetUniform("texSampler", s_Texture2D);
 
-    f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
-                    / static_cast<f32>(s_Window->GetHeight());
+    f32 aspectRatio = static_cast<f32>(window.GetWidth())
+                    / static_cast<f32>(window.GetHeight());
     f32 zoomLevel = 3.0f;
 
     s_Camera.SetOrthographic(aspectRatio * zoomLevel, -aspectRatio * zoomLevel,
                              zoomLevel, -zoomLevel, 0.0f, 1.0f);
 
-    Vec2 mousePos = s_Window->GetCursorPosition();
+    Vec2 mousePos = window.GetCursorPosition();
     Renderer2D::Initialize();
 
     static auto onMouseScrolled = [](Window*, f64, f64 deltaY) -> bool
@@ -169,13 +164,19 @@ void SandboxLayer2D::OnAttach()
 
     WindowEvents::MouseScrolledEvent += onMouseScrolled;
 }
-void SandboxLayer2D::OnDetach() {}
+void SandboxLayer2D::OnDetach()
+{
+    s_Shader.reset();
+    Renderer2D::Shutdown();
+}
 
 void SandboxLayer2D::OnUpdate()
 {
     VtProfileFunction();
-    f32 aspectRatio = static_cast<f32>(s_Window->GetWidth())
-                    / static_cast<f32>(s_Window->GetHeight());
+    auto& window      = Application::Get()->GetWindow();
+    f32   aspectRatio = static_cast<f32>(window.GetWidth())
+                    / static_cast<f32>(window.GetHeight());
+    s_ZoomLevel = std::clamp(s_ZoomLevel, 0.0001f, 20.0f);
     s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
                              -aspectRatio * s_ZoomLevel, s_ZoomLevel,
                              -s_ZoomLevel, 0.0f, 1.0f);
@@ -227,7 +228,10 @@ void SandboxLayer2D::OnRender()
 void SandboxLayer2D::OnImGuiRender()
 {
     VtProfileFunction();
-    VulkanSwapChain& swapChain  = s_Context->GetSwapChain();
+    auto& window = Application::Get()->GetWindow();
+    auto  context
+        = std::dynamic_pointer_cast<VulkanContext>(window.GetRendererContext());
+    VulkanSwapChain& swapChain  = context->GetSwapChain();
     vk::Extent2D     extent     = swapChain.GetExtent();
 
     bool             showWindow = true;
@@ -244,8 +248,9 @@ void SandboxLayer2D::OnImGuiRender()
                 Renderer::GetMemoryBudget() / 1024 / 1024);
     ImGui::Text("Memory Budget: %luMB",
                 Renderer::GetMemoryBudget() / 1024 / 1024);
+    ImGui::SliderFloat("Zoom Level", &s_ZoomLevel, 0.0f, 10.0f);
 
-    ImGuiPanels::DrawWindowOptions(s_Window);
+    ImGuiPanels::DrawWindowOptions(window);
 
     ImGui::SliderFloat3("View", reinterpret_cast<float*>(&s_Translation), -10,
                         10);

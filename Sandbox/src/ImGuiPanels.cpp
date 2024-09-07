@@ -12,12 +12,12 @@ using namespace Vortex;
 
 namespace ImGuiPanels
 {
-    void DrawWindowOptions(Ref<Window> window)
+    void DrawWindowOptions(Window& window)
     {
         ImGui::Begin("Window Options");
         static f32 alpha = 0.9f;
         ImGui::SliderFloat("opacity", &alpha, 0.1f, 1.0f);
-        window->SetOpacity(alpha);
+        window.SetOpacity(alpha);
 
         if (ImGui::Button("Close")) Application::Get()->Close();
         if (ImGui::Button("Restart")) Application::Get()->Restart();
@@ -25,9 +25,9 @@ namespace ImGuiPanels
         static bool fullscreen = false;
         static bool vsync      = false;
         ImGui::Checkbox("Fullscreen", &fullscreen);
-        window->SetFullscreen(fullscreen);
+        window.SetFullscreen(fullscreen);
         ImGui::Checkbox("VSync", &vsync);
-        window->GetRendererContext()->SetVSync(vsync);
+        window.GetRendererContext()->SetVSync(vsync);
         ImGui::End();
     }
 } // namespace ImGuiPanels

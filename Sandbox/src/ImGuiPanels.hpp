@@ -11,5 +11,5 @@
 
 namespace ImGuiPanels
 {
-    void DrawWindowOptions(Vortex::Ref<Vortex::Window> window);
+    void DrawWindowOptions(Vortex::Window& window);
 };

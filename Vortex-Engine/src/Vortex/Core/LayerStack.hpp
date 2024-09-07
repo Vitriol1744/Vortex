@@ -23,6 +23,8 @@ namespace Vortex
         Ref<Layer>        PopOverlay(Ref<Layer> overlay);
         Ref<Layer>        PopLayer(Ref<Layer> layer);
 
+        void              Clear() { m_Layers.clear(); }
+
         inline usize      GetSize() const { return m_Layers.size(); }
 
         inline Ref<Layer> operator[](usize index)

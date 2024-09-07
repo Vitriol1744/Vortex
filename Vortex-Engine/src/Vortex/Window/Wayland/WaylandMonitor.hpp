@@ -17,6 +17,8 @@ namespace Vortex
         WaylandMonitor(u32 outputName, wl_output* output);
         ~WaylandMonitor();
 
+        void                Destroy();
+
         virtual std::any    GetNativeHandle() override { return m_Output; }
 
         virtual Vec2i       GetPosition() const override;
@@ -26,9 +28,20 @@ namespace Vortex
         virtual void        SetGammaRamp(GammaRamp& gammaRamp) override;
 
         static bool         Initialize();
+        static void         Shutdown()
+        {
+            for (auto monitor : s_Monitors)
+            {
+                auto wlMonitor
+                    = std::dynamic_pointer_cast<WaylandMonitor>(monitor);
 
-        static void         Connect(u32 name, u32 version);
-        static void         Disconnect(u32 name);
+                if (wlMonitor) wlMonitor->Destroy();
+            }
+            s_Monitors.clear();
+        }
+
+        static void Connect(u32 name, u32 version);
+        static void Disconnect(u32 name);
 
       private:
         u32                    m_OutputName   = 0;
