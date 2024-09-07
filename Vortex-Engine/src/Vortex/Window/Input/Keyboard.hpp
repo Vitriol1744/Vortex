@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Export.hpp"
-#include "Vortex/Core/Input/KeyCode.hpp"
+#include "Vortex/Window/Input/KeyCode.hpp"
 
 namespace Vortex::Keyboard
 {

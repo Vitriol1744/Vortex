@@ -17,13 +17,13 @@
 #include "Vortex/Core/Profiler.hpp"
 #include "Vortex/Core/Time.hpp"
 #include "Vortex/Engine/Application.hpp"
-#include "Vortex/Input/Keyboard.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
+#include "Vortex/Window/Input/Keyboard.hpp"
 
 #include "ImGuiPanels.hpp"
 

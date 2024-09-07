@@ -11,8 +11,8 @@
 #include "Vortex/Core/Profiler.hpp"
 #include "Vortex/Core/Timer.hpp"
 #include "Vortex/Engine/Application.hpp"
-#include "Vortex/Input/Keyboard.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
+#include "Vortex/Window/Input/Keyboard.hpp"
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 

@@ -114,7 +114,6 @@ set(SOURCES
     src/Vortex/Core/Log/Logger.cpp
     src/Vortex/Engine/Application.cpp
     src/Vortex/Engine/EntryPoint.cpp
-    src/Vortex/Input/Keyboard.cpp
     src/Vortex/Renderer/Camera.cpp
     src/Vortex/Renderer/Image.cpp
     src/Vortex/Renderer/Renderer.cpp
@@ -142,9 +141,10 @@ set(SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanTexture2D.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.cpp
+    src/Vortex/Utility/ImageLoader.cpp
     src/Vortex/Window/Monitor.cpp
     src/Vortex/Window/Window.cpp
-    src/Vortex/Utility/ImageLoader.cpp)
+    src/Vortex/Window/Input/Keyboard.cpp)
 
 if(UNIX)
   set(SOURCES

@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Input/Keyboard.hpp"
+#include "Vortex/Window/Input/Keyboard.hpp"
 #include "Vortex/Window/Window.hpp"
 
 namespace Vortex::Keyboard

@@ -9,7 +9,6 @@
 #include "Vortex/Core/Math/Math.hpp"
 
 #include "Vortex/Engine/Application.hpp"
-#include "Vortex/Input/Keyboard.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
@@ -19,6 +18,7 @@
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
+#include "Vortex/Window/Input/Keyboard.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

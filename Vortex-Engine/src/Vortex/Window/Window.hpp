@@ -7,8 +7,8 @@
 #pragma once
 
 #include "Vortex/Core/Events/Event.hpp"
-#include "Vortex/Core/Input/KeyCode.hpp"
-#include "Vortex/Core/Input/MouseCode.hpp"
+#include "Vortex/Window/Input/KeyCode.hpp"
+#include "Vortex/Window/Input/MouseCode.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
 #include "Vortex/Core/NonCopyable.hpp"
 #include "Vortex/Core/Types.hpp"
