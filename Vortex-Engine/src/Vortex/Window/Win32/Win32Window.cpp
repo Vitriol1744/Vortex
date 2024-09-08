@@ -294,13 +294,6 @@ namespace Vortex
     Win32Window::Win32Window(const WindowSpecification& specification)
         : Window(specification)
     {
-        if (s_WindowsCount == 0)
-        {
-            VtCoreAssert(Win32Window::Initialize());
-            VtCoreInfo("GLFW: Successfully initialized, version: {}",
-                       glfwGetVersionString());
-        }
-
         i32                           width   = specification.VideoMode.Width;
         i32                           height  = specification.VideoMode.Height;
         const char*                   title   = specification.Title.data();
@@ -372,8 +365,7 @@ namespace Vortex
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
-            m_SwapChain
-                = SwapChain::Create(this, specification.VSync);
+            m_SwapChain = SwapChain::Create(this, specification.VSync);
 
         ShowWindow(m_WindowHandle, SW_SHOW);
         UpdateWindow(m_WindowHandle);
@@ -388,7 +380,6 @@ namespace Vortex
         if (m_SmallIcon) DestroyIcon(m_SmallIcon);
 
         --s_WindowsCount;
-        if (s_WindowsCount == 0) Shutdown();
     }
 
     void Win32Window::PollEvents()
@@ -749,8 +740,7 @@ namespace Vortex
         auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
-            if (window->m_SwapChain)
-                window->m_SwapChain->OnResize();
+            if (window->m_SwapChain) window->m_SwapChain->OnResize();
 
             FramebufferResizedEvent(window, width, height);
         };

@@ -43,6 +43,7 @@ namespace Vortex::Wayland
             VtUnused(userData);
 
             std::string_view interface = interfaceName;
+            VtCoreTrace("Wayland: Registry global: {}", interface);
 
             if (interface == wl_compositor_interface.name)
                 s_Compositor
@@ -104,7 +105,6 @@ namespace Vortex::Wayland
                         wl_registry_bind(
                             registry, name,
                             &zwlr_gamma_control_manager_v1_interface, 1));
-            VtCoreTrace("Wayland: Registry global: {}", interface);
         }
         void RegistryHandleGlobalRemove(void* userData, wl_registry* registry,
                                         u32 name)
@@ -359,15 +359,22 @@ namespace Vortex::Wayland
         WaylandMonitor::Shutdown();
         xkb_context_unref(s_XkbContext);
 
+        if (s_GammaControlManager)
+            zwlr_gamma_control_manager_v1_destroy(s_GammaControlManager);
         if (s_AlphaModifier) wp_alpha_modifier_v1_destroy(s_AlphaModifier);
         if (s_IconManager) xdg_toplevel_icon_manager_v1_destroy(s_IconManager);
         xdg_wm_base_destroy(s_WmBase);
         wl_compositor_destroy(s_Compositor);
         wl_subcompositor_destroy(s_Subcompositor);
         wl_shm_destroy(s_Shm);
+        if (s_Keyboard) wl_keyboard_destroy(s_Keyboard);
+        s_Keyboard = nullptr;
+        if (s_Pointer) wl_pointer_destroy(s_Pointer);
+        s_Pointer = nullptr;
         wl_seat_destroy(s_Seat);
         wl_registry_destroy(s_Registry);
         wl_display_disconnect(s_Display);
+        s_Display = nullptr;
     }
 
     wl_display*                   GetDisplay() { return s_Display; }

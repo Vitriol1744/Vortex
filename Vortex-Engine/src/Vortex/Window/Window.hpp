@@ -65,6 +65,10 @@ namespace Vortex
         Window(const WindowSpecification& specs);
         virtual ~Window() = default;
 
+        // NOTE(v1tr10l7): these are called by the engine
+        static void         Initialize();
+        static void         Shutdown();
+
         static void         PollEvents();
         virtual void        Present()                        = 0;
 
@@ -78,25 +82,25 @@ namespace Vortex
         virtual Vec2i       GetSize() const noexcept         = 0;
         inline i32          GetWidth() const noexcept { return GetSize().x; }
         inline i32          GetHeight() const noexcept { return GetSize().y; }
-        virtual Vec2i       GetFramebufferSize() const noexcept            = 0;
-        virtual Vec2f       GetContentScale() const noexcept               = 0;
-        virtual f32         GetOpacity() const noexcept                    = 0;
-        virtual Vec2d       GetCursorPosition() const noexcept             = 0;
+        virtual Vec2i       GetFramebufferSize() const noexcept      = 0;
+        virtual Vec2f       GetContentScale() const noexcept         = 0;
+        virtual f32         GetOpacity() const noexcept              = 0;
+        virtual Vec2d       GetCursorPosition() const noexcept       = 0;
 
-        virtual Ref<SwapChain> GetSwapChain() const noexcept   = 0;
+        virtual Ref<SwapChain> GetSwapChain() const noexcept         = 0;
 
-        virtual void                 Close() noexcept                      = 0;
-        virtual void                 RequestFocus() noexcept               = 0;
-        virtual void                 RequestUserAttention() const noexcept = 0;
-        virtual void                 Maximize() noexcept                   = 0;
-        virtual void                 Minimize() noexcept                   = 0;
-        virtual void                 Restore() noexcept                    = 0;
+        virtual void           Close() noexcept                      = 0;
+        virtual void           RequestFocus() noexcept               = 0;
+        virtual void           RequestUserAttention() const noexcept = 0;
+        virtual void           Maximize() noexcept                   = 0;
+        virtual void           Minimize() noexcept                   = 0;
+        virtual void           Restore() noexcept                    = 0;
 
-        virtual void                 SetTitle(std::string_view title)      = 0;
-        inline void  SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
-        virtual void SetIcon(const Icon* icons, usize count) = 0;
+        virtual void           SetTitle(std::string_view title)      = 0;
+        inline void            SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
+        virtual void           SetIcon(const Icon* icons, usize count) = 0;
 
-        inline void  SetPosition(const Vec2i& position) noexcept
+        inline void            SetPosition(const Vec2i& position) noexcept
         {
             SetPosition(position.x, position.y);
         }

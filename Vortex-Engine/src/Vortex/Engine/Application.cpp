@@ -14,7 +14,6 @@
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
 
-
 namespace Vortex
 {
     Application* Application::s_Instance = nullptr;
@@ -27,6 +26,7 @@ namespace Vortex
         s_Instance = this;
         m_Name     = specification.Name;
 
+        Window::Initialize();
         Renderer::Initialize();
 
         WindowSpecification specs = {};
@@ -48,6 +48,8 @@ namespace Vortex
     {
         m_MainWindow.reset();
         Renderer::Shutdown();
+        Window::Shutdown();
+
         s_Instance = nullptr;
     }
 

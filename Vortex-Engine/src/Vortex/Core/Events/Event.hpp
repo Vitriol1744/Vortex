@@ -11,6 +11,14 @@
 
 namespace Vortex
 {
+    template <typename T, typename... U>
+    size_t GetFunctionAddress(std::function<T(U...)> f)
+    {
+        typedef T(fnType)(U...);
+        fnType** fnPointer = f.template target<fnType*>();
+        return (size_t)*fnPointer;
+    }
+
     class EventBase
     {
       public:
@@ -42,11 +50,12 @@ namespace Vortex
         }
         inline void operator-=(EventListener listener)
         {
-            std::remove_if(m_Listeners.begin(), m_Listeners.end(),
-                           [&listener](const EventListener& currentListener) {
-                               return listener.target<bool()>()
-                                   == currentListener.target<bool()>();
-                           });
+            (void)std::remove_if(
+                m_Listeners.begin(), m_Listeners.end(),
+                [&listener](const EventListener& currentListener) {
+                    return listener.target<bool()>()
+                        == currentListener.target<bool()>();
+                });
         }
         inline void operator()()
         {
@@ -86,10 +95,13 @@ namespace Vortex
         }
         inline void operator-=(EventListener listener)
         {
-            std::remove_if(
+            (void)std::remove_if(
                 m_Listeners.begin(), m_Listeners.end(),
                 [&listener](const EventListener& currentListener)
-                { return listener.target() == currentListener.target(); });
+                {
+                    return GetFunctionAddress(listener)
+                        == GetFunctionAddress(currentListener);
+                });
         }
         inline void operator()(Arg1 arg1)
         {
@@ -97,18 +109,11 @@ namespace Vortex
             // m_EventData.push(arg1);
             // EventSystem::PushEvent(this);
         }
-        inline void Dispatch() override
-        {
-            // Arg1& arg1 = m_EventData.front();
-            // for (const auto& listener : m_Listeners)
-            //     if (listener && listener(arg1)) break;
-            // m_EventData.pop();
-        }
+        inline void Dispatch() override {}
 
       private:
         std::vector<std::function<bool(Arg1)>> m_Listeners;
-        [[maybe_unused]]
-        std::queue<Arg1> m_EventData;
+        [[maybe_unused]] std::queue<Arg1>      m_EventData;
     };
 
     template <typename Arg1, typename Arg2>
@@ -134,24 +139,19 @@ namespace Vortex
         }
         inline void operator-=(EventListener listener)
         {
-            std::remove_if(
+            (void)std::remove_if(
                 m_Listeners.begin(), m_Listeners.end(),
                 [&listener](const EventListener& currentListener)
-                { return listener.target() == currentListener.target(); });
+                {
+                    return GetFunctionAddress(listener)
+                        == GetFunctionAddress(currentListener);
+                });
         }
         inline void operator()(Arg1 arg1, Arg2 arg2)
         {
             for (const auto& listener : m_Listeners) listener(arg1, arg2);
-            // m_EventData.push({arg1, arg2});
-            // EventSystem::PushEvent(this);
         }
-        inline void Dispatch() override
-        {
-            // auto& [arg1, arg2] = m_EventData.front();
-            // for (const auto& listener : m_Listeners)
-            //     if (listener && listener(arg1, arg2)) break;
-            // m_EventData.pop();
-        }
+        inline void Dispatch() override {}
 
       private:
         std::vector<EventListener> m_Listeners;
@@ -160,8 +160,7 @@ namespace Vortex
             Arg1 arg1;
             Arg2 arg2;
         };
-        [[maybe_unused]]
-        std::queue<EventData> m_EventData;
+        [[maybe_unused]] std::queue<EventData> m_EventData;
     };
     template <typename Arg1, typename Arg2, typename Arg3>
     class Event<Arg1, Arg2, Arg3> : public EventBase
@@ -186,24 +185,20 @@ namespace Vortex
         }
         inline void operator-=(EventListener listener)
         {
-            std::remove_if(
+            (void)std::remove_if(
                 m_Listeners.begin(), m_Listeners.end(),
                 [&listener](const EventListener& currentListener)
-                { return listener.target() == currentListener.target(); });
+                {
+                    if (!listener || !currentListener) return false;
+                    return GetFunctionAddress(listener)
+                        == GetFunctionAddress(currentListener);
+                });
         }
         inline void operator()(Arg1 arg1, Arg2 arg2, Arg3 arg3)
         {
             for (const auto& listener : m_Listeners) listener(arg1, arg2, arg3);
-            // m_EventData.push({arg1, arg2, arg3});
-            // EventSystem::PushEvent(this);
         }
-        inline void Dispatch() override
-        {
-            /*auto& [arg1, arg2, arg3] = m_EventData.front();
-            for (const auto& listener : m_Listeners)
-                if (listener && listener(arg1, arg2, arg3)) break;
-            m_EventData.pop();*/
-        }
+        inline void Dispatch() override {}
 
       private:
         std::vector<EventListener> m_Listeners;
@@ -213,7 +208,6 @@ namespace Vortex
             Arg2 arg2;
             Arg3 arg3;
         };
-        [[maybe_unused]]
-        std::queue<EventData> m_EventData;
+        [[maybe_unused]] std::queue<EventData> m_EventData;
     };
 } // namespace Vortex

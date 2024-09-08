@@ -34,11 +34,7 @@ namespace Vortex
     X11Window::X11Window(const WindowSpecification& specification)
         : Window(specification)
     {
-        if (s_WindowsCount == 0)
-        {
-            X11::Initialize();
-            VtCoreInfo("X11: Successfully initialized");
-        }
+        if (s_WindowsCount == 0) VtCoreInfo("X11: Successfully initialized");
 
         [[maybe_unused]] i32         width  = specification.VideoMode.Width;
         [[maybe_unused]] i32         height = specification.VideoMode.Height;
@@ -91,8 +87,7 @@ namespace Vortex
         m_Data.IsOpen = true;
 
         if (!specification.NoAPI)
-            m_SwapChain
-                = SwapChain::Create(this, specification.VSync);
+            m_SwapChain = SwapChain::Create(this, specification.VSync);
 
         if (s_WindowsCount == 1)
         {
@@ -115,7 +110,6 @@ namespace Vortex
         GetWindowMap().erase(m_WindowHandle);
         XDestroyWindow(X11::GetDisplay(), m_WindowHandle);
         --s_WindowsCount;
-        if (s_WindowsCount == 0) X11::Shutdown();
     }
 
     void X11Window::PollEvents()
@@ -422,8 +416,7 @@ namespace Vortex
                 {
                     window->m_Data.VideoMode.Width  = width;
                     window->m_Data.VideoMode.Height = height;
-                    if (window->m_SwapChain)
-                        window->m_SwapChain->OnResize();
+                    if (window->m_SwapChain) window->m_SwapChain->OnResize();
 
                     WindowEvents::FramebufferResizedEvent(window, width,
                                                           height);

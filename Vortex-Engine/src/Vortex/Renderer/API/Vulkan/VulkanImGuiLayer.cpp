@@ -195,9 +195,9 @@ namespace Vortex
 
     void VulkanImGuiLayer::OnAttach()
     {
-        auto& window    = Application::Get()->GetWindow();
-        auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
-            window.GetSwapChain());
+        auto& window = Application::Get()->GetWindow();
+        auto  swapChain
+            = std::dynamic_pointer_cast<VulkanSwapChain>(window.GetSwapChain());
         vk::Queue graphicsQueue
             = VulkanRenderer::GetDevice().GetGraphicsQueue();
 
@@ -218,6 +218,7 @@ namespace Vortex
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
+        VtCoreTrace("ImGui: Creating context...");
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         VtCoreAssert(io.BackendPlatformUserData == nullptr
@@ -339,6 +340,25 @@ namespace Vortex
     void VulkanImGuiLayer::OnDetach()
     {
         VtCoreTrace("Detaching VulkanImGuiLayer...");
+
+        /*WindowEvents::KeyPressedEvent -= OnKeyPressed;
+        WindowEvents::KeyReleasedEvent -= OnKeyReleased;
+        WindowEvents::KeyTypedEvent -= OnKeyTyped;
+
+        WindowEvents::MouseButtonPressedEvent -= OnMouseButtonPressed;
+        WindowEvents::MouseButtonReleasedEvent -= OnMouseButtonReleased;
+        WindowEvents::MouseScrolledEvent -= OnMouseScrolled;
+        WindowEvents::MouseMovedEvent -= OnMouseMoved;
+        WindowEvents::MouseEnteredEvent -= OnMouseEntered;
+        WindowEvents::MouseLeftEvent -= OnMouseLeft;
+
+        WindowEvents::WindowMovedEvent -= OnWindowMoved;
+        WindowEvents::WindowResizedEvent -= OnWindowResized;
+        WindowEvents::WindowFocusedEvent -= OnWindowFocusGained;
+        WindowEvents::WindowFocusLostEvent -= OnWindowFocusLost;
+        WindowEvents::WindowClosedEvent -= OnWindowClosed;
+
+        MonitorEvents::MonitorStateChangedEvent -= OnMonitorStateUpdate;*/
         vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
 
@@ -406,9 +426,9 @@ namespace Vortex
     }
     void VulkanImGuiLayer::End()
     {
-        auto& window    = Application::Get()->GetWindow();
-        auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
-            window.GetSwapChain());
+        auto& window = Application::Get()->GetWindow();
+        auto  swapChain
+            = std::dynamic_pointer_cast<VulkanSwapChain>(window.GetSwapChain());
         vk::CommandBuffer commandBuffer = swapChain->GetCurrentCommandBuffer();
         ImGui::Render();
 

@@ -48,6 +48,10 @@ namespace Vortex
 #endif
     };
 
+    static std::function<Window*(const WindowSpecification&)> s_CreateWindow;
+    static std::function<void()>                              s_PollEvents;
+    static std::function<void()>                              s_Shutdown;
+
     Window::Window(const WindowSpecification& specs)
     {
         m_Data.VideoMode        = specs.VideoMode;
@@ -66,52 +70,75 @@ namespace Vortex
         m_Data.MousePassthrough = false;
     }
 
-    void Window::PollEvents()
+    void Window::Initialize()
     {
 #ifdef VT_PLATFORM_LINUX
+
         if (GetWindowSubsystem() == WindowSubsystem::eX11)
-            X11Window::PollEvents();
+        {
+            X11::Initialize();
+            s_CreateWindow = [](const WindowSpecification& specs) -> Window*
+            { return new X11Window(specs); };
+            s_PollEvents = X11Window::PollEvents;
+            s_Shutdown   = X11::Shutdown;
+        }
         else if (GetWindowSubsystem() == WindowSubsystem::eWayland)
-            WaylandWindow::PollEvents();
-        else VtCoreFatal("This platform is not supported by Vortex!");
+        {
+            WaylandWindow::Initialize();
+            s_CreateWindow = [](const WindowSpecification& specs) -> Window*
+            { return new WaylandWindow(specs); };
+            s_PollEvents = WaylandWindow::PollEvents;
+            s_Shutdown   = Wayland::Shutdown;
+        }
 #elifdef VT_PLATFORM_WINDOWS
-        Win32Window::PollEvents();
-#else
-    #error "Polling events is not supported by Vortex on this platform."
+        s_CreateWindow = [](const WindowSpecification& specs) -> Window*
+        { return new Win32Window(specs); };
+        s_PollEvents = Win32Window::PollEvents;
+        s_Shutdown   = Win32Window::Shutdown;
 #endif
+
+        VtCoreAssertMsg(s_CreateWindow && s_PollEvents && s_Shutdown,
+                        "Unsupported platform!");
     }
+    void Window::Shutdown()
+    {
+        s_Shutdown();
+        WindowEvents::KeyPressedEvent.RemoveAllListeners();
+        WindowEvents::KeyReleasedEvent.RemoveAllListeners();
+        WindowEvents::KeyTypedEvent.RemoveAllListeners();
+        WindowEvents::UnicodeKeyTypedEvent.RemoveAllListeners();
+        WindowEvents::MouseButtonPressedEvent.RemoveAllListeners();
+        WindowEvents::MouseButtonReleasedEvent.RemoveAllListeners();
+        WindowEvents::MouseScrolledEvent.RemoveAllListeners();
+        WindowEvents::MouseMovedEvent.RemoveAllListeners();
+        WindowEvents::MouseEnteredEvent.RemoveAllListeners();
+        WindowEvents::MouseLeftEvent.RemoveAllListeners();
+        WindowEvents::WindowMovedEvent.RemoveAllListeners();
+        WindowEvents::WindowResizedEvent.RemoveAllListeners();
+        WindowEvents::WindowFocusedEvent.RemoveAllListeners();
+        WindowEvents::WindowFocusLostEvent.RemoveAllListeners();
+        WindowEvents::WindowMaximizedEvent.RemoveAllListeners();
+        WindowEvents::WindowMinimizedEvent.RemoveAllListeners();
+        WindowEvents::WindowClosedEvent.RemoveAllListeners();
+        WindowEvents::FramebufferResizedEvent.RemoveAllListeners();
+        WindowEvents::FileDroppedEvent.RemoveAllListeners();
+        WindowEvents::GamepadConnectedEvent.RemoveAllListeners();
+        WindowEvents::GamepadDisconnectedEvent.RemoveAllListeners();
+        MonitorEvents::MonitorStateChangedEvent.RemoveAllListeners();
+    }
+
+    void          Window::PollEvents() { s_PollEvents(); }
 
     Scope<Window> Window::Create(const WindowSpecification& specs)
     {
-        Scope<Window> ret = nullptr;
-#ifdef VT_PLATFORM_LINUX
-        WindowSubsystem subsystem = GetWindowSubsystem();
-        if (subsystem == WindowSubsystem::eX11)
-            ret = CreateScope<X11Window>(specs);
-        else if (subsystem == WindowSubsystem::eWayland)
-            ret = CreateScope<WaylandWindow>(specs);
-#elifdef VT_PLATFORM_WINDOWS
-        ret = CreateScope<Win32Window>(specs);
-#endif
-
-        return ret;
+        return Scope<Window>(s_CreateWindow(specs));
     }
 
     Window* Window::CreateForImGui(const WindowSpecification& specs)
     {
         const_cast<WindowSpecification&>(specs).NoAPI = true;
 
-        Window* ret                                   = nullptr;
-#ifdef VT_PLATFORM_LINUX
-        WindowSubsystem subsystem = GetWindowSubsystem();
-        if (subsystem == WindowSubsystem::eX11) ret = new X11Window(specs);
-        else if (subsystem == WindowSubsystem::eWayland)
-            ret = new WaylandWindow(specs);
-#elifdef VT_PLATFORM_WINDOWS
-        ret = new Win32Window(specs);
-#endif
-
-        return ret;
+        return s_CreateWindow(specs);
     }
 
     WindowSubsystem Window::GetWindowSubsystem()

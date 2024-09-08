@@ -322,8 +322,7 @@ namespace Vortex
 
         SetupEvents();
 
-        if (!specs.NoAPI)
-            m_SwapChain = SwapChain::Create(this, specs.VSync);
+        if (!specs.NoAPI) m_SwapChain = SwapChain::Create(this, specs.VSync);
     }
     WaylandWindow::~WaylandWindow()
     {
@@ -334,7 +333,6 @@ namespace Vortex
         xdg_surface_destroy(m_WmSurface);
         wl_surface_destroy(m_WindowHandle);
         --s_WindowsCount;
-        if (s_WindowsCount == 0) Shutdown();
     }
 
     void WaylandWindow::PollEvents()
@@ -546,11 +544,6 @@ namespace Vortex
         keyboardListener.leave = KeyboardHandleLeave;
         keyboardListener.key   = KeyboardHandleKey;
         Wayland::SetKeyboardListener(&keyboardListener);
-    }
-    void WaylandWindow::Shutdown()
-    {
-        VtCoreTrace("Wayland: Shutting down");
-        Wayland::Shutdown();
     }
 
     void WaylandWindow::PointerHandleEnter(void* userData, wl_pointer* pointer,
