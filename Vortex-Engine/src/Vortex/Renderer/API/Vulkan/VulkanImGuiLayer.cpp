@@ -198,7 +198,7 @@ namespace Vortex
         auto& window  = Application::Get()->GetWindow();
         auto  context = std::dynamic_pointer_cast<VulkanContext>(
             window.GetRendererContext());
-        vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
+        vk::Queue graphicsQueue = VulkanRenderer::GetDevice().GetGraphicsQueue();
 
         vk::DescriptorPoolSize poolSizes[] = {
             {vk::DescriptorType::eCombinedImageSampler, 1},
@@ -211,7 +211,7 @@ namespace Vortex
         poolInfo.poolSizeCount = static_cast<uint32_t>(std::size(poolSizes));
         poolInfo.pPoolSizes    = poolSizes;
 
-        vk::Device device      = VulkanContext::GetDevice();
+        vk::Device device      = VulkanRenderer::GetDevice();
         VkCall(device.createDescriptorPool(&poolInfo, VK_NULL_HANDLE,
                                            &m_DescriptorPool));
 
@@ -244,7 +244,7 @@ namespace Vortex
         }
 
         auto indices
-            = VulkanContext::GetPhysicalDevice().GetQueueFamilyIndices();
+            = VulkanRenderer::GetPhysicalDevice().GetQueueFamilyIndices();
 
         // Setup Platform/Renderer backends
         // Setup backend capabilities flags
@@ -297,7 +297,7 @@ namespace Vortex
         ImGui_ImplVulkan_InitInfo initInfo = {};
         initInfo.Instance = vk::Instance(VulkanRenderer::GetVulkanInstance());
         initInfo.PhysicalDevice
-            = vk::PhysicalDevice(VulkanContext::GetPhysicalDevice());
+            = vk::PhysicalDevice(VulkanRenderer::GetPhysicalDevice());
         initInfo.Device         = device;
         initInfo.QueueFamily    = indices.Graphics.value();
         initInfo.Queue          = graphicsQueue;
@@ -320,7 +320,7 @@ namespace Vortex
         commandPoolInfo.pNext = VK_NULL_HANDLE;
         commandPoolInfo.flags
             = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
-        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
+        commandPoolInfo.queueFamilyIndex = VulkanRenderer::GetPhysicalDevice()
                                                .GetQueueFamilyIndices()
                                                .Graphics.value();
         VkCall(device.createCommandPool(&commandPoolInfo, VK_NULL_HANDLE,
@@ -339,7 +339,7 @@ namespace Vortex
     void VulkanImGuiLayer::OnDetach()
     {
         VtCoreTrace("Detaching VulkanImGuiLayer...");
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
 
         device.destroyCommandPool(m_CommandPool);
@@ -861,7 +861,7 @@ namespace Vortex
         auto          surface   = reinterpret_cast<VkSurfaceKHR*>(outVkSurface);
 
         VulkanSurface surf;
-        surf.Create(data->Window, VulkanContext::GetPhysicalDevice());
+        surf.Create(data->Window, VulkanRenderer::GetPhysicalDevice());
         *surface = vk::SurfaceKHR(surf);
 
         return static_cast<i32>(VK_SUCCESS);

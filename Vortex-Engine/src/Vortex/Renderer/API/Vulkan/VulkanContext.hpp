@@ -7,8 +7,6 @@
 #pragma once
 
 #include "Vortex/Renderer/API/RendererContext.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanInstance.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
 
 namespace Vortex
@@ -29,17 +27,7 @@ namespace Vortex
 
         VulkanSwapChain& GetSwapChain() { return m_SwapChain; }
 
-        static const VulkanPhysicalDevice& GetPhysicalDevice()
-        {
-            return s_PhysicalDevice;
-        }
-        static const VulkanDevice& GetDevice() { return s_Device; }
-
       private:
-        VulkanSwapChain             m_SwapChain;
-
-        static usize                s_ContextCount;
-        static VulkanPhysicalDevice s_PhysicalDevice;
-        static VulkanDevice         s_Device;
+        VulkanSwapChain m_SwapChain;
     };
 }; // namespace Vortex

@@ -7,8 +7,8 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 
 namespace Vortex
 {
@@ -50,7 +50,7 @@ namespace Vortex
     void VulkanIndexBuffer::CopyBuffer(vk::Buffer src, vk::Buffer dest,
                                        vk::DeviceSize size)
     {
-        const VulkanDevice& device        = VulkanContext::GetDevice();
+        const VulkanDevice& device        = VulkanRenderer::GetDevice();
         vk::CommandBuffer   commandBuffer = device.BeginTransferCommand();
 
         vk::BufferCopy      copyRegion{};

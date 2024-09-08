@@ -19,8 +19,8 @@ namespace Vortex::VulkanAllocator
         createInfo.vulkanApiVersion
             = VulkanRenderer::GetVulkanInstance().GetUsedApiVersion();
         createInfo.physicalDevice
-            = vk::PhysicalDevice(VulkanContext::GetPhysicalDevice());
-        createInfo.device   = vk::Device(VulkanContext::GetDevice());
+            = vk::PhysicalDevice(VulkanRenderer::GetPhysicalDevice());
+        createInfo.device   = vk::Device(VulkanRenderer::GetDevice());
         createInfo.instance = vk::Instance(VulkanRenderer::GetVulkanInstance());
 
         vmaCreateAllocator(&createInfo, &s_Allocator);

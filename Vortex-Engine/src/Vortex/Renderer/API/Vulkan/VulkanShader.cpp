@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 
@@ -35,7 +35,7 @@ namespace Vortex
     {
         std::string shaderCode = ReadShaderCode(path);
         auto        sources    = Preprocess(shaderCode);
-        vk::Device  device     = VulkanContext::GetDevice();
+        vk::Device  device     = VulkanRenderer::GetDevice();
 
         for (auto& [stage, source] : sources)
         {
@@ -202,7 +202,7 @@ namespace Vortex
         fragmentShaderInfo.pCode
             = reinterpret_cast<const u32*>(fragmentShaderCode.data());
 
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         VkCall(device.createShaderModule(&vertexShaderInfo, VK_NULL_HANDLE,
                                          &m_VertexShader));
         VkCall(device.createShaderModule(&fragmentShaderInfo, VK_NULL_HANDLE,
@@ -260,7 +260,7 @@ namespace Vortex
     }
     VulkanShader::~VulkanShader()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         for (auto& set : m_DescriptorSets)
             device.destroyDescriptorPool(set.second.Pool);
         for (auto layout : m_DescriptorSetLayouts)
@@ -273,7 +273,7 @@ namespace Vortex
                                   Ref<UniformBuffer> uniform)
     {
         auto buffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(uniform);
-        vk::Device              device = VulkanContext::GetDevice();
+        vk::Device              device = VulkanRenderer::GetDevice();
         vk::WriteDescriptorSet& descriptorWrite
             = m_DescriptorSets[0].WriteDescriptorSets[name];
 
@@ -291,7 +291,7 @@ namespace Vortex
     void VulkanShader::SetUniform(const std::string& name,
                                   Ref<Texture2D>     texture)
     {
-        vk::Device              device = VulkanContext::GetDevice();
+        vk::Device              device = VulkanRenderer::GetDevice();
         vk::WriteDescriptorSet& descriptorWrite
             = m_DescriptorSets[0].WriteDescriptorSets[name];
 

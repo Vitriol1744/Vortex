@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
 
 namespace Vortex
@@ -148,7 +149,7 @@ namespace Vortex
             = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates      = dynamicStates.data();
 
-        vk::Device  device               = VulkanContext::GetDevice();
+        vk::Device  device               = VulkanRenderer::GetDevice();
         const auto& descriptorSetLayouts = m_Shader->GetDescriptorSetLayouts();
 
         vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -208,7 +209,7 @@ namespace Vortex
     };
     VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
 
         device.destroyPipeline(m_Pipeline, VK_NULL_HANDLE);
         device.destroyPipelineLayout(m_PipelineLayout, VK_NULL_HANDLE);

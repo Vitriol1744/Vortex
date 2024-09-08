@@ -7,6 +7,7 @@
 #include "vtpch.hpp"
 
 #include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 
@@ -15,7 +16,7 @@ namespace Vortex
 
     void VulkanSwapChain::CreateSurface(Window* windowHandle)
     {
-        m_Surface.Create(windowHandle, VulkanContext::GetPhysicalDevice());
+        m_Surface.Create(windowHandle, VulkanRenderer::GetPhysicalDevice());
     }
 
     void VulkanSwapChain::Create(bool vsync)
@@ -78,7 +79,7 @@ namespace Vortex
         swapChainInfo.oldSwapchain = oldSwapChain;
 
         auto indices
-            = VulkanContext::GetPhysicalDevice().GetQueueFamilyIndices();
+            = VulkanRenderer::GetPhysicalDevice().GetQueueFamilyIndices();
         u32 queueFamilyIndices[]
             = {indices.Graphics.value(), indices.Present.value()};
         if (indices.Graphics != indices.Present)
@@ -88,7 +89,7 @@ namespace Vortex
             swapChainInfo.pQueueFamilyIndices   = queueFamilyIndices;
         }
 
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         VkCall(device.createSwapchainKHR(&swapChainInfo, VK_NULL_HANDLE,
                                          &m_SwapChain));
 
@@ -124,7 +125,7 @@ namespace Vortex
     }
     void VulkanSwapChain::Destroy()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
 
         device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
@@ -162,7 +163,7 @@ namespace Vortex
     void VulkanSwapChain::BeginFrame()
     {
 
-        vk::Device device   = VulkanContext::GetDevice();
+        vk::Device device   = VulkanRenderer::GetDevice();
         m_CurrentImageIndex = AcquireNextImage();
 
         device.resetCommandPool(GetCurrentFrame().CommandPool,
@@ -186,10 +187,10 @@ namespace Vortex
         submitInfo.pSignalSemaphores
             = &GetCurrentFrame().RenderFinishedSemaphore;
 
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
 
-        vk::Queue graphicsQueue = VulkanContext::GetDevice().GetGraphicsQueue();
+        vk::Queue graphicsQueue = VulkanRenderer::GetDevice().GetGraphicsQueue();
         VkCall(graphicsQueue.submit(1, &submitInfo,
                                     m_Frames[m_CurrentFrameIndex].WaitFence));
 
@@ -204,7 +205,7 @@ namespace Vortex
         presentInfo.pImageIndices  = &m_CurrentImageIndex;
         presentInfo.pResults       = VK_NULL_HANDLE;
 
-        vk::Queue  presentQueue = VulkanContext::GetDevice().GetPresentQueue();
+        vk::Queue  presentQueue = VulkanRenderer::GetDevice().GetPresentQueue();
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
 
         if (result == vk::Result::eErrorOutOfDateKHR
@@ -218,7 +219,7 @@ namespace Vortex
     }
     void VulkanSwapChain::OnResize()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
         Create(m_VSync);
 
@@ -227,7 +228,7 @@ namespace Vortex
 
     u32 VulkanSwapChain::AcquireNextImage()
     {
-        vk::Device device   = VulkanContext::GetDevice();
+        vk::Device device   = VulkanRenderer::GetDevice();
 
         u32 framesInFlight  = Renderer::GetConfiguration().MaxFramesInFlight;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
@@ -260,7 +261,7 @@ namespace Vortex
 
     void VulkanSwapChain::CreateImageViews()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
 
         for (size_t i = 0; i < m_Frames.size(); i++)
         {
@@ -289,12 +290,12 @@ namespace Vortex
 
     void VulkanSwapChain::CreateCommandBuffers()
     {
-        vk::Device                device = VulkanContext::GetDevice();
+        vk::Device                device = VulkanRenderer::GetDevice();
         vk::CommandPoolCreateInfo commandPoolInfo{};
         commandPoolInfo.sType = vk::StructureType::eCommandPoolCreateInfo;
         commandPoolInfo.pNext = VK_NULL_HANDLE;
         commandPoolInfo.flags = vk::CommandPoolCreateFlagBits::eTransient;
-        commandPoolInfo.queueFamilyIndex = VulkanContext::GetPhysicalDevice()
+        commandPoolInfo.queueFamilyIndex = VulkanRenderer::GetPhysicalDevice()
                                                .GetQueueFamilyIndices()
                                                .Graphics.value();
 
@@ -320,7 +321,7 @@ namespace Vortex
 
     void VulkanSwapChain::CreateSyncObjects()
     {
-        vk::Device              device = VulkanContext::GetDevice();
+        vk::Device              device = VulkanRenderer::GetDevice();
 
         vk::SemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = vk::StructureType::eSemaphoreCreateInfo;
@@ -348,7 +349,7 @@ namespace Vortex
 
     void VulkanSwapChain::CreateRenderPass()
     {
-        vk::Device                device = VulkanContext::GetDevice();
+        vk::Device                device = VulkanRenderer::GetDevice();
 
         vk::AttachmentDescription colorAttachment{};
         colorAttachment.flags          = vk::AttachmentDescriptionFlags();
@@ -362,7 +363,7 @@ namespace Vortex
         colorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
 
         vk::Format depthFormat
-            = VulkanContext::GetPhysicalDevice().FindDepthFormat();
+            = VulkanRenderer::GetPhysicalDevice().FindDepthFormat();
         vk::AttachmentDescription depthAttachment{};
         depthAttachment.flags          = vk::AttachmentDescriptionFlags();
         depthAttachment.format         = depthFormat;
@@ -429,7 +430,7 @@ namespace Vortex
     }
     void VulkanSwapChain::CreateFramebuffers()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
 
         for (auto& frame : m_Frames)
         {
@@ -462,9 +463,9 @@ namespace Vortex
     void VulkanSwapChain::CreateDepthBuffer()
     {
         vk::Format depthFormat
-            = VulkanContext::GetPhysicalDevice().FindDepthFormat();
+            = VulkanRenderer::GetPhysicalDevice().FindDepthFormat();
 
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
         if (m_DepthImage)
         {
             device.destroyImageView(m_DepthImageView);

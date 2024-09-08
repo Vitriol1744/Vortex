@@ -107,7 +107,7 @@ namespace Vortex
 
     const vk::SurfaceCapabilitiesKHR& VulkanSurface::GetCapabilities()
     {
-        vk::PhysicalDevice physicalDevice = VulkanContext::GetPhysicalDevice();
+        vk::PhysicalDevice physicalDevice = VulkanRenderer::GetPhysicalDevice();
         VkCall(physicalDevice.getSurfaceCapabilitiesKHR(
             m_Surface, &m_SurfaceCapabilities));
 

@@ -181,8 +181,6 @@ void SandboxLayer2D::OnUpdate()
                              -aspectRatio * s_ZoomLevel, s_ZoomLevel,
                              -s_ZoomLevel, 0.0f, 1.0f);
 
-    vk::PhysicalDevice physDevice = VulkanContext::GetPhysicalDevice();
-
     using namespace Input;
     if (Keyboard::IsKeyPressed(KeyCode::eA))
         s_Translation.x += s_MovementSpeed * Application::Get()->GetDeltaTime();

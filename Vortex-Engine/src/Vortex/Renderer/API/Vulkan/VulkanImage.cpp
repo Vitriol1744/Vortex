@@ -6,8 +6,8 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImage.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 
 namespace Vortex
 {
@@ -50,7 +50,7 @@ namespace Vortex
 
     void VulkanImage::CopyFrom(vk::Buffer buffer, u32 width, u32 height)
     {
-        const VulkanDevice& device        = VulkanContext::GetDevice();
+        const VulkanDevice& device        = VulkanRenderer::GetDevice();
         vk::CommandBuffer   commandBuffer = device.BeginTransferCommand();
 
         vk::BufferImageCopy region{};
@@ -71,7 +71,7 @@ namespace Vortex
     void VulkanImage::TransitionLayout(vk::ImageLayout oldLayout,
                                        vk::ImageLayout newLayout, u32 mipLevels)
     {
-        const VulkanDevice& device        = VulkanContext::GetDevice();
+        const VulkanDevice& device        = VulkanRenderer::GetDevice();
         vk::CommandBuffer   commandBuffer = device.BeginOneTimeRenderCommand();
 
         vk::ImageMemoryBarrier barrier{};
@@ -138,7 +138,7 @@ namespace Vortex
 
     void VulkanImage::GenerateMipMaps(i32 width, i32 height, u32 mipLevels)
     {
-        auto&             device        = VulkanContext::GetDevice();
+        auto&             device        = VulkanRenderer::GetDevice();
         vk::CommandBuffer commandBuffer = device.BeginOneTimeRenderCommand();
 
         vk::ImageMemoryBarrier barrier{};

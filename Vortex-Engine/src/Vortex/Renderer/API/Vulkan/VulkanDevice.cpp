@@ -40,9 +40,14 @@ namespace Vortex
                 physicalDevice, queueFamily, X11::GetConnection(), visualID);
         }
         else if (Window::GetWindowSubsystem() == WindowSubsystem::eWayland)
+        {
+            // TODO(v1tr10l7): we really shouldn't initialize wayland here, it
+            // sits here just temporarily
+            Wayland::Initialize();
             presentationSupport
                 = vkGetPhysicalDeviceWaylandPresentationSupportKHR(
                     physicalDevice, queueFamily, Wayland::GetDisplay());
+        }
 #elifdef VT_PLATFORM_WINDOWS
         vk::Instance instance = VulkanRenderer::GetVulkanInstance();
         presentationSupport   = glfwGetPhysicalDevicePresentationSupport(

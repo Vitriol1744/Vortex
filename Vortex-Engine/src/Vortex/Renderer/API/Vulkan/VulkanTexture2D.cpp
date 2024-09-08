@@ -6,7 +6,7 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp"
 
 namespace Vortex
@@ -68,7 +68,7 @@ namespace Vortex
         viewInfo.subresourceRange.levelCount     = mipLevels;
         viewInfo.subresourceRange.layerCount     = 1;
 
-        vk::Device device                        = VulkanContext::GetDevice();
+        vk::Device device                        = VulkanRenderer::GetDevice();
         VkCall(
             device.createImageView(&viewInfo, VK_NULL_HANDLE, &m_TextureView));
 
@@ -98,7 +98,7 @@ namespace Vortex
     }
     VulkanTexture2D::~VulkanTexture2D()
     {
-        vk::Device device = VulkanContext::GetDevice();
+        vk::Device device = VulkanRenderer::GetDevice();
 
         device.destroySampler(m_TextureSampler);
         device.destroyImageView(m_TextureView);

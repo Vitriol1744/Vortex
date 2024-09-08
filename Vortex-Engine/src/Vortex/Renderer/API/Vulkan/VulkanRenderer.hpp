@@ -39,6 +39,14 @@ namespace Vortex
             VtCoreAssert(s_VkInstance);
             return s_VkInstance;
         }
+        inline static consteval const VulkanPhysicalDevice& GetPhysicalDevice()
+        {
+            return s_PhysicalDevice;
+        }
+        inline static consteval const VulkanDevice& GetDevice()
+        {
+            return s_Device;
+        }
 
       private:
         Ref<VulkanContext>                          m_CurrentContext = nullptr;
@@ -46,5 +54,7 @@ namespace Vortex
         vk::PhysicalDeviceMemoryBudgetPropertiesEXT m_MemoryBudgetProperties{};
 
         static VulkanInstance                       s_VkInstance;
+        static VulkanPhysicalDevice                 s_PhysicalDevice;
+        static VulkanDevice                         s_Device;
     };
 }; // namespace Vortex

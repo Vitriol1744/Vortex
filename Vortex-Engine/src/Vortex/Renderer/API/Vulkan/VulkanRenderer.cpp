@@ -18,14 +18,21 @@
 
 namespace Vortex
 {
-    VulkanInstance VulkanRenderer::s_VkInstance{};
+    VulkanInstance       VulkanRenderer::s_VkInstance{};
+    VulkanPhysicalDevice VulkanRenderer::s_PhysicalDevice{};
+    VulkanDevice         VulkanRenderer::s_Device{};
 
     VulkanRenderer::VulkanRenderer() {}
 
     void VulkanRenderer::Initialize()
     {
         VtCoreAssertMsg(!s_VkInstance, "Vulkan: Renderer already initialized");
+        VtCoreTrace("Vulkan: Initializing the renderer");
+
         s_VkInstance.Initialize();
+        s_PhysicalDevice = VulkanPhysicalDevice::Pick();
+        s_Device.Initialize(VulkanRenderer::GetPhysicalDevice());
+        VulkanAllocator::Initialize();
 
         m_MemoryBudgetProperties.sType
             = vk::StructureType::ePhysicalDeviceMemoryBudgetPropertiesEXT;
@@ -37,6 +44,10 @@ namespace Vortex
     {
         VtCoreAssertMsg(s_VkInstance,
                         "Vulkan: Renderer is not initialized, cannot shutdown");
+        VtCoreTrace("Vulkan: Shutting down the renderer");
+
+        VulkanAllocator::Shutdown();
+        s_Device.Destroy();
         s_VkInstance.Destroy();
     }
 
@@ -157,7 +168,7 @@ namespace Vortex
     {
         usize              memoryUsage = 0;
 
-        vk::PhysicalDevice physDevice  = VulkanContext::GetPhysicalDevice();
+        vk::PhysicalDevice physDevice  = VulkanRenderer::GetPhysicalDevice();
         physDevice.getMemoryProperties2(&m_MemoryProperties);
         for (u32 i = 0; i < m_MemoryProperties.memoryProperties.memoryHeapCount;
              i++)
@@ -172,7 +183,7 @@ namespace Vortex
     {
         usize              memoryBudget = 0;
 
-        vk::PhysicalDevice physDevice   = VulkanContext::GetPhysicalDevice();
+        vk::PhysicalDevice physDevice   = VulkanRenderer::GetPhysicalDevice();
         physDevice.getMemoryProperties2(&m_MemoryProperties);
         for (u32 i = 0; i < m_MemoryProperties.memoryProperties.memoryHeapCount;
              i++)

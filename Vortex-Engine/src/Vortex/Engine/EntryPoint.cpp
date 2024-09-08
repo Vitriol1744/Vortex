@@ -11,7 +11,29 @@
 
 namespace Vortex
 {
-    int Main(int argc, char** argv)
+    void PrintBranding();
+
+    int  Main(int argc, char** argv)
+    {
+        PrintBranding();
+        (void)argc;
+        (void)argv;
+        CommandLineArguments args;
+
+        VtCoreTrace("Launching the {}...", Vortex::g_EngineName);
+        bool shouldRestart = false;
+        do {
+            Application* app = CreateApplication(args);
+
+            shouldRestart    = app->Run();
+
+            delete app;
+        } while (shouldRestart);
+
+        return EXIT_SUCCESS;
+    }
+
+    void PrintBranding()
     {
         printf(
             " __      __        _              ______             _            "
@@ -37,22 +59,6 @@ namespace Vortex
         printf(
             "                                               |___/              "
             "\n");
-
-        (void)argc;
-        (void)argv;
-
-        VtCoreTrace("Launching the {}...", Vortex::g_EngineName);
-        bool running = false;
-        do {
-            CommandLineArguments args;
-            Application*         app = CreateApplication(args);
-
-            running                  = app->Run();
-
-            delete app;
-        } while (running);
-
-        return EXIT_SUCCESS;
     }
 }; // namespace Vortex
 
