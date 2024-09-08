@@ -372,8 +372,8 @@ namespace Vortex
         GetWindowMap()[m_WindowHandle] = this;
 
         if (!specification.NoAPI)
-            m_RendererContext
-                = RendererContext::Create(this, specification.VSync);
+            m_SwapChain
+                = SwapChain::Create(this, specification.VSync);
 
         ShowWindow(m_WindowHandle, SW_SHOW);
         UpdateWindow(m_WindowHandle);
@@ -402,7 +402,7 @@ namespace Vortex
         }
         // glfwPollEvents();
     }
-    void Win32Window::Present() { m_RendererContext->Present(); }
+    void Win32Window::Present() { m_SwapChain->Present(); }
 
     bool Win32Window::IsFocused() const noexcept
     {
@@ -749,8 +749,8 @@ namespace Vortex
         auto framebufferCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
-            if (window->m_RendererContext)
-                window->m_RendererContext->OnResize();
+            if (window->m_SwapChain)
+                window->m_SwapChain->OnResize();
 
             FramebufferResizedEvent(window, width, height);
         };

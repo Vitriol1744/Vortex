@@ -44,10 +44,10 @@ namespace Vortex
         virtual f32         GetOpacity() const noexcept override;
         virtual Vec2d       GetCursorPosition() const noexcept override;
 
-        virtual Ref<RendererContext>
-        GetRendererContext() const noexcept override
+        virtual Ref<SwapChain>
+        GetSwapChain() const noexcept override
         {
-            return m_RendererContext;
+            return m_SwapChain;
         }
 
         virtual void Close() noexcept override;
@@ -82,7 +82,7 @@ namespace Vortex
         XIC                        m_InputContext = nullptr;
         xcb_window_t               m_Parent;
         bool                       m_MouseHovered    = false;
-        Ref<class RendererContext> m_RendererContext = nullptr;
+        Ref<class SwapChain> m_SwapChain = nullptr;
         Vec2i                      m_LastCursorPos   = {0, 0};
         Vec2i                      m_WarpCursorPos   = {0, 0};
 

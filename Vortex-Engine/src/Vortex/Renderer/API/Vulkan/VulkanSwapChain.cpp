@@ -6,7 +6,6 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
 #include "Vortex/Renderer/Renderer.hpp"

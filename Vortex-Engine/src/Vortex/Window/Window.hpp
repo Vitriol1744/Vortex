@@ -13,7 +13,7 @@
 #include "Vortex/Window/Input/KeyCode.hpp"
 #include "Vortex/Window/Input/MouseCode.hpp"
 
-#include "Vortex/Renderer/API/RendererContext.hpp"
+#include "Vortex/Renderer/API/SwapChain.hpp"
 #include "Vortex/Renderer/Image.hpp"
 #include "Vortex/Window/Monitor.hpp"
 
@@ -83,7 +83,7 @@ namespace Vortex
         virtual f32         GetOpacity() const noexcept                    = 0;
         virtual Vec2d       GetCursorPosition() const noexcept             = 0;
 
-        virtual Ref<RendererContext> GetRendererContext() const noexcept   = 0;
+        virtual Ref<SwapChain> GetSwapChain() const noexcept   = 0;
 
         virtual void                 Close() noexcept                      = 0;
         virtual void                 RequestFocus() noexcept               = 0;

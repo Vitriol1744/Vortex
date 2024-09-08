@@ -14,7 +14,6 @@
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 
 namespace Vortex
 {

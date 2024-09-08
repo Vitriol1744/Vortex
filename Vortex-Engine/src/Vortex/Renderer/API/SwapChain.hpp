@@ -10,18 +10,18 @@
 
 namespace Vortex
 {
-    class RendererContext
+    class SwapChain
     {
       public:
-        RendererContext()                                = default;
-        virtual ~RendererContext()                       = default;
+        SwapChain()                                = default;
+        virtual ~SwapChain()                       = default;
 
         virtual void                Present()            = 0;
         virtual void                OnResize()           = 0;
 
         virtual void                SetVSync(bool vsync) = 0;
 
-        static Ref<RendererContext> Create(class Window* window,
+        static Ref<SwapChain> Create(class Window* window,
                                            bool          vsync = false);
     };
 }; // namespace Vortex

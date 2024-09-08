@@ -19,7 +19,7 @@
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/API/Shader.hpp"
 #include "Vortex/Renderer/API/Texture2D.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
@@ -226,13 +226,12 @@ void SandboxLayer2D::OnRender()
 void SandboxLayer2D::OnImGuiRender()
 {
     VtProfileFunction();
-    auto& window = Application::Get()->GetWindow();
-    auto  context
-        = std::dynamic_pointer_cast<VulkanContext>(window.GetRendererContext());
-    VulkanSwapChain& swapChain  = context->GetSwapChain();
-    vk::Extent2D     extent     = swapChain.GetExtent();
+    auto& window    = Application::Get()->GetWindow();
+    auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
+        window.GetSwapChain());
+    vk::Extent2D extent     = swapChain->GetExtent();
 
-    bool             showWindow = true;
+    bool         showWindow = true;
     ImGui::ShowDemoWindow(&showWindow);
     ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());

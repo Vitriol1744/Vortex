@@ -120,14 +120,13 @@ set(SOURCES
     src/Vortex/Renderer/Renderer2D.cpp
     src/Vortex/Renderer/API/IndexBuffer.cpp
     src/Vortex/Renderer/API/GraphicsPipeline.cpp
-    src/Vortex/Renderer/API/RendererContext.cpp
     src/Vortex/Renderer/API/Shader.cpp
+    src/Vortex/Renderer/API/SwapChain.cpp
     src/Vortex/Renderer/API/Texture2D.cpp
     src/Vortex/Renderer/API/UniformBuffer.cpp
     src/Vortex/Renderer/API/VertexBuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanAllocator.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
-    src/Vortex/Renderer/API/Vulkan/VulkanContext.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanImage.cpp

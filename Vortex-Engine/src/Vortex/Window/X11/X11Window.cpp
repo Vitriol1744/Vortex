@@ -91,8 +91,8 @@ namespace Vortex
         m_Data.IsOpen = true;
 
         if (!specification.NoAPI)
-            m_RendererContext
-                = RendererContext::Create(this, specification.VSync);
+            m_SwapChain
+                = SwapChain::Create(this, specification.VSync);
 
         if (s_WindowsCount == 1)
         {
@@ -111,7 +111,7 @@ namespace Vortex
     }
     X11Window::~X11Window()
     {
-        m_RendererContext.reset();
+        m_SwapChain.reset();
         GetWindowMap().erase(m_WindowHandle);
         XDestroyWindow(X11::GetDisplay(), m_WindowHandle);
         --s_WindowsCount;
@@ -132,7 +132,7 @@ namespace Vortex
 
         XFlush(display);
     }
-    void X11Window::Present() { m_RendererContext->Present(); }
+    void X11Window::Present() { m_SwapChain->Present(); }
 
     bool X11Window::IsFocused() const noexcept { return m_Data.Focused; }
     bool X11Window::IsMinimized() const noexcept
@@ -422,8 +422,8 @@ namespace Vortex
                 {
                     window->m_Data.VideoMode.Width  = width;
                     window->m_Data.VideoMode.Height = height;
-                    if (window->m_RendererContext)
-                        window->m_RendererContext->OnResize();
+                    if (window->m_SwapChain)
+                        window->m_SwapChain->OnResize();
 
                     WindowEvents::FramebufferResizedEvent(window, width,
                                                           height);

@@ -15,7 +15,6 @@
 #include "Vortex/Renderer/API/Texture2D.hpp"
 #include "Vortex/Renderer/API/UniformBuffer.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"

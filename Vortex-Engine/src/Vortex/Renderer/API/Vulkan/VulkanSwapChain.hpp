@@ -6,13 +6,14 @@
  */
 #pragma once
 
+#include "Vortex/Renderer/API/SwapChain.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImage.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
 namespace Vortex
 {
-    class VulkanSwapChain : public NonCopyable<VulkanSwapChain>
+    class VulkanSwapChain : public SwapChain, NonCopyable<VulkanSwapChain>
     {
       public:
         struct Frame
@@ -27,19 +28,28 @@ namespace Vortex
             vk::Fence         WaitFence               = VK_NULL_HANDLE;
         };
 
-        VulkanSwapChain() = default;
+        inline VulkanSwapChain(class Window* window, bool vsync)
+        {
+            CreateSurface(window);
+            Create(vsync);
+        }
+        virtual ~VulkanSwapChain()
+        {
+            Destroy();
+            DestroySurface();
+        }
 
-        void                           CreateSurface(Window* windowHandle);
-        void                           Create(bool vsync = false);
+        void                CreateSurface(Window* windowHandle);
+        void                Create(bool vsync = false);
 
-        void                           Destroy();
-        inline void                    DestroySurface() { m_Surface.Destroy(); }
+        void                Destroy();
+        inline void         DestroySurface() { m_Surface.Destroy(); }
 
-        inline void                    SetVSync(bool vsync) { m_VSync = vsync; }
+        virtual inline void SetVSync(bool vsync) override { m_VSync = vsync; }
 
-        void                           BeginFrame();
-        void                           Present();
-        void                           OnResize();
+        void                BeginFrame();
+        virtual void        Present() override;
+        virtual void        OnResize() override;
 
         inline const VulkanSurface&    GetSurface() const { return m_Surface; }
         inline const vk::CommandBuffer GetCurrentCommandBuffer() const

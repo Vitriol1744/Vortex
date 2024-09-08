@@ -27,7 +27,7 @@ namespace ImGuiPanels
         ImGui::Checkbox("Fullscreen", &fullscreen);
         window.SetFullscreen(fullscreen);
         ImGui::Checkbox("VSync", &vsync);
-        window.GetRendererContext()->SetVSync(vsync);
+        window.GetSwapChain()->SetVSync(vsync);
         ImGui::End();
     }
 } // namespace ImGuiPanels

@@ -195,10 +195,11 @@ namespace Vortex
 
     void VulkanImGuiLayer::OnAttach()
     {
-        auto& window  = Application::Get()->GetWindow();
-        auto  context = std::dynamic_pointer_cast<VulkanContext>(
-            window.GetRendererContext());
-        vk::Queue graphicsQueue = VulkanRenderer::GetDevice().GetGraphicsQueue();
+        auto& window    = Application::Get()->GetWindow();
+        auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
+            window.GetSwapChain());
+        vk::Queue graphicsQueue
+            = VulkanRenderer::GetDevice().GetGraphicsQueue();
 
         vk::DescriptorPoolSize poolSizes[] = {
             {vk::DescriptorType::eCombinedImageSampler, 1},
@@ -303,10 +304,9 @@ namespace Vortex
         initInfo.Queue          = graphicsQueue;
         initInfo.PipelineCache  = VK_NULL_HANDLE;
         initInfo.DescriptorPool = m_DescriptorPool;
-        initInfo.RenderPass     = context->GetSwapChain().GetRenderPass();
+        initInfo.RenderPass     = swapChain->GetRenderPass();
         initInfo.Subpass        = 0;
-        u32 frameCount
-            = static_cast<u32>(context->GetSwapChain().GetFrames().size());
+        u32 frameCount = static_cast<u32>(swapChain->GetFrames().size());
         initInfo.MinImageCount = frameCount;
         initInfo.ImageCount    = frameCount;
         initInfo.MSAASamples   = VK_SAMPLE_COUNT_1_BIT;
@@ -406,11 +406,10 @@ namespace Vortex
     }
     void VulkanImGuiLayer::End()
     {
-        auto& window  = Application::Get()->GetWindow();
-        auto  context = std::dynamic_pointer_cast<VulkanContext>(
-            window.GetRendererContext());
-        VulkanSwapChain&  swapChain     = context->GetSwapChain();
-        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        auto& window    = Application::Get()->GetWindow();
+        auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
+            window.GetSwapChain());
+        vk::CommandBuffer commandBuffer = swapChain->GetCurrentCommandBuffer();
         ImGui::Render();
 
 #if 0

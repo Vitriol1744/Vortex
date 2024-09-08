@@ -6,14 +6,13 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 
 #define VtAssertFrameStarted()                                                 \
-    VtCoreAssertMsg(m_CurrentContext != nullptr,                               \
+    VtCoreAssertMsg(m_CurrentSwapChain != nullptr,                             \
                     "Did you forget to call Renderer::BeginFrame()?");
 
 namespace Vortex
@@ -53,11 +52,10 @@ namespace Vortex
 
     void VulkanRenderer::BeginFrame(Window& window)
     {
-        m_CurrentContext = std::dynamic_pointer_cast<VulkanContext>(
-            window.GetRendererContext());
-        auto& swapChain = m_CurrentContext->GetSwapChain();
+        m_CurrentSwapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
+            window.GetSwapChain());
 
-        swapChain.BeginFrame();
+        m_CurrentSwapChain->BeginFrame();
 
         vk::CommandBufferBeginInfo beginInfo{};
         beginInfo.sType            = vk::StructureType::eCommandBufferBeginInfo;
@@ -65,32 +63,32 @@ namespace Vortex
         beginInfo.flags            = vk::CommandBufferUsageFlagBits();
         beginInfo.pInheritanceInfo = VK_NULL_HANDLE;
 
-        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        vk::CommandBuffer commandBuffer
+            = m_CurrentSwapChain->GetCurrentCommandBuffer();
         VkCall(commandBuffer.begin(&beginInfo));
     }
     void VulkanRenderer::EndFrame()
     {
         VtAssertFrameStarted();
 
-        auto&             swapChain     = m_CurrentContext->GetSwapChain();
-
-        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+        vk::CommandBuffer commandBuffer
+            = m_CurrentSwapChain->GetCurrentCommandBuffer();
         commandBuffer.end();
 
-        m_CurrentContext = nullptr;
+        m_CurrentSwapChain = nullptr;
     }
 
     void VulkanRenderer::BeginRenderPass()
     {
         VtAssertFrameStarted();
-        auto&                   swapChain = m_CurrentContext->GetSwapChain();
-        auto                    extent    = swapChain.GetExtent();
+        auto                    extent = m_CurrentSwapChain->GetExtent();
 
         vk::RenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType      = vk::StructureType::eRenderPassBeginInfo;
-        renderPassInfo.renderPass = swapChain.GetRenderPass();
+        renderPassInfo.renderPass = m_CurrentSwapChain->GetRenderPass();
         renderPassInfo.framebuffer
-            = swapChain.GetFrames()[swapChain.GetCurrentImageIndex()]
+            = m_CurrentSwapChain
+                  ->GetFrames()[m_CurrentSwapChain->GetCurrentImageIndex()]
                   .Framebuffer;
         renderPassInfo.renderArea.offset.x = 0;
         renderPassInfo.renderArea.offset.y = 0;
@@ -103,7 +101,7 @@ namespace Vortex
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues    = clearValues.data();
 
-        auto commandBuffer             = swapChain.GetCurrentCommandBuffer();
+        auto commandBuffer = m_CurrentSwapChain->GetCurrentCommandBuffer();
         commandBuffer.beginRenderPass(&renderPassInfo,
                                       vk::SubpassContents::eInline);
 
@@ -125,7 +123,7 @@ namespace Vortex
     {
         VtAssertFrameStarted();
         vk::CommandBuffer commandBuffer
-            = m_CurrentContext->GetSwapChain().GetCurrentCommandBuffer();
+            = m_CurrentSwapChain->GetCurrentCommandBuffer();
 
         commandBuffer.endRenderPass();
     }
@@ -136,9 +134,9 @@ namespace Vortex
     {
         VtAssertFrameStarted();
 
-        auto&             swapChain     = m_CurrentContext->GetSwapChain();
-        vk::CommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
-        auto              vkPipeline
+        vk::CommandBuffer commandBuffer
+            = m_CurrentSwapChain->GetCurrentCommandBuffer();
+        auto vkPipeline
             = std::dynamic_pointer_cast<VulkanGraphicsPipeline>(pipeline);
         auto vkVertexBuffer
             = std::dynamic_pointer_cast<VulkanVertexBuffer>(vertexBuffer);
@@ -157,7 +155,7 @@ namespace Vortex
         std::vector<vk::DescriptorSet>& descriptorSets
             = vkPipeline->GetShader()->GetDescriptorSets()[0].Sets;
 
-        auto currentFrame = swapChain.GetCurrentFrameIndex();
+        auto currentFrame = m_CurrentSwapChain->GetCurrentFrameIndex();
         commandBuffer.bindDescriptorSets(
             vk::PipelineBindPoint::eGraphics, vkPipeline->GetLayout(), 0, 1,
             &descriptorSets[currentFrame], 0, VK_NULL_HANDLE);

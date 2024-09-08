@@ -42,10 +42,10 @@ namespace Vortex
             return m_Data.MousePosition;
         }
 
-        virtual Ref<RendererContext>
-        GetRendererContext() const noexcept override
+        virtual Ref<SwapChain>
+        GetSwapChain() const noexcept override
         {
-            return m_RendererContext;
+            return m_SwapChain;
         }
 
         virtual void Close() noexcept override;
@@ -90,7 +90,7 @@ namespace Vortex
         xdg_toplevel_icon_v1*         m_Icon                 = nullptr;
         wl_shm_pool*                  m_IconPool             = nullptr;
         wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
-        Ref<class RendererContext>    m_RendererContext      = nullptr;
+        Ref<class SwapChain>    m_SwapChain      = nullptr;
 
         bool                          m_Maximized            = false;
         bool                          m_Minimized            = false;

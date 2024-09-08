@@ -7,8 +7,9 @@
 #pragma once
 
 #include "Vortex/Renderer/API/RendererBackend.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanInstance.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
 
 namespace Vortex
 {
@@ -49,8 +50,8 @@ namespace Vortex
         }
 
       private:
-        Ref<VulkanContext>                          m_CurrentContext = nullptr;
-        vk::PhysicalDeviceMemoryProperties2         m_MemoryProperties{};
+        Ref<VulkanSwapChain>                m_CurrentSwapChain = nullptr;
+        vk::PhysicalDeviceMemoryProperties2 m_MemoryProperties{};
         vk::PhysicalDeviceMemoryBudgetPropertiesEXT m_MemoryBudgetProperties{};
 
         static VulkanInstance                       s_VkInstance;

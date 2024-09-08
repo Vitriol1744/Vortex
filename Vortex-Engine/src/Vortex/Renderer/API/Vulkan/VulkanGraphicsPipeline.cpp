@@ -6,7 +6,6 @@
  */
 #include "vtpch.hpp"
 
-#include "Vortex/Renderer/API/Vulkan/VulkanContext.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanShader.hpp"
@@ -158,8 +157,8 @@ namespace Vortex
         pipelineLayoutInfo.pSetLayouts            = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-        auto context = std::dynamic_pointer_cast<VulkanContext>(
-            specification.Window->GetRendererContext());
+        auto swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
+            specification.Window->GetSwapChain());
 
         VkCall(device.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE,
                                            &m_PipelineLayout));
@@ -200,9 +199,9 @@ namespace Vortex
         pipelineInfo.pColorBlendState    = &colorBlending;
         pipelineInfo.pDynamicState       = &dynamicState;
         pipelineInfo.layout              = m_PipelineLayout;
-        pipelineInfo.renderPass = context->GetSwapChain().GetRenderPass();
-        pipelineInfo.subpass    = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipelineInfo.renderPass          = swapChain->GetRenderPass();
+        pipelineInfo.subpass             = 0;
+        pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
 
         VkCall(device.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipelineInfo,
                                               VK_NULL_HANDLE, &m_Pipeline));

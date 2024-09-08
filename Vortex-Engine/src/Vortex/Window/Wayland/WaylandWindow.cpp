@@ -271,7 +271,7 @@ namespace Vortex
                     self->m_Data.VideoMode.Width  = width;
                     self->m_Data.VideoMode.Height = height;
                     WindowEvents::WindowResizedEvent(self, width, height);
-                    self->m_RendererContext->OnResize();
+                    self->m_SwapChain->OnResize();
                 }
             },
             .close =
@@ -323,11 +323,11 @@ namespace Vortex
         SetupEvents();
 
         if (!specs.NoAPI)
-            m_RendererContext = RendererContext::Create(this, specs.VSync);
+            m_SwapChain = SwapChain::Create(this, specs.VSync);
     }
     WaylandWindow::~WaylandWindow()
     {
-        m_RendererContext.reset();
+        m_SwapChain.reset();
         VtCoreTrace("Wayland: Destroying window...");
         wp_alpha_modifier_surface_v1_destroy(m_AlphaModifierSurface);
         xdg_toplevel_destroy(m_TopLevel);
@@ -365,7 +365,7 @@ namespace Vortex
     }
     void WaylandWindow::Present()
     {
-        if (m_RendererContext) m_RendererContext->Present();
+        if (m_SwapChain) m_SwapChain->Present();
     }
 
     bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }

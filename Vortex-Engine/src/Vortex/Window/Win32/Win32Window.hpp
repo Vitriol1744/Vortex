@@ -58,10 +58,10 @@ namespace Vortex
         virtual void SetSize(const Vec2i& size) noexcept override;
 
         virtual void SetOpacity(f32 opacity) override;
-        virtual Ref<RendererContext>
-        GetRendererContext() const noexcept override
+        virtual Ref<SwapChain>
+        GetSwapChain() const noexcept override
         {
-            return m_RendererContext;
+            return m_SwapChain;
         }
 
         virtual void SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
@@ -83,7 +83,7 @@ namespace Vortex
         bool                       m_CursorTracked = false;
 
         GLFWwindow*                m_Window;
-        Ref<class RendererContext> m_RendererContext = nullptr;
+        Ref<class SwapChain> m_SwapChain = nullptr;
 
         Vec2i                      m_LastCursorPos   = {0, 0};
 
