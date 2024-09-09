@@ -201,14 +201,23 @@ namespace Vortex
         vk::Queue graphicsQueue
             = VulkanRenderer::GetDevice().GetGraphicsQueue();
 
-        vk::DescriptorPoolSize poolSizes[] = {
-            {vk::DescriptorType::eCombinedImageSampler, 1},
-        };
+        vk::DescriptorPoolSize poolSizes[]
+            = {{vk::DescriptorType::eSampler, 1000},
+               {vk::DescriptorType::eCombinedImageSampler, 1000},
+               {vk::DescriptorType::eSampledImage, 1000},
+               {vk::DescriptorType::eStorageImage, 1000},
+               {vk::DescriptorType::eUniformTexelBuffer, 1000},
+               {vk::DescriptorType::eStorageTexelBuffer, 1000},
+               {vk::DescriptorType::eUniformBuffer, 1000},
+               {vk::DescriptorType::eStorageBuffer, 1000},
+               {vk::DescriptorType::eUniformBufferDynamic, 1000},
+               {vk::DescriptorType::eStorageBufferDynamic, 1000},
+               {vk::DescriptorType::eInputAttachment, 1000}};
 
         vk::DescriptorPoolCreateInfo poolInfo = {};
         poolInfo.sType   = vk::StructureType::eDescriptorPoolCreateInfo;
         poolInfo.flags   = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
-        poolInfo.maxSets = 1;
+        poolInfo.maxSets = 1000;
         poolInfo.poolSizeCount = static_cast<uint32_t>(std::size(poolSizes));
         poolInfo.pPoolSizes    = poolSizes;
 

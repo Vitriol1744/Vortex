@@ -199,6 +199,7 @@ namespace Vortex
         pipelineInfo.pColorBlendState    = &colorBlending;
         pipelineInfo.pDynamicState       = &dynamicState;
         pipelineInfo.layout              = m_PipelineLayout;
+
         pipelineInfo.renderPass          = swapChain->GetRenderPass();
         pipelineInfo.subpass             = 0;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;

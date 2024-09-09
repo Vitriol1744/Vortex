@@ -52,8 +52,8 @@ namespace Vortex
 
     void VulkanRenderer::BeginFrame(Window& window)
     {
-        m_CurrentSwapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
-            window.GetSwapChain());
+        m_CurrentSwapChain
+            = std::dynamic_pointer_cast<VulkanSwapChain>(window.GetSwapChain());
 
         m_CurrentSwapChain->BeginFrame();
 

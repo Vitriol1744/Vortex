@@ -209,16 +209,17 @@ void SandboxLayer2D::OnRender()
     Vec4 redColor(1.0f, 0.0f, 0.0f, 1.0f);
     Vec4 blueColor(0.0f, 0.0f, 1.0f, 1.0f);
 
-    Vec3 scale(0.1f);
+    Vec3 scale(0.05f, 0.05f, 0.5f);
 
-    for (i32 y = 0; y < 20; y++)
+    for (f32 y = -5.0f; y < 5.0f; y += 0.5f)
     {
-        for (i32 x = 0; x < 20; x++)
+        for (f32 x = -5.0f; x < 5.0f; x += 0.5f)
         {
             Vec2 pos(x * 0.11f, y * 0.11f);
             // Mat4 transform = glm::translate(Mat4(1.0f), pos) * scale;
-            Vec4 color = redColor;
-            if (x % 2 == 0) color = blueColor;
+            Vec4 color
+                = Vec4((x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.2f);
+            // if (x % 2 == 0) color = blueColor;
             Renderer2D::DrawQuad(pos, scale, color);
         }
     }
@@ -226,9 +227,9 @@ void SandboxLayer2D::OnRender()
 void SandboxLayer2D::OnImGuiRender()
 {
     VtProfileFunction();
-    auto& window    = Application::Get()->GetWindow();
-    auto  swapChain = std::dynamic_pointer_cast<VulkanSwapChain>(
-        window.GetSwapChain());
+    auto& window = Application::Get()->GetWindow();
+    auto  swapChain
+        = std::dynamic_pointer_cast<VulkanSwapChain>(window.GetSwapChain());
     vk::Extent2D extent     = swapChain->GetExtent();
 
     bool         showWindow = true;
@@ -237,7 +238,7 @@ void SandboxLayer2D::OnImGuiRender()
     ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
 
     std::ifstream ifs("/proc/stat");
-    std::string   cpuUsage;
+    std::string   cpuUsage{};
     std::getline(ifs, cpuUsage);
 
     ImGui::Text("CPU: %s", cpuUsage.c_str());

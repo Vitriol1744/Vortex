@@ -100,35 +100,19 @@ namespace Vortex
         VkCall(device.getSwapchainImagesKHR(m_SwapChain, &imageCount,
                                             backbuffers.data()));
 
-        for (usize i = 0; i < imageCount; i++)
-        {
-            auto& frame = m_Frames[i];
-            frame.Image = backbuffers[i];
-        }
-
         if (oldSwapChain)
-        {
-            for (auto& frame : m_Frames)
-                device.destroyImageView(frame.ImageView, VK_NULL_HANDLE);
             device.destroySwapchainKHR(oldSwapChain, VK_NULL_HANDLE);
-        }
 
-        CreateImageViews();
-        CreateDepthBuffer();
+        m_Framebuffer = CreateRef<VulkanFramebuffer>(
+            m_Extent, backbuffers, m_Surface.GetFormat().format);
 
         CreateCommandBuffers();
         CreateSyncObjects();
-
-        if (!m_RenderPass) CreateRenderPass();
-        CreateFramebuffers();
     }
     void VulkanSwapChain::Destroy()
     {
         vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
-
-        device.destroyRenderPass(m_RenderPass, VK_NULL_HANDLE);
-        m_RenderPass = VK_NULL_HANDLE;
 
         VtCoreTrace("Vulkan: Destroying swapChain frames...");
         for (auto& frame : m_Frames)
@@ -143,16 +127,10 @@ namespace Vortex
             device.destroySemaphore(frame.RenderFinishedSemaphore,
                                     VK_NULL_HANDLE);
 
-            device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
-            device.destroyImageView(frame.ImageView, VK_NULL_HANDLE);
-
-            std::memset(&frame, 0, sizeof(Frame));
+            std::memset(&frame, 0, sizeof(PerFrameData));
         }
 
-        VtCoreTrace("Vulkan: Destroying the depth buffer...");
-        device.destroyImageView(m_DepthImageView);
-        m_DepthImage.Destroy();
-
+        m_Framebuffer.reset();
         VtCoreTrace("Vulkan: Destroying swapChain...");
         if (m_SwapChain)
             device.destroySwapchainKHR(m_SwapChain, VK_NULL_HANDLE);
@@ -165,7 +143,7 @@ namespace Vortex
         vk::Device device   = VulkanRenderer::GetDevice();
         m_CurrentImageIndex = AcquireNextImage();
 
-        device.resetCommandPool(GetCurrentFrame().CommandPool,
+        device.resetCommandPool(GetCurrentFrameData().CommandPool,
                                 vk::CommandPoolResetFlags());
     }
 
@@ -178,18 +156,20 @@ namespace Vortex
         submitInfo.sType              = vk::StructureType::eSubmitInfo;
         submitInfo.pNext              = VK_NULL_HANDLE;
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = &GetCurrentFrame().ImageAvailableSemaphore;
+        submitInfo.pWaitSemaphores
+            = &GetCurrentFrameData().ImageAvailableSemaphore;
         submitInfo.pWaitDstStageMask    = &waitStage;
         submitInfo.commandBufferCount   = 1;
-        submitInfo.pCommandBuffers      = &GetCurrentFrame().CommandBuffer;
+        submitInfo.pCommandBuffers      = &GetCurrentFrameData().CommandBuffer;
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores
-            = &GetCurrentFrame().RenderFinishedSemaphore;
+            = &GetCurrentFrameData().RenderFinishedSemaphore;
 
         vk::Device device = VulkanRenderer::GetDevice();
-        VkCall(device.resetFences(1, &GetCurrentFrame().WaitFence));
+        VkCall(device.resetFences(1, &GetCurrentFrameData().WaitFence));
 
-        vk::Queue graphicsQueue = VulkanRenderer::GetDevice().GetGraphicsQueue();
+        vk::Queue graphicsQueue
+            = VulkanRenderer::GetDevice().GetGraphicsQueue();
         VkCall(graphicsQueue.submit(1, &submitInfo,
                                     m_Frames[m_CurrentFrameIndex].WaitFence));
 
@@ -198,7 +178,7 @@ namespace Vortex
         presentInfo.pNext              = VK_NULL_HANDLE;
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores
-            = &GetCurrentFrame().RenderFinishedSemaphore;
+            = &GetCurrentFrameData().RenderFinishedSemaphore;
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains    = &m_SwapChain;
         presentInfo.pImageIndices  = &m_CurrentImageIndex;
@@ -231,8 +211,8 @@ namespace Vortex
 
         u32 framesInFlight  = Renderer::GetConfiguration().MaxFramesInFlight;
         m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
-        VkCall(device.waitForFences(1, &GetCurrentFrame().WaitFence, VK_TRUE,
-                                    UINT64_MAX));
+        VkCall(device.waitForFences(1, &GetCurrentFrameData().WaitFence,
+                                    VK_TRUE, UINT64_MAX));
 
         u32        imageIndex;
         vk::Result result = device.acquireNextImageKHR(
@@ -256,35 +236,6 @@ namespace Vortex
         }
 
         return imageIndex;
-    }
-
-    void VulkanSwapChain::CreateImageViews()
-    {
-        vk::Device device = VulkanRenderer::GetDevice();
-
-        for (size_t i = 0; i < m_Frames.size(); i++)
-        {
-            vk::ImageViewCreateInfo viewInfo{};
-            viewInfo.sType        = vk::StructureType::eImageViewCreateInfo;
-            viewInfo.pNext        = VK_NULL_HANDLE;
-            viewInfo.flags        = vk::ImageViewCreateFlags();
-            viewInfo.image        = m_Frames[i].Image;
-            viewInfo.viewType     = vk::ImageViewType::e2D;
-            viewInfo.format       = m_Surface.GetFormat().format;
-            viewInfo.components.r = vk::ComponentSwizzle::eIdentity;
-            viewInfo.components.g = vk::ComponentSwizzle::eIdentity;
-            viewInfo.components.b = vk::ComponentSwizzle::eIdentity;
-            viewInfo.components.a = vk::ComponentSwizzle::eIdentity;
-            viewInfo.subresourceRange.aspectMask
-                = vk::ImageAspectFlagBits::eColor;
-            viewInfo.subresourceRange.baseMipLevel   = 0;
-            viewInfo.subresourceRange.levelCount     = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount     = 1;
-
-            VkCall(device.createImageView(&viewInfo, VK_NULL_HANDLE,
-                                          &m_Frames[i].ImageView));
-        }
     }
 
     void VulkanSwapChain::CreateCommandBuffers()
@@ -344,158 +295,6 @@ namespace Vortex
                 VkCall(device.createFence(&fenceInfo, VK_NULL_HANDLE,
                                           &frame.WaitFence));
         }
-    }
-
-    void VulkanSwapChain::CreateRenderPass()
-    {
-        vk::Device                device = VulkanRenderer::GetDevice();
-
-        vk::AttachmentDescription colorAttachment{};
-        colorAttachment.flags          = vk::AttachmentDescriptionFlags();
-        colorAttachment.format         = m_ImageFormat;
-        colorAttachment.samples        = vk::SampleCountFlagBits::e1;
-        colorAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
-        colorAttachment.storeOp        = vk::AttachmentStoreOp::eStore;
-        colorAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-        colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-        colorAttachment.initialLayout  = vk::ImageLayout::eUndefined;
-        colorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
-
-        vk::Format depthFormat
-            = VulkanRenderer::GetPhysicalDevice().FindDepthFormat();
-        vk::AttachmentDescription depthAttachment{};
-        depthAttachment.flags          = vk::AttachmentDescriptionFlags();
-        depthAttachment.format         = depthFormat;
-        depthAttachment.samples        = vk::SampleCountFlagBits::e1;
-        depthAttachment.loadOp         = vk::AttachmentLoadOp::eClear;
-        depthAttachment.storeOp        = vk::AttachmentStoreOp::eDontCare;
-        depthAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-        depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-        depthAttachment.initialLayout  = vk::ImageLayout::eUndefined;
-        depthAttachment.finalLayout
-            = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-        vk::AttachmentReference colorReference{};
-        colorReference.attachment = 0;
-        colorReference.layout     = vk::ImageLayout::eColorAttachmentOptimal;
-
-        vk::AttachmentReference depthReference{};
-        depthReference.attachment = 1;
-        depthReference.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-        vk::SubpassDescription subpassDescription{};
-        subpassDescription.flags             = vk::SubpassDescriptionFlags();
-        subpassDescription.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-        subpassDescription.inputAttachmentCount    = 0;
-        subpassDescription.pInputAttachments       = VK_NULL_HANDLE;
-        subpassDescription.colorAttachmentCount    = 1;
-        subpassDescription.pColorAttachments       = &colorReference;
-        subpassDescription.pResolveAttachments     = VK_NULL_HANDLE;
-        subpassDescription.pDepthStencilAttachment = &depthReference;
-        subpassDescription.preserveAttachmentCount = 0;
-        subpassDescription.pPreserveAttachments    = VK_NULL_HANDLE;
-
-        vk::SubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask
-            = vk::PipelineStageFlagBits::eColorAttachmentOutput
-            | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-        dependency.dstStageMask
-            = vk::PipelineStageFlagBits::eColorAttachmentOutput
-            | vk::PipelineStageFlagBits::eEarlyFragmentTests;
-        dependency.srcAccessMask = vk::AccessFlags();
-        dependency.dstAccessMask
-            = vk::AccessFlagBits::eColorAttachmentWrite
-            | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-        dependency.dependencyFlags = vk::DependencyFlags();
-
-        std::array<vk::AttachmentDescription, 2> attachments
-            = {colorAttachment, depthAttachment};
-
-        vk::RenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
-        renderPassInfo.pNext = VK_NULL_HANDLE;
-        renderPassInfo.flags = vk::RenderPassCreateFlags();
-        renderPassInfo.attachmentCount = attachments.size();
-        renderPassInfo.pAttachments    = attachments.data();
-        renderPassInfo.subpassCount    = 1;
-        renderPassInfo.pSubpasses      = &subpassDescription;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies   = &dependency;
-
-        VkCall(device.createRenderPass(&renderPassInfo, VK_NULL_HANDLE,
-                                       &m_RenderPass));
-    }
-    void VulkanSwapChain::CreateFramebuffers()
-    {
-        vk::Device device = VulkanRenderer::GetDevice();
-
-        for (auto& frame : m_Frames)
-        {
-            if (!frame.Framebuffer) break;
-            device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
-            frame.Framebuffer = VK_NULL_HANDLE;
-        }
-
-        for (auto& frame : m_Frames)
-        {
-            std::array<vk::ImageView, 2> attachments
-                = {frame.ImageView, m_DepthImageView};
-
-            vk::FramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = vk::StructureType::eFramebufferCreateInfo;
-            framebufferInfo.pNext = VK_NULL_HANDLE;
-            framebufferInfo.flags = vk::FramebufferCreateFlags();
-            framebufferInfo.renderPass      = m_RenderPass;
-            framebufferInfo.attachmentCount = attachments.size();
-            framebufferInfo.pAttachments    = attachments.data();
-            framebufferInfo.width           = m_Extent.width;
-            framebufferInfo.height          = m_Extent.height;
-            framebufferInfo.layers          = 1;
-
-            VkCall(device.createFramebuffer(&framebufferInfo, VK_NULL_HANDLE,
-                                            &frame.Framebuffer));
-        }
-    }
-
-    void VulkanSwapChain::CreateDepthBuffer()
-    {
-        vk::Format depthFormat
-            = VulkanRenderer::GetPhysicalDevice().FindDepthFormat();
-
-        vk::Device device = VulkanRenderer::GetDevice();
-        if (m_DepthImage)
-        {
-            device.destroyImageView(m_DepthImageView);
-            m_DepthImage.Destroy();
-        }
-        m_DepthImage.Create(m_Extent.width, m_Extent.height, depthFormat,
-                            vk::ImageTiling::eOptimal,
-                            vk::ImageUsageFlagBits::eDepthStencilAttachment);
-        m_DepthImage.TransitionLayout(
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-        vk::ImageViewCreateInfo viewInfo{};
-        viewInfo.sType        = vk::StructureType::eImageViewCreateInfo;
-        viewInfo.pNext        = VK_NULL_HANDLE;
-        viewInfo.flags        = vk::ImageViewCreateFlags();
-        viewInfo.image        = m_DepthImage;
-        viewInfo.viewType     = vk::ImageViewType::e2D;
-        viewInfo.format       = depthFormat;
-        viewInfo.components.r = vk::ComponentSwizzle::eIdentity;
-        viewInfo.components.g = vk::ComponentSwizzle::eIdentity;
-        viewInfo.components.b = vk::ComponentSwizzle::eIdentity;
-        viewInfo.components.a = vk::ComponentSwizzle::eIdentity;
-        viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
-        viewInfo.subresourceRange.baseMipLevel   = 0;
-        viewInfo.subresourceRange.levelCount     = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount     = 1;
-
-        VkCall(device.createImageView(&viewInfo, VK_NULL_HANDLE,
-                                      &m_DepthImageView));
     }
 
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(

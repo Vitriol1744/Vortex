@@ -18,19 +18,23 @@ namespace Vortex
         VulkanTexture2D(PathView path);
         virtual ~VulkanTexture2D();
 
-        virtual u32                    GetMipLevelCount() override { return 0; }
+        virtual u32               GetMipLevelCount() override { return 0; }
 
-        const vk::DescriptorImageInfo& GetImageInfo() const
+        inline const VulkanImage& GetImage() const { return m_TextureImage; }
+        inline vk::ImageView      GetImageView() const { return m_TextureView; }
+        inline vk::Sampler GetSampler() const { return m_TextureSampler; }
+
+        inline const vk::DescriptorImageInfo& GetImageInfo() const
         {
             return m_ImageInfo;
         }
 
       private:
         VulkanImage             m_TextureImage;
-
         vk::ImageView           m_TextureView;
+        vk::Sampler             m_TextureSampler = VK_NULL_HANDLE;
+
         vk::DeviceSize          m_Size;
         vk::DescriptorImageInfo m_ImageInfo;
-        vk::Sampler             m_TextureSampler = VK_NULL_HANDLE;
     };
 }; // namespace Vortex

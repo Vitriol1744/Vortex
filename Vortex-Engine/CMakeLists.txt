@@ -128,6 +128,7 @@ set(SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanAllocator.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanCommon.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanDevice.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanFramebuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanImage.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.cpp

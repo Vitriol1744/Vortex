@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vortex/Renderer/API/SwapChain.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanDevice.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanFramebuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanImage.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanSurface.hpp"
 
@@ -16,11 +16,8 @@ namespace Vortex
     class VulkanSwapChain : public SwapChain, NonCopyable<VulkanSwapChain>
     {
       public:
-        struct Frame
+        struct PerFrameData
         {
-            vk::Image         Image                   = VK_NULL_HANDLE;
-            vk::ImageView     ImageView               = VK_NULL_HANDLE;
-            vk::Framebuffer   Framebuffer             = VK_NULL_HANDLE;
             vk::CommandPool   CommandPool             = VK_NULL_HANDLE;
             vk::CommandBuffer CommandBuffer           = VK_NULL_HANDLE;
             vk::Semaphore     ImageAvailableSemaphore = VK_NULL_HANDLE;
@@ -39,12 +36,16 @@ namespace Vortex
             DestroySurface();
         }
 
-        void                CreateSurface(Window* windowHandle);
-        void                Create(bool vsync = false);
+        void        CreateSurface(Window* windowHandle);
+        void        Create(bool vsync = false);
 
-        void                Destroy();
-        inline void         DestroySurface() { m_Surface.Destroy(); }
+        void        Destroy();
+        inline void DestroySurface() { m_Surface.Destroy(); }
 
+        virtual inline WeakRef<Framebuffer> GetFramebuffer() const
+        {
+            return m_Framebuffer;
+        }
         virtual inline void SetVSync(bool vsync) override { m_VSync = vsync; }
 
         void                BeginFrame();
@@ -54,44 +55,48 @@ namespace Vortex
         inline const VulkanSurface&    GetSurface() const { return m_Surface; }
         inline const vk::CommandBuffer GetCurrentCommandBuffer() const
         {
-            return GetCurrentFrame().CommandBuffer;
+            return GetCurrentFrameData().CommandBuffer;
         }
-        inline const Frame& GetCurrentFrame() const
+        inline const PerFrameData& GetCurrentFrameData() const
         {
             return m_Frames[m_CurrentFrameIndex];
         }
-        inline const std::vector<Frame>& GetFrames() const { return m_Frames; }
+        inline const std::vector<PerFrameData>& GetPerFrameData() const
+        {
+            return m_Frames;
+        }
+        inline const std::vector<VulkanFramebuffer::Frame>& GetFrames() const
+        {
+            return m_Framebuffer->GetFrames();
+        }
         inline u32 GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
         inline u32 GetCurrentImageIndex() { return m_CurrentImageIndex; }
 
         inline     operator vk::SwapchainKHR() const { return m_SwapChain; }
         inline const vk::Extent2D& GetExtent() const { return m_Extent; }
         inline vk::Format     GetImageFormat() const { return m_ImageFormat; }
-        inline vk::RenderPass GetRenderPass() const { return m_RenderPass; }
+        inline vk::RenderPass GetRenderPass() const
+        {
+            return m_Framebuffer->GetRenderPass();
+        }
 
       private:
         VulkanSurface                       m_Surface;
-        std::vector<Frame>                  m_Frames;
+        std::vector<PerFrameData>           m_Frames;
         u32                                 m_CurrentFrameIndex = 0;
         u32                                 m_CurrentImageIndex = 0;
         bool                                m_VSync             = false;
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
+        Ref<VulkanFramebuffer>              m_Framebuffer;
         [[maybe_unused]] vk::PresentModeKHR m_PresentMode;
         vk::Extent2D                        m_Extent;
         vk::Format                          m_ImageFormat;
-        vk::RenderPass                      m_RenderPass = VK_NULL_HANDLE;
-        VulkanImage                         m_DepthImage;
-        vk::ImageView                       m_DepthImageView = VK_NULL_HANDLE;
 
         u32                                 AcquireNextImage();
 
-        void                                CreateImageViews();
         void                                CreateCommandBuffers();
         void                                CreateSyncObjects();
-        void                                CreateRenderPass();
-        void                                CreateFramebuffers();
-        void                                CreateDepthBuffer();
 
         vk::PresentModeKHR                  ChooseSwapPresentMode(
                              const std::vector<vk::PresentModeKHR>& availablePresentModes)
