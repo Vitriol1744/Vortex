@@ -53,6 +53,7 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 
 ### Credits
 * [assimp](https://github.com/assimp/assimp.git) - Open Asset Import Library is a library to load various 3d file formats into a shared, in-memory format. It supports more than 40 file formats for import and a growing selection of file formats for export.
+* [entt](https://github.com/skypjack/entt.git) - EnTT is a header-only, tiny and easy to use library for game programming and much more written in modern C++.
 * [fmt](https://github.com/fmtlib/fmt.git) - {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams.
 * [glm](https://github.com/g-truc/glm.git) - OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
 * [glfw](https://github.com/glfw/glfw.git) - GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development.
@@ -61,8 +62,8 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 * [magic_enum](https://github.com/Neargye/magic_enum.git) - Header-only C++17 library provides static reflection for enums, work with any enum type without any macro or boilerplate code.
 * [shaderc](https://github.com/google/shaderc.git) - A collection of tools, libraries and tests for shader compilation.
 * [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross.git) - SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader languages.
-* [stb](https://github.com/nothings/stb) - single-file public domain (or MIT licensed) libraries for C/C++
-* [tracy](https://github.com/wolfpld/tracy) - A real time, nanosecond resolution, remote telemetry, hybrid frame and sampling profiler for games and other applications.
+* [stb](https://github.com/nothings/stb.git) - single-file public domain (or MIT licensed) libraries for C/C++
+* [tracy](https://github.com/wolfpld/tracy.git) - A real time, nanosecond resolution, remote telemetry, hybrid frame and sampling profiler for games and other applications.
 * [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git) - Easy to integrate Vulkan memory allocation library.
 
 
