@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include "Vortex/Core/Core.hpp"
+#include "Vortex/Renderer/API/Framebuffer.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
@@ -27,7 +27,7 @@ namespace Vortex
 
         void                 BeginFrame(Window& window);
         void                 EndFrame();
-        void                 BeginRenderPass();
+        void                 BeginRenderPass(Ref<Framebuffer> target);
         void                 EndRenderPass();
 
         void                 Draw(Ref<GraphicsPipeline> pipeline,

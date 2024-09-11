@@ -17,9 +17,11 @@
 
 namespace Vortex
 {
-    VulkanInstance       VulkanRenderer::s_VkInstance{};
-    VulkanPhysicalDevice VulkanRenderer::s_PhysicalDevice{};
-    VulkanDevice         VulkanRenderer::s_Device{};
+    static Ref<VulkanFramebuffer> s_CurrentFramebuffer = nullptr;
+
+    VulkanInstance                VulkanRenderer::s_VkInstance{};
+    VulkanPhysicalDevice          VulkanRenderer::s_PhysicalDevice{};
+    VulkanDevice                  VulkanRenderer::s_Device{};
 
     VulkanRenderer::VulkanRenderer() {}
 
@@ -78,18 +80,20 @@ namespace Vortex
         m_CurrentSwapChain = nullptr;
     }
 
-    void VulkanRenderer::BeginRenderPass()
+    void VulkanRenderer::BeginRenderPass(Ref<Framebuffer> target)
     {
         VtAssertFrameStarted();
-        auto                    extent = m_CurrentSwapChain->GetExtent();
 
         vk::RenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType      = vk::StructureType::eRenderPassBeginInfo;
-        renderPassInfo.renderPass = m_CurrentSwapChain->GetRenderPass();
+        renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
+        auto vulkanFramebuffer
+            = std::dynamic_pointer_cast<VulkanFramebuffer>(target);
+        renderPassInfo.renderPass = vulkanFramebuffer->GetRenderPass();
+        vk::Extent2D extent       = vulkanFramebuffer->GetExtent();
+        s_CurrentFramebuffer      = vulkanFramebuffer;
+
         renderPassInfo.framebuffer
-            = m_CurrentSwapChain
-                  ->GetFrames()[m_CurrentSwapChain->GetCurrentImageIndex()]
-                  .Framebuffer;
+            = vulkanFramebuffer->GetCurrentFrame().Framebuffer;
         renderPassInfo.renderArea.offset.x = 0;
         renderPassInfo.renderArea.offset.y = 0;
         renderPassInfo.renderArea.extent   = extent;
@@ -126,6 +130,7 @@ namespace Vortex
             = m_CurrentSwapChain->GetCurrentCommandBuffer();
 
         commandBuffer.endRenderPass();
+        s_CurrentFramebuffer = nullptr;
     }
 
     void VulkanRenderer::Draw(Ref<GraphicsPipeline> pipeline,

@@ -131,7 +131,7 @@ namespace Vortex::Renderer2D
     }
     void EndScene() { Flush(); }
 
-    void DrawQuad(const Vec2& pos, const Vec2& scale, const Vec4& color)
+    void DrawQuad(const Mat4& transform, const Vec4& color)
     {
         constexpr size_t    quadVertexCount = 4;
         constexpr glm::vec2 textureCoords[]
@@ -145,10 +145,6 @@ namespace Vortex::Renderer2D
         quadVertexPositions[2] = {0.5f, 0.5f, 0.0f, 1.0f};
         quadVertexPositions[3] = {-0.5f, 0.5f, 0.0f, 1.0f};
 
-        (void)scale;
-        glm::mat4 transform
-            = glm::translate(glm::mat4(1.0f), glm::vec3(pos, 0.0f))
-            * glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
         for (usize i = 0; i < quadVertexCount; i++)
         {
             s_QuadVerticesPointer->Position

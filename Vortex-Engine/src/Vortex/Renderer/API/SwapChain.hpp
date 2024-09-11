@@ -8,20 +8,23 @@
 
 #include "Vortex/Core/Core.hpp"
 
+#include "Vortex/Renderer/API/Framebuffer.hpp"
+
 namespace Vortex
 {
     class SwapChain
     {
       public:
-        SwapChain()                                = default;
-        virtual ~SwapChain()                       = default;
+        SwapChain()                                       = default;
+        virtual ~SwapChain()                              = default;
 
-        virtual void                Present()            = 0;
-        virtual void                OnResize()           = 0;
+        virtual WeakRef<Framebuffer> GetFramebuffer()     = 0;
 
-        virtual void                SetVSync(bool vsync) = 0;
+        virtual void                 Present()            = 0;
+        virtual void                 OnResize()           = 0;
 
-        static Ref<SwapChain> Create(class Window* window,
-                                           bool          vsync = false);
+        virtual void                 SetVSync(bool vsync) = 0;
+
+        static Ref<SwapChain> Create(class Window* window, bool vsync = false);
     };
 }; // namespace Vortex

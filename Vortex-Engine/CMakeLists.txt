@@ -69,6 +69,7 @@ else()
 endif()
 
 add_subdirectory(vendor/assimp)
+add_subdirectory(vendor/entt)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/glm)
@@ -97,7 +98,8 @@ set(PUBLIC_LIBS
     spirv-cross-hlsl
     spirv-cross-glsl
     spirv-cross-cpp
-    assimp)
+    assimp
+    EnTT)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} Tracy::TracyClient)
@@ -119,6 +121,7 @@ set(SOURCES
     src/Vortex/Renderer/Renderer.cpp
     src/Vortex/Renderer/Renderer2D.cpp
     src/Vortex/Renderer/API/IndexBuffer.cpp
+    src/Vortex/Renderer/API/Framebuffer.cpp
     src/Vortex/Renderer/API/GraphicsPipeline.cpp
     src/Vortex/Renderer/API/Shader.cpp
     src/Vortex/Renderer/API/SwapChain.cpp
@@ -141,6 +144,7 @@ set(SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanTexture2D.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanUniformBuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.cpp
+    src/Vortex/Scene/Scene.cpp
     src/Vortex/Utility/ImageLoader.cpp
     src/Vortex/Window/Monitor.cpp
     src/Vortex/Window/Window.cpp

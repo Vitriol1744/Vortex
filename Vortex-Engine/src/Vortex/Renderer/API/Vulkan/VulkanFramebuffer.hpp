@@ -18,16 +18,38 @@ namespace Vortex
         VulkanFramebuffer(const vk::Extent2D&           extent,
                           const std::vector<vk::Image>& backbuffers,
                           const vk::Format&             format);
+        VulkanFramebuffer(const FramebufferSpecification& specs);
         virtual ~VulkanFramebuffer();
+
+        void          Create();
+        void          Destroy();
+
+        virtual Vec2u GetSize() const override
+        {
+            return Vec2u(m_Extent.width, m_Extent.height);
+        }
+        virtual void OnResize(u32 width, u32 height) override;
 
         struct Frame
         {
             vk::Image       Image       = VK_NULL_HANDLE;
             vk::ImageView   ImageView   = VK_NULL_HANDLE;
             vk::Framebuffer Framebuffer = VK_NULL_HANDLE;
+            vk::Sampler     Sampler     = VK_NULL_HANDLE;
         };
 
-        inline const vk::Extent2D&       GetExtent() const { return m_Extent; }
+        void        NextImage();
+        inline u32  GetCurrentImageIndex() const { return m_CurrentImageIndex; }
+        inline void SetCurrentImageIndex(u32 index)
+        {
+            m_CurrentImageIndex = index;
+        }
+
+        inline const vk::Extent2D& GetExtent() const { return m_Extent; }
+        inline const Frame&        GetCurrentFrame() const
+        {
+            return m_Frames[m_CurrentImageIndex];
+        }
         inline const std::vector<Frame>& GetFrames() const { return m_Frames; }
         inline const VulkanImage& GetDepthImage() const { return m_DepthImage; }
         inline vk::ImageView      GetDepthImageView() const
@@ -40,16 +62,21 @@ namespace Vortex
         }
 
       private:
-        vk::Format         m_ImageFormat;
-        vk::Extent2D       m_Extent{};
-        std::vector<Frame> m_Frames{};
-        VulkanImage        m_DepthImage{};
-        vk::ImageView      m_DepthImageView = VK_NULL_HANDLE;
-        vk::RenderPass     m_RenderPass     = VK_NULL_HANDLE;
+        bool                       m_SwapChainTarget = true;
+        vk::Format                 m_ImageFormat;
+        vk::Extent2D               m_Extent{};
+        std::vector<Frame>         m_Frames{};
+        std::vector<VmaAllocation> m_ImageAllocations{};
+        VulkanImage                m_DepthImage{};
+        vk::ImageView              m_DepthImageView    = VK_NULL_HANDLE;
+        vk::RenderPass             m_RenderPass        = VK_NULL_HANDLE;
+        u32                        m_CurrentImageIndex = 0;
 
-        void               CreateImageViews();
-        void               CreateDepthBuffer();
-        void               CreateRenderPass();
-        void               CreateFramebuffers();
+        void                       CreateImages();
+        void                       CreateImageViews();
+        void                       CreateDepthBuffer();
+        void                       CreateRenderPass();
+        void                       CreateFramebuffers();
+        void                       CreateSamplers();
     };
 }; // namespace Vortex

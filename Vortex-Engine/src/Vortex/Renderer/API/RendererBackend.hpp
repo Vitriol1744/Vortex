@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
+#include "Vortex/Renderer/API/Framebuffer.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
@@ -17,16 +18,16 @@ namespace Vortex
     class VT_API RendererBackend
     {
       public:
-        virtual ~RendererBackend()              = default;
+        virtual ~RendererBackend()                            = default;
 
-        virtual void Initialize()               = 0;
-        virtual void Shutdown()                 = 0;
+        virtual void Initialize()                             = 0;
+        virtual void Shutdown()                               = 0;
 
-        virtual void BeginFrame(Window& window) = 0;
-        virtual void EndFrame()                 = 0;
+        virtual void BeginFrame(Window& window)               = 0;
+        virtual void EndFrame()                               = 0;
         // TODO(v1tr10l7): implement custom render passes
-        virtual void BeginRenderPass()          = 0;
-        virtual void EndRenderPass()            = 0;
+        virtual void BeginRenderPass(Ref<Framebuffer> target) = 0;
+        virtual void EndRenderPass()                          = 0;
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,

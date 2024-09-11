@@ -32,7 +32,10 @@ namespace Vortex
 
         void BeginFrame(Window& window) { s_Backend->BeginFrame(window); }
         void EndFrame() { s_Backend->EndFrame(); }
-        void BeginRenderPass() { s_Backend->BeginRenderPass(); }
+        void BeginRenderPass(Ref<Framebuffer> target)
+        {
+            s_Backend->BeginRenderPass(target);
+        }
         void EndRenderPass() { s_Backend->EndRenderPass(); }
 
         void Draw(Ref<GraphicsPipeline> pipeline,

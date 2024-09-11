@@ -19,21 +19,21 @@ namespace Vortex
         VulkanRenderer();
         virtual ~VulkanRenderer() = default;
 
-        virtual void                        Initialize() override;
-        virtual void                        Shutdown() override;
+        virtual void  Initialize() override;
+        virtual void  Shutdown() override;
 
-        virtual void                        BeginFrame(Window& window) override;
-        virtual void                        EndFrame() override;
-        virtual void                        BeginRenderPass() override;
-        virtual void                        EndRenderPass() override;
+        virtual void  BeginFrame(Window& window) override;
+        virtual void  EndFrame() override;
+        virtual void  BeginRenderPass(Ref<Framebuffer> target) override;
+        virtual void  EndRenderPass() override;
 
-        virtual void                        Draw(Ref<GraphicsPipeline> pipeline,
-                                                 Ref<VertexBuffer>     vertexBuffer,
-                                                 Ref<IndexBuffer>      indexBuffer,
-                                                 u32                   indexCount) override;
+        virtual void  Draw(Ref<GraphicsPipeline> pipeline,
+                           Ref<VertexBuffer>     vertexBuffer,
+                           Ref<IndexBuffer>      indexBuffer,
+                           u32                   indexCount) override;
 
-        virtual usize                       GetMemoryUsage() override;
-        virtual usize                       GetMemoryBudget() override;
+        virtual usize GetMemoryUsage() override;
+        virtual usize GetMemoryBudget() override;
 
         inline static const VulkanInstance& GetVulkanInstance()
         {

@@ -105,6 +105,7 @@ namespace Vortex
 
         m_Framebuffer = CreateRef<VulkanFramebuffer>(
             m_Extent, backbuffers, m_Surface.GetFormat().format);
+        VtCoreInfo("Vulkan: SwapChain image count: {}", backbuffers.size());
 
         CreateCommandBuffers();
         CreateSyncObjects();
@@ -142,6 +143,7 @@ namespace Vortex
 
         vk::Device device   = VulkanRenderer::GetDevice();
         m_CurrentImageIndex = AcquireNextImage();
+        m_Framebuffer->SetCurrentImageIndex(m_CurrentImageIndex);
 
         device.resetCommandPool(GetCurrentFrameData().CommandPool,
                                 vk::CommandPoolResetFlags());

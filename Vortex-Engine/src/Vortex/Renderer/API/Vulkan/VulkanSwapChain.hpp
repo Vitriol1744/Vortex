@@ -42,7 +42,7 @@ namespace Vortex
         void        Destroy();
         inline void DestroySurface() { m_Surface.Destroy(); }
 
-        virtual inline WeakRef<Framebuffer> GetFramebuffer() const
+        virtual inline WeakRef<Framebuffer> GetFramebuffer() override
         {
             return m_Framebuffer;
         }

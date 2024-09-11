@@ -7,17 +7,24 @@
 #pragma once
 
 #include "Vortex/Core/Core.hpp"
+#include "Vortex/Core/Math/Vector.hpp"
 
 namespace Vortex
 {
     struct FramebufferSpecification
     {
+        bool SwapChainTarget = false;
+        u32  Width           = 0;
+        u32  Height          = 0;
     };
 
     class VT_API Framebuffer
     {
       public:
-        virtual ~Framebuffer() = default;
+        virtual ~Framebuffer()                        = default;
+
+        virtual Vec2u GetSize() const                 = 0;
+        virtual void  OnResize(u32 width, u32 height) = 0;
 
         static Ref<Framebuffer>
         Create(const FramebufferSpecification& specification);

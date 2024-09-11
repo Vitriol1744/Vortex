@@ -76,11 +76,11 @@ namespace Vortex
 
                 Renderer::BeginFrame(*m_MainWindow);
 
-                Renderer::BeginRenderPass();
                 for (auto layer : m_LayerStack) layer->OnRender();
 
+                Renderer::BeginRenderPass(
+                    m_MainWindow->GetSwapChain()->GetFramebuffer().lock());
                 RenderImGui();
-
                 Renderer::EndRenderPass();
                 Renderer::EndFrame();
                 ++frames;
@@ -92,7 +92,11 @@ namespace Vortex
             m_DeltaTime = deltaTimer.Restart();
         } while (m_Running);
 
-        for (auto layer : std::views::reverse(m_LayerStack)) layer->OnDetach();
+        for (auto layer : std::views::reverse(m_LayerStack))
+        {
+            layer->OnDetach();
+            layer.reset();
+        }
         m_LayerStack.Clear();
         return m_ShouldRestart;
     }

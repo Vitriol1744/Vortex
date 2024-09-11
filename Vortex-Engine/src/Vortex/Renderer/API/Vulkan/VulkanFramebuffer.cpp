@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanFramebuffer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
+#include "Vortex/Renderer/Renderer.hpp"
 
 namespace Vortex
 {
@@ -26,22 +27,95 @@ namespace Vortex
         CreateRenderPass();
         CreateFramebuffers();
     }
-    VulkanFramebuffer::~VulkanFramebuffer()
+    VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specs)
     {
+        m_SwapChainTarget = specs.SwapChainTarget;
+        m_ImageFormat     = vk::Format::eB8G8R8A8Srgb;
+        m_Extent          = vk::Extent2D(specs.Width, specs.Height);
+        m_Frames.resize(Renderer::GetConfiguration().MaxFramesInFlight);
+        Create();
+    }
+
+    VulkanFramebuffer::~VulkanFramebuffer() { Destroy(); }
+
+    void VulkanFramebuffer::Create()
+    {
+        CreateImages();
+        CreateImageViews();
+        CreateDepthBuffer();
+        CreateRenderPass();
+        CreateFramebuffers();
+        CreateSamplers();
+    }
+    void VulkanFramebuffer::Destroy()
+    {
+
         vk::Device device = VulkanRenderer::GetDevice();
         device.waitIdle();
 
         device.destroyImageView(m_DepthImageView);
         m_DepthImage.Destroy();
 
-        for (auto& frame : m_Frames)
+        for (u32 i = 0; i < m_Frames.size(); i++)
         {
-            device.destroyFramebuffer(frame.Framebuffer, VK_NULL_HANDLE);
-            device.destroyImageView(frame.ImageView, VK_NULL_HANDLE);
+            device.destroyFramebuffer(m_Frames[i].Framebuffer, VK_NULL_HANDLE);
+            device.destroyImageView(m_Frames[i].ImageView, VK_NULL_HANDLE);
+            if (!m_SwapChainTarget)
+            {
+                VulkanAllocator::DestroyImage(m_Frames[i].Image,
+                                              m_ImageAllocations[i]);
+                device.destroySampler(m_Frames[i].Sampler);
+            }
         }
         device.destroyRenderPass(m_RenderPass);
     }
 
+    void VulkanFramebuffer::OnResize(u32 width, u32 height)
+    {
+        vk::Device vkDevice = VulkanRenderer::GetDevice();
+        vkDevice.waitIdle();
+
+        Destroy();
+        m_Extent = vk::Extent2D(width, height);
+        Create();
+
+        vkDevice.waitIdle();
+    }
+    void VulkanFramebuffer::NextImage()
+    {
+        u32 framesInFlight  = Renderer::GetConfiguration().MaxFramesInFlight;
+        m_CurrentImageIndex = (m_CurrentImageIndex + 1) % framesInFlight;
+    }
+
+    void VulkanFramebuffer::CreateImages()
+    {
+        vk::ImageCreateInfo imageInfo{};
+        imageInfo.sType         = vk::StructureType::eImageCreateInfo;
+        imageInfo.pNext         = VK_NULL_HANDLE;
+        imageInfo.flags         = vk::ImageCreateFlags();
+        imageInfo.imageType     = vk::ImageType::e2D;
+        imageInfo.format        = m_ImageFormat;
+        imageInfo.extent.width  = m_Extent.width;
+        imageInfo.extent.height = m_Extent.height;
+        imageInfo.extent.depth  = 1;
+        imageInfo.mipLevels     = 1;
+        imageInfo.arrayLayers   = 1;
+        imageInfo.samples       = vk::SampleCountFlagBits::e1;
+        imageInfo.tiling        = vk::ImageTiling::eOptimal;
+        imageInfo.usage         = vk::ImageUsageFlagBits::eColorAttachment
+                        | vk::ImageUsageFlagBits::eSampled;
+        imageInfo.sharingMode           = vk::SharingMode::eExclusive;
+        imageInfo.queueFamilyIndexCount = 0;
+        imageInfo.pQueueFamilyIndices   = VK_NULL_HANDLE;
+        imageInfo.initialLayout         = vk::ImageLayout::eUndefined;
+
+        vk::DeviceSize size             = m_Extent.width * m_Extent.height * 4;
+
+        m_ImageAllocations.resize(m_Frames.size());
+        for (u32 i = 0; i < m_Frames.size(); i++)
+            m_ImageAllocations[i] = VulkanAllocator::AllocateImage(
+                imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_Frames[i].Image, size);
+    }
     void VulkanFramebuffer::CreateImageViews()
     {
         vk::Device device = VulkanRenderer::GetDevice();
@@ -123,7 +197,9 @@ namespace Vortex
         colorAttachment.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
         colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
         colorAttachment.initialLayout  = vk::ImageLayout::eUndefined;
-        colorAttachment.finalLayout    = vk::ImageLayout::ePresentSrcKHR;
+        colorAttachment.finalLayout
+            = m_SwapChainTarget ? vk::ImageLayout::ePresentSrcKHR
+                                : vk::ImageLayout::eShaderReadOnlyOptimal;
 
         vk::Format depthFormat
             = VulkanRenderer::GetPhysicalDevice().FindDepthFormat();
@@ -214,5 +290,31 @@ namespace Vortex
             VkCall(device.createFramebuffer(&framebufferInfo, VK_NULL_HANDLE,
                                             &m_Frames[i].Framebuffer));
         }
+    }
+    void VulkanFramebuffer::CreateSamplers()
+    {
+        vk::Device            device = VulkanRenderer::GetDevice();
+
+        vk::SamplerCreateInfo samplerInfo{};
+        samplerInfo.sType            = vk::StructureType::eSamplerCreateInfo;
+        samplerInfo.magFilter        = vk::Filter::eLinear;
+        samplerInfo.minFilter        = vk::Filter::eLinear;
+        samplerInfo.addressModeU     = vk::SamplerAddressMode::eRepeat;
+        samplerInfo.addressModeV     = vk::SamplerAddressMode::eRepeat;
+        samplerInfo.addressModeW     = vk::SamplerAddressMode::eRepeat;
+        samplerInfo.anisotropyEnable = VK_FALSE;
+        samplerInfo.maxAnisotropy    = 0;
+        samplerInfo.borderColor      = vk::BorderColor::eIntOpaqueBlack;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable           = VK_FALSE;
+        samplerInfo.compareOp               = vk::CompareOp::eAlways;
+        samplerInfo.mipmapMode              = vk::SamplerMipmapMode::eLinear;
+        samplerInfo.mipLodBias              = 0.0f;
+        samplerInfo.minLod                  = 0.0f;
+        samplerInfo.maxLod                  = 0.0f;
+
+        for (auto& frame : m_Frames)
+            VkCall(device.createSampler(&samplerInfo, VK_NULL_HANDLE,
+                                        &frame.Sampler));
     }
 }; // namespace Vortex
