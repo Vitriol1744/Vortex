@@ -9,3 +9,15 @@
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Math/Quaternion.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
+
+namespace Vortex
+{
+    template <typename T>
+    inline consteval T Pow(T base, T exponent)
+    {
+        T pow = base;
+        for (T i = 1; i < exponent; i++) pow *= base;
+
+        return pow;
+    }
+}; // namespace Vortex

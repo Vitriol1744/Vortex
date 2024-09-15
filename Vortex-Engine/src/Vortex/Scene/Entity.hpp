@@ -10,7 +10,8 @@
 
 namespace Vortex
 {
-    using EntityID = entt::entity;
+    using EntityID   = entt::entity;
+    using EntityNull = entt::null_t;
 
     class Entity
     {
@@ -23,7 +24,15 @@ namespace Vortex
         }
         ~Entity() = default;
 
-        inline EntityID GetID() const { return m_ID; }
+        inline Entity& operator=(entt::null_t)
+        {
+            m_ID    = entt::null;
+            m_Scene = nullptr;
+            return *this;
+        }
+
+        inline operator EntityID() const { return m_ID; }
+        inline operator bool() const { return m_ID != entt::null; }
 
         template <typename T>
         T& GetComponent()
@@ -57,10 +66,8 @@ namespace Vortex
             return m_Scene->GetRegistry().any_of<T>(m_ID);
         }
 
-        consteval operator bool() const { return m_ID != entt::null; }
-
       private:
-        EntityID m_ID;
+        EntityID m_ID    = entt::null;
         Scene*   m_Scene = nullptr;
     };
 }; // namespace Vortex

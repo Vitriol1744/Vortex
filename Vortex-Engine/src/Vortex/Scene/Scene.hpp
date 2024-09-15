@@ -15,12 +15,34 @@
 
 namespace Vortex
 {
-    class Entity;
+    struct TagComponent
+    {
+        std::string Name = "";
+
+        TagComponent()   = default;
+        TagComponent(std::string name)
+            : Name(name)
+        {
+        }
+        TagComponent(const char* name)
+            : Name(name)
+        {
+        }
+
+        inline operator const std::string&() const { return Name; }
+        inline operator const char*() const { return Name.data(); }
+    };
     struct TransformComponent
     {
-        Mat4   Transform;
+        Vec3   Translation;
+        Vec3   Scale;
+        Quat   Rotation;
 
-        inline operator const Mat4&() const { return Transform; }
+        inline operator const Mat4() const
+        {
+            return glm::translate(Mat4(1.0f), Translation)
+                 * glm::mat4_cast(Rotation) * glm::scale(Mat4(1.0f), Scale);
+        }
     };
     struct SpriteComponent
     {
@@ -32,7 +54,7 @@ namespace Vortex
       public:
         Scene() = default;
 
-        Entity                 AddEntity();
+        class Entity           AddEntity();
 
         inline entt::registry& GetRegistry() { return m_Registry; }
         void                   DrawEntities();

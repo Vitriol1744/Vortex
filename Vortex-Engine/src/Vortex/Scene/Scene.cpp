@@ -25,7 +25,7 @@ namespace Vortex
             = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
         for (auto entity : group)
         {
-            auto [transform, sprite]
+            const auto& [transform, sprite]
                 = group.get<TransformComponent, SpriteComponent>(entity);
 
             Renderer2D::DrawQuad(transform, sprite.Color);

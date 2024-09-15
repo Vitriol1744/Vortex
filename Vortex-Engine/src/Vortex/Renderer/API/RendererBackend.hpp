@@ -20,6 +20,8 @@ namespace Vortex
       public:
         virtual ~RendererBackend()                            = default;
 
+        virtual u32  GetCurrentFrameIndex()                   = 0;
+
         virtual void Initialize()                             = 0;
         virtual void Shutdown()                               = 0;
 

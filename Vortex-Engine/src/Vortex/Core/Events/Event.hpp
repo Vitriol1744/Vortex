@@ -57,11 +57,7 @@ namespace Vortex
                         == currentListener.target<bool()>();
                 });
         }
-        inline void operator()()
-        {
-            Dispatch();
-            // EventSystem::PushEvent(this);
-        }
+        inline void operator()() { Dispatch(); }
         inline void Dispatch() override
         {
             for (const auto& listener : m_Listeners)

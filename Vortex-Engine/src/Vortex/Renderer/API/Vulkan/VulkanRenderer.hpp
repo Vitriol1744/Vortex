@@ -19,6 +19,11 @@ namespace Vortex
         VulkanRenderer();
         virtual ~VulkanRenderer() = default;
 
+        virtual u32 GetCurrentFrameIndex() override
+        {
+            return m_CurrentSwapChain->GetCurrentFrameIndex();
+        }
+
         virtual void  Initialize() override;
         virtual void  Shutdown() override;
 

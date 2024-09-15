@@ -24,6 +24,7 @@ namespace Vortex
         void                 Shutdown();
 
         const Configuration& GetConfiguration();
+        u32                  GetCurrentFrameIndex();
 
         void                 BeginFrame(Window& window);
         void                 EndFrame();

@@ -29,6 +29,7 @@ namespace Vortex
         }
 
         const Configuration& GetConfiguration() { return s_Configuration; }
+        u32 GetCurrentFrameIndex() { return s_Backend->GetCurrentFrameIndex(); }
 
         void BeginFrame(Window& window) { s_Backend->BeginFrame(window); }
         void EndFrame() { s_Backend->EndFrame(); }

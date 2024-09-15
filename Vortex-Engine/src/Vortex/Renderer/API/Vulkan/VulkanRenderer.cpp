@@ -88,8 +88,9 @@ namespace Vortex
         renderPassInfo.sType = vk::StructureType::eRenderPassBeginInfo;
         auto vulkanFramebuffer
             = std::dynamic_pointer_cast<VulkanFramebuffer>(target);
-        renderPassInfo.renderPass = vulkanFramebuffer->GetRenderPass();
         vk::Extent2D extent       = vulkanFramebuffer->GetExtent();
+
+        renderPassInfo.renderPass = vulkanFramebuffer->GetRenderPass();
         s_CurrentFramebuffer      = vulkanFramebuffer;
 
         renderPassInfo.framebuffer

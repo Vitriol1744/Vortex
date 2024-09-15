@@ -98,8 +98,7 @@ set(PUBLIC_LIBS
     spirv-cross-hlsl
     spirv-cross-glsl
     spirv-cross-cpp
-    assimp
-    EnTT)
+    assimp)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} Tracy::TracyClient)
@@ -158,8 +157,9 @@ if(UNIX)
       src/Vortex/Window/Wayland/WaylandWindow.cpp
       src/Vortex/Window/Wayland/WaylandMonitor.cpp
       src/Vortex/Window/X11/X11.cpp
+      src/Vortex/Window/X11/X11Monitor.cpp
       src/Vortex/Window/X11/X11Window.cpp
-      src/Vortex/Window/X11/X11Monitor.cpp)
+      src/Vortex/Window/X11/XkbUnicode.cpp)
 
 elseif(WIN32)
   set(SOURCES
@@ -246,7 +246,8 @@ if(VT_BUILD_WAYLAND AND UNIX)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include)
+target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include
+                                                  vendor/entt/single_include)
 target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
