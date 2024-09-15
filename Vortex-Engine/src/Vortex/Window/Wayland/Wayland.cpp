@@ -9,21 +9,28 @@
 #include "Vortex/Window/Wayland/Wayland.hpp"
 #include "Vortex/Window/Wayland/WaylandMonitor.hpp"
 
+#include <sys/mman.h>
+#include <unistd.h>
+
 namespace Vortex::Wayland
 {
     namespace
     {
-        wl_display*                    s_Display             = nullptr;
-        wl_registry*                   s_Registry            = nullptr;
-        wl_compositor*                 s_Compositor          = nullptr;
-        wl_subcompositor*              s_Subcompositor       = nullptr;
-        wl_shm*                        s_Shm                 = nullptr;
+        // Core wayland structures
+        wl_display*                    s_Display       = nullptr;
+        wl_registry*                   s_Registry      = nullptr;
+        wl_compositor*                 s_Compositor    = nullptr;
+        wl_subcompositor*              s_Subcompositor = nullptr;
+        wl_shm*                        s_Shm           = nullptr;
 
-        wl_seat*                       s_Seat                = nullptr;
-        wl_pointer*                    s_Pointer             = nullptr;
-        wl_keyboard*                   s_Keyboard            = nullptr;
-        xkb_context*                   s_XkbContext          = nullptr;
+        wl_seat*                       s_Seat          = nullptr;
+        wl_pointer*                    s_Pointer       = nullptr;
+        wl_keyboard*                   s_Keyboard      = nullptr;
 
+        // Xkb stuff
+        XkbData                        s_XkbData{};
+
+        // Wayland extensions
         xdg_wm_base*                   s_WmBase              = nullptr;
         xdg_toplevel_icon_manager_v1*  s_IconManager         = nullptr;
         wp_alpha_modifier_v1*          s_AlphaModifier       = nullptr;
@@ -201,9 +208,67 @@ namespace Vortex::Wayland
         {
             VtUnused(userData);
             VtUnused(keyboard);
-            VtUnused(format);
-            VtUnused(fd);
-            VtUnused(size);
+
+            if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+            {
+                close(fd);
+                return;
+            }
+
+            char* mapStr = reinterpret_cast<char*>(
+                mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0));
+            if (mapStr == MAP_FAILED)
+            {
+                close(fd);
+                return;
+            }
+
+            xkb_keymap* keymap = xkb_keymap_new_from_string(
+                s_XkbData.Context, mapStr, XKB_KEYMAP_FORMAT_TEXT_V1,
+                xkb_keymap_compile_flags(0));
+            munmap(mapStr, size);
+            close(fd);
+
+            VtCoreAssert(keymap);
+            xkb_state* state = xkb_state_new(keymap);
+            if (!state)
+            {
+                VtCoreAssertMsg(s_XkbData.State,
+                                "Wayland: Failed to create XKB state");
+                xkb_keymap_unref(keymap);
+                return;
+            }
+
+            const char* locale = std::getenv("LC_ALL");
+            if (!locale) locale = std::getenv("LC_CTYPE");
+            if (!locale) locale = std::getenv("LANG");
+            if (!locale) locale = "C";
+
+            xkb_compose_table* composeTable = xkb_compose_table_new_from_locale(
+                s_XkbData.Context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+
+            xkb_compose_state* composeState = xkb_compose_state_new(
+                composeTable, XKB_COMPOSE_STATE_NO_FLAGS);
+            xkb_compose_table_unref(composeTable);
+            s_XkbData.ComposeState = composeState;
+
+            xkb_keymap_unref(s_XkbData.Keymap);
+            xkb_state_unref(s_XkbData.State);
+            s_XkbData.Keymap = keymap;
+            s_XkbData.State  = state;
+
+            s_XkbData.ControlIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Control");
+            s_XkbData.AltIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Mod1");
+            s_XkbData.ShiftIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Shift");
+            s_XkbData.SuperIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Mod4");
+            s_XkbData.CapsLockIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Lock");
+            s_XkbData.NumLockIndex
+                = xkb_keymap_mod_get_index(s_XkbData.Keymap, "Mod2");
         }
         void KeyboardHandleEnter(void* userData, wl_keyboard* keyboard,
                                  u32 serial, wl_surface* surface,
@@ -234,10 +299,12 @@ namespace Vortex::Wayland
             VtUnused(userData);
             VtUnused(keyboard);
             VtUnused(serial);
-            VtUnused(modsDepressed);
-            VtUnused(modsLatched);
-            VtUnused(modsLocked);
-            VtUnused(group);
+
+            if (!s_XkbData.Keymap) return;
+            xkb_state_update_mask(s_XkbData.State, modsDepressed, modsLatched,
+                                  modsLocked, 0, 0, group);
+
+            s_XkbData.Modifiers = 0;
         }
         void KeyboardHandleRepeatInfo(void* userData, wl_keyboard* keyboard,
                                       i32 rate, i32 delay)
@@ -350,14 +417,14 @@ namespace Vortex::Wayland
         VtCoreAssert(s_Seat);
         VtCoreAssert(s_WmBase);
 
-        s_XkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-        VtCoreAssertMsg(s_XkbContext,
+        s_XkbData.Context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+        VtCoreAssertMsg(s_XkbData.Context,
                         "Wayland: Failed to initialize xkb context");
     }
     void Shutdown()
     {
         WaylandMonitor::Shutdown();
-        xkb_context_unref(s_XkbContext);
+        xkb_context_unref(s_XkbData.Context);
 
         if (s_GammaControlManager)
             zwlr_gamma_control_manager_v1_destroy(s_GammaControlManager);
@@ -377,14 +444,32 @@ namespace Vortex::Wayland
         s_Display = nullptr;
     }
 
-    wl_display*                   GetDisplay() { return s_Display; }
-    wl_registry*                  GetRegistry() { return s_Registry; }
-    wl_compositor*                GetCompositor() { return s_Compositor; }
-    wl_subcompositor*             GetSubcompositor() { return s_Subcompositor; }
-    wl_shm*                       GetShm() { return s_Shm; }
+    wl_display*       GetDisplay() { return s_Display; }
+    wl_registry*      GetRegistry() { return s_Registry; }
+    wl_compositor*    GetCompositor() { return s_Compositor; }
+    wl_subcompositor* GetSubcompositor() { return s_Subcompositor; }
+    wl_shm*           GetShm() { return s_Shm; }
 
-    wl_seat*                      GetSeat() { return s_Seat; }
-    xkb_context*                  GetXkbContexxt() { return s_XkbContext; }
+    wl_seat*          GetSeat() { return s_Seat; }
+    const XkbData&    GetXkbData() { return s_XkbData; }
+    xkb_keysym_t      ComposeSymbol(xkb_keysym_t symbol)
+    {
+        if (symbol == XKB_KEY_NoSymbol || !s_XkbData.ComposeState)
+            return symbol;
+        if (xkb_compose_state_feed(s_XkbData.ComposeState, symbol)
+            != XKB_COMPOSE_FEED_ACCEPTED)
+            return symbol;
+
+        switch (xkb_compose_state_get_status(s_XkbData.ComposeState))
+        {
+            case XKB_COMPOSE_COMPOSED:
+                return xkb_compose_state_get_one_sym(s_XkbData.ComposeState);
+            case XKB_COMPOSE_COMPOSING:
+            case XKB_COMPOSE_CANCELLED: return XKB_KEY_NoSymbol;
+            case XKB_COMPOSE_NOTHING:
+            default: return symbol;
+        }
+    }
 
     xdg_wm_base*                  GetWmBase() { return s_WmBase; }
     xdg_toplevel_icon_manager_v1* GetIconManager() { return s_IconManager; }

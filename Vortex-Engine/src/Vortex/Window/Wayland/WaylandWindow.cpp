@@ -730,7 +730,21 @@ namespace Vortex
         KeyCode key = ToVtKeyCode(scancode);
 
         if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+        {
             WindowEvents::KeyPressedEvent(s_KeyboardFocus, key, 0);
+
+            const xkb_keysym_t* keysyms = nullptr;
+            const xkb_keycode_t keycode = scancode + 8;
+
+            if (xkb_state_key_get_syms(Wayland::GetXkbData().State, keycode,
+                                       &keysyms))
+            {
+                const xkb_keysym_t keysym = Wayland::ComposeSymbol(keysyms[0]);
+                const u32          codepoint = KeySym2Unicode(keysym);
+                if (codepoint != u32(-1))
+                    WindowEvents::KeyTypedEvent(s_KeyboardFocus, codepoint);
+            }
+        }
         else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
             WindowEvents::KeyReleasedEvent(s_KeyboardFocus, key);
     }

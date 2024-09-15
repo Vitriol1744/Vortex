@@ -14,12 +14,29 @@
 #include <wayland-xdg-shell-client-protocol.h>
 #include <wayland-xdg-toplevel-icon-v1-client-protocol.h>
 
+#include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
 
 namespace Vortex
 {
     namespace Wayland
     {
+        struct XkbData
+        {
+            xkb_context*       Context       = nullptr;
+            xkb_keymap*        Keymap        = nullptr;
+            xkb_state*         State         = nullptr;
+            xkb_compose_state* ComposeState  = nullptr;
+            xkb_mod_index_t    ControlIndex  = 0;
+            xkb_mod_index_t    AltIndex      = 0;
+            xkb_mod_index_t    ShiftIndex    = 0;
+            xkb_mod_index_t    SuperIndex    = 0;
+            xkb_mod_index_t    CapsLockIndex = 0;
+            xkb_mod_index_t    NumLockIndex  = 0;
+
+            u32                Modifiers     = 0;
+        };
+
         void                           Initialize();
         void                           Shutdown();
 
@@ -30,7 +47,8 @@ namespace Vortex
         wl_shm*                        GetShm();
 
         wl_seat*                       GetSeat();
-        xkb_context*                   GetXkbContext();
+        const XkbData&                 GetXkbData();
+        xkb_keysym_t                   ComposeSymbol(xkb_keysym_t symbol);
 
         xdg_wm_base*                   GetWmBase();
         xdg_toplevel_icon_manager_v1*  GetIconManager();

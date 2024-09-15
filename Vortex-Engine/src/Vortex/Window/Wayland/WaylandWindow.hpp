@@ -9,6 +9,8 @@
 #include "Vortex/Window/Wayland/Wayland.hpp"
 #include "Vortex/Window/Window.hpp"
 
+#include "Vortex/Window/X11/XkbUnicode.hpp"
+
 namespace Vortex
 {
     class WaylandWindow : public Window
@@ -42,8 +44,7 @@ namespace Vortex
             return m_Data.MousePosition;
         }
 
-        virtual Ref<SwapChain>
-        GetSwapChain() const noexcept override
+        virtual Ref<SwapChain> GetSwapChain() const noexcept override
         {
             return m_SwapChain;
         }
@@ -90,7 +91,7 @@ namespace Vortex
         xdg_toplevel_icon_v1*         m_Icon                 = nullptr;
         wl_shm_pool*                  m_IconPool             = nullptr;
         wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
-        Ref<class SwapChain>    m_SwapChain      = nullptr;
+        Ref<class SwapChain>          m_SwapChain            = nullptr;
 
         bool                          m_Maximized            = false;
         bool                          m_Minimized            = false;
