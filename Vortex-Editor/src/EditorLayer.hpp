@@ -19,8 +19,8 @@ namespace Vortex
     class EditorLayer : public Layer
     {
       public:
-        EditorLayer(std::string_view name = "Layer")
-            : Layer(name)
+        EditorLayer()
+            : Layer("Editor Layer")
         {
         }
 
@@ -41,5 +41,14 @@ namespace Vortex
         std::vector<void*>    m_FramebufferDescriptorSets;
         Vec2u                 m_ViewportSize{100, 100};
         Scene                 m_Scene;
+        bool                  m_ViewportFocused    = false;
+        bool                  m_ViewportHovered    = false;
+        EntityID              m_SelectedEntity     = entt::null;
+        bool                  m_ShowSceneHierarchy = true;
+
+        void                  DrawStatisticsPanel();
+        void                  DrawViewport();
+        void                  DrawSceneHierarchyPanel();
+        void                  DrawComponents(Entity& entity);
     };
 }; // namespace Vortex

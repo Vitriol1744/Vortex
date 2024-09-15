@@ -4,8 +4,8 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "Vortex/Core/Log/Log.hpp"
-#include "Vortex/Engine/Application.hpp"
+#include <Vortex/Core/Log/Log.hpp>
+#include <Vortex/Engine/Application.hpp>
 
 #include "EditorLayer.hpp"
 
@@ -16,7 +16,7 @@ class Editor : public Application
     Editor(const ApplicationSpecification& spec)
         : Application(spec)
     {
-        PushLayer(CreateRef<EditorLayer>("EditorLayer"));
+        PushLayer(CreateRef<EditorLayer>());
     }
 };
 
