@@ -261,9 +261,24 @@ namespace Vortex
         static constexpr xdg_toplevel_listener toplevel_listener{
             .configure =
                 [](void* data, xdg_toplevel*, i32 width, i32 height,
-                   wl_array*) noexcept
+                   wl_array* states) noexcept
             {
-                auto self = reinterpret_cast<WaylandWindow*>(data);
+                auto self      = reinterpret_cast<WaylandWindow*>(data);
+
+                bool minimized = false;
+
+                xdg_toplevel_state* current
+                    = reinterpret_cast<xdg_toplevel_state*>(states->data);
+                while (reinterpret_cast<uintptr_t>(current)
+                       < (reinterpret_cast<uintptr_t>(states->data)
+                          + states->size))
+                {
+                    if (*current == XDG_TOPLEVEL_STATE_SUSPENDED)
+                        minimized = true;
+                    ++current;
+                }
+
+                self->m_Minimized = minimized;
 
                 if (self->m_Data.VideoMode.Width != width
                     && self->m_Data.VideoMode.Height != height)
@@ -367,11 +382,7 @@ namespace Vortex
     }
 
     bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
-    bool WaylandWindow::IsMinimized() const noexcept
-    {
-        VtTodo();
-        return false;
-    }
+    bool WaylandWindow::IsMinimized() const noexcept { return m_Minimized; }
     bool WaylandWindow::IsHovered() const noexcept
     {
         return s_FocusedWindow == this;
