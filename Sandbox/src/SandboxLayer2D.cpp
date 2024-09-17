@@ -153,8 +153,7 @@ void SandboxLayer2D::OnAttach()
     s_Camera.SetOrthographic(aspectRatio * zoomLevel, -aspectRatio * zoomLevel,
                              zoomLevel, -zoomLevel, 0.0f, 1.0f);
 
-    Vec2 mousePos = window.GetCursorPosition();
-    Renderer2D::Initialize();
+    Vec2        mousePos        = window.GetCursorPosition();
 
     static auto onMouseScrolled = [](Window*, f64, f64 deltaY) -> bool
     {
@@ -164,11 +163,7 @@ void SandboxLayer2D::OnAttach()
 
     WindowEvents::MouseScrolledEvent += onMouseScrolled;
 }
-void SandboxLayer2D::OnDetach()
-{
-    s_Shader.reset();
-    Renderer2D::Shutdown();
-}
+void SandboxLayer2D::OnDetach() { s_Shader.reset(); }
 
 void SandboxLayer2D::OnUpdate()
 {

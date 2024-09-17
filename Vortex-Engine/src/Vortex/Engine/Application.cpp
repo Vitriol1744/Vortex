@@ -12,6 +12,7 @@
 #include "Vortex/Core/Timer.hpp"
 #include "Vortex/Engine/Application.hpp"
 #include "Vortex/Renderer/Renderer.hpp"
+#include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
 
 namespace Vortex
@@ -43,10 +44,13 @@ namespace Vortex
         PushOverlay(m_ImGuiLayer);
 
         Keyboard::Initialize();
+        Renderer2D::Initialize();
     }
     Application::~Application()
     {
+        Renderer2D::Shutdown();
         m_MainWindow.reset();
+
         Renderer::Shutdown();
         Window::Shutdown();
 
