@@ -252,6 +252,12 @@ namespace Vortex
                         = Application::Get()->GetWindow().SaveFileDialog();
                     m_Scene.Serialize(path);
                 }
+                if (ImGui::MenuItem("Open", "Ctrl+O"))
+                {
+                    const Path path
+                        = Application::Get()->GetWindow().OpenFileDialog(".");
+                    m_Scene.Deserialize(path);
+                }
                 if (ImGui::MenuItem("Restart", "Alt+F5"))
                     Application::Get()->Restart();
                 if (ImGui::MenuItem("Quit", "Alt+F4"))

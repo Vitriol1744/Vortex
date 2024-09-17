@@ -12,6 +12,7 @@
 #include "Vortex/Core/Math/Vector.hpp"
 
 #include <entt/entt.hpp>
+#include <nlohmann/json.hpp>
 
 namespace Vortex
 {
@@ -71,5 +72,9 @@ namespace Vortex
       private:
         std::string    m_Name = "Unnamed";
         entt::registry m_Registry;
+
+        void DeserializeEntities(const nlohmann::ordered_json& entities);
+        void DeserializeComponents(const nlohmann::ordered_json& components,
+                                   Entity&                       entity);
     };
 }; // namespace Vortex

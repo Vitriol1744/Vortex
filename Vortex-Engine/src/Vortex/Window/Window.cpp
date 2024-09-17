@@ -136,7 +136,8 @@ namespace Vortex
     Path Window::OpenFileDialog(std::string_view initialFolder)
     {
         NFD::UniquePath filePath;
-        nfdresult_t result = NFD::PickFolder(filePath, initialFolder.data());
+        (void)initialFolder;
+        nfdresult_t result = NFD::OpenDialog(filePath);
 
         VtCoreAssertFormat(
             result != NFD_ERROR,
