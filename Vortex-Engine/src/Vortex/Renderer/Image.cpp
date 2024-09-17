@@ -22,7 +22,6 @@ namespace Vortex
     }
     Image::~Image()
     {
-        // FIXME(v1tr10l7): crashes for some reason
         if (m_Pixels) stbi_image_free(m_Pixels);
         m_Pixels = nullptr;
     }

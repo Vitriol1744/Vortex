@@ -190,7 +190,7 @@ namespace Vortex
         vk::Result result       = presentQueue.presentKHR(&presentInfo);
 
         if (result == vk::Result::eErrorOutOfDateKHR
-            || result == vk::Result::eSuboptimalKHR)
+            || result == vk::Result::eSuboptimalKHR || m_ShouldResize)
             OnResize();
         else if (result != vk::Result::eSuccess)
         {
@@ -205,6 +205,7 @@ namespace Vortex
         Create(m_VSync);
 
         device.waitIdle();
+        m_ShouldResize = false;
     }
 
     u32 VulkanSwapChain::AcquireNextImage()

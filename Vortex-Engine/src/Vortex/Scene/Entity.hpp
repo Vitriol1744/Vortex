@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include "Vortex/Core/Core.hpp"
 #include "Vortex/Scene/Scene.hpp"
 
 namespace Vortex

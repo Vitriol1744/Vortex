@@ -62,7 +62,7 @@ set(ASSIMP_WARNINGS_AS_ERRORS
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
   option(TRACY_ENABLE " " ON)
-  option(TRACY_ON_DEMAND " " OFF)
+  option(TRACY_ON_DEMAND " " ON)
 else()
   option(TRACY_ENABLE " " OFF)
   option(TRACY_ON_DEMAND " " OFF)
@@ -73,6 +73,7 @@ add_subdirectory(vendor/entt)
 add_subdirectory(vendor/fmt)
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/glm)
+add_subdirectory(vendor/json)
 add_subdirectory(vendor/magic_enum)
 add_subdirectory(vendor/shaderc)
 add_subdirectory(vendor/SPIRV-Cross)
@@ -98,7 +99,8 @@ set(PUBLIC_LIBS
     spirv-cross-hlsl
     spirv-cross-glsl
     spirv-cross-cpp
-    assimp)
+    assimp
+    nlohmann_json::nlohmann_json)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} Tracy::TracyClient)

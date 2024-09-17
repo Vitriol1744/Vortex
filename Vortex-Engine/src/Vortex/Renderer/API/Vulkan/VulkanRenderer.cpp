@@ -100,7 +100,7 @@ namespace Vortex
         renderPassInfo.renderArea.extent   = extent;
 
         std::array<vk::ClearValue, 2> clearValues;
-        std::array<f32, 4>            color = {0.1f, 0.1f, 0.1f, 1.0f};
+        std::array<f32, 4>            color = {0.03f, 0.03f, 0.03f, 1.0f};
         clearValues[0].setColor(color);
         clearValues[1].setDepthStencil({1.0, 0});
         renderPassInfo.clearValueCount = clearValues.size();

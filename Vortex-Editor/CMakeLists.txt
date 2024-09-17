@@ -12,6 +12,8 @@ set(CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-DVT_ENABLE_ASSERTIONS)
 
-set(SOURCES src/EditorApplication.cpp src/EditorLayer.cpp)
+set(SOURCES src/EditorApplication.cpp src/EditorLayer.cpp
+            src/Panels/SceneHierarchyPanel.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 target_link_libraries(${PROJECT_NAME} PUBLIC Vortex-Engine)

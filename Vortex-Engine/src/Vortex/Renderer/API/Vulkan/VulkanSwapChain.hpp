@@ -46,11 +46,15 @@ namespace Vortex
         {
             return m_Framebuffer;
         }
-        virtual inline void SetVSync(bool vsync) override { m_VSync = vsync; }
+        virtual inline void SetVSync(bool vsync) override
+        {
+            m_VSync        = vsync;
+            m_ShouldResize = true;
+        }
 
-        void                BeginFrame();
-        virtual void        Present() override;
-        virtual void        OnResize() override;
+        void                           BeginFrame();
+        virtual void                   Present() override;
+        virtual void                   OnResize() override;
 
         inline const VulkanSurface&    GetSurface() const { return m_Surface; }
         inline const vk::CommandBuffer GetCurrentCommandBuffer() const
@@ -86,6 +90,7 @@ namespace Vortex
         u32                                 m_CurrentFrameIndex = 0;
         u32                                 m_CurrentImageIndex = 0;
         bool                                m_VSync             = false;
+        bool                                m_ShouldResize      = false;
 
         vk::SwapchainKHR                    m_SwapChain = VK_NULL_HANDLE;
         Ref<VulkanFramebuffer>              m_Framebuffer;

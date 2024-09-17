@@ -38,7 +38,7 @@ namespace Vortex
         Vec3   Scale;
         Quat   Rotation;
 
-        inline operator const Mat4() const
+        inline operator Mat4() const
         {
             return glm::translate(Mat4(1.0f), Translation)
                  * glm::mat4_cast(Rotation) * glm::scale(Mat4(1.0f), Scale);
@@ -58,6 +58,9 @@ namespace Vortex
 
         inline entt::registry& GetRegistry() { return m_Registry; }
         void                   DrawEntities();
+
+        void                   Serialize();
+        void                   Deserialize();
 
       private:
         entt::registry m_Registry;

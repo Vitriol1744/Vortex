@@ -10,6 +10,7 @@
 
 #include <Vortex/Core/Profiler.hpp>
 #include <Vortex/Engine/Application.hpp>
+
 #include <Vortex/Renderer/API/Vulkan/VulkanFramebuffer.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp>
 #include <Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h>
@@ -19,15 +20,15 @@
 
 namespace Vortex
 {
-    static Camera    s_Camera;
+    static Camera s_Camera;
 
-    static u32       frameIndex      = 0;
-    static f32       s_MovementSpeed = 0.5f;
-    static glm::vec3 s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
+    static u32    frameIndex      = 0;
+    static f32    s_MovementSpeed = 0.5f;
+    static Vec3   s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    static f32       s_ZoomLevel     = 3.0f;
+    static f32    s_ZoomLevel     = 3.0f;
 
-    void             EditorLayer::OnAttach()
+    void          EditorLayer::OnAttach()
     {
         VtProfileFunction();
         Window& window = Application::Get()->GetWindow();
@@ -95,7 +96,6 @@ namespace Vortex
         s_Camera.SetOrthographic(aspectRatio * zoomLevel,
                                  -aspectRatio * zoomLevel, zoomLevel,
                                  -zoomLevel, 0.0f, 1.0f);
-        Renderer2D::Initialize();
 
         Vec3 scale(0.05f, 0.05f, 0.5f);
         u32  i = 0;
@@ -121,11 +121,12 @@ namespace Vortex
                 ++i;
             }
         }
+
+        m_Panels.push_back(CreateScope<SceneHierarchyPanel>(m_Scene));
     }
     void EditorLayer::OnDetach()
     {
         // TODO(v1tr10l7): delete textures
-        Renderer2D::Shutdown();
     }
 
     void EditorLayer::OnUpdate()
@@ -242,14 +243,21 @@ namespace Vortex
             if (ImGui::BeginMenu("File"))
             {
                 ImGui::Separator();
-                if (ImGui::MenuItem("Restart")) Application::Get()->Restart();
-                if (ImGui::MenuItem("Quit")) Application::Get()->Close();
+                if (ImGui::MenuItem("Save", "Ctrl+S")) m_Scene.Serialize();
+                if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
+                    m_Scene.Serialize();
+                if (ImGui::MenuItem("Restart", "Alt+F5"))
+                    Application::Get()->Restart();
+                if (ImGui::MenuItem("Quit", "Alt+F4"))
+                    Application::Get()->Close();
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("View"))
             {
                 ImGui::Separator();
-                ImGui::Checkbox("Scene Hierarchy", &m_ShowSceneHierarchy);
+                for (auto& panel : m_Panels)
+                    ImGui::Checkbox(panel->GetName().data(), &panel->Enabled);
+
                 ImGui::EndMenu();
             }
             ImGui::EndMenuBar();
@@ -257,7 +265,7 @@ namespace Vortex
 
         DrawStatisticsPanel();
         DrawViewport();
-        if (m_ShowSceneHierarchy) DrawSceneHierarchyPanel();
+        for (auto& panel : m_Panels) panel->Draw();
 
         ImGui::End();
 
@@ -286,6 +294,10 @@ namespace Vortex
         ImGui::Checkbox("Demo Window", &demoWindow);
         if (demoWindow) ImGui::ShowDemoWindow(&demoWindow);
 
+        static bool vsync = false;
+        if (ImGui::Checkbox("VSync", &vsync))
+            Application::Get()->GetWindow().GetSwapChain()->SetVSync(vsync);
+
         ImGui::End();
     }
     void EditorLayer::DrawViewport()
@@ -308,51 +320,5 @@ namespace Vortex
         ImGui::Image(m_FramebufferDescriptorSets[frameIndex],
                      ImVec2(framebufferSize.x, framebufferSize.y));
         ImGui::End();
-    }
-    void EditorLayer::DrawSceneHierarchyPanel()
-    {
-        ImGui::Begin("Scene Hierarchy", &m_ShowSceneHierarchy);
-
-        auto view = m_Scene.GetRegistry().view<entt::entity>();
-        for (const auto entityID : view)
-        {
-            Entity              entity(entityID, m_Scene);
-
-            const TagComponent& tagComponent
-                = entity.GetComponent<TagComponent>();
-
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
-            if (m_SelectedEntity == entityID)
-                flags |= ImGuiTreeNodeFlags_Selected;
-
-            const char* entityName = tagComponent;
-            bool        opened
-                = ImGui::TreeNodeEx((void*)entityID, flags, "%s", entityName);
-
-            if (ImGui::IsItemClicked() && m_SelectedEntity != entityID)
-                m_SelectedEntity = entityID;
-            else if (ImGui::IsItemClicked()) m_SelectedEntity = entt::null;
-
-            if (opened)
-            {
-                DrawComponents(entity);
-                ImGui::TreePop();
-            }
-        }
-
-        ImGui::End();
-    }
-    void EditorLayer::DrawComponents(Entity& entity)
-    {
-        if (entity.HasComponent<TagComponent>())
-        {
-            auto& tagComponent = entity.GetComponent<TagComponent>();
-
-            char  buffer[256];
-            std::memset(buffer, 0, 256);
-            std::memcpy(buffer, tagComponent.Name.data(),
-                        tagComponent.Name.size());
-            if (ImGui::InputText("Tag", buffer, 255)) tagComponent = buffer;
-        }
     }
 }; // namespace Vortex

@@ -14,6 +14,8 @@
 #include <Vortex/Scene/Entity.hpp>
 #include <Vortex/Scene/Scene.hpp>
 
+#include "Panels/SceneHierarchyPanel.hpp"
+
 namespace Vortex
 {
     class EditorLayer : public Layer
@@ -32,23 +34,21 @@ namespace Vortex
         virtual void OnImGuiRender() override;
 
       private:
-        bool                  m_ShouldResizeFramebuffer = false;
-        Ref<Shader>           m_Shader                  = nullptr;
-        Ref<GraphicsPipeline> m_Pipeline                = nullptr;
-        Ref<Texture2D>        m_Texture                 = nullptr;
-        Ref<Framebuffer>      m_Framebuffer             = nullptr;
-        void*                 m_DescriptorSet           = nullptr;
-        std::vector<void*>    m_FramebufferDescriptorSets;
-        Vec2u                 m_ViewportSize{100, 100};
-        Scene                 m_Scene;
-        bool                  m_ViewportFocused    = false;
-        bool                  m_ViewportHovered    = false;
-        EntityID              m_SelectedEntity     = entt::null;
-        bool                  m_ShowSceneHierarchy = true;
+        bool                      m_ShouldResizeFramebuffer = false;
+        Ref<Shader>               m_Shader                  = nullptr;
+        Ref<GraphicsPipeline>     m_Pipeline                = nullptr;
+        Ref<Texture2D>            m_Texture                 = nullptr;
+        Ref<Framebuffer>          m_Framebuffer             = nullptr;
+        void*                     m_DescriptorSet           = nullptr;
+        std::vector<void*>        m_FramebufferDescriptorSets;
+        Vec2u                     m_ViewportSize{100, 100};
+        Scene                     m_Scene;
+        bool                      m_ViewportFocused = false;
+        bool                      m_ViewportHovered = false;
+        EntityID                  m_SelectedEntity  = entt::null;
+        std::vector<Scope<Panel>> m_Panels;
 
-        void                  DrawStatisticsPanel();
-        void                  DrawViewport();
-        void                  DrawSceneHierarchyPanel();
-        void                  DrawComponents(Entity& entity);
+        void                      DrawStatisticsPanel();
+        void                      DrawViewport();
     };
 }; // namespace Vortex
