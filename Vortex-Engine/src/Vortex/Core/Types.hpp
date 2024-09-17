@@ -101,3 +101,14 @@ struct fmt::formatter<Vortex::Version> : fmt::formatter<std::string>
             ctx);
     }
 };
+
+template <>
+struct fmt::formatter<Vortex::Path> : fmt::formatter<std::string>
+{
+    template <typename FormatContext>
+    auto format(const Vortex::Path& path, FormatContext& ctx) const
+    {
+        return fmt::formatter<std::string>::format(
+            fmt::format("{}", path.c_str()), ctx);
+    }
+};

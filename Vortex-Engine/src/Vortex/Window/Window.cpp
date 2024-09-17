@@ -16,6 +16,8 @@
     #include "Vortex/Window/Win32/Win32Window.hpp"
 #endif
 
+#include <nfd.hpp>
+
 namespace Vortex
 {
     static WindowSubsystem ChooseSubsystem()
@@ -73,7 +75,6 @@ namespace Vortex
     void Window::Initialize()
     {
 #ifdef VT_PLATFORM_LINUX
-
         if (GetWindowSubsystem() == WindowSubsystem::eX11)
         {
             X11::Initialize();
@@ -97,11 +98,14 @@ namespace Vortex
         s_Shutdown   = Win32Window::Shutdown;
 #endif
 
+        NFD_Init();
         VtCoreAssertMsg(s_CreateWindow && s_PollEvents && s_Shutdown,
                         "Unsupported platform!");
     }
     void Window::Shutdown()
     {
+        NFD_Quit();
+
         s_Shutdown();
         WindowEvents::KeyPressedEvent.RemoveAllListeners();
         WindowEvents::KeyReleasedEvent.RemoveAllListeners();
@@ -127,7 +131,32 @@ namespace Vortex
         MonitorEvents::MonitorStateChangedEvent.RemoveAllListeners();
     }
 
-    void          Window::PollEvents() { s_PollEvents(); }
+    void Window::PollEvents() { s_PollEvents(); }
+
+    Path Window::OpenFileDialog(std::string_view initialFolder)
+    {
+        NFD::UniquePath filePath;
+        nfdresult_t result = NFD::PickFolder(filePath, initialFolder.data());
+
+        VtCoreAssertFormat(
+            result != NFD_ERROR,
+            "Window::OpenFileDialog: Failed to open dialog: '{}'",
+            NFD::GetError());
+
+        return result == NFD_OKAY ? filePath.get() : "";
+    }
+    Path Window::SaveFileDialog()
+    {
+        NFD::UniquePath filePath;
+        nfdresult_t     result = NFD::SaveDialog(filePath, nullptr, 0);
+
+        VtCoreAssertFormat(
+            result != NFD_ERROR,
+            "Window::SaveFileDialog: Failed to open dialog: '{}'",
+            NFD::GetError());
+
+        return result == NFD_OKAY ? filePath.get() : "";
+    }
 
     Scope<Window> Window::Create(const WindowSpecification& specs)
     {

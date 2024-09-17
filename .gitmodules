@@ -35,3 +35,6 @@
 [submodule "Vortex-Engine/vendor/json"]
 	path = Vortex-Engine/vendor/json
 	url = https://github.com/nlohmann/json
+[submodule "Vortex-Engine/vendor/nativefiledialog-extended"]
+	path = Vortex-Engine/vendor/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended

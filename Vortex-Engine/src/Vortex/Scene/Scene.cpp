@@ -34,17 +34,17 @@ namespace Vortex
         }
     }
 
-    void Scene::Serialize()
+    void Scene::Serialize(PathView path)
     {
         using json = nlohmann::ordered_json;
         json out;
 
-        std::filesystem::create_directories("assets/scenes");
+        std::filesystem::create_directories(path.parent_path());
+        VtCoreTrace("Saving scene at '{}'", path);
 
-        std::string sceneName = "Unnamed";
-        out["sceneName"]      = sceneName;
+        out["sceneName"] = m_Name;
 
-        json entities         = json::array();
+        json entities    = json::array();
         for (const auto entityID : m_Registry.view<entt::entity>())
         {
             Entity entity(entityID, *this);
@@ -66,10 +66,6 @@ namespace Vortex
 
         out["entities"] = entities;
 
-        std::transform(sceneName.begin(), sceneName.end(), sceneName.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
-        std::filesystem::path path
-            = fmt::format("assets/scenes/{}.vproj", sceneName);
         std::ofstream ofs(path);
         ofs << std::setw(4) << out;
     }

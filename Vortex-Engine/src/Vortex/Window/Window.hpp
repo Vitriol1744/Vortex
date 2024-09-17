@@ -130,6 +130,9 @@ namespace Vortex
         virtual void SetVisible(bool visible) const                  = 0;
         virtual void SetAlwaysOnTop(bool alwaysOnTop)                = 0;
 
+        virtual Path OpenFileDialog(std::string_view initialFolder);
+        virtual Path SaveFileDialog();
+
         static Scope<Window>
         Create(const WindowSpecification& windowSpecification);
         static Scope<Window> Create(const VideoMode& videoMode,

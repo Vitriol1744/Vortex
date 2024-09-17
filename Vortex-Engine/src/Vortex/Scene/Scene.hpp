@@ -52,17 +52,24 @@ namespace Vortex
     class VT_API Scene
     {
       public:
-        Scene() = default;
+        explicit inline Scene(std::string_view name = "Unnamed")
+            : m_Name(name)
+        {
+        }
+
+        inline std::string_view GetName() const { return m_Name; }
+        inline void            SetName(std::string_view name) { m_Name = name; }
 
         class Entity           AddEntity();
 
         inline entt::registry& GetRegistry() { return m_Registry; }
         void                   DrawEntities();
 
-        void                   Serialize();
-        void                   Deserialize();
+        void                   Serialize(PathView path);
+        void                   Deserialize(PathView path);
 
       private:
+        std::string    m_Name = "Unnamed";
         entt::registry m_Registry;
     };
 }; // namespace Vortex

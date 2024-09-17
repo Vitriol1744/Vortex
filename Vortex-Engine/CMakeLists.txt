@@ -75,6 +75,7 @@ add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/glm)
 add_subdirectory(vendor/json)
 add_subdirectory(vendor/magic_enum)
+add_subdirectory(vendor/nativefiledialog-extended)
 add_subdirectory(vendor/shaderc)
 add_subdirectory(vendor/SPIRV-Cross)
 add_subdirectory(vendor/tracy)
@@ -100,7 +101,8 @@ set(PUBLIC_LIBS
     spirv-cross-glsl
     spirv-cross-cpp
     assimp
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    nfd)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
   set(PUBLIC_LIBS ${PUBLIC_LIBS} Tracy::TracyClient)

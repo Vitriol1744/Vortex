@@ -122,6 +122,7 @@ namespace Vortex
             }
         }
 
+        m_Scene.SetName("Vortex-Scene");
         m_Panels.push_back(CreateScope<SceneHierarchyPanel>(m_Scene));
     }
     void EditorLayer::OnDetach()
@@ -243,9 +244,14 @@ namespace Vortex
             if (ImGui::BeginMenu("File"))
             {
                 ImGui::Separator();
-                if (ImGui::MenuItem("Save", "Ctrl+S")) m_Scene.Serialize();
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
+                    m_Scene.Serialize("assets/scenes/unnamed.vproj");
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
-                    m_Scene.Serialize();
+                {
+                    const Path path
+                        = Application::Get()->GetWindow().SaveFileDialog();
+                    m_Scene.Serialize(path);
+                }
                 if (ImGui::MenuItem("Restart", "Alt+F5"))
                     Application::Get()->Restart();
                 if (ImGui::MenuItem("Quit", "Alt+F4"))
