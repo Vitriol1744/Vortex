@@ -60,6 +60,7 @@ You can find the roadmap at: https://trello.com/b/NwfDrxwK/vortex-engine
 * [glfw](https://github.com/glfw/glfw.git) - GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development.
     It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
 * [imgui](https://github.com/ocornut/imgui.git) - Dear ImGui is a bloat-free graphical user interface library for C++.
+* [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo.git) - ImGizmo is a small library built ontop of Dear ImGui that allow you to manipulate(Rotate & translate at the moment) 4x4 float matrices
 * [magic_enum](https://github.com/Neargye/magic_enum.git) - Header-only C++17 library provides static reflection for enums, work with any enum type without any macro or boilerplate code.
 * [shaderc](https://github.com/google/shaderc.git) - A collection of tools, libraries and tests for shader compilation.
 * [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross.git) - SPIRV-Cross is a tool designed for parsing and converting SPIR-V to other shader languages.
