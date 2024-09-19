@@ -23,6 +23,8 @@
 #include "EditorCamera.hpp"
 #include "Panels/SceneHierarchyPanel.hpp"
 
+#include <ImGuizmo.h>
+
 namespace Vortex
 {
     class EditorLayer : public Layer
@@ -41,23 +43,24 @@ namespace Vortex
         virtual void OnImGuiRender() override;
 
       private:
-        bool                      m_ShouldResizeFramebuffer = false;
-        Ref<Shader>               m_Shader                  = nullptr;
-        Ref<GraphicsPipeline>     m_Pipeline                = nullptr;
-        Ref<Texture2D>            m_Texture                 = nullptr;
-        Ref<Framebuffer>          m_Framebuffer             = nullptr;
-        void*                     m_DescriptorSet           = nullptr;
-        std::vector<void*>        m_FramebufferDescriptorSets;
-        Vec2u                     m_ViewportSize{100, 100};
-        Scene                     m_Scene;
-        bool                      m_ViewportFocused = false;
-        bool                      m_ViewportHovered = false;
-        EntityID                  m_SelectedEntity  = entt::null;
-        std::vector<Scope<Panel>> m_Panels;
+        bool                     m_ShouldResizeFramebuffer = false;
+        Ref<Shader>              m_Shader                  = nullptr;
+        Ref<GraphicsPipeline>    m_Pipeline                = nullptr;
+        Ref<Texture2D>           m_Texture                 = nullptr;
+        Ref<Framebuffer>         m_Framebuffer             = nullptr;
+        void*                    m_DescriptorSet           = nullptr;
+        std::vector<void*>       m_FramebufferDescriptorSets;
+        Vec2u                    m_ViewportSize{100, 100};
+        Scene                    m_Scene;
+        Path                     m_CurrentScenePath    = "";
+        bool                     m_ViewportFocused     = false;
+        bool                     m_ViewportHovered     = false;
+        EntityID                 m_SelectedEntity      = entt::null;
+        Ref<SceneHierarchyPanel> m_SceneHierarchyPanel = nullptr;
 
-        EditorCamera              m_Camera;
+        EditorCamera             m_Camera;
 
-        void                      DrawStatisticsPanel();
-        void                      DrawViewport();
+        void                     DrawStatisticsPanel();
+        void                     DrawViewport();
     };
 }; // namespace Vortex

@@ -15,6 +15,8 @@
 #include "Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.h"
 #include <vulkan/vulkan_core.h>
 
+#include <ImGuizmo.h>
+
 namespace Vortex
 {
     using Input::KeyCode;
@@ -546,6 +548,7 @@ namespace Vortex
 
         // TODO(v1tr10l7): Gamepad support for imgui
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
     }
     void VulkanImGuiLayer::End()
     {

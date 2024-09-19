@@ -30,13 +30,15 @@ namespace Vortex
             m_SelectedEntity = entt::null;
         }
 
+        inline Entity GetSelectedEntity() const { return m_SelectedEntity; }
+
       protected:
         virtual void OnImGuiRender() override;
 
       private:
-        Scene*   m_Scene;
-        EntityID m_SelectedEntity = entt::null;
+        Scene* m_Scene;
+        Entity m_SelectedEntity;
 
-        void     DrawContextMenu();
+        void   DrawContextMenu();
     };
 }; // namespace Vortex

@@ -180,7 +180,8 @@ set(SOURCES
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
     vendor/imgui/imgui_widgets.cpp
-    src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp)
+    src/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp
+    vendor/ImGuizmo/ImGuizmo.cpp)
 
 if(VORTEX_BUILD_SHARED_LIBS)
   add_definitions(-DVT_BUILD_DLL)
@@ -204,7 +205,8 @@ target_compile_options(
           -Werror
           -fvisibility=hidden
           -Wno-nullability-extension
-          -Wno-nullability-completeness>)
+          -Wno-nullability-completeness
+          -Wno-nested-anon-types>)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Workaround for std::expected not available in clang
   target_compile_options(
@@ -252,8 +254,9 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include
                                                   vendor/entt/single_include)
-target_include_directories(${PROJECT_NAME}
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui)
+target_include_directories(
+  ${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui
+                         vendor/ImGuizmo)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
   target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
@@ -269,9 +272,8 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 endif()
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 target_compile_definitions(
-  ${PROJECT_NAME}
-  PUBLIC -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS
-         -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
+  ${PROJECT_NAME} PUBLIC -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE
+                         -DGLM_ENABLE_EXPERIMENTAL)
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Shcore)

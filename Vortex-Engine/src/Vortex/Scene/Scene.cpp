@@ -57,6 +57,8 @@ namespace Vortex
         return entity;
     }
 
+    void Scene::RemoveEntity(Entity entity) { m_Registry.destroy(entity); }
+
     void Scene::DrawEntities()
     {
         auto group

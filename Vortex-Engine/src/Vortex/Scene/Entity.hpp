@@ -38,6 +38,10 @@ namespace Vortex
         template <typename T>
         T& GetComponent()
         {
+            VtCoreAssertFormat(HasComponent<T>(),
+                               "The entity doesn't have the component '{}'",
+                               typeid(T).name());
+
             return m_Scene->GetRegistry().get<T>(m_ID);
         }
 

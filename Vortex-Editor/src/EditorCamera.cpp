@@ -43,14 +43,14 @@ namespace Vortex
 
         using Input::KeyCode;
         using Input::MouseCode;
-        if (Mouse::IsButtonPressed(MouseCode::eLeft))
+        if (Mouse::IsButtonPressed(MouseCode::eRight))
         {
             f32 xOffset = currentMousePos.x - m_LastMousePos.x;
             f32 yOffset = currentMousePos.y - m_LastMousePos.y;
             xOffset *= m_MouseSensitivity;
             yOffset *= m_MouseSensitivity;
 
-            m_Yaw += xOffset * deltaTime;
+            m_Yaw -= xOffset * deltaTime;
             m_Pitch += yOffset * deltaTime;
         }
         if (Keyboard::IsKeyPressed(KeyCode::eLeft))
@@ -70,9 +70,9 @@ namespace Vortex
         else if (Keyboard::IsKeyPressed(KeyCode::eS))
             SetPosition(cameraPos - forward * deltaTime * velocity);
         else if (Keyboard::IsKeyPressed(KeyCode::eSpace))
-            SetPosition(cameraPos + up * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eLCtrl))
             SetPosition(cameraPos - up * deltaTime * velocity);
+        else if (Keyboard::IsKeyPressed(KeyCode::eLCtrl))
+            SetPosition(cameraPos + up * deltaTime * velocity);
 
         if (m_Pitch > 89.0f) m_Pitch = 89.0f;
         if (m_Pitch < -89.0f) m_Pitch = -89.0f;

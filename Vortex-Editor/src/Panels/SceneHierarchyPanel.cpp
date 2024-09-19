@@ -177,30 +177,54 @@ namespace Vortex
         auto view = m_Scene->GetRegistry().view<entt::entity>();
         for (const auto entityID : view)
         {
-            Entity              entity(entityID, *m_Scene);
+            Entity entity(entityID, *m_Scene);
 
-            const TagComponent& tagComponent
-                = entity.GetComponent<TagComponent>();
+            ImGui::PushID(reinterpret_cast<void*>(entityID));
+            const char* entityTag = "Untagged";
+            if (entity.HasComponent<TagComponent>())
+                entityTag = entity.GetComponent<TagComponent>();
 
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
-                                     | ImGuiTreeNodeFlags_SpanAvailWidth;
+                                     | ImGuiTreeNodeFlags_SpanAvailWidth
+                                     | ImGuiTreeNodeFlags_AllowItemOverlap;
             if (m_SelectedEntity == entityID)
                 flags |= ImGuiTreeNodeFlags_Selected;
 
-            const char* entityName = tagComponent;
-            bool        opened
-                = ImGui::TreeNodeEx((void*)entityID, flags, "%s", entityName);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+            bool opened
+                = ImGui::TreeNodeEx((void*)entityID, flags, "%s", entityTag);
 
             if (ImGui::IsItemClicked() && m_SelectedEntity != entityID)
-                m_SelectedEntity = entityID;
-            else if (ImGui::IsItemClicked()) m_SelectedEntity = entt::null;
+                m_SelectedEntity = Entity(entityID, *m_Scene);
+
+            ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+            bool removeEntity = ImGui::Button("-", ImVec2(20, 20));
+            ImGui::PopStyleVar();
 
             if (opened) ImGui::TreePop();
+            if (removeEntity)
+            {
+                if (entityID == m_SelectedEntity) m_SelectedEntity = entt::null;
+                m_Scene->RemoveEntity(entity);
+            }
+            ImGui::PopID();
         }
 
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left)
             && ImGui::IsWindowHovered())
             m_SelectedEntity = entt::null;
+
+        if (ImGui::BeginPopupContextWindow(nullptr,
+                                           ImGuiPopupFlags_MouseButtonRight))
+        {
+            if (ImGui::MenuItem("Add entity"))
+            {
+                Entity newEntity = m_Scene->AddEntity();
+                auto&  tc        = newEntity.AddComponent<TagComponent>();
+                tc.Name          = "Unnamed";
+            }
+            ImGui::EndPopup();
+        }
 
         ImGui::Begin("Properties");
         Entity entity(m_SelectedEntity, *m_Scene);
@@ -217,16 +241,16 @@ namespace Vortex
 
     void SceneHierarchyPanel::DrawContextMenu()
     {
-        const char* tag
-            = Entity(m_SelectedEntity, *m_Scene).GetComponent<TagComponent>();
+        const char* tag = "Untagged";
+        if (m_SelectedEntity.HasComponent<TagComponent>())
+            tag = m_SelectedEntity.GetComponent<TagComponent>();
 
-        if (ImGui::IsWindowHovered()
-            && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-            ImGui::OpenPopup(tag);
-
-        if (ImGui::BeginPopup(tag))
+        if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
         {
-            if (ImGui::MenuItem("Add Component")) ImGui::CloseCurrentPopup();
+            if (ImGui::MenuItem("Add Component"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
     }

@@ -78,33 +78,10 @@ namespace Vortex
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
 
-        Vec3 scale(0.05f, 0.05f, 0.5f);
-        u32  i = 0;
-        for (f32 y = -5.0f; y < 5.0f; y += 0.5f)
-        {
-            for (f32 x = -5.0f; x < 5.0f; x += 0.5f)
-            {
-                auto  quad         = m_Scene.AddEntity();
-                auto& tagComponent = quad.AddComponent<TagComponent>();
-                auto& transformComponent
-                    = quad.AddComponent<TransformComponent>();
-                auto& spriteComponent = quad.AddComponent<SpriteComponent>();
-
-                Vec2  pos(x * 0.11f, y * 0.11f);
-                transformComponent.Translation = Vec3(pos, 0.0f);
-                transformComponent.Scale       = scale;
-                transformComponent.Scale       = scale;
-                transformComponent.Rotation    = glm::quat();
-
-                tagComponent.Name              = fmt::format("Quad #{}", i);
-                spriteComponent.Color
-                    = Vec4((x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.2f);
-                ++i;
-            }
-        }
-
+        m_CurrentScenePath = "assets/scenes/default-scene.vproj";
         m_Scene.SetName("Vortex-Scene");
-        m_Panels.push_back(CreateScope<SceneHierarchyPanel>(m_Scene));
+        m_Scene.Deserialize(m_CurrentScenePath);
+        m_SceneHierarchyPanel = CreateRef<SceneHierarchyPanel>(m_Scene);
     }
     void EditorLayer::OnDetach()
     {
@@ -116,14 +93,9 @@ namespace Vortex
         VtProfileFunction();
 
         auto& window = Application::Get()->GetWindow();
-        // s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
-        //                          -aspectRatio * s_ZoomLevel, s_ZoomLevel,
-        //                          -s_ZoomLevel, 0.0f, 1.0f);
 
         using namespace Input;
         if (m_ViewportFocused) m_Camera.Update();
-
-        // s_Camera.SetPosition(s_Translation);
 
         if (m_ShouldResizeFramebuffer)
         {
@@ -202,32 +174,39 @@ namespace Vortex
             ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
         }
 
+        Window& window = Application::Get()->GetWindow();
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
                 ImGui::Separator();
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
-                    m_Scene.Serialize("assets/scenes/unnamed.vproj");
+                {
+                    if (m_CurrentScenePath.empty())
+                        m_CurrentScenePath = window.SaveFileDialog();
+
+                    if (!m_CurrentScenePath.empty())
+                        m_Scene.Serialize(m_CurrentScenePath);
+                }
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
                 {
-                    const Path path
-                        = Application::Get()->GetWindow().SaveFileDialog();
-
-                    if (!path.empty()) m_Scene.Serialize(path);
-                }
-                if (ImGui::MenuItem("Open", "Ctrl+O"))
-                {
-                    const Path path
-                        = Application::Get()->GetWindow().OpenFileDialog(".");
+                    const Path path = window.SaveFileDialog();
 
                     if (!path.empty())
                     {
+                        m_Scene.Serialize(path);
+                        m_CurrentScenePath = path;
+                    }
+                }
+                if (ImGui::MenuItem("Open", "Ctrl+O"))
+                {
+                    const Path path = window.OpenFileDialog(".");
+
+                    if (!path.empty())
+                    {
+                        m_CurrentScenePath = path;
                         m_Scene.Deserialize(path);
-                        auto sceneHierarchyPanel
-                            = reinterpret_cast<SceneHierarchyPanel*>(
-                                m_Panels[0].get());
-                        sceneHierarchyPanel->SetScene(m_Scene);
+                        m_SceneHierarchyPanel->SetScene(m_Scene);
                     }
                 }
                 if (ImGui::MenuItem("Restart", "Alt+F5"))
@@ -239,8 +218,8 @@ namespace Vortex
             if (ImGui::BeginMenu("View"))
             {
                 ImGui::Separator();
-                for (auto& panel : m_Panels)
-                    ImGui::Checkbox(panel->GetName().data(), &panel->Enabled);
+                ImGui::Checkbox(m_SceneHierarchyPanel->GetName().data(),
+                                &m_SceneHierarchyPanel->Enabled);
 
                 ImGui::EndMenu();
             }
@@ -249,7 +228,7 @@ namespace Vortex
 
         DrawStatisticsPanel();
         DrawViewport();
-        for (auto& panel : m_Panels) panel->Draw();
+        m_SceneHierarchyPanel->Draw();
 
         ImGui::End();
 
@@ -278,9 +257,27 @@ namespace Vortex
         ImGui::Checkbox("Demo Window", &demoWindow);
         if (demoWindow) ImGui::ShowDemoWindow(&demoWindow);
 
-        static bool vsync = false;
+        Window&     window = Application::Get()->GetWindow();
+        static bool vsync  = false;
         if (ImGui::Checkbox("VSync", &vsync))
-            Application::Get()->GetWindow().GetSwapChain()->SetVSync(vsync);
+            window.GetSwapChain()->SetVSync(vsync);
+
+        static f32 fov         = 75.0f;
+        static f32 aspectRatio = static_cast<f32>(window.GetWidth())
+                               / static_cast<f32>(window.GetHeight());
+        static f32 planes[] = {0.1f, 100.0f};
+
+        if (ImGui::DragFloat("fov", &fov)
+            || ImGui::DragFloat2("Near/Far planes", planes))
+            m_Camera.SetPerspective(glm::radians(fov), aspectRatio, planes[0],
+                                    planes[1]);
+        if (ImGui::Button("flip Y"))
+        {
+            auto projection = m_Camera.GetProjection();
+            projection[1][1] *= -1;
+
+            m_Camera.SetProjection(projection);
+        }
 
         ImGui::End();
     }
@@ -303,6 +300,32 @@ namespace Vortex
 
         ImGui::Image(m_FramebufferDescriptorSets[frameIndex],
                      ImVec2(framebufferSize.x, framebufferSize.y));
+        Entity selectedEntity = m_SceneHierarchyPanel->GetSelectedEntity();
+        if (selectedEntity && selectedEntity.HasComponent<TransformComponent>())
+        {
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+            f32 windowWidth  = static_cast<f32>(ImGui::GetWindowWidth());
+            f32 windowHeight = static_cast<f32>(ImGui::GetWindowHeight());
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+                              windowWidth, windowHeight);
+
+            auto&     tc = selectedEntity.GetComponent<TransformComponent>();
+            glm::mat4 transform        = tc;
+
+            auto      cameraView       = m_Camera.GetView();
+            auto      cameraProjection = m_Camera.GetProjection();
+            cameraProjection[1][1] *= -1;
+            transform[1][1] *= -1;
+            ImGuizmo::Manipulate(
+                glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL,
+                glm::value_ptr(transform));
+
+            if (ImGuizmo::IsUsing()) tc.Translation = glm::vec3(transform[3]);
+        }
+
         ImGui::End();
     }
 }; // namespace Vortex

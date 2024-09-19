@@ -69,6 +69,7 @@ namespace Vortex
         inline void            SetName(std::string_view name) { m_Name = name; }
 
         class Entity           AddEntity();
+        void                   RemoveEntity(Entity entity);
 
         inline entt::registry& GetRegistry() { return m_Registry; }
         void                   DrawEntities();

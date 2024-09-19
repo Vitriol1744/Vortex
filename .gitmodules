@@ -38,3 +38,6 @@
 [submodule "Vortex-Engine/vendor/nativefiledialog-extended"]
 	path = Vortex-Engine/vendor/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended
+[submodule "Vortex-Engine/vendor/ImGuizmo"]
+	path = Vortex-Engine/vendor/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo
