@@ -112,6 +112,32 @@ namespace Vortex
         }
 
         template <>
+        void DrawComponent<CameraComponent>(Entity& entity)
+        {
+            auto&       cc = entity.GetComponent<CameraComponent>();
+
+            const char* projectionTypes[] = {"Orthographic", "Perspective"};
+            const char* currentProjection = projectionTypes[std::to_underlying(
+                cc.Camera.GetProjectionType())];
+
+            if (ImGui::BeginCombo("Projection", currentProjection))
+            {
+                for (u32 i = 0; i < 2; i++)
+                {
+                    bool isSelected = currentProjection == projectionTypes[i];
+                    if (ImGui::Selectable(projectionTypes[i], isSelected))
+                    {
+                        currentProjection = projectionTypes[i];
+                        // cc.Camera.Set
+                    }
+
+                    if (isSelected) ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+        }
+
+        template <>
         void DrawComponent<SpriteComponent>(Entity& entity)
         {
             auto& spriteComponent = entity.GetComponent<SpriteComponent>();
@@ -148,10 +174,10 @@ namespace Vortex
 
     void SceneHierarchyPanel::OnImGuiRender()
     {
-        auto view = m_Scene.GetRegistry().view<entt::entity>();
+        auto view = m_Scene->GetRegistry().view<entt::entity>();
         for (const auto entityID : view)
         {
-            Entity              entity(entityID, m_Scene);
+            Entity              entity(entityID, *m_Scene);
 
             const TagComponent& tagComponent
                 = entity.GetComponent<TagComponent>();
@@ -177,7 +203,7 @@ namespace Vortex
             m_SelectedEntity = entt::null;
 
         ImGui::Begin("Properties");
-        Entity entity(m_SelectedEntity, m_Scene);
+        Entity entity(m_SelectedEntity, *m_Scene);
 
         if (entity)
         {
@@ -192,7 +218,7 @@ namespace Vortex
     void SceneHierarchyPanel::DrawContextMenu()
     {
         const char* tag
-            = Entity(m_SelectedEntity, m_Scene).GetComponent<TagComponent>();
+            = Entity(m_SelectedEntity, *m_Scene).GetComponent<TagComponent>();
 
         if (ImGui::IsWindowHovered()
             && ImGui::IsMouseReleased(ImGuiMouseButton_Right))

@@ -20,15 +20,21 @@ namespace Vortex
       public:
         SceneHierarchyPanel(Scene& scene)
             : Panel("Scene Hierarchy")
-            , m_Scene(scene)
+            , m_Scene(&scene)
         {
+        }
+
+        void SetScene(Scene& scene)
+        {
+            m_Scene          = &scene;
+            m_SelectedEntity = entt::null;
         }
 
       protected:
         virtual void OnImGuiRender() override;
 
       private:
-        Scene&   m_Scene;
+        Scene*   m_Scene;
         EntityID m_SelectedEntity = entt::null;
 
         void     DrawContextMenu();

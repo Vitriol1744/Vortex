@@ -20,29 +20,16 @@
 
 namespace Vortex
 {
-    static Camera s_Camera;
+    using PipelineSpecification = GraphicsPipelineSpecification;
+    using Pipeline              = GraphicsPipeline;
 
-    static u32    frameIndex      = 0;
-    static f32    s_MovementSpeed = 0.5f;
-    static Vec3   s_Translation   = glm::vec3(0.0f, 0.0f, 0.0f);
+    static u32 frameIndex       = 0;
 
-    static f32    s_ZoomLevel     = 3.0f;
-
-    void          EditorLayer::OnAttach()
+    void       EditorLayer::OnAttach()
     {
         VtProfileFunction();
         Window& window = Application::Get()->GetWindow();
         window.SetPosition(300, 300);
-
-        static auto onMouseScrolled = [this](Window*, f64, f64 deltaY) -> bool
-        {
-            if (!m_ViewportHovered) return false;
-
-            s_ZoomLevel += deltaY * Application::Get()->GetDeltaTime();
-            return false;
-        };
-
-        WindowEvents::MouseScrolledEvent += onMouseScrolled;
 
         Image image("assets/icon.bmp");
 
@@ -53,13 +40,13 @@ namespace Vortex
         std::initializer_list<VertexBufferElement> elements
             = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
                ShaderDataType::eFloat2};
-        VertexBufferLayout            layout(elements);
+        VertexBufferLayout    layout(elements);
 
-        GraphicsPipelineSpecification pipelineSpecs{};
+        PipelineSpecification pipelineSpecs{};
         pipelineSpecs.Shader = m_Shader;
         pipelineSpecs.Window = &Application::Get()->GetWindow();
         pipelineSpecs.Layout = layout;
-        m_Pipeline           = GraphicsPipeline::Create(pipelineSpecs);
+        m_Pipeline           = Pipeline::Create(pipelineSpecs);
         m_Texture            = Texture2D::Create("assets/textures/texture.jpg");
 
         auto vulkanTexture
@@ -90,12 +77,6 @@ namespace Vortex
                 framebufferSampler, framebufferImageView,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
-
-        f32 aspectRatio = 800.0f / 600.0f;
-        f32 zoomLevel   = 3.0f;
-        s_Camera.SetOrthographic(aspectRatio * zoomLevel,
-                                 -aspectRatio * zoomLevel, zoomLevel,
-                                 -zoomLevel, 0.0f, 1.0f);
 
         Vec3 scale(0.05f, 0.05f, 0.5f);
         u32  i = 0;
@@ -134,32 +115,15 @@ namespace Vortex
     {
         VtProfileFunction();
 
-        auto& window      = Application::Get()->GetWindow();
-        f32   aspectRatio = static_cast<f32>(window.GetWidth())
-                        / static_cast<f32>(window.GetHeight());
-        s_ZoomLevel = std::clamp(s_ZoomLevel, 0.0001f, 20.0f);
-        s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
-                                 -aspectRatio * s_ZoomLevel, s_ZoomLevel,
-                                 -s_ZoomLevel, 0.0f, 1.0f);
+        auto& window = Application::Get()->GetWindow();
+        // s_Camera.SetOrthographic(aspectRatio * s_ZoomLevel,
+        //                          -aspectRatio * s_ZoomLevel, s_ZoomLevel,
+        //                          -s_ZoomLevel, 0.0f, 1.0f);
 
         using namespace Input;
-        if (m_ViewportFocused)
-        {
-            if (Keyboard::IsKeyPressed(KeyCode::eA))
-                s_Translation.x
-                    += s_MovementSpeed * Application::Get()->GetDeltaTime();
-            else if (Keyboard::IsKeyPressed(KeyCode::eD))
-                s_Translation.x
-                    -= s_MovementSpeed * Application::Get()->GetDeltaTime();
-            else if (Keyboard::IsKeyPressed(KeyCode::eW))
-                s_Translation.y
-                    -= s_MovementSpeed * Application::Get()->GetDeltaTime();
-            else if (Keyboard::IsKeyPressed(KeyCode::eS))
-                s_Translation.y
-                    += s_MovementSpeed * Application::Get()->GetDeltaTime();
-        }
+        if (m_ViewportFocused) m_Camera.Update();
 
-        s_Camera.SetPosition(s_Translation);
+        // s_Camera.SetPosition(s_Translation);
 
         if (m_ShouldResizeFramebuffer)
         {
@@ -192,8 +156,7 @@ namespace Vortex
     {
         Renderer::BeginRenderPass(m_Framebuffer);
 
-        Renderer2D::BeginScene(s_Camera);
-
+        Renderer2D::BeginScene(m_Camera);
         m_Scene.DrawEntities();
         Renderer2D::EndScene();
 
@@ -250,13 +213,22 @@ namespace Vortex
                 {
                     const Path path
                         = Application::Get()->GetWindow().SaveFileDialog();
-                    m_Scene.Serialize(path);
+
+                    if (!path.empty()) m_Scene.Serialize(path);
                 }
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
                     const Path path
                         = Application::Get()->GetWindow().OpenFileDialog(".");
-                    m_Scene.Deserialize(path);
+
+                    if (!path.empty())
+                    {
+                        m_Scene.Deserialize(path);
+                        auto sceneHierarchyPanel
+                            = reinterpret_cast<SceneHierarchyPanel*>(
+                                m_Panels[0].get());
+                        sceneHierarchyPanel->SetScene(m_Scene);
+                    }
                 }
                 if (ImGui::MenuItem("Restart", "Alt+F5"))
                     Application::Get()->Restart();

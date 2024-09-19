@@ -82,7 +82,6 @@ add_subdirectory(vendor/tracy)
 add_subdirectory(vendor/VulkanMemoryAllocator)
 
 add_definitions(-DVT_ENABLE_ASSERTIONS)
-add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 set(INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/src/Vortex"
                  vendor/imgui vendor/stb/include ${CMAKE_CURRENT_BINARY_DIR})
@@ -151,7 +150,8 @@ set(SOURCES
     src/Vortex/Utility/ImageLoader.cpp
     src/Vortex/Window/Monitor.cpp
     src/Vortex/Window/Window.cpp
-    src/Vortex/Window/Input/Keyboard.cpp)
+    src/Vortex/Window/Input/Keyboard.cpp
+    src/Vortex/Window/Input/Mouse.cpp)
 
 if(UNIX)
   set(SOURCES
@@ -268,7 +268,10 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DVT_DIST)
 endif()
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
-target_compile_definitions(${PROJECT_NAME} PUBLIC -DGLM_FORCE_DEPTH_ZERO_TO_ONE)
+target_compile_definitions(
+  ${PROJECT_NAME}
+  PUBLIC -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_FORCE_RADIANS
+         -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC Shcore)

@@ -70,7 +70,18 @@ namespace Vortex
             m_Scale = scale;
         }
 
-      private:
+        inline void SetProjection(const Mat4& projection)
+        {
+            m_Dirty      = true;
+            m_Projection = projection;
+        }
+        inline void SetView(const Mat4& view)
+        {
+            m_Dirty = true;
+            m_View  = view;
+        }
+
+      protected:
         ProjectionType m_ProjectionType{};
         bool           m_Dirty    = false;
         Vec3           m_Position = {0.0f, 0.0f, 0.0f};

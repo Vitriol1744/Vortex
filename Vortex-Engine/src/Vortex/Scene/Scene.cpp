@@ -125,12 +125,18 @@ namespace Vortex
     }
     void Scene::Deserialize(PathView path)
     {
+        m_Registry.clear();
         using json = nlohmann::ordered_json;
         std::ifstream ifs(path);
-        json          data = json::parse(ifs);
+        if (!ifs)
+        {
+            VtCoreError("Scene::Deserialize: Failed to open '{}'", path);
+            return;
+        }
+
+        json data = json::parse(ifs);
 
         if (data.contains("sceneName")) m_Name = data["sceneName"];
-
         if (data.contains("entities")) DeserializeEntities(data["entities"]);
     }
 

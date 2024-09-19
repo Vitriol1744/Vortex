@@ -6,6 +6,12 @@
  */
 #pragma once
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include <Vortex/Core/Layer.hpp>
 #include <Vortex/Renderer/API/Framebuffer.hpp>
 #include <Vortex/Renderer/API/GraphicsPipeline.hpp>
@@ -14,6 +20,7 @@
 #include <Vortex/Scene/Entity.hpp>
 #include <Vortex/Scene/Scene.hpp>
 
+#include "EditorCamera.hpp"
 #include "Panels/SceneHierarchyPanel.hpp"
 
 namespace Vortex
@@ -47,6 +54,8 @@ namespace Vortex
         bool                      m_ViewportHovered = false;
         EntityID                  m_SelectedEntity  = entt::null;
         std::vector<Scope<Panel>> m_Panels;
+
+        EditorCamera              m_Camera;
 
         void                      DrawStatisticsPanel();
         void                      DrawViewport();

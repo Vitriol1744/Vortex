@@ -10,6 +10,7 @@
 #include "Vortex/Core/Math/Matrix.hpp"
 #include "Vortex/Core/Math/Quaternion.hpp"
 #include "Vortex/Core/Math/Vector.hpp"
+#include "Vortex/Renderer/Camera.hpp"
 
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
@@ -44,6 +45,12 @@ namespace Vortex
             return glm::translate(Mat4(1.0f), Translation)
                  * glm::mat4_cast(Rotation) * glm::scale(Mat4(1.0f), Scale);
         }
+    };
+    struct CameraComponent
+    {
+        class Camera Camera;
+        bool         Primary          = true;
+        bool         FixedAspectRatio = false;
     };
     struct SpriteComponent
     {

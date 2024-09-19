@@ -14,6 +14,7 @@
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
+#include "Vortex/Window/Input/Mouse.hpp"
 
 namespace Vortex
 {
@@ -44,6 +45,7 @@ namespace Vortex
         PushOverlay(m_ImGuiLayer);
 
         Keyboard::Initialize();
+        Mouse::Initialize();
         Renderer2D::Initialize();
     }
     Application::~Application()
