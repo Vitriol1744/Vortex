@@ -10,6 +10,7 @@
 #include "Vortex/Renderer/API/Framebuffer.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
+#include "Vortex/Renderer/API/Material.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
 #include "Vortex/Window/Window.hpp"
 
@@ -33,7 +34,8 @@ namespace Vortex
 
         virtual void Draw(Ref<GraphicsPipeline> pipeline,
                           Ref<VertexBuffer>     vertexBuffer,
-                          Ref<IndexBuffer> indexBuffer, u32 indexCount)
+                          Ref<IndexBuffer> indexBuffer, u32 indexCount,
+                          Ref<Material> material = nullptr)
             = 0;
 
         virtual usize GetMemoryUsage()  = 0;

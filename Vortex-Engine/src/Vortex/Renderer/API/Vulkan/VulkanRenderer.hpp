@@ -34,8 +34,8 @@ namespace Vortex
 
         virtual void  Draw(Ref<GraphicsPipeline> pipeline,
                            Ref<VertexBuffer>     vertexBuffer,
-                           Ref<IndexBuffer>      indexBuffer,
-                           u32                   indexCount) override;
+                           Ref<IndexBuffer> indexBuffer, u32 indexCount,
+                           Ref<Material> material) override;
 
         virtual usize GetMemoryUsage() override;
         virtual usize GetMemoryBudget() override;

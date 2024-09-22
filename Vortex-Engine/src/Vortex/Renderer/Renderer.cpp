@@ -41,9 +41,10 @@ namespace Vortex
 
         void Draw(Ref<GraphicsPipeline> pipeline,
                   Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
-                  u32 indexCount)
+                  u32 indexCount, Ref<Material> material)
         {
-            s_Backend->Draw(pipeline, vertexBuffer, indexBuffer, indexCount);
+            s_Backend->Draw(pipeline, vertexBuffer, indexBuffer, indexCount,
+                            material);
         }
 
         usize GetMemoryUsage() { return s_Backend->GetMemoryUsage(); }

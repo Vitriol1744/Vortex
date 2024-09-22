@@ -217,12 +217,7 @@ namespace Vortex
         if (ImGui::BeginPopupContextWindow(nullptr,
                                            ImGuiPopupFlags_MouseButtonRight))
         {
-            if (ImGui::MenuItem("Add entity"))
-            {
-                Entity newEntity = m_Scene->AddEntity();
-                auto&  tc        = newEntity.AddComponent<TagComponent>();
-                tc.Name          = "Unnamed";
-            }
+            if (ImGui::MenuItem("Add entity")) m_Scene->AddEntity();
             ImGui::EndPopup();
         }
 
@@ -247,9 +242,22 @@ namespace Vortex
 
         if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
         {
-            if (ImGui::MenuItem("Add Component"))
+            if (ImGui::BeginMenu("Add Component"))
             {
-                ImGui::CloseCurrentPopup();
+                auto menuItem = [this]<typename T>(const char* name)
+                {
+                    if (m_SelectedEntity.HasComponent<T>()
+                        || !ImGui::MenuItem(name))
+                        return;
+
+                    m_SelectedEntity.AddComponent<T>();
+                    ImGui::CloseCurrentPopup();
+                };
+
+                menuItem.operator()<TagComponent>("Tag Component");
+                menuItem.operator()<TransformComponent>("Transform Component");
+                menuItem.operator()<SpriteComponent>("Sprite Component");
+                ImGui::EndMenu();
             }
             ImGui::EndPopup();
         }

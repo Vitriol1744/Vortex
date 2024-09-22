@@ -17,18 +17,62 @@
 #include <Vortex/Renderer/Renderer.hpp>
 #include <Vortex/Renderer/Renderer2D.hpp>
 #include <Vortex/Window/Input/Keyboard.hpp>
+#include <Vortex/Window/Input/Mouse.hpp>
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 namespace Vortex
 {
-    using PipelineSpecification = GraphicsPipelineSpecification;
-    using Pipeline              = GraphicsPipeline;
+    using PipelineSpecification           = GraphicsPipelineSpecification;
+    using Pipeline                        = GraphicsPipeline;
 
-    static u32 frameIndex       = 0;
+    static u32                 frameIndex = 0;
 
-    void       EditorLayer::OnAttach()
+    static std::vector<Vertex> vertices;
+    static std::vector<u32>    indices;
+
+    void                       ProcessMesh(aiMesh* mesh)
+    {
+        for (usize i = 0; i < mesh->mNumVertices; i++)
+        {
+            Vertex vertex{};
+            vertex.Pos.x = mesh->mVertices[i].x;
+            vertex.Pos.y = mesh->mVertices[i].y;
+            vertex.Pos.z = mesh->mVertices[i].z;
+            if (mesh->mTextureCoords[0])
+            {
+                vertex.TexCoords.x = mesh->mTextureCoords[0][i].x;
+                vertex.TexCoords.y = mesh->mTextureCoords[0][i].y;
+            }
+            vertex.Color = Vec3(1.0f, 1.0f, 1.0f);
+            vertices.push_back(vertex);
+        }
+
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        {
+            aiFace face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+                indices.push_back(face.mIndices[j]);
+        }
+    }
+
+    void ProcessNode(aiNode* node, const aiScene* scene)
+    {
+        for (usize i = 0; i < node->mNumMeshes; i++)
+        {
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            ProcessMesh(mesh);
+        }
+        for (usize i = 0; i < node->mNumChildren; i++)
+            ProcessNode(node->mChildren[i], scene);
+    }
+
+    void EditorLayer::OnAttach()
     {
         VtProfileFunction();
-        Window& window = Application::Get()->GetWindow();
+        Window& window = m_App->GetWindow();
         window.SetPosition(300, 300);
 
         Image image("assets/icon.bmp");
@@ -44,13 +88,19 @@ namespace Vortex
 
         PipelineSpecification pipelineSpecs{};
         pipelineSpecs.Shader = m_Shader;
-        pipelineSpecs.Window = &Application::Get()->GetWindow();
+        pipelineSpecs.Window = &m_App->GetWindow();
         pipelineSpecs.Layout = layout;
         m_Pipeline           = Pipeline::Create(pipelineSpecs);
-        m_Texture            = Texture2D::Create("assets/textures/texture.jpg");
+        m_Textures.push_back(
+            Texture2D::Create("assets/textures/viking_room.png"));
+        m_Textures.push_back(Texture2D::Create("assets/textures/vampire.png"));
+        m_UniformBuffer = UniformBuffer::Create(sizeof(UniformBufferObject));
+        m_Meshes.push_back(CreateRef<Mesh>("assets/models/viking_room.obj"));
+        m_Meshes.push_back(
+            CreateRef<Mesh>("assets/models/dancing_vampire.dae"));
 
         auto vulkanTexture
-            = std::dynamic_pointer_cast<VulkanTexture2D>(m_Texture);
+            = std::dynamic_pointer_cast<VulkanTexture2D>(m_Textures[0]);
         vk::Sampler   sampler   = vulkanTexture->GetSampler();
         vk::ImageView imageView = vulkanTexture->GetImageView();
         m_DescriptorSet         = ImGui_ImplVulkan_AddTexture(
@@ -60,6 +110,15 @@ namespace Vortex
         framebufferSpecs.SwapChainTarget = false;
         framebufferSpecs.Width           = 1280;
         framebufferSpecs.Height          = 800;
+
+        m_Materials.push_back(Material::Create(m_Shader));
+        m_Materials.push_back(Material::Create(m_Shader));
+        m_Materials[0]->Set("UniformBufferObject", m_UniformBuffer);
+        m_Materials[0]->Set("texSampler", m_Textures[0]);
+        m_Materials[1]->Set("UniformBufferObject", m_UniformBuffer);
+        m_Materials[1]->Set("texSampler", m_Textures[1]);
+        m_Shader->SetUniform("UniformBufferObject", m_UniformBuffer);
+        m_Shader->SetUniform("texSampler", m_Textures[0]);
 
         m_Framebuffer         = Framebuffer::Create(framebufferSpecs);
         u32 maxFramesInFlight = Renderer::GetConfiguration().MaxFramesInFlight;
@@ -92,7 +151,7 @@ namespace Vortex
     {
         VtProfileFunction();
 
-        auto& window = Application::Get()->GetWindow();
+        auto& window = m_App->GetWindow();
 
         using namespace Input;
         if (m_ViewportFocused) m_Camera.Update();
@@ -129,6 +188,18 @@ namespace Vortex
         Renderer::BeginRenderPass(m_Framebuffer);
 
         Renderer2D::BeginScene(m_Camera);
+        for (u32 i = 0; i < m_Meshes.size(); i++)
+        {
+            Ref<Mesh>      mesh    = m_Meshes[i];
+            Ref<Texture2D> texture = m_Textures[i];
+
+            Renderer::Draw(m_Pipeline, mesh->GetVertexBuffer(),
+                           mesh->GetIndexBuffer(), m_Materials[i]);
+        }
+        UniformBufferObject ubo{};
+        ubo.Model          = Mat4(1.0f);
+        ubo.ViewProjection = m_Camera.GetViewProjection();
+        m_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
         m_Scene.DrawEntities();
         Renderer2D::EndScene();
 
@@ -174,7 +245,7 @@ namespace Vortex
             ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
         }
 
-        Window& window = Application::Get()->GetWindow();
+        Window& window = m_App->GetWindow();
         if (ImGui::BeginMenuBar())
         {
             if (ImGui::BeginMenu("File"))
@@ -209,10 +280,18 @@ namespace Vortex
                         m_SceneHierarchyPanel->SetScene(m_Scene);
                     }
                 }
-                if (ImGui::MenuItem("Restart", "Alt+F5"))
-                    Application::Get()->Restart();
-                if (ImGui::MenuItem("Quit", "Alt+F4"))
-                    Application::Get()->Close();
+                if (ImGui::MenuItem("Reload", "Ctrl+R"))
+                {
+                    if (m_CurrentScenePath.empty())
+                        m_CurrentScenePath = window.OpenFileDialog(".");
+                    if (!m_CurrentScenePath.empty())
+                    {
+                        m_Scene.Deserialize(m_CurrentScenePath);
+                        m_SceneHierarchyPanel->SetScene(m_Scene);
+                    }
+                }
+                if (ImGui::MenuItem("Restart", "Alt+F5")) m_App->Restart();
+                if (ImGui::MenuItem("Quit", "Alt+F4")) m_App->Close();
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("View"))
@@ -242,8 +321,8 @@ namespace Vortex
     void EditorLayer::DrawStatisticsPanel()
     {
         ImGui::Begin("Statistics");
-        ImGui::Text("FPS: %lu", Application::Get()->GetFPSCounter());
-        ImGui::Text("Delta Time: %f", Application::Get()->GetDeltaTime());
+        ImGui::Text("FPS: %lu", m_App->GetFPSCounter());
+        ImGui::Text("Delta Time: %f", m_App->GetDeltaTime());
 
         ImGui::Text("VRAM: %luMB/%luMB",
                     Renderer::GetMemoryUsage() / 1024ul / 1024ul,
@@ -257,7 +336,7 @@ namespace Vortex
         ImGui::Checkbox("Demo Window", &demoWindow);
         if (demoWindow) ImGui::ShowDemoWindow(&demoWindow);
 
-        Window&     window = Application::Get()->GetWindow();
+        Window&     window = m_App->GetWindow();
         static bool vsync  = false;
         if (ImGui::Checkbox("VSync", &vsync))
             window.GetSwapChain()->SetVSync(vsync);
@@ -267,8 +346,8 @@ namespace Vortex
                                / static_cast<f32>(window.GetHeight());
         static f32 planes[] = {0.1f, 100.0f};
 
-        if (ImGui::DragFloat("fov", &fov)
-            || ImGui::DragFloat2("Near/Far planes", planes))
+        if (ImGui::DragFloat("fov", &fov, 0.1, 45.0f, 145.0f)
+            || ImGui::DragFloat2("Near/Far planes", planes, 0.1f, 0.1f))
             m_Camera.SetPerspective(glm::radians(fov), aspectRatio, planes[0],
                                     planes[1]);
         if (ImGui::Button("flip Y"))

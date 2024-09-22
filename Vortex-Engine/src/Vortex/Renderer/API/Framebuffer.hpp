@@ -11,11 +11,26 @@
 
 namespace Vortex
 {
+    enum class ImageFormat : u32
+    {
+        eUndefined,
+        eRGB,
+        eRGBA,
+        eDepth24Stencil8,
+        eRedInteger,
+    };
+
+    struct FramebufferAttachmentSpecification
+    {
+    };
+
     struct FramebufferSpecification
     {
-        bool SwapChainTarget = false;
-        u32  Width           = 0;
-        u32  Height          = 0;
+        bool                                  SwapChainTarget = false;
+        u32                                   Width           = 0;
+        u32                                   Height          = 0;
+
+        std::vector<FramebufferSpecification> Attachments{};
     };
 
     class VT_API Framebuffer

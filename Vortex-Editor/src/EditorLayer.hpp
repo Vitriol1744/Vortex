@@ -13,10 +13,16 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <Vortex/Core/Layer.hpp>
+#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Renderer/API/Framebuffer.hpp>
 #include <Vortex/Renderer/API/GraphicsPipeline.hpp>
+#include <Vortex/Renderer/API/IndexBuffer.hpp>
+#include <Vortex/Renderer/API/Material.hpp>
 #include <Vortex/Renderer/API/Shader.hpp>
 #include <Vortex/Renderer/API/Texture2D.hpp>
+#include <Vortex/Renderer/API/UniformBuffer.hpp>
+#include <Vortex/Renderer/API/VertexBuffer.hpp>
+#include <Vortex/Renderer/Mesh.hpp>
 #include <Vortex/Scene/Entity.hpp>
 #include <Vortex/Scene/Scene.hpp>
 
@@ -27,11 +33,25 @@
 
 namespace Vortex
 {
+    struct UniformBufferObject
+    {
+        alignas(16) Mat4 Model;
+        alignas(16) Mat4 ViewProjection;
+    };
+
+    struct Vertex
+    {
+        Vec3 Pos;
+        Vec3 Color;
+        Vec2 TexCoords;
+    };
+
     class EditorLayer : public Layer
     {
       public:
         EditorLayer()
             : Layer("Editor Layer")
+            , m_App(Application::Get())
         {
         }
 
@@ -43,24 +63,30 @@ namespace Vortex
         virtual void OnImGuiRender() override;
 
       private:
-        bool                     m_ShouldResizeFramebuffer = false;
-        Ref<Shader>              m_Shader                  = nullptr;
-        Ref<GraphicsPipeline>    m_Pipeline                = nullptr;
-        Ref<Texture2D>           m_Texture                 = nullptr;
-        Ref<Framebuffer>         m_Framebuffer             = nullptr;
-        void*                    m_DescriptorSet           = nullptr;
-        std::vector<void*>       m_FramebufferDescriptorSets;
-        Vec2u                    m_ViewportSize{100, 100};
-        Scene                    m_Scene;
-        Path                     m_CurrentScenePath    = "";
-        bool                     m_ViewportFocused     = false;
-        bool                     m_ViewportHovered     = false;
-        EntityID                 m_SelectedEntity      = entt::null;
-        Ref<SceneHierarchyPanel> m_SceneHierarchyPanel = nullptr;
+        Application*                m_App                     = nullptr;
+        bool                        m_ShouldResizeFramebuffer = false;
+        Ref<Shader>                 m_Shader                  = nullptr;
+        Ref<GraphicsPipeline>       m_Pipeline                = nullptr;
+        Ref<Texture2D>              m_Texture                 = nullptr;
+        Ref<Framebuffer>            m_Framebuffer             = nullptr;
+        Ref<UniformBuffer>          m_UniformBuffer           = nullptr;
+        std::vector<Ref<Mesh>>      m_Meshes;
+        std::vector<Ref<Texture2D>> m_Textures;
+        std::vector<Ref<Material>>  m_Materials;
 
-        EditorCamera             m_Camera;
+        void*                       m_DescriptorSet = nullptr;
+        std::vector<void*>          m_FramebufferDescriptorSets;
+        Vec2u                       m_ViewportSize{100, 100};
+        Scene                       m_Scene;
+        Path                        m_CurrentScenePath    = "";
+        bool                        m_ViewportFocused     = false;
+        bool                        m_ViewportHovered     = false;
+        EntityID                    m_SelectedEntity      = entt::null;
+        Ref<SceneHierarchyPanel>    m_SceneHierarchyPanel = nullptr;
 
-        void                     DrawStatisticsPanel();
-        void                     DrawViewport();
+        EditorCamera                m_Camera;
+
+        void                        DrawStatisticsPanel();
+        void                        DrawViewport();
     };
 }; // namespace Vortex

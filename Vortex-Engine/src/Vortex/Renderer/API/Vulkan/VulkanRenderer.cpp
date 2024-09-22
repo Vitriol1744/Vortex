@@ -8,6 +8,7 @@
 
 #include "Vortex/Renderer/API/Vulkan/VulkanGraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.hpp"
+#include "Vortex/Renderer/API/Vulkan/VulkanMaterial.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp"
 #include "Vortex/Renderer/API/Vulkan/VulkanVertexBuffer.hpp"
 
@@ -136,7 +137,8 @@ namespace Vortex
 
     void VulkanRenderer::Draw(Ref<GraphicsPipeline> pipeline,
                               Ref<VertexBuffer>     vertexBuffer,
-                              Ref<IndexBuffer> indexBuffer, u32 indexCount)
+                              Ref<IndexBuffer> indexBuffer, u32 indexCount,
+                              Ref<Material> material)
     {
         VtAssertFrameStarted();
 
@@ -158,13 +160,22 @@ namespace Vortex
         commandBuffer.bindIndexBuffer(vkIndexBuffer->GetBuffer(), 0,
                                       vk::IndexType::eUint32);
 
-        std::vector<vk::DescriptorSet>& descriptorSets
-            = vkPipeline->GetShader()->GetDescriptorSets()[0].Sets;
+        auto currentFrame     = m_CurrentSwapChain->GetCurrentFrameIndex();
+        vk::DescriptorSet set = vkPipeline->GetShader()
+                                    ->GetDescriptorSets()[0]
+                                    .Sets[currentFrame];
 
-        auto currentFrame = m_CurrentSwapChain->GetCurrentFrameIndex();
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics, vkPipeline->GetLayout(), 0, 1,
-            &descriptorSets[currentFrame], 0, VK_NULL_HANDLE);
+        if (material)
+        {
+            auto vkMaterial
+                = std::dynamic_pointer_cast<VulkanMaterial>(material);
+            set = vkMaterial->GetDescriptorSets()
+                      .at(0)
+                      .DescriptorSets[currentFrame];
+        }
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                         vkPipeline->GetLayout(), 0, 1, &set, 0,
+                                         VK_NULL_HANDLE);
         commandBuffer.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 

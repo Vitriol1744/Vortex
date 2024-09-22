@@ -40,7 +40,7 @@ namespace Vortex
         {
             VtCoreAssertFormat(HasComponent<T>(),
                                "The entity doesn't have the component '{}'",
-                               typeid(T).name());
+                               VtGetTypeName(T));
 
             return m_Scene->GetRegistry().get<T>(m_ID);
         }
@@ -50,7 +50,7 @@ namespace Vortex
         {
             VtCoreAssertFormat(!HasComponent<T>(),
                                "The entity already has a component '{}'",
-                               typeid(T).name());
+                               VtGetTypeName(T));
 
             return m_Scene->GetRegistry().emplace<T>(
                 m_ID, std::forward<Args>(args)...);
@@ -60,7 +60,7 @@ namespace Vortex
         {
             VtCoreAssertFormat(HasComponent<T>(),
                                "The entity doesn't has component '{}'",
-                               typeid(T).name());
+                               VtGetTypeName(T));
 
             m_Scene->GetRegistry().remove<T>(m_ID);
         }

@@ -358,6 +358,9 @@ namespace Vortex
         ImGui::StyleColorsDark();
         f32 fontSize   = 16.8f;
         io.FontDefault = io.Fonts->AddFontFromFileTTF(
+            "assets/fonts/ComicMono-Bold.ttf", fontSize);
+        io.Fonts->AddFontFromFileTTF("assets/fonts/ComicMono.ttf", fontSize);
+        io.Fonts->AddFontFromFileTTF(
             "assets/fonts/JetBrainsMonoNerdFont-SemiBoldItalic.ttf", fontSize);
         SetupImGuiStyle(true, 0.94f);
 

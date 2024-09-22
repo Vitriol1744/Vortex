@@ -16,6 +16,17 @@ option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
 
 find_package(Vulkan REQUIRED)
+find_package(PkgConfig)
+pkg_check_modules(MONO2 REQUIRED mono-2)
+message(mono_dirs ${MONO2_INCLUDE_DIRS})
+message(mono_flags ${MONO2_CFLAGS_OTHER})
+
+# include(FindPkgConfig)
+
+# set(pkgname mono-2) include(FindPkgConfig) pkg_search_module(${pkgname}
+# REQUIRED ${pkgname}) mark_as_advanced(${pkgname}_FOUND ${pkgname}_CFLAGS
+# ${pkgname}_STATIC_LDFLAGS) find_package_handle_standard_args(${pkgname}
+# ${pkgname}_FOUND ${pkgname}_CFLAGS ${pkgname}_STATIC_LDFLAGS)
 
 set(GLFW_BUILD_DOCS
     OFF
@@ -101,6 +112,7 @@ set(PUBLIC_LIBS
     spirv-cross-cpp
     assimp
     nlohmann_json::nlohmann_json
+    ${MONO2_LIBRARIES}
     nfd)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
@@ -120,11 +132,13 @@ set(SOURCES
     src/Vortex/Engine/EntryPoint.cpp
     src/Vortex/Renderer/Camera.cpp
     src/Vortex/Renderer/Image.cpp
+    src/Vortex/Renderer/Mesh.cpp
     src/Vortex/Renderer/Renderer.cpp
     src/Vortex/Renderer/Renderer2D.cpp
     src/Vortex/Renderer/API/IndexBuffer.cpp
     src/Vortex/Renderer/API/Framebuffer.cpp
     src/Vortex/Renderer/API/GraphicsPipeline.cpp
+    src/Vortex/Renderer/API/Material.cpp
     src/Vortex/Renderer/API/Shader.cpp
     src/Vortex/Renderer/API/SwapChain.cpp
     src/Vortex/Renderer/API/Texture2D.cpp
@@ -139,6 +153,7 @@ set(SOURCES
     src/Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanIndexBuffer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanInstance.cpp
+    src/Vortex/Renderer/API/Vulkan/VulkanMaterial.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanRenderer.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanShader.cpp
     src/Vortex/Renderer/API/Vulkan/VulkanSurface.cpp
@@ -206,6 +221,7 @@ target_compile_options(
           -fvisibility=hidden
           -Wno-nullability-extension
           -Wno-nullability-completeness
+          ${mono-2_CFLAGS}
           -Wno-nested-anon-types>)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Workaround for std::expected not available in clang
@@ -252,8 +268,9 @@ if(VT_BUILD_WAYLAND AND UNIX)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PUBLIC vendor/stb/include
-                                                  vendor/entt/single_include)
+target_include_directories(
+  ${PROJECT_NAME} PUBLIC vendor/stb/include vendor/entt/single_include
+                         ${MONO2_INCLUDE_DIRS})
 target_include_directories(
   ${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src vendor/imgui
                          vendor/ImGuizmo)

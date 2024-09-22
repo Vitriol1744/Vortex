@@ -9,6 +9,7 @@
 #include "Vortex/Renderer/API/Framebuffer.hpp"
 #include "Vortex/Renderer/API/GraphicsPipeline.hpp"
 #include "Vortex/Renderer/API/IndexBuffer.hpp"
+#include "Vortex/Renderer/API/Material.hpp"
 #include "Vortex/Renderer/API/VertexBuffer.hpp"
 
 namespace Vortex
@@ -33,13 +34,15 @@ namespace Vortex
 
         void                 Draw(Ref<GraphicsPipeline> pipeline,
                                   Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
-                                  u32 indexCount);
+                                  u32 indexCount, Ref<Material> material = nullptr);
 
         inline void          Draw(Ref<GraphicsPipeline> pipeline,
                                   Ref<VertexBuffer>     vertexBuffer,
-                                  Ref<IndexBuffer>      indexBuffer)
+                                  Ref<IndexBuffer>      indexBuffer,
+                                  Ref<Material>         material = nullptr)
         {
-            Draw(pipeline, vertexBuffer, indexBuffer, indexBuffer->GetCount());
+            Draw(pipeline, vertexBuffer, indexBuffer, indexBuffer->GetCount(),
+                 material);
         }
 
         usize GetMemoryUsage();

@@ -36,9 +36,9 @@ namespace Vortex
     };
     struct TransformComponent
     {
-        Vec3   Translation;
-        Vec3   Scale;
-        Quat   Rotation;
+        Vec3   Translation = {0.0f, 0.0f, 0.0f};
+        Vec3   Scale       = {1.0f, 1.0f, 1.0f};
+        Quat   Rotation{};
 
         inline operator Mat4() const
         {
