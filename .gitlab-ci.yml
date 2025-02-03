@@ -1,0 +1,15 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+build-job:
+  image: archlinux:latest
+  stage: build
+  script:
+    - pacman -Syu --noconfirm
+    - pacman -S --noconfirm git cmake ninja base-devel clang vulkan-devel libx11 wayland libxinerama extra-cmake-modules wayland-protocols spirv-tools
+    - (cd ./Vortex-Engine/vendor/shaderc && ./utils/git-sync-deps)
+    - cmake -B build -G Ninja -S . -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=clang++
+    - cmake --build build
+  parallel:
+    matrix:
+      - BUILD_TYPE: [Debug, RelWithDebInfo, Release]
+

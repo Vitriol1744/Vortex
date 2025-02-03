@@ -1,0 +1,43 @@
+[submodule "Vortex-Engine/vendor/fmt"]
+	path = Vortex-Engine/vendor/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Vortex-Engine/vendor/magic_enum"]
+	path = Vortex-Engine/vendor/magic_enum
+	url = https://github.com/Neargye/magic_enum
+[submodule "Vortex-Engine/vendor/glfw"]
+	path = Vortex-Engine/vendor/glfw
+	url = https://github.com/Vitriol1744/glfw.git
+[submodule "Vortex-Engine/vendor/glm"]
+	path = Vortex-Engine/vendor/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Vortex-Engine/vendor/imgui"]
+	path = Vortex-Engine/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "Vortex-Engine/vendor/VulkanMemoryAllocator"]
+	path = Vortex-Engine/vendor/VulkanMemoryAllocator
+	url = https://github.com/Vitriol1744/VulkanMemoryAllocator
+[submodule "Vortex-Engine/vendor/shaderc"]
+	path = Vortex-Engine/vendor/shaderc
+	url = https://github.com/google/shaderc
+[submodule "Vortex-Engine/vendor/SPIRV-Cross"]
+	path = Vortex-Engine/vendor/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "Vortex-Engine/vendor/assimp"]
+	path = Vortex-Engine/vendor/assimp
+	url = https://github.com/assimp/assimp
+[submodule "Vortex-Engine/vendor/tracy"]
+	path = Vortex-Engine/vendor/tracy
+	url = https://github.com/wolfpld/tracy.git
+[submodule "Vortex-Engine/vendor/entt"]
+	path = Vortex-Engine/vendor/entt
+	url = https://github.com/skypjack/entt
+[submodule "Vortex-Engine/vendor/json"]
+	path = Vortex-Engine/vendor/json
+	url = https://github.com/nlohmann/json
+[submodule "Vortex-Engine/vendor/nativefiledialog-extended"]
+	path = Vortex-Engine/vendor/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended
+[submodule "Vortex-Engine/vendor/ImGuizmo"]
+	path = Vortex-Engine/vendor/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo
