@@ -144,23 +144,24 @@ set(SOURCES
 
 # Prism
 set (SOURCES
-    vendor/Prism/Source/Algorithm/Hash.cpp
+    vendor/Prism/Sourcs/Prism/Algorithm/Hash.cpp
 
-    vendor/Prism/Source/Containers/Bitmap.cpp
-    vendor/Prism/Source/Containers/RingBuffer.cpp
+    vendor/Prism/Sourcs/Prism/Containers/Bitmap.cpp
+    vendor/Prism/Sourcs/Prism/Containers/RingBuffer.cpp
 
-    vendor/Prism/Source/Debug/Assertions.cpp
-    vendor/Prism/Source/Debug/Log.cpp
-    vendor/Prism/Source/Debug/Logger.cpp
-    vendor/Prism/Source/Debug/LogSink.cpp
-    vendor/Prism/Source/Debug/Ubsan.cpp
-    vendor/Prism/Source/Debug/Stacktrace.cpp
+    vendor/Prism/Sourcs/Prism/Debug/Assertions.cpp
+    vendor/Prism/Sourcs/Prism/Debug/Log.cpp
+    vendor/Prism/Sourcs/Prism/Debug/Logger.cpp
+    vendor/Prism/Sourcs/Prism/Debug/LogSink.cpp
+    vendor/Prism/Sourcs/Prism/Debug/Ubsan.cpp
+    vendor/Prism/Sourcs/Prism/Debug/Stacktrace.cpp
 
-    vendor/Prism/Source/Memory/Memory.cpp
-    vendor/Prism/Source/String/Printf.cpp
+    vendor/Prism/Sourcs/Prism/Memory/Memory.cpp
+    vendor/Prism/Sourcs/Prism/String/Printf.cpp
 
-    vendor/Prism/Source/Utility/Path.cpp
-    vendor/Prism/Source/Utility/PathView.cpp
+    vendor/Prism/Sourcs/Prism/Utility/Path.cpp
+    vendor/Prism/Sourcs/Prism/Utility/PathView.cpp
+    vendor/Prism/Sourcs/Prism/Utility/Path.cpp
 )
 
 if(VORTEX_BUILD_SHARED_LIBS)
