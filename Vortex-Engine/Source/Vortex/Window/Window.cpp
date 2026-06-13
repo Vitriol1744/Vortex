@@ -116,7 +116,6 @@ namespace Vortex
         WindowEvents::MouseEnteredEvent.RemoveAllListeners();
         WindowEvents::MouseLeftEvent.RemoveAllListeners();
         WindowEvents::WindowMovedEvent.RemoveAllListeners();
-        WindowEvents::WindowResizedEvent.RemoveAllListeners();
         WindowEvents::WindowFocusedEvent.RemoveAllListeners();
         WindowEvents::WindowFocusLostEvent.RemoveAllListeners();
         WindowEvents::WindowMaximizedEvent.RemoveAllListeners();
@@ -205,7 +204,6 @@ namespace Vortex
         Event<Window*>               MouseLeftEvent;
 
         Event<Window*, i32, i32>     WindowMovedEvent;
-        Event<Window*, i32, i32>     WindowResizedEvent;
         Event<Window*>               WindowFocusedEvent;
         Event<Window*>               WindowFocusLostEvent;
         Event<Window*, bool>         WindowMaximizedEvent;

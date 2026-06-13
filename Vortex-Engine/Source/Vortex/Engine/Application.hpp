@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/LayerStack.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp>
 #include <Vortex/Window/Window.hpp>
@@ -39,15 +40,30 @@ namespace Vortex
          * @return boolean value indicating, whether application should be
          * restarted upon close
          */
-        bool        Run();
+        bool Run();
         /**
          * @brief Closes the application
          */
-        void        Close();
+        void Close();
         /**
          * @brief Restart the application
          */
-        void        Restart();
+        void Restart();
+
+        template <typename T, typename... Args>
+        void PublishEvent(Args&&... args)
+        {
+            if constexpr (EventMetadata<T>::Category == EventCategory::eSystem
+                          || EventMetadata<T>::Category
+                                 == EventCategory::eInput)
+                m_EventBus.PublishImmediate<T>(Forward<Args>(args)...);
+            else m_EventBus.PublishDelayed<T>(Forward<Args>(args)...);
+        }
+        template <typename T, typename F>
+        void SubscribeEvent(F&& cb)
+        {
+            m_EventBus.Subscribe<T>(Forward<F>(cb));
+        }
 
         inline void PushOverlay(Ref<Layer> overlay)
         {
@@ -67,20 +83,21 @@ namespace Vortex
             return m_LayerStack.PopLayer(layer);
         }
 
-        inline StringView               Name() const { return m_Name; }
-        inline const struct Version&    Version() const { return m_Version; }
-        inline class Window&            Window() { return *m_MainWindow; }
-        inline u64                      FPSCounter() { return m_FpsCounter; }
-        inline f64                      DeltaTime() { return m_DeltaTime; }
+        inline StringView            Name() const { return m_Name; }
+        inline const struct Version& Version() const { return m_Version; }
+        inline class Window&         Window() { return *m_MainWindow; }
+        inline u64                   FPSCounter() { return m_FpsCounter; }
+        inline f64                   DeltaTime() { return m_DeltaTime; }
 
-        static Application*     Get() { return s_Instance; }
+        static Application*          Get() { return s_Instance; }
 
       private:
         bool                  m_Running       = false;
         bool                  m_ShouldRestart = false;
         String                m_Name;
-        struct Version        m_Version    = {0, 1, 0};
-        Scope<class Window>         m_MainWindow = nullptr;
+        struct Version        m_Version = {0, 1, 0};
+        EventBus              m_EventBus;
+        Scope<class Window>   m_MainWindow = nullptr;
         u64                   m_FpsCounter = 0;
         f64                   m_DeltaTime  = 0.0;
 

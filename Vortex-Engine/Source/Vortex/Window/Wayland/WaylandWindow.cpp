@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Core/Assertions.hpp>
+#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/Wayland/WaylandWindow.hpp>
 
 #include <cstdlib>
@@ -285,7 +286,7 @@ namespace Vortex
                 {
                     self->m_Data.VideoMode.Width  = width;
                     self->m_Data.VideoMode.Height = height;
-                    WindowEvents::WindowResizedEvent(self, width, height);
+                    Application::Get()->PublishEvent<WindowResizedEvent>(self, width, height);
                     self->m_SwapChain->OnResize();
                 }
             },

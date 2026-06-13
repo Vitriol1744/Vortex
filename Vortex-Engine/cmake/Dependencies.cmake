@@ -34,6 +34,7 @@ endif()
 
 # --- Add Vendor Subdirectories ---
 add_subdirectory(vendor/assimp)
+add_subdirectory(vendor/Coral/cmake)
 add_subdirectory(vendor/entt)
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/glm)

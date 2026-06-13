@@ -56,6 +56,8 @@ namespace Vortex
     Application::~Application()
     {
         AssetManager::Shutdown();
+        ScriptEngine::Shutdown();
+
         SceneRenderer::Shutdown();
         Renderer2D::Shutdown();
         m_MainWindow.Reset();
@@ -89,6 +91,8 @@ namespace Vortex
             if (!m_MainWindow->IsMinimized())
             {
                 for (auto layer : m_LayerStack) layer->OnUpdate(m_DeltaTime);
+                EventSystem::PollEvents();
+                m_EventBus.DispatchDelayed();
 
                 Renderer::BeginFrame(*m_MainWindow);
 
@@ -103,7 +107,7 @@ namespace Vortex
 
                 m_MainWindow->Present();
             }
-            EventSystem::PollEvents();
+
             if (!m_MainWindow->IsOpen()) break;
             m_DeltaTime = deltaTimer.Restart();
         } while (m_Running);

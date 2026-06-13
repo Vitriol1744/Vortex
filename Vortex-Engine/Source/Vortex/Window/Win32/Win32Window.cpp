@@ -706,7 +706,8 @@ namespace Vortex
         auto sizeCallback = [](GLFWwindow* handle, i32 width, i32 height)
         {
             auto window = VtGetWindow(handle);
-            WindowResizedEvent(window, width, height);
+            Application::Get()->PublishEvent<WindowResizedEvent>(window, width,
+                                                                 height);
 
             window->m_Data.VideoMode.Width  = width;
             window->m_Data.VideoMode.Height = height;

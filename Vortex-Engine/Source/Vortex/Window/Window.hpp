@@ -186,6 +186,15 @@ namespace Vortex
         } m_Data;
     };
 
+    struct WindowResizedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eSystem;
+
+        class Window*                  Window;
+        usize                          Width;
+        usize                          Height;
+    };
+
     namespace WindowEvents
     {
         // Window Events
@@ -212,9 +221,6 @@ namespace Vortex
         extern Event<Window*>                      MouseLeftEvent;
         //
         extern Event<Window*, i32, i32>            WindowMovedEvent;
-        // Vortex::Window::WindowResizedEventType windowResizedEventType,
-        // Vortex::Math::Vec2u windowSize;
-        extern Event<Window*, i32, i32>            WindowResizedEvent;
         //
         extern Event<Window*>                      WindowFocusedEvent;
         //

@@ -26,13 +26,14 @@ set (PUBLIC_DEFINES
     -DGLM_ENABLE_EXPERIMENTAL)
 
 set(INCLUDE_DIRS ${INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/Source/Vortex"
-    vendor/imgui vendor/stb/include ${CMAKE_CURRENT_BINARY_DIR})
+    vendor/imgui vendor/stb/include ${CMAKE_CURRENT_BINARY_DIR} vendor/Prism/Source)
 
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PRISM REQUIRED IMPORTED_TARGET prism)
 set(PUBLIC_LIBS
     # fmt::fmt-header-only
+    Coral.Native
     magic_enum::magic_enum
     prism
     glfw
@@ -140,6 +141,27 @@ set(SOURCES
     vendor/imgui/imgui_widgets.cpp
     Source/Vortex/Renderer/API/Vulkan/imgui_impl_vulkan.cpp
     vendor/ImGuizmo/ImGuizmo.cpp)
+
+# Prism
+set (SOURCES
+    vendor/Prism/Source/Algorithm/Hash.cpp
+
+    vendor/Prism/Source/Containers/Bitmap.cpp
+    vendor/Prism/Source/Containers/RingBuffer.cpp
+
+    vendor/Prism/Source/Debug/Assertions.cpp
+    vendor/Prism/Source/Debug/Log.cpp
+    vendor/Prism/Source/Debug/Logger.cpp
+    vendor/Prism/Source/Debug/LogSink.cpp
+    vendor/Prism/Source/Debug/Ubsan.cpp
+    vendor/Prism/Source/Debug/Stacktrace.cpp
+
+    vendor/Prism/Source/Memory/Memory.cpp
+    vendor/Prism/Source/String/Printf.cpp
+
+    vendor/Prism/Source/Utility/Path.cpp
+    vendor/Prism/Source/Utility/PathView.cpp
+)
 
 if(VORTEX_BUILD_SHARED_LIBS)
   set(PUBLIC_DEFINES ${PUBLIC_DEFINES} -DVT_BUILD_DLL)

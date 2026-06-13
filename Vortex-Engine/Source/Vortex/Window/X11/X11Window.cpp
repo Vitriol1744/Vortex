@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Core/Assertions.hpp>
+#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/X11/X11Window.hpp>
 
 #include <X11/Xresource.h>
@@ -417,7 +418,8 @@ namespace Vortex
 
                     WindowEvents::FramebufferResizedEvent(window, width,
                                                           height);
-                    WindowEvents::WindowResizedEvent(window, width, height);
+                    Application::Get()->PublishEvent<WindowResizedEvent>(
+                        window, width, height);
                 }
 
                 i32      xpos       = event.xconfigure.x;

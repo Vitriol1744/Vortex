@@ -15,6 +15,44 @@
 
 namespace Vortex
 {
+    using EventID = u32;
+    struct EventType
+    {
+        static EventID NextID()
+        {
+            static EventID id = 0;
+
+            return ++id;
+        }
+    };
+
+    enum class EventCategory : u8
+    {
+        eSystem,
+        eInput,
+        eUser,
+        eRender,
+    };
+    template <typename T>
+    concept IsEvent = requires {
+        { T::Category } -> SameAs<const EventCategory&>;
+    };
+
+    template <typename T>
+    struct EventMetadata
+    {
+        static const EventID           ID;
+        static constexpr EventCategory Category = T::Category;
+    };
+    template <typename T>
+    const EventID EventMetadata<T>::ID = EventType::NextID();
+
+    struct EventHeader
+    {
+        EventID ID;
+        u32     Size;
+    };
+
     template <typename T, typename... U>
     usize GetFunctionAddress(std::function<T(U...)> f)
     {
