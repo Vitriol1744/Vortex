@@ -10,8 +10,9 @@ project(SandboxApp)
 set(CMAKE_CXX_STANDARD 23)
 set(CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-DVT_ENABLE_ASSERTIONS)
+add_definitions(-DVT_ENABLE_ASSERTIONS -DPRISM_USE_NAMESPACE=1)
 
-set(SOURCES src/Sandbox.cpp src/SandboxLayer2D.cpp src/ImGuiPanels.cpp)
+set(SOURCES Source/Sandbox.cpp Source/SandboxLayer2D.cpp Source/ImGuiPanels.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Vortex-Engine)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-nontrivial-memcall -Wno-uninitialized-const-pointer)

@@ -10,10 +10,16 @@ project(Vortex-Editor)
 set(CMAKE_CXX_STANDARD 23)
 set(CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-DVT_ENABLE_ASSERTIONS)
+add_definitions(-DVT_ENABLE_ASSERTIONS -DPRISM_USE_NAMESPACE=1)
 
-set(SOURCES src/EditorApplication.cpp src/EditorCamera.cpp src/EditorLayer.cpp
-            src/Panels/SceneHierarchyPanel.cpp)
+set(SOURCES 
+    Source/EditorApplication.cpp 
+    Source/EditorCamera.cpp 
+    Source/EditorLayer.cpp
+    Source/Panels/ContentBrowserPanel.cpp
+    Source/Panels/SceneHierarchyPanel.cpp
+)
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE Source)
 target_link_libraries(${PROJECT_NAME} PUBLIC Vortex-Engine)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-nontrivial-memcall)

@@ -41,3 +41,9 @@
 [submodule "Vortex-Engine/vendor/ImGuizmo"]
 	path = Vortex-Engine/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo
+[submodule "Vortex-Engine/vendor/prism"]
+	path = Vortex-Engine/vendor/prism
+	url = git@github.com:/CryptixOS/Prism
+[submodule "Vortex-Engine/vendor/Prism"]
+	path = Vortex-Engine/vendor/Prism
+	url = git@github.com:CryptixOS/Prism
