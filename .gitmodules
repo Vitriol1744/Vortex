@@ -47,3 +47,6 @@
 [submodule "Vortex-Engine/vendor/Prism"]
 	path = Vortex-Engine/vendor/Prism
 	url = git@github.com:CryptixOS/Prism
+[submodule "Vortex-Engine/vendor/Coral"]
+	path = Vortex-Engine/vendor/Coral
+	url = git@github.com:/StudioCherno/Coral
