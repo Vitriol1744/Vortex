@@ -155,7 +155,7 @@ set (SOURCES
     vendor/Prism/Source/Prism/Debug/Assertions.cpp
     vendor/Prism/Source/Prism/Debug/Log.cpp
     vendor/Prism/Source/Prism/Debug/Logger.cpp
-    vendor/Prism/Source/Prism/Debug/LogSink.cpp
+    # vendor/Prism/Source/Prism/Debug/LogSink.cpp
     vendor/Prism/Source/Prism/Debug/Ubsan.cpp
     vendor/Prism/Source/Prism/Debug/Stacktrace.cpp
 
