@@ -35,7 +35,7 @@ set(PUBLIC_LIBS
     # fmt::fmt-header-only
     Coral.Native
     magic_enum::magic_enum
-    prism
+    fmt
     glfw
     glm::glm-header-only
     Vulkan::Vulkan
