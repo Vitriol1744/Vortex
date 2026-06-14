@@ -115,6 +115,7 @@ set(SOURCES
 if(UNIX)
   set(SOURCES
       ${SOURCES}
+      Source/Vortex/Core/Memory/Posix/PosixMemory.cpp
       Source/Vortex/Core/Posix/PosixTime.cpp
       Source/Vortex/Window/Wayland/Wayland.cpp
       Source/Vortex/Window/Wayland/WaylandWindow.cpp
@@ -126,7 +127,9 @@ if(UNIX)
 
 elseif(WIN32)
   set(SOURCES
-      ${SOURCES} Source/Vortex/Core/Win32/Win32Time.cpp
+      ${SOURCES} 
+      Source/Vortex/Core/Memory/Win32/Win32Memory.cpp
+      Source/Vortex/Core/Win32/Win32Time.cpp
       Source/Vortex/Window/Win32/Win32Window.cpp
       Source/Vortex/Window/Win32/Win32Monitor.cpp)
 endif()
@@ -144,24 +147,24 @@ set(SOURCES
 
 # Prism
 set (SOURCES
-    vendor/Prism/Sourcs/Prism/Algorithm/Hash.cpp
+    vendor/Prism/Source/Prism/Algorithm/Hash.cpp
 
-    vendor/Prism/Sourcs/Prism/Containers/Bitmap.cpp
-    vendor/Prism/Sourcs/Prism/Containers/RingBuffer.cpp
+    vendor/Prism/Source/Prism/Containers/Bitmap.cpp
+    vendor/Prism/Source/Prism/Containers/RingBuffer.cpp
 
-    vendor/Prism/Sourcs/Prism/Debug/Assertions.cpp
-    vendor/Prism/Sourcs/Prism/Debug/Log.cpp
-    vendor/Prism/Sourcs/Prism/Debug/Logger.cpp
-    vendor/Prism/Sourcs/Prism/Debug/LogSink.cpp
-    vendor/Prism/Sourcs/Prism/Debug/Ubsan.cpp
-    vendor/Prism/Sourcs/Prism/Debug/Stacktrace.cpp
+    vendor/Prism/Source/Prism/Debug/Assertions.cpp
+    vendor/Prism/Source/Prism/Debug/Log.cpp
+    vendor/Prism/Source/Prism/Debug/Logger.cpp
+    vendor/Prism/Source/Prism/Debug/LogSink.cpp
+    vendor/Prism/Source/Prism/Debug/Ubsan.cpp
+    vendor/Prism/Source/Prism/Debug/Stacktrace.cpp
 
-    vendor/Prism/Sourcs/Prism/Memory/Memory.cpp
-    vendor/Prism/Sourcs/Prism/String/Printf.cpp
+    vendor/Prism/Source/Prism/Memory/Memory.cpp
+    vendor/Prism/Source/Prism/String/Printf.cpp
 
-    vendor/Prism/Sourcs/Prism/Utility/Path.cpp
-    vendor/Prism/Sourcs/Prism/Utility/PathView.cpp
-    vendor/Prism/Sourcs/Prism/Utility/Path.cpp
+    vendor/Prism/Source/Prism/Utility/Path.cpp
+    vendor/Prism/Source/Prism/Utility/PathView.cpp
+    vendor/Prism/Source/Prism/Utility/Path.cpp
 )
 
 if(VORTEX_BUILD_SHARED_LIBS)
