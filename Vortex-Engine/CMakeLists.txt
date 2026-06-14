@@ -165,7 +165,7 @@ set (SOURCES
     vendor/Prism/Source/Prism/Utility/Path.cpp
     vendor/Prism/Source/Prism/Utility/PathView.cpp
     vendor/Prism/Source/Prism/Utility/Path.cpp
-)
+
 
 if(VORTEX_BUILD_SHARED_LIBS)
   set(PUBLIC_DEFINES ${PUBLIC_DEFINES} -DVT_BUILD_DLL)
