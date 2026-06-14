@@ -192,6 +192,7 @@ target_compile_options(
           -Wno-nontrivial-memcall
           -Wno-uninitialized-const-pointer
           -Wno-nullability-completeness
+          -Wno-unknown-warning-option
           -Wno-nested-anon-types>)
       if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GCC")
   # Workaround for std::expected not available in clang
