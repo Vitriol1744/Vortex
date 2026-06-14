@@ -38,7 +38,7 @@ namespace Vortex
     class EventBus
     {
       public:
-        template <typename T, typename... Args>
+        template <IsEvent T, typename... Args>
         void PublishImmediate(Args&&... args)
         {
             EventID id = EventMetadata<T>::ID;
@@ -49,11 +49,9 @@ namespace Vortex
                 m_Wrappers[id]->Dispatch(&eventInstance);
         }
 
-        template <typename T, typename... Args>
+        template <IsEvent T, typename... Args>
         void PublishDelayed(Args&&... args)
         {
-            // Enforce safe memory boundaries or direct to specific queues based
-            // on category
             static_assert(EventMetadata<T>::Category != EventCategory::eSystem,
                           "Critical System Events should generally not be "
                           "deferred to minimize lag.");
@@ -61,7 +59,7 @@ namespace Vortex
             m_ActiveQueue->Push<T>(Forward<Args>(args)...);
         }
 
-        template <typename T>
+        template <IsEvent T>
         void Subscribe(typename EventWrapper<T>::Callback cb)
         {
             EventID id = EventMetadata<T>::ID;
@@ -79,9 +77,9 @@ namespace Vortex
             m_ActiveQueue
                 = (m_ActiveQueue == &m_QueueA) ? &m_QueueB : &m_QueueA;
 
-            usize   readOffset = 0;
-            u8* data       = queueToProcess->Data();
-            usize   totalSize  = queueToProcess->Size();
+            usize readOffset = 0;
+            u8*   data       = queueToProcess->Data();
+            usize totalSize  = queueToProcess->Size();
 
             while (readOffset < totalSize)
             {

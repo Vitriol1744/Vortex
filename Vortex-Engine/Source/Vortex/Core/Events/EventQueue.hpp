@@ -7,6 +7,8 @@
 #pragma once
 
 #include <Vortex/Core/Events/Event.hpp>
+#include <Vortex/Core/Memory/ArenaAllocator.hpp>
+#include <Vortex/Core/Memory/MemoryManager.hpp>
 
 namespace Vortex
 {
@@ -14,40 +16,37 @@ namespace Vortex
     {
       public:
         EventQueue(usize size = 1024 * 64)
-            : m_Capacity(size)
+            : m_Allocator(MemoryManager::ReserveVirtualRange(size))
         {
-            m_Data   = new u8[m_Capacity];
-            m_Offset = 0;
         }
 
-        ~EventQueue() { delete[] m_Data; }
+        ~EventQueue()
+        {
+            MemoryManager::ReleaseVirtualRange(m_Allocator.Range());
+        }
 
         template <typename T, typename... Args>
         void Push(Args&&... args)
         {
-            usize totalSize = sizeof(EventHeader) + sizeof(T);
-            if (m_Offset + totalSize > m_Capacity)
-                return; // Handle overflow properly in production
+            u8* headerBytes = m_Allocator.Allocate(sizeof(EventHeader),
+                                                   alignof(EventHeader));
+            if (!headerBytes) return;
 
-            // Write Header
-            EventHeader* header
-                = reinterpret_cast<EventHeader*>(m_Data + m_Offset);
-            header->ID   = EventMetadata<T>::ID;
-            header->Size = sizeof(T);
-            m_Offset += sizeof(EventHeader);
+            u8* eventBytes = m_Allocator.Allocate(sizeof(T), alignof(T));
+            if (!eventBytes) return;
 
-            // Construct Event in-place (Placement New)
-            new (m_Data + m_Offset) T(Forward<Args>(args)...);
-            m_Offset += sizeof(T);
+            EventHeader* header = reinterpret_cast<EventHeader*>(headerBytes);
+            header->ID          = EventMetadata<T>::ID;
+            header->Size        = sizeof(T);
+
+            new (static_cast<void*>(eventBytes)) T(Forward<Args>(args)...);
         }
 
-        void  Clear() { m_Offset = 0; }
-        u8*   Data() { return m_Data; }
-        usize Size() { return m_Offset; }
+        void  Clear() { m_Allocator.Reset(); }
+        u8*   Data() { return m_Allocator.Raw(); }
+        usize Size() { return m_Allocator.CurrentOffset(); }
 
       private:
-        u8*   m_Data;
-        usize m_Capacity;
-        usize m_Offset;
+        ArenaAllocator m_Allocator;
     };
 }; // namespace Vortex
