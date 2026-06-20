@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Prism/Memory/Scope.hpp>
+#include <Prism/Utility/Delegate.hpp>
 #include <Vortex/Core/Events/EventQueue.hpp>
 
 namespace Vortex
@@ -22,7 +23,7 @@ namespace Vortex
     class EventWrapper : public IEventWrapper
     {
       public:
-        using Callback = std::function<void(const T&)>;
+        using Callback = Delegate<void(const T&)>;
 
         void AddListener(Callback cb) { m_Callbacks.PushBack(cb); }
 
@@ -39,24 +40,13 @@ namespace Vortex
     {
       public:
         template <IsEvent T, typename... Args>
-        void PublishImmediate(Args&&... args)
+        void PublishEvent(Args&&... args)
         {
-            EventID id = EventMetadata<T>::ID;
-
-            T       eventInstance(Forward<Args>(args)...);
-
-            if (id < m_Wrappers.Size() && m_Wrappers[id])
-                m_Wrappers[id]->Dispatch(&eventInstance);
-        }
-
-        template <IsEvent T, typename... Args>
-        void PublishDelayed(Args&&... args)
-        {
-            static_assert(EventMetadata<T>::Category != EventCategory::eSystem,
-                          "Critical System Events should generally not be "
-                          "deferred to minimize lag.");
-
-            m_ActiveQueue->Push<T>(Forward<Args>(args)...);
+            if constexpr (EventMetadata<T>::Category == EventCategory::eSystem
+                          || EventMetadata<T>::Category
+                                 == EventCategory::eWindow)
+                PublishImmediate<T>(Forward<Args>(args)...);
+            else PublishDelayed<T>(Forward<Args>(args)...);
         }
 
         template <IsEvent T>
@@ -101,5 +91,26 @@ namespace Vortex
         EventQueue                   m_QueueB;
         EventQueue*                  m_ActiveQueue = &m_QueueA;
         Vector<Scope<IEventWrapper>> m_Wrappers;
+
+        template <IsEvent T, typename... Args>
+        void PublishImmediate(Args&&... args)
+        {
+            EventID id = EventMetadata<T>::ID;
+
+            T       eventInstance(Forward<Args>(args)...);
+
+            if (id < m_Wrappers.Size() && m_Wrappers[id])
+                m_Wrappers[id]->Dispatch(&eventInstance);
+        }
+
+        template <IsEvent T, typename... Args>
+        void PublishDelayed(Args&&... args)
+        {
+            static_assert(EventMetadata<T>::Category != EventCategory::eSystem,
+                          "Critical System Events should generally not be "
+                          "deferred to minimize lag.");
+
+            m_ActiveQueue->Push<T>(Forward<Args>(args)...);
+        }
     };
 }; // namespace Vortex
