@@ -32,50 +32,46 @@
 #ifdef VT_ENABLE_ASSERTIONS
     #define VtPrintCoreAssertMessage(expr, msg)                                \
         {                                                                      \
-            std::source_location source = std::source_location::current();     \
+            SourceLocation source = SourceLocation::Current();                 \
             (void)source;                                                      \
             VtCoreFatal("Assertion Failed: '{}' ->\n{}[{}:{}] ->\n{}", msg,    \
-                        source.file_name(), source.line(), source.column(),    \
-                        source.function_name());                               \
+                        source.FileName(), source.Line(), source.Column(),     \
+                        source.FunctionName());                                \
         }
 
     #define VtCoreAssert(expr) VtCoreAssertMsg(expr, #expr)
     #define VtCoreAssertMsg(expr, msg)                                         \
         if (expr) {}                                                           \
-        else                                                                   \
-        {                                                                      \
+        else {                                                                 \
             VtPrintCoreAssertMessage(expr, msg);                               \
             VtDebugBreak;                                                      \
         }
     #define VtCoreAssertFormat(expr, ...)                                      \
         if (expr) {}                                                           \
-        else                                                                   \
-        {                                                                      \
-            std::string formatted = fmt::format(__VA_ARGS__);                  \
+        else {                                                                 \
+            String formatted = fmt::format(__VA_ARGS__).data();                \
             VtPrintCoreAssertMessage(expr, formatted);                         \
             VtDebugBreak;                                                      \
         }
     #define VtPrintAssertMessage(expr, msg)                                    \
         {                                                                      \
-            std::source_location source = std::source_location::current();     \
+            SourceLocation source = SourceLocation::Current();                 \
             (void)source;                                                      \
             VtFatal("Assertion Failed: '{}' ->\n{}[{}:{}] ->\n{}", msg,        \
-                    source.file_name(), source.line(), source.column(),        \
-                    source.function_name());                                   \
+                    source.FileName(), source.Line(), source.Column(),         \
+                    source.FunctionName());                                    \
             VtDebugBreak;                                                      \
         }
     #define VtAssert(expr) VtAssertMsg(expr, #expr)
     #define VtAssertMsg(expr, msg)                                             \
         if (expr) {}                                                           \
-        else                                                                   \
-        {                                                                      \
+        else {                                                                 \
             VtPrintAssertMessage(expr, msg);                                   \
             VtDebugBreak;                                                      \
         }
     #define VtAssertFormat(expr, ...)                                          \
         if (expr) {}                                                           \
-        else                                                                   \
-        {                                                                      \
+        else {                                                                 \
             auto formatted = fmt::format(__VA_ARGS__);                         \
             VtPrintAssertMessage(expr, formatted);                             \
             VtDebugBreak;                                                      \
