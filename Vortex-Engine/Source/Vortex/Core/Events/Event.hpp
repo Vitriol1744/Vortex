@@ -28,10 +28,23 @@ namespace Vortex
 
     enum class EventCategory : u8
     {
+        // Core OS engine state (Engine Shutdown, Module Loading)
         eSystem,
+        // OS Native UI interactions (WindowResized, FocusLost, Closed)
+        eWindow,
+        // High-frequency hardware notifications (KeyPressed, MouseMoved)
         eInput,
-        eUser,
-        eRender,
+        // Fixed-update physics triggers (CollisionStart,TriggerEnter)
+        ePhysics,
+        // Audio execution cues (PlaySound3D, MixGroupChanged)
+        eAudio,
+        // Network synchronization payloads (PacketReceived, ClientDisconnected)
+        eNetwork,
+        // Frontend render commands (ViewportChanged, SwapchainRecreated)
+        eGraphics,
+        // Contextual gameplay logic components (PlayerScore, InventoryItemUsed)
+        eUser
+
     };
     template <typename T>
     concept IsEvent = requires {
@@ -54,7 +67,7 @@ namespace Vortex
     };
 
     template <typename T, typename... U>
-    usize GetFunctionAddress(std::function<T(U...)> f)
+    usize GetFunctionAddress(::std::function<T(U...)> f)
     {
         typedef T(fnType)(U...);
         fnType** fnPointer = f.template target<fnType*>();
@@ -73,7 +86,7 @@ namespace Vortex
     class Event : public EventBase
     {
       public:
-        using EventListener = std::function<bool()>;
+        using EventListener = ::std::function<bool()>;
 
         inline void RemoveAllListeners() { m_Listeners.Clear(); }
         PM_NODISCARD
@@ -111,7 +124,7 @@ namespace Vortex
     class Event<Arg1> : public EventBase
     {
       public:
-        using EventListener = std::function<bool(Arg1)>;
+        using EventListener = ::std::function<bool(Arg1)>;
 
         inline void RemoveAllListeners() { m_Listeners.Clear(); }
         PM_NODISCARD
@@ -143,7 +156,7 @@ namespace Vortex
         inline void Dispatch() override {}
 
       private:
-        Vector<std::function<bool(Arg1)>> m_Listeners;
+        Vector<::std::function<bool(Arg1)>> m_Listeners;
         PM_UNUSED
         Queue<Arg1> m_EventData;
     };
@@ -152,7 +165,7 @@ namespace Vortex
     class Event<Arg1, Arg2> : public EventBase
     {
       public:
-        using EventListener = std::function<bool(Arg1, Arg2)>;
+        using EventListener = ::std::function<bool(Arg1, Arg2)>;
 
         inline void RemoveAllListeners() { m_Listeners.Clear(); }
         PM_NODISCARD
@@ -195,7 +208,7 @@ namespace Vortex
     class Event<Arg1, Arg2, Arg3> : public EventBase
     {
       public:
-        using EventListener = std::function<bool(Arg1, Arg2, Arg3)>;
+        using EventListener = ::std::function<bool(Arg1, Arg2, Arg3)>;
 
         inline void RemoveAllListeners() { m_Listeners.Clear(); }
         PM_NODISCARD
