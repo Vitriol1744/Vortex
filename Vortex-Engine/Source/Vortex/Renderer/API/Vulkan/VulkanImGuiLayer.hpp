@@ -71,22 +71,21 @@ namespace Vortex
         //--------------------------------------------------------------------
         // Events ------------------------------------------------------------
         //--------------------------------------------------------------------
-        static bool   OnKeyPressed(Window* window, Input::KeyCode key,
-                                   u32 repeatCount);
-        static bool   OnKeyReleased(Window* window, Input::KeyCode key);
-        static bool   OnKeyTyped(Window* window, u32 key);
+        static void               OnKeyPressed(const KeyPressedEvent& event);
+        static void               OnKeyReleased(const KeyReleasedEvent& event);
+        static void               OnKeyTyped(const KeyTypedEvent& event);
 
-        static bool   OnMouseButtonPressed(Window*          window,
-                                           Input::MouseCode button);
-        static bool   OnMouseButtonReleased(Window*          window,
-                                            Input::MouseCode button);
+        static bool               OnMouseButtonPressed(Window*          window,
+                                                       Input::MouseCode button);
+        static bool               OnMouseButtonReleased(Window*          window,
+                                                        Input::MouseCode button);
         static bool   OnMouseScrolled(Window* window, f64 xoffset, f64 yoffset);
         static bool   OnMouseMoved(Window* window, f64 x, f64 y);
         static bool   OnMouseEntered(Window* window);
         static bool   OnMouseLeft(Window* window);
 
         static bool   OnWindowMoved(Window* window, i32 x, i32 y);
-        static bool   OnWindowResized(Window* window, i32 width, i32 height);
+        static void   OnWindowResized(const WindowResizedEvent& event);
         static bool   OnWindowFocusGained(Window* window);
         static bool   OnWindowFocusLost(Window* window);
         static bool   OnWindowClosed(Window* window);

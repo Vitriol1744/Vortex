@@ -13,6 +13,8 @@
 #include <Vortex/Core/Math/Rectangle.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 
+#include <any>
+
 namespace Vortex
 {
     struct VideoMode
@@ -63,7 +65,7 @@ namespace Vortex
       public:
         virtual ~Monitor()                                  = default;
 
-        virtual std::any                     NativeHandle() = 0;
+        virtual ::std::any                   NativeHandle() = 0;
 
         static ::Ref<Monitor>                PrimaryMonitor();
         static const Vector<::Ref<Monitor>>& Monitors();

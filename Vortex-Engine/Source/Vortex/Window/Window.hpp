@@ -29,6 +29,8 @@ namespace Vortex
         eX11,
         eWayland,
         eCocoa,
+        eAndroidSurface,
+        eUIKit,
     };
 
     using Icon   = Image;
@@ -75,7 +77,7 @@ namespace Vortex
         static void            PollEvents();
         virtual void           Present()                     = 0;
 
-        virtual std::any       NativeHandle() const noexcept = 0;
+        virtual ::std::any     NativeHandle() const noexcept = 0;
         virtual bool           IsOpen() const noexcept       = 0;
         virtual bool           IsFocused() const noexcept    = 0;
         virtual bool           IsMinimized() const noexcept  = 0;
@@ -186,58 +188,191 @@ namespace Vortex
         } m_Data;
     };
 
+    struct KeyPressedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        Input::KeyCode                 KeyCode;
+        u32                            RepeatCount;
+    };
+    struct KeyReleasedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        Input::KeyCode                 KeyCode;
+    };
+    struct KeyTypedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        u32                            CodePoint;
+    };
+    struct UnicodeKeyTypedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        u32                            CodePoint;
+        Input::KeyCode                 KeyCode;
+    };
+    struct MouseButtonPressedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        Input::MouseCode               Button;
+    };
+    struct MouseButtonReleasedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        Input::MouseCode               Button;
+    };
+    struct MouseScrolledEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        f64                            DeltaX;
+        f64                            DeltaY;
+    };
+    struct MouseMovedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+        f64                            X;
+        f64                            Y;
+    };
+    struct MouseEnteredEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+    };
+    struct MouseLeftEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        class Window*                  Window;
+    };
+    struct GamepadConnectedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        i32                            ID;
+    };
+    struct GamepadDisconnectedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eInput;
+
+        i32                            ID;
+    };
+
+    struct WindowMovedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+        i32                            X;
+        i32                            Y;
+    };
     struct WindowResizedEvent
     {
-        static constexpr EventCategory Category = EventCategory::eSystem;
+        static constexpr EventCategory Category = EventCategory::eWindow;
 
         class Window*                  Window;
         usize                          Width;
         usize                          Height;
+    };
+    struct WindowFocusedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+    };
+    struct WindowFocusLostEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+    };
+    struct WindowMaximizedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+        // NOTE(v1tr10l7): if false then window was restored
+        bool                           Maximized;
+    };
+    struct WindowMinimizedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+        // NOTE(v1tr10l7): if false then window was restored
+        bool                           Iconified;
+    };
+    struct WindowClosedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+    };
+    struct FramebufferResizedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+        i32                            X;
+        i32                            Y;
+    };
+    struct FileDroppedEvent
+    {
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        class Window*                  Window;
+        class Path                     Path;
     };
 
     namespace WindowEvents
     {
         // Window Events
 
-        // Vortex::input::KeyCode keycode, u32 repeatCount
-        extern Event<Window*, Input::KeyCode, u32> KeyPressedEvent;
-        // Vortex::Input::KeyCode keycode
-        extern Event<Window*, Input::KeyCode>      KeyReleasedEvent;
-        // u32 codepoint
-        extern Event<Window*, u32>                 KeyTypedEvent;
-        // u32 codepoint, KeyCode modifier key
-        extern Event<Window*, u32, Input::KeyCode> UnicodeKeyTypedEvent;
         // Vortex::Input::MouseCode mouseCode
-        extern Event<Window*, Input::MouseCode>    MouseButtonPressedEvent;
+        extern Event<Window*, Input::MouseCode> MouseButtonPressedEvent;
         // Vortex::Input::MouseCode mouseCode
-        extern Event<Window*, Input::MouseCode>    MouseButtonReleasedEvent;
+        extern Event<Window*, Input::MouseCode> MouseButtonReleasedEvent;
         // Vortex::Math::Vec2 wheel
-        extern Event<Window*, f64, f64>            MouseScrolledEvent;
+        extern Event<Window*, f64, f64>         MouseScrolledEvent;
         // Vortex::Math::Vec2 mousePosition
-        extern Event<Window*, f64, f64>            MouseMovedEvent;
+        extern Event<Window*, f64, f64>         MouseMovedEvent;
         //
-        extern Event<Window*>                      MouseEnteredEvent;
+        extern Event<Window*>                   MouseEnteredEvent;
         //
-        extern Event<Window*>                      MouseLeftEvent;
+        extern Event<Window*>                   MouseLeftEvent;
         //
-        extern Event<Window*, i32, i32>            WindowMovedEvent;
+        extern Event<Window*, i32, i32>         WindowMovedEvent;
         //
-        extern Event<Window*>                      WindowFocusedEvent;
+        extern Event<Window*>                   WindowFocusedEvent;
         //
-        extern Event<Window*>                      WindowFocusLostEvent;
+        extern Event<Window*>                   WindowFocusLostEvent;
         // bool maximized - if true window was maximized, else it was restored
-        extern Event<Window*, bool>                WindowMaximizedEvent;
+        extern Event<Window*, bool>             WindowMaximizedEvent;
         // bool minimized - if true window was iconified, else it was restored
-        extern Event<Window*, bool>                WindowMinimizedEvent;
+        extern Event<Window*, bool>             WindowMinimizedEvent;
         //
-        extern Event<Window*>                      WindowClosedEvent;
-        extern Event<Window*, i32, i32>            FramebufferResizedEvent;
+        extern Event<Window*>                   WindowClosedEvent;
+        extern Event<Window*, i32, i32>         FramebufferResizedEvent;
         //
-        extern Event<Window*, String>              FileDroppedEvent;
+        extern Event<Window*, String>           FileDroppedEvent;
         // TODO(v1tr10l7) should it be moved somewhere else?
-        extern Event<i32>                          GamepadConnectedEvent;
+        extern Event<i32>                       GamepadConnectedEvent;
         //
-        extern Event<i32>                          GamepadDisconnectedEvent;
+        extern Event<i32>                       GamepadDisconnectedEvent;
     } // namespace WindowEvents
-
 }; // namespace Vortex

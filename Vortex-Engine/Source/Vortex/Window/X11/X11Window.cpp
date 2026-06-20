@@ -27,7 +27,6 @@ namespace Vortex
         }
     } // namespace
 
-    using Input::KeyCode;
     using Input::MouseCode;
 
     X11Window::X11Window(const WindowSpecification& specification)

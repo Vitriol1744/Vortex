@@ -739,7 +739,8 @@ namespace Vortex
 
         if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
         {
-            WindowEvents::KeyPressedEvent(s_KeyboardFocus, key, 0);
+            Application::Get()->PublishEvent<KeyPressedEvent>(s_KeyboardFocus,
+                                                              key, 0);
 
             const xkb_keysym_t* keysyms = nullptr;
             const xkb_keycode_t keycode = scancode + 8;
@@ -750,11 +751,13 @@ namespace Vortex
                 const xkb_keysym_t keysym = Wayland::ComposeSymbol(keysyms[0]);
                 const u32          codepoint = KeySym2Unicode(keysym);
                 if (codepoint != u32(-1))
-                    WindowEvents::KeyTypedEvent(s_KeyboardFocus, codepoint);
+                    Application::Get()->PublishEvent<KeyTypedEvent>(
+                        s_KeyboardFocus, codepoint);
             }
         }
         else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-            WindowEvents::KeyReleasedEvent(s_KeyboardFocus, key);
+            Application::Get()->PublishEvent<KeyReleasedEvent>(s_KeyboardFocus,
+                                                               key);
     }
     void WaylandWindow::KeyboardHandleModifiers(void*        userData,
                                                 wl_keyboard* keyboard,

@@ -555,18 +555,18 @@ namespace Vortex
         initInfo.Instance = vk::Instance(VulkanRenderer::VulkanInstance());
         initInfo.PhysicalDevice
             = vk::PhysicalDevice(VulkanRenderer::PhysicalDevice());
-        initInfo.Device         = device;
-        initInfo.QueueFamily    = indices.Graphics.Value();
-        initInfo.Queue          = graphicsQueue;
-        initInfo.PipelineCache  = VK_NULL_HANDLE;
-        initInfo.DescriptorPool = m_DescriptorPool;
-        initInfo.RenderPass     = swapChain->RenderPass();
-        initInfo.Subpass        = 0;
-        u32 frameCount          = static_cast<u32>(swapChain->ImageCount());
-        initInfo.MinImageCount  = frameCount;
-        initInfo.ImageCount     = frameCount;
-        initInfo.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
-        initInfo.Allocator      = VK_NULL_HANDLE;
+        initInfo.Device                      = device;
+        initInfo.QueueFamily                 = indices.Graphics.Value();
+        initInfo.Queue                       = graphicsQueue;
+        initInfo.PipelineCache               = VK_NULL_HANDLE;
+        initInfo.DescriptorPool              = m_DescriptorPool;
+        initInfo.PipelineInfoMain.RenderPass = swapChain->RenderPass();
+        initInfo.PipelineInfoMain.Subpass    = 0;
+        u32 frameCount         = static_cast<u32>(swapChain->ImageCount());
+        initInfo.MinImageCount = frameCount;
+        initInfo.ImageCount    = frameCount;
+        initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        initInfo.Allocator                    = VK_NULL_HANDLE;
         initInfo.CheckVkResultFn
             = [](VkResult result) -> void { VkCall(vk::Result(result)); };
         ImGui_ImplVulkan_Init(&initInfo);
@@ -608,7 +608,6 @@ namespace Vortex
         WindowEvents::MouseLeftEvent -= OnMouseLeft;
 
         WindowEvents::WindowMovedEvent -= OnWindowMoved;
-        WindowEvents::WindowResizedEvent -= OnWindowResized;
         WindowEvents::WindowFocusedEvent -= OnWindowFocusGained;
         WindowEvents::WindowFocusLostEvent -= OnWindowFocusLost;
         WindowEvents::WindowClosedEvent -= OnWindowClosed;
@@ -735,9 +734,12 @@ namespace Vortex
     }
     void VulkanImGuiLayer::SetUpEvents()
     {
-        WindowEvents::KeyPressedEvent += OnKeyPressed;
-        WindowEvents::KeyReleasedEvent += OnKeyReleased;
-        WindowEvents::KeyTypedEvent += OnKeyTyped;
+        Application::Get()->SubscribeEvent<KeyPressedEvent>(
+            [](const KeyPressedEvent& e) { return OnKeyPressed(e); });
+        Application::Get()->SubscribeEvent<KeyReleasedEvent>(
+            [](const KeyReleasedEvent& e) { return OnKeyReleased(e); });
+        Application::Get()->SubscribeEvent<KeyTypedEvent>(
+            [](const KeyTypedEvent& e) { return OnKeyTyped(e); });
 
         WindowEvents::MouseButtonPressedEvent += OnMouseButtonPressed;
         WindowEvents::MouseButtonReleasedEvent += OnMouseButtonReleased;
@@ -747,7 +749,9 @@ namespace Vortex
         WindowEvents::MouseLeftEvent += OnMouseLeft;
 
         WindowEvents::WindowMovedEvent += OnWindowMoved;
-        WindowEvents::WindowResizedEvent += OnWindowResized;
+
+        Application::Get()->SubscribeEvent<WindowResizedEvent>(
+            [](const WindowResizedEvent& e) { return OnWindowResized(e); });
         WindowEvents::WindowFocusedEvent += OnWindowFocusGained;
         WindowEvents::WindowFocusLostEvent += OnWindowFocusLost;
         WindowEvents::WindowClosedEvent += OnWindowClosed;
@@ -856,11 +860,14 @@ namespace Vortex
         platformIO.Monitors.push_back(monitor);
     }
 
-    bool VulkanImGuiLayer::OnKeyPressed(Window* window, KeyCode key,
-                                        u32 repeatCount)
+    void VulkanImGuiLayer::OnKeyPressed(const KeyPressedEvent& e)
     {
-        ImGui_ImplVortex_Data* bd = GetBackendData();
-        if (repeatCount) return false;
+        auto                   window      = e.Window;
+        auto                   key         = e.KeyCode;
+        auto                   repeatCount = e.RepeatCount;
+
+        ImGui_ImplVortex_Data* bd          = GetBackendData();
+        if (repeatCount) return;
         UpdateKeyModifiers(key, true);
 
         usize keycode = ToUnderlying(key);
@@ -873,11 +880,14 @@ namespace Vortex
         io.AddKeyEvent(imguiKey, true);
         io.SetKeyEventNativeData(imguiKey, static_cast<i32>(key), 0);
 
-        return false;
+        return;
     }
-    bool VulkanImGuiLayer::OnKeyReleased(Window* window, KeyCode key)
+    void VulkanImGuiLayer::OnKeyReleased(const KeyReleasedEvent& e)
     {
-        ImGui_ImplVortex_Data* bd = GetBackendData();
+        auto                   window = e.Window;
+        auto                   key    = e.KeyCode;
+
+        ImGui_ImplVortex_Data* bd     = GetBackendData();
         UpdateKeyModifiers(key, false);
 
         usize keycode = ToUnderlying(key);
@@ -889,14 +899,16 @@ namespace Vortex
         io.AddKeyEvent(imguiKey, false);
         io.SetKeyEventNativeData(imguiKey, static_cast<i32>(key), 0);
 
-        return false;
+        return;
     }
-    bool VulkanImGuiLayer::OnKeyTyped(Window*, u32 c)
+    void VulkanImGuiLayer::OnKeyTyped(const KeyTypedEvent& e)
     {
+        auto     c  = e.CodePoint;
+
         ImGuiIO& io = ImGui::GetIO();
         io.AddInputCharacter(c);
 
-        return false;
+        return;
     }
 
     bool VulkanImGuiLayer::OnMouseButtonPressed(Window*, MouseCode button)
@@ -987,8 +999,10 @@ namespace Vortex
         }
         return false;
     }
-    bool VulkanImGuiLayer::OnWindowResized(Window* window, i32, i32)
+    void VulkanImGuiLayer::OnWindowResized(const WindowResizedEvent& event)
     {
+        auto window = event.Window;
+
         if (ImGuiViewport* viewport
             = ImGui::FindViewportByPlatformHandle(window))
         {
@@ -997,12 +1011,13 @@ namespace Vortex
             {
                 bool ignoreEvent = (ImGui::GetFrameCount()
                                     <= vd->IgnoreWindowSizeEventFrame + 1);
-                if (ignoreEvent) return false;
+                if (ignoreEvent) return;
             }
             viewport->PlatformRequestResize = true;
         }
-        return false;
+        return;
     }
+
     bool VulkanImGuiLayer::OnWindowFocusGained(Window*)
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -1065,8 +1080,8 @@ namespace Vortex
                 // receive any release events after window is destroyed.
                 for (usize i = 0; i < bd->KeyOwnerWindows.Size(); i++)
                     if (bd->KeyOwnerWindows[i] == data->Window)
-                        OnKeyReleased(data->Window,
-                                      static_cast<Input::KeyCode>(i));
+                        OnKeyReleased(
+                            {data->Window, static_cast<Input::KeyCode>(i)});
 
                 delete data->Window;
             }

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Prism/Containers/Array.hpp>
+#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/Input/Keyboard.hpp>
 #include <Vortex/Window/Window.hpp>
 
@@ -13,23 +14,27 @@ namespace Vortex::Keyboard
     using namespace Vortex::Input;
     static Array<bool, ToUnderlying(KeyCode::eKeyCount)> s_Keys{};
 
-    static bool OnKeyPressed(Window*, KeyCode key, u32)
+    static void OnKeyPressed(const KeyPressedEvent& e)
     {
+        auto key                  = e.KeyCode;
         s_Keys[ToUnderlying(key)] = true;
 
-        return false;
+        return;
     }
-    static bool OnKeyReleased(Window*, KeyCode key)
+    static void OnKeyReleased(const KeyReleasedEvent& e)
     {
+        auto key                  = e.KeyCode;
         s_Keys[ToUnderlying(key)] = false;
 
-        return false;
+        return;
     }
 
     void Initialize()
     {
-        WindowEvents::KeyPressedEvent += OnKeyPressed;
-        WindowEvents::KeyReleasedEvent += OnKeyReleased;
+        Application::Get()->SubscribeEvent<KeyPressedEvent>(
+            [](const KeyPressedEvent& e) { return OnKeyPressed(e); });
+        Application::Get()->SubscribeEvent<KeyReleasedEvent>(
+            [](const KeyReleasedEvent& e) { return OnKeyReleased(e); });
         Memory::Fill(s_Keys.Raw(), false, s_Keys.Size());
     }
 

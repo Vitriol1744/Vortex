@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include <Prism/String/StringUtils.hpp>
 #include <Vortex/Core/Platform.hpp>
 #include <Vortex/Window/Window.hpp>
 
@@ -14,17 +15,19 @@
     #include <Vortex/Window/Win32/Win32Window.hpp>
 #endif
 
-#include <nfd.hpp>
+#ifndef VT_PLATFORM_ANDROID
+    #include <nfd.hpp>
+#endif
 
 namespace Vortex
 {
     static enum WindowSubsystem ChooseSubsystem()
     {
 #ifdef VT_PLATFORM_LINUX
-        bool        waylandAvailable = std::getenv("WAYLAND_DISPLAY");
-        bool        xlibAvailable    = std::getenv("DISPLAY");
+        bool        waylandAvailable = ::std::getenv("WAYLAND_DISPLAY");
+        bool        xlibAvailable    = ::std::getenv("DISPLAY");
 
-        const char* platformOverride = std::getenv("VT_PLATFORM_OVERRIDE");
+        const char* platformOverride = ::std::getenv("VT_PLATFORM_OVERRIDE");
         if (platformOverride)
         {
             if (strcmp(platformOverride, "wayland") == 0 && waylandAvailable)
@@ -43,14 +46,16 @@ namespace Vortex
         return WindowSubsystem::eUndefined;
 #elifdef VT_PLATFORM_WINDOWS
         return WindowSubsystem::eWin32;
+#elifdef VT_PLATFORM_ANDROID
+        return WindowSubsystem::eAndroidSurface;
 #else
     #error "Platform not supported!"
 #endif
     };
 
-    static std::function<Window*(const WindowSpecification&)> s_CreateWindow;
-    static std::function<void()>                              s_PollEvents;
-    static std::function<void()>                              s_Shutdown;
+    static ::std::function<Window*(const WindowSpecification&)> s_CreateWindow;
+    static ::std::function<void()>                              s_PollEvents;
+    static ::std::function<void()>                              s_Shutdown;
 
     Window::Window(const WindowSpecification& specs)
     {
@@ -96,19 +101,19 @@ namespace Vortex
         s_Shutdown   = Win32Window::Shutdown;
 #endif
 
+#ifndef VT_PLATFORM_ANDROID
         NFD_Init();
+#endif
         VtCoreAssertMsg(s_CreateWindow && s_PollEvents && s_Shutdown,
                         "Unsupported platform!");
     }
     void Window::Shutdown()
     {
+#ifndef VT_PLATFORM_ANDROID
         NFD_Quit();
+#endif
 
         s_Shutdown();
-        WindowEvents::KeyPressedEvent.RemoveAllListeners();
-        WindowEvents::KeyReleasedEvent.RemoveAllListeners();
-        WindowEvents::KeyTypedEvent.RemoveAllListeners();
-        WindowEvents::UnicodeKeyTypedEvent.RemoveAllListeners();
         WindowEvents::MouseButtonPressedEvent.RemoveAllListeners();
         WindowEvents::MouseButtonReleasedEvent.RemoveAllListeners();
         WindowEvents::MouseScrolledEvent.RemoveAllListeners();
@@ -133,6 +138,7 @@ namespace Vortex
     Path Window::OpenFileDialog(PathView initialFolder)
     {
         // TODO(v1tr10l7): add filters
+#ifndef VT_PLATFORM_ANDROID
         NFD::UniquePath filePath;
         IgnoreUnused(initialFolder);
         nfdresult_t result = NFD::OpenDialog(
@@ -145,9 +151,13 @@ namespace Vortex
             NFD::GetError());
 
         return result == NFD_OKAY ? filePath.get() : "";
+#else
+        return "";
+#endif
     }
     Path Window::SaveFileDialog()
     {
+#ifndef VT_PLATFORM_ANDROID
         NFD::UniquePath filePath;
         nfdresult_t     result = NFD::SaveDialog(filePath, nullptr, 0);
 
@@ -157,6 +167,9 @@ namespace Vortex
             NFD::GetError());
 
         return result == NFD_OKAY ? filePath.get() : "";
+#else
+        return "";
+#endif
     }
 
     Scope<Window> Window::Create(const WindowSpecification& specs)
@@ -178,7 +191,7 @@ namespace Vortex
             enum WindowSubsystem subsystem = ChooseSubsystem();
 
             VtCoreInfo("Window: Using {}...",
-                       magic_enum::enum_name(subsystem).data() + 1);
+                       StringUtils::ToString(subsystem).Raw() + 1);
             return subsystem;
         }
         ();
@@ -191,29 +204,24 @@ namespace Vortex
         using Input::KeyCode;
         using Input::MouseCode;
 
-        Event<Window*, KeyCode, u32> KeyPressedEvent;
-        Event<Window*, KeyCode>      KeyReleasedEvent;
-        Event<Window*, u32>          KeyTypedEvent;
-        Event<Window*, u32, KeyCode> UnicodeKeyTypedEvent;
+        Event<Window*, MouseCode> MouseButtonPressedEvent;
+        Event<Window*, MouseCode> MouseButtonReleasedEvent;
+        Event<Window*, f64, f64>  MouseScrolledEvent;
+        Event<Window*, f64, f64>  MouseMovedEvent;
+        Event<Window*>            MouseEnteredEvent;
+        Event<Window*>            MouseLeftEvent;
 
-        Event<Window*, MouseCode>    MouseButtonPressedEvent;
-        Event<Window*, MouseCode>    MouseButtonReleasedEvent;
-        Event<Window*, f64, f64>     MouseScrolledEvent;
-        Event<Window*, f64, f64>     MouseMovedEvent;
-        Event<Window*>               MouseEnteredEvent;
-        Event<Window*>               MouseLeftEvent;
+        Event<Window*, i32, i32>  WindowMovedEvent;
+        Event<Window*>            WindowFocusedEvent;
+        Event<Window*>            WindowFocusLostEvent;
+        Event<Window*, bool>      WindowMaximizedEvent;
+        Event<Window*, bool>      WindowMinimizedEvent;
+        Event<Window*>            WindowClosedEvent;
 
-        Event<Window*, i32, i32>     WindowMovedEvent;
-        Event<Window*>               WindowFocusedEvent;
-        Event<Window*>               WindowFocusLostEvent;
-        Event<Window*, bool>         WindowMaximizedEvent;
-        Event<Window*, bool>         WindowMinimizedEvent;
-        Event<Window*>               WindowClosedEvent;
-
-        Event<Window*, i32, i32>     FramebufferResizedEvent;
-        Event<Window*, String>       FileDroppedEvent;
-        Event<i32>                   GamepadConnectedEvent;
-        Event<i32>                   GamepadDisconnectedEvent;
+        Event<Window*, i32, i32>  FramebufferResizedEvent;
+        Event<Window*, String>    FileDroppedEvent;
+        Event<i32>                GamepadConnectedEvent;
+        Event<i32>                GamepadDisconnectedEvent;
     } // namespace WindowEvents
 
 }; // namespace Vortex

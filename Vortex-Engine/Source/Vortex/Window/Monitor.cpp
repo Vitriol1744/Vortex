@@ -12,7 +12,7 @@
     #include <Vortex/Window/X11/X11Monitor.hpp>
 #elifdef VT_PLATFORM_WINDOWS
     #include <Vortex/Window/Win32/Win32Monitor.hpp>
-#else
+#elifndef VT_PLATFORM_ANDROID
     #error "Platform not supported!"
 #endif
 

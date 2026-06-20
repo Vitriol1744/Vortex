@@ -761,21 +761,26 @@ namespace Vortex
             switch (action)
             {
                 case GLFW_PRESS:
-                    KeyPressedEvent(window, keycode, 0);
+                    Application::Get()->PublishEvent<KeyPressedEvent>(
+                        window, keycode, 0);
                     window->m_Data.Keys[ToUnderlying(keycode)] = true;
                     break;
                 case GLFW_RELEASE:
-                    KeyReleasedEvent(window, keycode);
+                    Application::Get()->PublishEvent<KeyReleasedEvent>(window,
+                                                                       keycode);
                     window->m_Data.Keys[ToUnderlying(keycode)] = false;
                     break;
-                case GLFW_REPEAT: KeyPressedEvent(window, keycode, 1); break;
+                case GLFW_REPEAT:
+                    Application::Get()->PublishEvent<KeyPressedEvent>(
+                        window, keycode, 1);
+                    break;
             }
         };
         PM_UNUSED
         auto charCallback = [](GLFWwindow* handle, u32 codepoint)
         {
             auto window = VtGetWindow(handle);
-            KeyTypedEvent(window, codepoint);
+            Application::Get()->PublishEvent<KeyTypedEvent>(window, codepoint);
         };
         PM_UNUSED
         auto mouseButtonCallback
@@ -822,7 +827,8 @@ namespace Vortex
             auto window = VtGetWindow(handle);
             using Input::KeyCode;
             KeyCode keycode = ToVtKeyCode(mods);
-            UnicodeKeyTypedEvent(window, codepoint, keycode);
+            Application::Get()->PublishEvent<UnicodeKeyTypedEvent>(
+                window, codepoint, keycode);
         };
         auto dropCallback
             = [](GLFWwindow* handle, i32 pathCount, const char** paths)
@@ -919,7 +925,8 @@ namespace Vortex
                         }
                     }
                     else codepoint = static_cast<WCHAR>(wParam);
-                    WindowEvents::KeyTypedEvent(this, codepoint);
+                    Application::Get()->PublishEvent<KeyTypedEvent>(this,
+                                                                    codepoint);
                 }
                 return 0;
             }
@@ -927,7 +934,7 @@ namespace Vortex
             {
                 if (wParam == UNICODE_NOCHAR) return TRUE;
                 u32 c = static_cast<u32>(wParam);
-                WindowEvents::KeyTypedEvent(this, c);
+                Application::Get()->PublishEvent<KeyTypedEvent>(this, c);
                 return FALSE;
             }
             case WM_CLOSE:
@@ -948,11 +955,13 @@ namespace Vortex
                     = VtKeyCode(static_cast<u32>(wParam), lParam & (1 << 24));
                 if (((u32)lParam & (1 << 31)) == 0)
                 {
-                    WindowEvents::KeyPressedEvent(this, key, lParam & 0xFF00);
+                    Application::Get()->PublishEvent<KeyPressedEvent>(
+                        this, key, lParam & 0xff00);
                     m_Data.Keys[ToUnderlying(key)] = true;
                 }
                 else {
-                    WindowEvents::KeyReleasedEvent(this, key);
+                    Application::Get()->PublishEvent<KeyReleasedEvent>(this,
+                                                                       key);
                     m_Data.Keys[static_cast<u32>(key)] = false;
                 }
                 break;
