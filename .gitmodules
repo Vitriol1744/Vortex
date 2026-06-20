@@ -50,3 +50,6 @@
 [submodule "Vortex-Engine/vendor/ImGuizmo"]
 	path = Vortex-Engine/vendor/ImGuizmo
 	url = git@github.com:vitriol1744/ImGuizmo
+[submodule "Vortex-Engine/vendor/assimp"]
+	path = Vortex-Engine/vendor/assimp
+	url = git@github.com:assimp/assimp
