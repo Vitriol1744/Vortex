@@ -17,7 +17,7 @@ namespace Vortex
         inline Timestep(f64 seconds)
             : m_Seconds(seconds)
         {
-            m_Seconds = std::max(seconds, 0.0);
+            m_Seconds = Max(seconds, 0.0);
         }
 
         inline      operator f64() const { return m_Seconds; }
@@ -27,7 +27,7 @@ namespace Vortex
         inline f64  Microseconds() const { return Milliseconds() * 1000; }
         inline f64  Nanoseconds() const { return Microseconds() * 1000; }
 
-        inline void Set(f64 seconds) { m_Seconds = std::max(seconds, 0.0); }
+        inline void Set(f64 seconds) { m_Seconds = Max(seconds, 0.0); }
 
         inline auto operator<=>(const Timestep& other) const = default;
 
