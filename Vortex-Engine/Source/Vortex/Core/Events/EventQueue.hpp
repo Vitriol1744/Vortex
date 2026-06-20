@@ -15,8 +15,16 @@ namespace Vortex
     class EventQueue
     {
       public:
-        EventQueue(usize size = 1024 * 64)
-            : m_Allocator(MemoryManager::ReserveVirtualRange(size))
+        EventQueue(usize size = 64_kib)
+            : m_Allocator(
+                  [](usize sz)
+                  {
+                      auto range = MemoryManager::ReserveVirtualRange(sz);
+                      MemoryManager::CommitVirtualRange(
+                          range.Raw(), range.Size(),
+                          MemoryProtection::eReadWrite);
+                      return range;
+                  }(size))
         {
         }
 
@@ -28,20 +36,22 @@ namespace Vortex
         template <typename T, typename... Args>
         void Push(Args&&... args)
         {
-            u8* headerBytes = m_Allocator.Allocate(sizeof(EventHeader),
-                                                   alignof(EventHeader));
-            if (!headerBytes) return;
+            constexpr usize headerSize  = sizeof(EventHeader);
+            constexpr usize payloadSize = sizeof(T);
+            constexpr usize totalSize   = headerSize + payloadSize;
 
-            u8* eventBytes = m_Allocator.Allocate(sizeof(T), alignof(T));
-            if (!eventBytes) return;
+            u8*             allocationBlock
+                = m_Allocator.Allocate(totalSize, alignof(EventHeader));
+            if (!allocationBlock) return;
 
-            EventHeader* header = reinterpret_cast<EventHeader*>(headerBytes);
-            header->ID          = EventMetadata<T>::ID;
-            header->Size        = sizeof(T);
+            EventHeader* header
+                = reinterpret_cast<EventHeader*>(allocationBlock);
+            header->ID           = EventMetadata<T>::ID;
+            header->Size         = payloadSize;
 
-            new (static_cast<void*>(eventBytes)) T(Forward<Args>(args)...);
+            void* payloadAddress = allocationBlock + headerSize;
+            new (payloadAddress) T(Forward<Args>(args)...);
         }
-
         void  Clear() { m_Allocator.Reset(); }
         u8*   Data() { return m_Allocator.Raw(); }
         usize Size() { return m_Allocator.CurrentOffset(); }
