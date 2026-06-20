@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include <Prism/String/StringUtils.hpp>
 #include <Vortex/Core/Log/Log.hpp>
 #include <Vortex/Core/Log/Logger.hpp>
 
@@ -25,7 +26,7 @@ namespace Vortex
     void Logger::Log(LogLevel level, std::string_view message)
     {
         if (level < m_LogLevelFilter) return;
-        auto levelString = magic_enum::enum_name(level);
+        auto levelString = StringUtils::ToString(level);
         printf("%s[%s", COLOR_DEFAULT,
                this == &Log::GetCoreLogger() ? FOREGROUND_COLOR_BLUE
                                              : COLOR_DEFAULT);
@@ -44,7 +45,7 @@ namespace Vortex
             default: break;
         }
 
-        printf("%s%s]: ", levelString.data() + 1, COLOR_DEFAULT);
+        printf("%s%s]: ", levelString.Raw() + 1, COLOR_DEFAULT);
         printf("%s\n", message.data());
     };
 }; // namespace Vortex
