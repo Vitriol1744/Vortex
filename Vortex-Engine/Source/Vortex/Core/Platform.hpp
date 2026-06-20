@@ -11,9 +11,11 @@
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #error "Vortex Currently Supports only x64 builds of Windows!"
 #elif defined(__ANDROID__)
-    #error "Vortex Currently Doesn't Support Windows!"
+    #define VT_PLATFORM_ANDROID 1
+    #define VT_PLATFORM_UNIX    1
 #elif defined(__linux__)
-    #define VT_PLATFORM_LINUX
+    #define VT_PLATFORM_LINUX 1
+    #define VT_PLATFORM_UNIX  1
 #elif defined(__APPLE__) || defined(__MACH__)
     #include <TargetConditionals.h>
     #if TARGET_IPHONE_SIMULATOR
