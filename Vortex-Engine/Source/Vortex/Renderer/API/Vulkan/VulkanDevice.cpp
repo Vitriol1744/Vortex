@@ -10,7 +10,9 @@
 #include <Vortex/Renderer/API/Vulkan/VulkanDevice.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp>
 
-#include <GLFW/glfw3.h>
+#if VT_PLATFORM_WINDOWS
+    #include <GLFW/glfw3.h>
+#endif
 #include <vulkan/vulkan_core.h>
 
 #ifdef VT_PLATFORM_LINUX
@@ -209,8 +211,8 @@ namespace Vortex
         VkCall(physDevice.enumerateDeviceExtensionProperties(
             nullptr, &extensionCount, availableExtensions.Raw()));
 
-        std::set<String> requiredExtensions(s_DeviceExtensions.begin(),
-                                            s_DeviceExtensions.end());
+        ::std::set<String> requiredExtensions(s_DeviceExtensions.begin(),
+                                              s_DeviceExtensions.end());
 
         for (const auto& extension : availableExtensions)
             requiredExtensions.erase(StringView(extension.extensionName));
@@ -230,7 +232,7 @@ namespace Vortex
 
         struct VulkanPhysicalDevice::QueueFamilyIndices queueFamilyIndices
             = physicalDevice.QueueFamilyIndices();
-        std::set<u32> queueFamilies;
+        ::std::set<u32> queueFamilies;
         queueFamilies.insert(queueFamilyIndices.Graphics.Value());
         queueFamilies.insert(queueFamilyIndices.Present.Value());
         if (queueFamilyIndices.Compute.HasValue())
