@@ -4,8 +4,6 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "vtpch.hpp"
-
 #include <Vortex/Renderer/API/Framebuffer.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanFramebuffer.hpp>
 

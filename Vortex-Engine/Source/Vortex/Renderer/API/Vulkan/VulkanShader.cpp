@@ -384,8 +384,8 @@ namespace Vortex
         VtCoreTrace("===========================");
 
         VtCoreTrace("Uniform Buffers:");
-        std::set<int> sets;
-        std::set<int> bindings;
+        ::std::set<int> sets;
+        ::std::set<int> bindings;
 
         for (usize i = 0; i < resources.uniform_buffers.size(); i++)
         {
@@ -456,10 +456,10 @@ namespace Vortex
 
     String VulkanShader::ReadShaderCode(StringView path)
     {
-        std::ifstream ifs(path.Raw());
+        ::std::ifstream ifs(path.Raw());
         VtCoreAssert(ifs.is_open());
 
-        std::stringstream source;
+        ::std::stringstream source;
         source << ifs.rdbuf();
 
         auto code = source.str();

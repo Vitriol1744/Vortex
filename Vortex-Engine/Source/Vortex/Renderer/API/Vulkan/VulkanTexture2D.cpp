@@ -11,13 +11,13 @@
 namespace Vortex
 {
     VulkanTexture2D::VulkanTexture2D(PathView path)
-        :Texture2D(path)
+        : Texture2D(path)
     {
         class Image    image(path);
         usize          size       = image.Size();
         constexpr bool useMipMaps = true;
         u32            mipLevels  = static_cast<u32>(Prism::Math::Floor(
-                            std::log2(Max(image.Width(), image.Height()))))
+                            ::std::log2(Max(image.Width(), image.Height()))))
                       + 1;
         if (!useMipMaps) mipLevels = 1;
         m_Size = size;

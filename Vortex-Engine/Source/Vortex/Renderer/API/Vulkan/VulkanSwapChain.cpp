@@ -302,7 +302,7 @@ namespace Vortex
     vk::Extent2D VulkanSwapChain::ChooseSwapExtent(
         const vk::SurfaceCapabilitiesKHR& capabilities)
     {
-        if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
+        if (capabilities.currentExtent.width != ::std::numeric_limits<u32>::max())
             return capabilities.currentExtent;
         auto         size = m_Surface.Window()->FramebufferSize();
 

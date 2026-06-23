@@ -4,8 +4,6 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "vtpch.hpp"
-
 #include <Vortex/Renderer/API/Texture2D.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanTexture2D.hpp>
 

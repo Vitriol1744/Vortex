@@ -19,6 +19,8 @@
     #include <vulkan/vulkan_xcb.h>
 #endif
 
+#include <cstring>
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 #ifndef VT_DIST
@@ -219,7 +221,7 @@ namespace Vortex
             bool layerFound = false;
             for (const auto& layerProperties : availableLayers)
             {
-                if (!std::strcmp(layerName, layerProperties.layerName))
+                if (!::std::strcmp(layerName, layerProperties.layerName))
                 {
                     layerFound = true;
                     break;
