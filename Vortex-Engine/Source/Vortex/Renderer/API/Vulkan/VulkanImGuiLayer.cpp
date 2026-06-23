@@ -546,7 +546,7 @@ namespace Vortex
         // Set platform dependent data in viewport
         ImGuiViewport* mainViewport    = ImGui::GetMainViewport();
         auto           data            = new ImGuiViewportData;
-        data->Window                   = bd->MainWindow;
+        data->Window                   = &bd->MainWindow->Window();
         data->WindowOwned              = false;
         mainViewport->PlatformUserData = data;
         mainViewport->PlatformHandle = reinterpret_cast<void*>(bd->MainWindow);
@@ -1073,7 +1073,7 @@ namespace Vortex
         if (auto data = GetViewportData(viewport))
         {
             if (data->WindowOwned
-                && data->Window != &Application::Get()->Window())
+                && data->Window != &Application::Get()->Window().Window())
             {
                 // Release any keys that were pressed in the window being
                 // destroyed and are still held down, because we will not

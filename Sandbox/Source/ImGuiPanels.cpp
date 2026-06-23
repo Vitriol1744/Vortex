@@ -12,7 +12,7 @@ using namespace Vortex;
 
 namespace ImGuiPanels
 {
-    void DrawWindowOptions(Window& window)
+    void DrawWindowOptions(RenderTargetWindow& window)
     {
         ImGui::Begin("Window Options");
         static f32 alpha = 0.9f;

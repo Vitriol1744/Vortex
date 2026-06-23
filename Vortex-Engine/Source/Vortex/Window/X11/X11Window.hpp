@@ -24,7 +24,6 @@ namespace Vortex
         virtual ~X11Window();
 
         static void             PollEvents();
-        virtual void            Present() override;
 
         inline virtual std::any NativeHandle() const noexcept override
         {
@@ -44,11 +43,6 @@ namespace Vortex
         virtual Math::Vec2f          ContentScale() const noexcept override;
         virtual f32                  Opacity() const noexcept override;
         virtual Math::Vec2d          CursorPosition() const noexcept override;
-
-        virtual Ref<class SwapChain> SwapChain() const noexcept override
-        {
-            return m_SwapChain;
-        }
 
         virtual void Close() noexcept override;
         virtual void RequestFocus() noexcept override;
@@ -82,7 +76,6 @@ namespace Vortex
         XIC                  m_InputContext = nullptr;
         xcb_window_t         m_Parent;
         bool                 m_MouseHovered  = false;
-        Ref<class SwapChain> m_SwapChain     = nullptr;
         Math::Vec2i          m_LastCursorPos = {0, 0};
         Math::Vec2i          m_WarpCursorPos = {0, 0};
 

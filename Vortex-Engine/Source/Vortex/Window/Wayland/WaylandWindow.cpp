@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Core/Assertions.hpp>
-#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/Wayland/WaylandWindow.hpp>
 
 #include <cstdlib>
@@ -286,8 +285,7 @@ namespace Vortex
                 {
                     self->m_Data.VideoMode.Width  = width;
                     self->m_Data.VideoMode.Height = height;
-                    Application::Get()->PublishEvent<WindowResizedEvent>(self, width, height);
-                    self->m_SwapChain->OnResize();
+                    Window::PublishEvent<WindowResizedEvent>(self, width, height);
                 }
             },
             .close =
@@ -336,12 +334,9 @@ namespace Vortex
         m_Data.IsOpen = true;
 
         SetupEvents();
-
-        if (!specs.NoAPI) m_SwapChain = SwapChain::Create(this, specs.VSync);
     }
     WaylandWindow::~WaylandWindow()
     {
-        m_SwapChain.Reset();
         VtCoreTrace("Wayland: Destroying window...");
         wp_alpha_modifier_surface_v1_destroy(m_AlphaModifierSurface);
         xdg_toplevel_destroy(m_TopLevel);
@@ -375,10 +370,6 @@ namespace Vortex
         else wl_display_cancel_read(display);
 
         VtCoreAssert(wl_display_get_error(display) == 0);
-    }
-    void WaylandWindow::Present()
-    {
-        if (m_SwapChain) m_SwapChain->Present();
     }
 
     bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
@@ -739,8 +730,7 @@ namespace Vortex
 
         if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
         {
-            Application::Get()->PublishEvent<KeyPressedEvent>(s_KeyboardFocus,
-                                                              key, 0);
+            Window::PublishEvent<KeyPressedEvent>(s_KeyboardFocus, key, 0);
 
             const xkb_keysym_t* keysyms = nullptr;
             const xkb_keycode_t keycode = scancode + 8;
@@ -751,13 +741,12 @@ namespace Vortex
                 const xkb_keysym_t keysym = Wayland::ComposeSymbol(keysyms[0]);
                 const u32          codepoint = KeySym2Unicode(keysym);
                 if (codepoint != u32(-1))
-                    Application::Get()->PublishEvent<KeyTypedEvent>(
-                        s_KeyboardFocus, codepoint);
+                    Window::PublishEvent<KeyTypedEvent>(s_KeyboardFocus,
+                                                        codepoint);
             }
         }
         else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-            Application::Get()->PublishEvent<KeyReleasedEvent>(s_KeyboardFocus,
-                                                               key);
+            Window::PublishEvent<KeyReleasedEvent>(s_KeyboardFocus, key);
     }
     void WaylandWindow::KeyboardHandleModifiers(void*        userData,
                                                 wl_keyboard* keyboard,

@@ -10,7 +10,7 @@
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Core/Layer.hpp>
 
-#include <Vortex/Window/Window.hpp>
+#include <Vortex/Renderer/RenderTargetWindow.hpp>
 
 #include <imgui.h>
 #undef CreateWindow
@@ -19,7 +19,7 @@ namespace Vortex
 {
     struct ImGui_ImplVortex_Data
     {
-        Vortex::Window* MainWindow        = nullptr;
+        Vortex::RenderTargetWindow* MainWindow        = nullptr;
         f64             Time              = 0.0;
         Vortex::Window* MouseWindow       = nullptr;
         ImVec2          LastValidMousePos = {};

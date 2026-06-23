@@ -22,7 +22,6 @@ namespace Vortex
         virtual ~Win32Window();
 
         static void             PollEvents();
-        virtual void            Present() override;
 
         inline virtual std::any NativeHandle() const noexcept override
         {
@@ -60,10 +59,6 @@ namespace Vortex
         virtual void SetSize(const Math::Vec2i& size) noexcept override;
 
         virtual void SetOpacity(f32 opacity) override;
-        virtual Ref<class SwapChain> SwapChain() const noexcept override
-        {
-            return m_SwapChain;
-        }
 
         virtual void SetSizeLimit(i32 minWidth, i32 minHeight, i32 maxWidth,
                                   i32 maxHeight) override;
@@ -84,7 +79,6 @@ namespace Vortex
         bool                                     m_CursorTracked = false;
 
         GLFWwindow*                              m_Window;
-        Ref<class SwapChain>                     m_SwapChain     = nullptr;
 
         Math::Vec2i                              m_LastCursorPos = {0, 0};
 

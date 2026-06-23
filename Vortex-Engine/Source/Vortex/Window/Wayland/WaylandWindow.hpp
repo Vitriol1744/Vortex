@@ -22,7 +22,6 @@ namespace Vortex
         virtual ~WaylandWindow();
 
         static void             PollEvents();
-        virtual void            Present() override;
 
         inline virtual std::any NativeHandle() const noexcept override
         {
@@ -44,11 +43,6 @@ namespace Vortex
         virtual Math::Vec2d CursorPosition() const noexcept override
         {
             return m_Data.MousePosition;
-        }
-
-        virtual Ref<class SwapChain> SwapChain() const noexcept override
-        {
-            return m_SwapChain;
         }
 
         virtual void Close() noexcept override;
@@ -92,7 +86,6 @@ namespace Vortex
         xdg_toplevel_icon_v1*         m_Icon                 = nullptr;
         wl_shm_pool*                  m_IconPool             = nullptr;
         wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
-        Ref<class SwapChain>          m_SwapChain            = nullptr;
 
         bool                          m_Maximized            = false;
         bool                          m_Minimized            = false;

@@ -86,9 +86,6 @@ namespace Vortex
         SetVisible(specification.Visible);
         m_Data.IsOpen = true;
 
-        if (!specification.NoAPI)
-            m_SwapChain = SwapChain::Create(this, specification.VSync);
-
         if (s_WindowsCount == 1)
         {
             // Create Blank Cursor
@@ -105,7 +102,6 @@ namespace Vortex
     }
     X11Window::~X11Window()
     {
-        m_SwapChain.Reset();
         WindowMap().Erase(m_WindowHandle);
         XDestroyWindow(X11::Display(), m_WindowHandle);
         --s_WindowsCount;
@@ -125,7 +121,6 @@ namespace Vortex
 
         XFlush(display);
     }
-    void X11Window::Present() { m_SwapChain->Present(); }
 
     bool X11Window::IsFocused() const noexcept { return m_Data.Focused; }
     bool X11Window::IsMinimized() const noexcept
@@ -413,12 +408,11 @@ namespace Vortex
                 {
                     window->m_Data.VideoMode.Width  = width;
                     window->m_Data.VideoMode.Height = height;
-                    if (window->m_SwapChain) window->m_SwapChain->OnResize();
 
                     WindowEvents::FramebufferResizedEvent(window, width,
                                                           height);
-                    Application::Get()->PublishEvent<WindowResizedEvent>(
-                        window, width, height);
+                    Window::PublishEvent<WindowResizedEvent>(window, width,
+                                                             height);
                 }
 
                 i32      xpos       = event.xconfigure.x;

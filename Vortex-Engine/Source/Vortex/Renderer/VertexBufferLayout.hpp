@@ -44,7 +44,7 @@ namespace Vortex
         }
 
         VtCoreAssertMsg(false, "Unknown ShaderDataType");
-        std::unreachable();
+        ::std::unreachable();
     }
     inline usize ComponentCount(ShaderDataType type)
     {
@@ -64,7 +64,7 @@ namespace Vortex
         }
 
         VtCoreAssertMsg(false, "Unknown ShaderDataType");
-        std::unreachable();
+        ::std::unreachable();
     }
 
     struct VertexBufferElement

@@ -53,9 +53,10 @@ namespace Vortex
 #endif
     };
 
-    static ::std::function<Window*(const WindowSpecification&)> s_CreateWindow;
-    static ::std::function<void()>                              s_PollEvents;
-    static ::std::function<void()>                              s_Shutdown;
+    EventBus* Window::s_EventBus = nullptr;
+    static ::Delegate<Window*(const WindowSpecification&)> s_CreateWindow;
+    static ::Delegate<void()>                              s_PollEvents;
+    static ::Delegate<void()>                              s_Shutdown;
 
     Window::Window(const WindowSpecification& specs)
     {
@@ -75,30 +76,31 @@ namespace Vortex
         m_Data.MousePassthrough = false;
     }
 
-    void Window::Initialize()
+    void Window::Initialize(EventBus* eventBus)
     {
+        s_EventBus = eventBus;
 #ifdef VT_PLATFORM_LINUX
         if (WindowSubsystem() == WindowSubsystem::eX11)
         {
             X11::Initialize();
             s_CreateWindow = [](const WindowSpecification& specs) -> Window*
             { return new X11Window(specs); };
-            s_PollEvents = X11Window::PollEvents;
-            s_Shutdown   = X11::Shutdown;
+            s_PollEvents.Bind<X11Window::PollEvents>();
+            s_Shutdown.Bind<X11::Shutdown>();
         }
         else if (WindowSubsystem() == WindowSubsystem::eWayland)
         {
             WaylandWindow::Initialize();
             s_CreateWindow = [](const WindowSpecification& specs) -> Window*
             { return new WaylandWindow(specs); };
-            s_PollEvents = WaylandWindow::PollEvents;
-            s_Shutdown   = Wayland::Shutdown;
+            s_PollEvents.Bind<WaylandWindow::PollEvents>();
+            s_Shutdown.Bind<Wayland::Shutdown>();
         }
 #elifdef VT_PLATFORM_WINDOWS
         s_CreateWindow = [](const WindowSpecification& specs) -> Window*
         { return new Win32Window(specs); };
-        s_PollEvents = Win32Window::PollEvents;
-        s_Shutdown   = Win32Window::Shutdown;
+        s_PollEvents.Bind<Win32Window::PollEvents>();
+        s_Shutdown.Bind<Win32Window::Shutdown>();
 #endif
 
 #ifndef VT_PLATFORM_ANDROID

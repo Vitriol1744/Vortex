@@ -10,13 +10,12 @@
 #include <Prism/Memory/Scope.hpp>
 #include <Prism/Utility/Path.hpp>
 
-#include <Vortex/Core/Events/Event.hpp>
+#include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 #include <Vortex/Core/Types.hpp>
 #include <Vortex/Window/Input/KeyCode.hpp>
 #include <Vortex/Window/Input/MouseCode.hpp>
 
-#include <Vortex/Renderer/API/SwapChain.hpp>
 #include <Vortex/Renderer/Image.hpp>
 #include <Vortex/Window/Monitor.hpp>
 
@@ -71,41 +70,38 @@ namespace Vortex
         virtual ~Window() = default;
 
         // NOTE(v1tr10l7): these are called by the engine
-        static void            Initialize();
-        static void            Shutdown();
+        static void         Initialize(EventBus* eventBus);
+        static void         Shutdown();
 
-        static void            PollEvents();
-        virtual void           Present()                     = 0;
+        static void         PollEvents();
 
-        virtual ::std::any     NativeHandle() const noexcept = 0;
-        virtual bool           IsOpen() const noexcept       = 0;
-        virtual bool           IsFocused() const noexcept    = 0;
-        virtual bool           IsMinimized() const noexcept  = 0;
-        virtual bool           IsHovered() const noexcept    = 0;
-        virtual String         Title() const noexcept        = 0;
-        virtual Math::Vec2i    Position() const noexcept     = 0;
-        virtual Math::Vec2i    Size() const noexcept         = 0;
-        inline i32             Width() const noexcept { return Size().x; }
-        inline i32             Height() const noexcept { return Size().y; }
-        virtual Math::Vec2i    FramebufferSize() const noexcept      = 0;
-        virtual Math::Vec2f    ContentScale() const noexcept         = 0;
-        virtual f32            Opacity() const noexcept              = 0;
-        virtual Math::Vec2d    CursorPosition() const noexcept       = 0;
+        virtual ::std::any  NativeHandle() const noexcept = 0;
+        virtual bool        IsOpen() const noexcept       = 0;
+        virtual bool        IsFocused() const noexcept    = 0;
+        virtual bool        IsMinimized() const noexcept  = 0;
+        virtual bool        IsHovered() const noexcept    = 0;
+        virtual String      Title() const noexcept        = 0;
+        virtual Math::Vec2i Position() const noexcept     = 0;
+        virtual Math::Vec2i Size() const noexcept         = 0;
+        inline i32          Width() const noexcept { return Size().x; }
+        inline i32          Height() const noexcept { return Size().y; }
+        virtual Math::Vec2i FramebufferSize() const noexcept      = 0;
+        virtual Math::Vec2f ContentScale() const noexcept         = 0;
+        virtual f32         Opacity() const noexcept              = 0;
+        virtual Math::Vec2d CursorPosition() const noexcept       = 0;
 
-        virtual Ref<SwapChain> SwapChain() const noexcept            = 0;
+        virtual void        Close() noexcept                      = 0;
+        virtual void        RequestFocus() noexcept               = 0;
+        virtual void        RequestUserAttention() const noexcept = 0;
+        virtual void        Maximize() noexcept                   = 0;
+        virtual void        Minimize() noexcept                   = 0;
+        virtual void        Restore() noexcept                    = 0;
 
-        virtual void           Close() noexcept                      = 0;
-        virtual void           RequestFocus() noexcept               = 0;
-        virtual void           RequestUserAttention() const noexcept = 0;
-        virtual void           Maximize() noexcept                   = 0;
-        virtual void           Minimize() noexcept                   = 0;
-        virtual void           Restore() noexcept                    = 0;
+        virtual void        SetTitle(StringView title)            = 0;
+        inline void         SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
+        virtual void        SetIcon(const Icon* icons, usize count) = 0;
 
-        virtual void           SetTitle(StringView title)            = 0;
-        inline void            SetIcon(const Icon& icon) { SetIcon(&icon, 1); }
-        virtual void           SetIcon(const Icon* icons, usize count) = 0;
-
-        inline void            SetPosition(const Math::Vec2i& position) noexcept
+        inline void         SetPosition(const Math::Vec2i& position) noexcept
         {
             SetPosition(position.x, position.y);
         }
@@ -156,7 +152,21 @@ namespace Vortex
 
         static WindowSubsystem WindowSubsystem();
 
+        template <IsEvent T, typename... Args>
+        static void PublishEvent(Args&&... args)
+        {
+            s_EventBus->PublishEvent<T>(Forward<Args>(args)...);
+        }
+        template <IsEvent T, typename F>
+        static void SubscribeEvent(F&& cb)
+        {
+            s_EventBus->Subscribe<T>(Forward<F>(cb));
+        }
+
       protected:
+        static EventBus* s_EventBus;
+        friend class RenderTargetWindow;
+
         struct WindowData
         {
             struct VideoMode VideoMode;
