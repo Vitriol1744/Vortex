@@ -10,6 +10,7 @@
 #include <Vortex/Renderer/API/GraphicsPipeline.hpp>
 #include <Vortex/Renderer/API/IndexBuffer.hpp>
 #include <Vortex/Renderer/API/Material.hpp>
+#include <Vortex/Renderer/API/SwapChain.hpp>
 #include <Vortex/Renderer/API/VertexBuffer.hpp>
 
 namespace Vortex
@@ -27,7 +28,7 @@ namespace Vortex
         const Configuration& Configuration();
         u32                  CurrentFrameIndex();
 
-        void                 BeginFrame(Window& window);
+        void                 BeginFrame(Ref<SwapChain> swapChain);
         void                 EndFrame();
         void                 BeginRenderPass(Ref<Framebuffer> target);
         void                 EndRenderPass();

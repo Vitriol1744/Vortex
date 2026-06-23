@@ -15,7 +15,6 @@
 #include <Vortex/Renderer/API/VertexBuffer.hpp>
 #include <Vortex/Renderer/Renderer.hpp>
 #include <Vortex/Renderer/Renderer2D.hpp>
-#include <Vortex/Window/Input/Keyboard.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -67,7 +66,8 @@ namespace Vortex::Renderer2D
         s_TextureShader = Shader::Create("assets/shaders/texture.glsl");
         VertexBufferLayout            layout(elements);
         GraphicsPipelineSpecification specification{};
-        specification.Window  = &Application::Get()->Window();
+        specification.Framebuffer
+            = Application::Get()->Window().SwapChain()->Framebuffer().Promote();
         specification.Shader  = s_TextureShader;
         specification.Layout  = layout;
 

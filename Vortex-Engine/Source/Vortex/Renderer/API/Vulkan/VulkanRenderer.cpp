@@ -51,9 +51,9 @@ namespace Vortex
         s_VkInstance.Destroy();
     }
 
-    void VulkanRenderer::BeginFrame(Window& window)
+    void VulkanRenderer::BeginFrame(::Ref<SwapChain> swapChain)
     {
-        m_CurrentSwapChain = window.SwapChain().As<VulkanSwapChain>();
+        m_CurrentSwapChain = swapChain.As<VulkanSwapChain>();
 
         m_CurrentSwapChain->BeginFrame();
 
@@ -90,16 +90,16 @@ namespace Vortex
         renderPassInfo.renderPass      = vulkanFramebuffer->RenderPass();
         s_CurrentFramebuffer           = vulkanFramebuffer;
 
-        //TODO(v1tr10l7): Check if it is swapchain framebuffer, if not, use the framebuffer from the target
+        // TODO(v1tr10l7): Check if it is swapchain framebuffer, if not, use the
+        // framebuffer from the target
 
-        renderPassInfo.framebuffer
-            = vulkanFramebuffer->GetVulkanFramebuffer();
+        renderPassInfo.framebuffer = vulkanFramebuffer->GetVulkanFramebuffer();
         renderPassInfo.renderArea.offset.x = 0;
         renderPassInfo.renderArea.offset.y = 0;
         renderPassInfo.renderArea.extent   = extent;
 
         Array<vk::ClearValue, 2> clearValues;
-        std::array<f32, 4>       color = {0.03f, 0.03f, 0.03f, 1.0f};
+        ::std::array<f32, 4>     color = {0.03f, 0.03f, 0.03f, 1.0f};
         clearValues[0].setColor(color);
         clearValues[1].setDepthStencil({1.0, 0});
         renderPassInfo.clearValueCount = clearValues.Size();

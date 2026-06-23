@@ -27,7 +27,7 @@ namespace Vortex
         virtual void  Initialize() override;
         virtual void  Shutdown() override;
 
-        virtual void  BeginFrame(Window& window) override;
+        virtual void  BeginFrame(::Ref<SwapChain> swapChain) override;
         virtual void  EndFrame() override;
         virtual void  BeginRenderPass(::Ref<Framebuffer> target) override;
         virtual void  EndRenderPass() override;

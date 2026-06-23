@@ -29,7 +29,10 @@ namespace Vortex
         const struct Configuration& Configuration() { return s_Configuration; }
         u32  CurrentFrameIndex() { return s_Backend->CurrentFrameIndex(); }
 
-        void BeginFrame(Window& window) { s_Backend->BeginFrame(window); }
+        void BeginFrame(Ref<SwapChain> swapChain)
+        {
+            s_Backend->BeginFrame(swapChain);
+        }
         void EndFrame() { s_Backend->EndFrame(); }
         void BeginRenderPass(Ref<Framebuffer> target)
         {

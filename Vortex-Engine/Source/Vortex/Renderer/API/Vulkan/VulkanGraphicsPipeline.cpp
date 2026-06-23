@@ -154,9 +154,6 @@ namespace Vortex
         pipelineLayoutInfo.pSetLayouts            = descriptorSetLayouts.Raw();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-        auto swapChain
-            = specification.Window->SwapChain().As<VulkanSwapChain>();
-
         VkCall(device.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE,
                                            &m_PipelineLayout));
 
@@ -197,9 +194,10 @@ namespace Vortex
         pipelineInfo.pDynamicState       = &dynamicState;
         pipelineInfo.layout              = m_PipelineLayout;
 
-        pipelineInfo.renderPass          = swapChain->RenderPass();
-        pipelineInfo.subpass             = 0;
-        pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
+        auto framebuffer = specification.Framebuffer.As<VulkanFramebuffer>();
+        pipelineInfo.renderPass         = framebuffer->RenderPass();
+        pipelineInfo.subpass            = 0;
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         VkCall(device.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipelineInfo,
                                               VK_NULL_HANDLE, &m_Pipeline));

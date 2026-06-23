@@ -7,18 +7,20 @@
 #pragma once
 
 #include <Vortex/Core/Core.hpp>
+#include <Vortex/Renderer/API/Framebuffer.hpp>
 #include <Vortex/Renderer/VertexBufferLayout.hpp>
 
 namespace Vortex
 {
     struct GraphicsPipelineSpecification
     {
-        class Window*      Window = nullptr;
-        Ref<class Shader>  Shader = nullptr;
-        VertexBufferLayout Layout;
+        Ref<class Framebuffer> Framebuffer = nullptr;
+        Ref<class Shader>      Shader      = nullptr;
+        VertexBufferLayout     Layout;
     };
 
-    class VT_API GraphicsPipeline : public NonCopyable<GraphicsPipeline>, public RefCounted
+    class VT_API GraphicsPipeline : public NonCopyable<GraphicsPipeline>,
+                                    public RefCounted
     {
       public:
         GraphicsPipeline()          = default;

@@ -29,8 +29,12 @@ namespace Vortex
             VertexBufferLayout    layout(elements);
 
             PipelineSpecification pipelineSpecs{};
-            pipelineSpecs.Shader = shader;
-            pipelineSpecs.Window = &Application::Get()->Window();
+            pipelineSpecs.Shader      = shader;
+            pipelineSpecs.Framebuffer = Application::Get()
+                                            ->Window()
+                                            .SwapChain()
+                                            ->Framebuffer()
+                                            .Promote();
             pipelineSpecs.Layout = layout;
             s_Pipeline           = Pipeline::Create(pipelineSpecs);
 

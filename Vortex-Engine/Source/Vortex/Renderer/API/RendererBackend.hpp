@@ -11,8 +11,8 @@
 #include <Vortex/Renderer/API/GraphicsPipeline.hpp>
 #include <Vortex/Renderer/API/IndexBuffer.hpp>
 #include <Vortex/Renderer/API/Material.hpp>
+#include <Vortex/Renderer/API/SwapChain.hpp>
 #include <Vortex/Renderer/API/VertexBuffer.hpp>
-#include <Vortex/Window/Window.hpp>
 
 namespace Vortex
 {
@@ -27,7 +27,7 @@ namespace Vortex
         virtual void Initialize()                               = 0;
         virtual void Shutdown()                                 = 0;
 
-        virtual void BeginFrame(Window& window)                 = 0;
+        virtual void BeginFrame(::Ref<SwapChain> swapChain)     = 0;
         virtual void EndFrame()                                 = 0;
         // TODO(v1tr10l7): implement custom render passes
         virtual void BeginRenderPass(::Ref<Framebuffer> target) = 0;
