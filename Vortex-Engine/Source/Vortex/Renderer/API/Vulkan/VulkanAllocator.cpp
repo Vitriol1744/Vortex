@@ -4,6 +4,15 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#ifdef VT_PLATFORM_ANDROID
+#define VMA_IMPLEMENTATION
+// Disable static linking to vk... functions
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+
+// Enable dynamic internal lookups
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+#endif
+
 #include <Vortex/Renderer/API/Vulkan/VulkanAllocator.hpp>
 #include <Vortex/Renderer/API/Vulkan/VulkanRenderer.hpp>
 
