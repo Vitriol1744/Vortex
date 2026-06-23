@@ -90,8 +90,9 @@ namespace Vortex
             m_Frames[i].Image = CreateRef<VulkanImage>(
                 m_Extent.width, m_Extent.height, m_ImageFormat,
                 vk::ImageTiling::eOptimal, usage);
-            m_Frames[i].Image->TransitionLayout(vk::ImageLayout::eUndefined,
-                                               vk::ImageLayout::eShaderReadOnlyOptimal);
+            m_Frames[i].Image->TransitionLayout(
+                vk::ImageLayout::eUndefined,
+                vk::ImageLayout::eShaderReadOnlyOptimal);
         }
     }
     void VulkanFramebuffer::CreateImageViews()
@@ -247,15 +248,15 @@ namespace Vortex
         dependency.dependencyFlags = vk::DependencyFlags();
         (void)dependency;
 
-        std::array<vk::AttachmentDescription, 2> attachments
+        Array<vk::AttachmentDescription, 2> attachments
             = {colorAttachment, depthAttachment};
 
         vk::RenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = vk::StructureType::eRenderPassCreateInfo;
         renderPassInfo.pNext = VK_NULL_HANDLE;
         renderPassInfo.flags = vk::RenderPassCreateFlags();
-        renderPassInfo.attachmentCount = attachments.size();
-        renderPassInfo.pAttachments    = attachments.data();
+        renderPassInfo.attachmentCount = attachments.Size();
+        renderPassInfo.pAttachments    = attachments.Raw();
         renderPassInfo.subpassCount    = 1;
         renderPassInfo.pSubpasses      = &subpassDescription;
         renderPassInfo.dependencyCount = 2;
