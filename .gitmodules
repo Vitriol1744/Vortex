@@ -53,3 +53,10 @@
 [submodule "Vortex-Engine/vendor/assimp"]
 	path = Vortex-Engine/vendor/assimp
 	url = git@github.com:assimp/assimp
+[submodule "Vortex-Engine/vendor/PhysX"]
+	path = Vortex-Engine/vendor/PhysX
+	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+	branch = release/110.1
+[submodule "Vortex-Engine/vendor/openal-soft"]
+	path = Vortex-Engine/vendor/openal-soft
+	url = https://github.com/kcat/openal-soft.git
