@@ -7,6 +7,8 @@
 #pragma once
 
 #include <Prism/Memory/Scope.hpp>
+#include <Prism/Utility/Expected.hpp>
+#include <Prism/Utility/Path.hpp>
 #include <Vortex/Core/Core.hpp>
 
 namespace Vortex
@@ -15,7 +17,7 @@ namespace Vortex
 
     namespace ImageLoader
     {
-        VT_API std::expected<Scope<Pixel>, std::string>
-               LoadBMP(std::filesystem::path path, i32& width, i32& height);
+        VT_API Expected<Scope<Pixel>, String> LoadBMP(Path path, i32& width,
+                                                      i32& height);
     }
 }; // namespace Vortex

@@ -52,10 +52,4 @@ namespace Vortex
         Initialize();
         return s_Monitors;
     }
-
-    namespace MonitorEvents
-    {
-
-        Event<Monitor*, MonitorState> MonitorStateChangedEvent;
-    }; // namespace MonitorEvents
 }; // namespace Vortex

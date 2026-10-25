@@ -4,8 +4,6 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "vtpch.hpp"
-
 #include <Vortex/Window/X11/X11Monitor.hpp>
 
 namespace Vortex

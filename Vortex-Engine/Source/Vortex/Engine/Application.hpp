@@ -6,13 +6,19 @@
  */
 #pragma once
 
+#include <Prism/Core/Version.hpp>
+
 #include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/LayerStack.hpp>
-#include <Vortex/Renderer/API/Vulkan/VulkanImGuiLayer.hpp>
-#include <Vortex/Window/Window.hpp>
+
+#define VT_ENGINE_API __attribute__((visibility("default")))
 
 namespace Vortex
 {
+    class AssetManager;
+    class ImGuiLayer;
+    class RenderTargetWindow;
+
     struct ApplicationSpecification
     {
         String Name = "Vortex Application";
@@ -23,7 +29,7 @@ namespace Vortex
     {
     };
 
-    class VT_API Application
+    class VT_ENGINE_API Application
     {
       public:
         /**
@@ -50,16 +56,12 @@ namespace Vortex
          */
         void Restart();
 
-        template <typename T, typename... Args>
+        template <IsEvent T, typename... Args>
         void PublishEvent(Args&&... args)
         {
-            if constexpr (EventMetadata<T>::Category == EventCategory::eSystem
-                          || EventMetadata<T>::Category
-                                 == EventCategory::eInput)
-                m_EventBus.PublishImmediate<T>(Forward<Args>(args)...);
-            else m_EventBus.PublishDelayed<T>(Forward<Args>(args)...);
+            m_EventBus.PublishEvent<T>(Forward<Args>(args)...);
         }
-        template <typename T, typename F>
+        template <IsEvent T, typename F>
         void SubscribeEvent(F&& cb)
         {
             m_EventBus.Subscribe<T>(Forward<F>(cb));
@@ -83,32 +85,37 @@ namespace Vortex
             return m_LayerStack.PopLayer(layer);
         }
 
-        inline StringView            Name() const { return m_Name; }
-        inline const struct Version& Version() const { return m_Version; }
-        inline class Window&         Window() { return *m_MainWindow; }
-        inline u64                   FPSCounter() { return m_FpsCounter; }
-        inline f64                   DeltaTime() { return m_DeltaTime; }
+        inline StringView                Name() const { return m_Name; }
+        inline const struct Version&     Version() const { return m_Version; }
+        inline class RenderTargetWindow& Window() { return *m_MainWindow; }
+        inline u64                       FPSCounter() { return m_FpsCounter; }
+        inline f64                       DeltaTime() { return m_DeltaTime; }
+        ::Ref<AssetManager>              AssetManager();
 
-        static Application*          Get() { return s_Instance; }
+        static Application*              Get() { return s_Instance; }
 
       private:
-        bool                  m_Running       = false;
-        bool                  m_ShouldRestart = false;
-        String                m_Name;
-        struct Version        m_Version = {0, 1, 0};
-        EventBus              m_EventBus;
-        Scope<class Window>   m_MainWindow = nullptr;
-        u64                   m_FpsCounter = 0;
-        f64                   m_DeltaTime  = 0.0;
+        bool                            m_Running       = false;
+        bool                            m_ShouldRestart = false;
+        String                          m_Name;
+        struct Version                  m_Version = {0, 1, 0};
+        EventBus                        m_EventBus;
+        Scope<class RenderTargetWindow> m_MainWindow = nullptr;
+        u64                             m_FpsCounter = 0;
+        f64                             m_DeltaTime  = 0.0;
 
-        LayerStack            m_LayerStack;
-        Ref<VulkanImGuiLayer> m_ImGuiLayer = nullptr;
+        LayerStack                      m_LayerStack;
+        ::Ref<ImGuiLayer>               m_ImGuiLayer;
+        ::Ref<class AssetManager>       m_AssetManager;
 
-        static Application*   s_Instance;
+        static Application*             s_Instance;
 
-        void                  RenderImGui();
+        void Initialize(const ApplicationSpecification& specification);
+        void Shutdown();
+
+        void RenderImGui();
     };
 
     // To be defined by Client
-    extern Application* CreateApplication(const CommandLineArguments&);
+    extern VT_API Application* CreateApplication(const CommandLineArguments&);
 }; // namespace Vortex

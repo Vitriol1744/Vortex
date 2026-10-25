@@ -7,18 +7,24 @@
 #pragma once
 
 #include <Vortex/Asset/AssetRegistry.hpp>
-#include <Vortex/Asset/ShaderLibrary.hpp>
 
 namespace Vortex
 {
-    namespace AssetManager
+    class VT_ASSET_API AssetManager : public RefCounted<AssetManager>
     {
-        void Initialize();
-        void Shutdown();
+      public:
+        AssetManager() { m_Registry = CreateRef<AssetRegistry>(); }
+        virtual ~AssetManager();
+
+        virtual ::Ref<class Asset> Asset(const AssetHandle& handle) = 0;
+        virtual void               UnloadAsset(const AssetHandle& handle);
 
         PM_NODISCARD
-        class AssetRegistry& Registry();
-        PM_NODISCARD
-        class ShaderLibrary& ShaderLibrary();
+        inline class AssetRegistry& Registry() { return *m_Registry; }
+
+      protected:
+        ::Ref<AssetRegistry>                          m_Registry;
+        UnorderedMap<AssetHandle, ::Ref<class Asset>> m_AssetCache;
+        mutable std::shared_mutex                     m_Mutex;
     }; // namespace AssetManager
 }; // namespace Vortex

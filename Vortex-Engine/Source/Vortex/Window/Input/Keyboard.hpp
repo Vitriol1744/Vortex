@@ -6,11 +6,12 @@
  */
 #pragma once
 
-#include <Vortex/Core/Export.hpp>
+#include <Vortex/Core/Events/EventBus.hpp>
+#include <Vortex/Window/Export.hpp>
 #include <Vortex/Window/Input/KeyCode.hpp>
 
 namespace Vortex::Keyboard
 {
-    void Initialize();
-    bool IsKeyPressed(Input::KeyCode key);
+    void VT_WINDOW_API Initialize(EventBus* eventBus);
+    bool VT_WINDOW_API IsKeyPressed(Input::KeyCode key);
 }; // namespace Vortex::Keyboard

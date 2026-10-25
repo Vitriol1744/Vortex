@@ -10,11 +10,16 @@
 #include <Prism/Memory/Ref.hpp>
 #include <Vortex/Asset/Asset.hpp>
 
+#include <shared_mutex>
+
 namespace Vortex
 {
-    class AssetRegistry
+    class VT_ASSET_API AssetRegistry : public RefCounted<AssetRegistry>
     {
       public:
+        AssetRegistry()          = default;
+        virtual ~AssetRegistry() = default;
+
         void                   Clear();
 
         inline constexpr usize Count() const { return m_Registry.Size(); }
@@ -35,5 +40,6 @@ namespace Vortex
 
       private:
         UnorderedMap<AssetHandle, AssetMetadata> m_Registry;
+        mutable std::shared_mutex                m_Mutex;
     };
 }; // namespace Vortex

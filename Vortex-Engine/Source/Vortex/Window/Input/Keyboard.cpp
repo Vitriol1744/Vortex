@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Prism/Containers/Array.hpp>
-#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/Input/Keyboard.hpp>
 #include <Vortex/Window/Window.hpp>
 
@@ -29,14 +28,17 @@ namespace Vortex::Keyboard
         return;
     }
 
-    void Initialize()
+    void VT_WINDOW_API Initialize(EventBus* eventBus)
     {
-        Application::Get()->SubscribeEvent<KeyPressedEvent>(
-            [](const KeyPressedEvent& e) { return OnKeyPressed(e); });
-        Application::Get()->SubscribeEvent<KeyReleasedEvent>(
-            [](const KeyReleasedEvent& e) { return OnKeyReleased(e); });
+        eventBus->Subscribe<KeyPressedEvent>([](const KeyPressedEvent& e)
+                                             { return OnKeyPressed(e); });
+        eventBus->Subscribe<KeyReleasedEvent>([](const KeyReleasedEvent& e)
+                                              { return OnKeyReleased(e); });
         Memory::Fill(s_Keys.Raw(), false, s_Keys.Size());
     }
 
-    bool IsKeyPressed(KeyCode key) { return s_Keys[ToUnderlying(key)]; }
+    bool VT_WINDOW_API IsKeyPressed(KeyCode key)
+    {
+        return s_Keys[ToUnderlying(key)];
+    }
 }; // namespace Vortex::Keyboard

@@ -6,16 +6,18 @@
  */
 #pragma once
 
+#include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
+#include <Vortex/Window/Export.hpp>
 #include <Vortex/Window/Input/MouseCode.hpp>
 
 namespace Vortex
 {
     namespace Mouse
     {
-        void        Initialize();
+        void VT_WINDOW_API        Initialize(EventBus* eventBus);
 
-        bool        IsButtonPressed(Input::MouseCode mouseCode);
-        Math::Vec2d Position();
+        bool VT_WINDOW_API        IsButtonPressed(Input::MouseCode mouseCode);
+        Math::Vec2d VT_WINDOW_API Position();
     }; // namespace Mouse
 }; // namespace Vortex

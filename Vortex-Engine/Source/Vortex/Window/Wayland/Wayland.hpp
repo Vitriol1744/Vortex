@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Vortex/Core/Core.hpp>
+#include <Vortex/Window/Export.hpp>
 
 #include <wayland-alpha-modifier-v1-client-protocol.h>
 #include <wayland-wayland-client-protocol.h>
@@ -37,10 +38,10 @@ namespace Vortex
             u32                Modifiers     = 0;
         };
 
-        void                           Initialize();
+        void VT_WINDOW_API             Initialize();
         void                           Shutdown();
 
-        wl_display*                    Display();
+        wl_display* VT_WINDOW_API      Display();
         wl_registry*                   Registry();
         wl_compositor*                 Compositor();
         wl_subcompositor*              Subcompositor();

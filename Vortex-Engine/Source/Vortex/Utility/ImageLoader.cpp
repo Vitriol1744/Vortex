@@ -4,9 +4,9 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include "vtpch.hpp"
-
 #include <Vortex/Utility/ImageLoader.hpp>
+
+#include <fstream>
 
 namespace Vortex::ImageLoader
 {
@@ -35,19 +35,20 @@ namespace Vortex::ImageLoader
     };
 #pragma pack(pop)
 
-    std::expected<Scope<Pixel>, std::string> LoadBMP(std::filesystem::path path,
-                                                     i32& width, i32& height)
+    Expected<Scope<Pixel>, String> LoadBMP(Path path, i32& width, i32& height)
     {
-        std::ifstream ifs(path, std::ios::binary);
+        ::std::ifstream ifs(path.Raw(), ::std::ios::binary);
         if (!ifs.is_open())
-            return std::unexpected(
-                fmt::format("Failed to open file, path: '{}'", path.string()));
+            return Unexpected(
+                fmt::format("Failed to open file, path: '{}'", path.Raw())
+                    .data());
 
         BmpHeader bmpHeader;
         ifs.read(reinterpret_cast<char*>(&bmpHeader), sizeof(BmpHeader));
         if (bmpHeader.Signature != 0x4d42)
-            return std::unexpected(fmt::format(
-                "Invalid BMP signature, path: '{}'", path.string()));
+            return Unexpected(
+                fmt::format("Invalid BMP signature, path: '{}'", path.Raw())
+                    .data());
 
         DibHeader dibHeader;
         ifs.read(reinterpret_cast<char*>(&dibHeader), sizeof(DibHeader));
@@ -55,15 +56,16 @@ namespace Vortex::ImageLoader
         u32 dibSize = dibHeader.HeaderSize;
         if (dibSize != 12 && dibSize != 40 && dibSize != 56 && dibSize != 108
             && dibSize != 124)
-            return std::unexpected(fmt::format(
-                "Invalid DIB header size, path: '{}'", path.string()));
+            return Unexpected(
+                fmt::format("Invalid DIB header size, path: '{}'", path.Raw())
+                    .data());
 
-        Scope<Pixel> pixels = CreateScope<Pixel>(dibHeader.ImageSize);
+        Scope<Pixel[]> pixels = CreateScope<Pixel[]>(dibHeader.ImageSize);
         ifs.seekg(bmpHeader.PixelDataOffset);
         ifs.read(reinterpret_cast<char*>(pixels.Raw()), dibHeader.ImageSize);
 
         for (i64 i = 0; (i + 2) < dibHeader.ImageSize; i += 3)
-            std::swap(pixels[i], pixels[i + 2]);
+            Swap(pixels[i], pixels[i + 2]);
 
         width  = dibHeader.Width;
         height = dibHeader.Height;

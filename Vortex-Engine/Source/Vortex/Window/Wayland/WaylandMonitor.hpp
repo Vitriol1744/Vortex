@@ -11,7 +11,7 @@
 
 namespace Vortex
 {
-    class VT_API WaylandMonitor : public Monitor
+    class VT_WINDOW_API WaylandMonitor : public Monitor
     {
       public:
         WaylandMonitor(u32 outputName, wl_output* output);

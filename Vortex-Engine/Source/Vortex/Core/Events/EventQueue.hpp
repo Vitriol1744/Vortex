@@ -36,18 +36,23 @@ namespace Vortex
         template <typename T, typename... Args>
         void Push(Args&&... args)
         {
+            constexpr usize alignment   = Max(alignof(T), alignof(EventHeader));
             constexpr usize headerSize  = sizeof(EventHeader);
+
+            usize           startOffset = m_Allocator.CurrentOffset();
             constexpr usize payloadSize = sizeof(T);
             constexpr usize totalSize   = headerSize + payloadSize;
 
-            u8*             allocationBlock
-                = m_Allocator.Allocate(totalSize, alignof(EventHeader));
+            u8* allocationBlock = m_Allocator.Allocate(totalSize, alignment);
             if (!allocationBlock) return;
+
+            usize        endOffset = m_Allocator.CurrentOffset();
 
             EventHeader* header
                 = reinterpret_cast<EventHeader*>(allocationBlock);
-            header->ID           = EventMetadata<T>::ID;
+            header->ID           = EventMetadata<T>::ID();
             header->Size         = payloadSize;
+            header->TotalStride  = static_cast<u32>(endOffset - startOffset);
 
             void* payloadAddress = allocationBlock + headerSize;
             new (payloadAddress) T(Forward<Args>(args)...);

@@ -8,6 +8,7 @@
 
 #include <Prism/Containers/Span.hpp>
 #include <Prism/Memory/Pointer.hpp>
+#include <Vortex/Core/Export.hpp>
 
 namespace Vortex
 {
@@ -20,11 +21,11 @@ namespace Vortex
     namespace MemoryManager
     {
         PM_NODISCARD
-        Span<u8> ReserveVirtualRange(usize size) noexcept;
-        bool     CommitVirtualRange(u8* address, usize size,
-                                    MemoryProtection protection) noexcept;
+        Span<u8> VT_CORE_API ReserveVirtualRange(usize size) noexcept;
+        bool VT_CORE_API     CommitVirtualRange(
+                u8* address, usize size, MemoryProtection protection) noexcept;
 
-        void     DecommitVirtualRange(u8* address, usize size) noexcept;
-        void     ReleaseVirtualRange(Span<u8> range) noexcept;
+        void VT_CORE_API DecommitVirtualRange(u8* address, usize size) noexcept;
+        void VT_CORE_API ReleaseVirtualRange(Span<u8> range) noexcept;
     }; // namespace MemoryManager
 }; // namespace Vortex

@@ -15,7 +15,7 @@
 
 namespace Vortex
 {
-    class VT_API Win32Window : public Window
+    class VT_WINDOW_API Win32Window : public Window
     {
       public:
         Win32Window(const WindowSpecification& specification);

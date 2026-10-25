@@ -24,7 +24,7 @@ namespace Vortex
             return PROT_NONE;
         }
 
-        Span<u8> ReserveVirtualRange(usize size) noexcept
+        Span<u8> VT_CORE_API ReserveVirtualRange(usize size) noexcept
         {
             void* ptr = ::mmap(nullptr, size, PROT_NONE,
                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -32,31 +32,34 @@ namespace Vortex
             return {static_cast<u8*>(ptr), size};
         }
 
-        bool CommitVirtualRange(u8* address, usize size,
-                                MemoryProtection protection) noexcept
+        bool VT_CORE_API CommitVirtualRange(
+            u8* address, usize size, MemoryProtection protection) noexcept
         {
             i32 result = ::mprotect(address, size, MapProtection(protection));
             return result == 0;
         }
 
-        void DecommitVirtualRange(u8* address, usize size) noexcept
+        void VT_CORE_API DecommitVirtualRange(u8* address, usize size) noexcept
         {
             ::madvise(address, size, MADV_DONTNEED);
             ::mprotect(address, size, PROT_NONE);
         }
 
-        void ReleaseVirtualRange(Span<u8> range) noexcept
+        void VT_CORE_API ReleaseVirtualRange(Span<u8> range) noexcept
         {
             if (range.Empty()) return;
             ::munmap(range.Raw(), range.Size());
         }
 
-        Pointer Allocate(usize bytes)
+        Pointer VT_CORE_API Allocate(usize bytes)
         {
             auto pointer = mmap(nullptr, bytes, PROT_NONE,
                                 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
             return pointer == MAP_FAILED ? nullptr : pointer;
         }
-        void Free(Pointer address, usize size) { munmap(address, size); }
+        void VT_CORE_API Free(Pointer address, usize size)
+        {
+            munmap(address, size);
+        }
     }; // namespace MemoryManager
 }; // namespace Vortex

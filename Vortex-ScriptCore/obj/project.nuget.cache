@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "dB9Jc3yaNgw=",
+  "success": true,
+  "projectFilePath": "/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/Vortex-ScriptCore.csproj",
+  "expectedPackageFiles": [
+    "/home/v1tr10l7/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.12/microsoft.aspnetcore.app.ref.10.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}

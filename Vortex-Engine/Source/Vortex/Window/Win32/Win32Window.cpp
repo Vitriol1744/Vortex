@@ -458,7 +458,7 @@ namespace Vortex
     void Win32Window::Close() noexcept
     {
         m_Data.IsOpen = false;
-        WindowEvents::WindowClosedEvent(this);
+        Window::PublishEvent<WindowClosedEvent>(this);
         // glfwWindowShouldClose(m_Window);
     }
     void Win32Window::RequestFocus() noexcept
@@ -683,7 +683,6 @@ namespace Vortex
     }
     void Win32Window::SetupEvents()
     {
-        using namespace WindowEvents;
         return;
 
 #define VtGetWindow(handle)                                                    \
@@ -784,12 +783,14 @@ namespace Vortex
 
             if (action == GLFW_PRESS)
             {
-                MouseButtonPressedEvent(window, mousecode);
+                Window::PublishEvent<MouseButtonPressedEvent>(window,
+                                                              mousecode);
                 window->m_Data.MouseButtons[ToUnderlying(mousecode)] = true;
             }
             else if (action == GLFW_RELEASE)
             {
-                MouseButtonReleasedEvent(window, mousecode);
+                Window::PublishEvent<MouseButtonReleasedEvent>(window,
+                                                               mousecode);
                 window->m_Data.MouseButtons[ToUnderlying(mousecode)] = false;
             }
         };
@@ -826,12 +827,14 @@ namespace Vortex
         {
             auto window = VtGetWindow(handle);
             for (i32 i = 0; i < pathCount; i++)
-                FileDroppedEvent(window, paths[i]);
+                Window::PublishEvent<FileDroppedEvent>(window, paths[i]);
         };
         auto joystickCallback = [](i32 jid, i32 event)
         {
-            if (event == GLFW_CONNECTED) GamepadConnectedEvent(jid);
-            else if (event == GLFW_DISCONNECTED) GamepadDisconnectedEvent(jid);
+            if (event == GLFW_CONNECTED)
+                Window::PublishEvent<GamepadConnectedEvent>(jid);
+            else if (event == GLFW_DISCONNECTED)
+                Window::PublishEvent<GamepadDisconnectedEvent>(jid);
         };
         // TODO(v1tr10l7): Set cursor
 #pragma endregion
@@ -889,8 +892,8 @@ namespace Vortex
         switch (msg)
         {
             case WM_MOVE:
-                WindowEvents::WindowMovedEvent(this, LOWORD(lParam),
-                                               HIWORD(lParam));
+                Window::PublishEvent<WindowMovedEvent>(this, LOWORD(lParam),
+                                                       HIWORD(lParam));
                 break;
             case WM_INPUT:
             {
@@ -980,8 +983,9 @@ namespace Vortex
                     code = MouseCode::eX1;
                 else code = MouseCode::eX2;
 
-                if (pressed) WindowEvents::MouseButtonPressedEvent(this, code);
-                else WindowEvents::MouseButtonReleasedEvent(this, code);
+                if (pressed)
+                    Window::PublishEvent<MouseButtonPressedEvent>(this, code);
+                else Window::PublishEvent<MouseButtonReleasedEvent>(this, code);
                 break;
             }
 
@@ -989,18 +993,19 @@ namespace Vortex
             case WM_MBUTTONDBLCLK:
             case WM_RBUTTONDBLCLK:
             case WM_XBUTTONDBLCLK:
-                WindowEvents::MouseButtonPressedEvent(this,
-                                                      VtMouseCode(wParam));
+                Window::PublishEvent<MouseButtonPressedEvent>(
+                    this, VtMouseCode(wParam));
                 break;
             case WM_MOUSEACTIVATE: break;
             case WM_NCMOUSELEAVE:
             case WM_MOUSELEAVE:
                 if (m_CursorTracked)
-                    WindowEvents::MouseMovedEvent(this, -FLT_MAX, FLT_MAX);
+                    Window::PublishEvent<MouseMovedEvent>(this, -FLT_MAX,
+                                                          FLT_MAX);
 
                 m_CursorTracked     = false;
                 m_Data.MouseHovered = false;
-                WindowEvents::MouseLeftEvent(this);
+                Window::PublishEvent<MouseLeftEvent>(this);
                 break;
             case WM_MOUSEMOVE:
             {
@@ -1015,41 +1020,47 @@ namespace Vortex
 
                     m_CursorTracked     = true;
                     m_Data.MouseHovered = true;
-                    WindowEvents::MouseEnteredEvent(this);
+                    Window::PublishEvent<MouseEnteredEvent>(this);
                 }
 
                 POINT pos       = {(LONG)LOWORD(lParam), (LONG)HIWORD(lParam)};
                 // if (msg == WM_MOUSEMOVE) ClientToScreen(m_WindowHandle,
                 // &pos);
                 m_Data.Position = {pos.x, pos.y};
-                WindowEvents::MouseMovedEvent(this, pos.x, pos.y);
+                Window::PublishEvent<MouseMovedEvent>(this, pos.x, pos.y);
                 break;
             }
             case WM_MOUSEWHEEL:
             {
                 i16 delta = HIWORD(wParam);
-                WindowEvents::MouseScrolledEvent(this, delta / 120.0f, 0.0f);
+                Window::PublishEvent<MouseScrolledEvent>(this, delta / 120.0f,
+                                                         0.0f);
                 break;
             }
             case WM_MOUSEHWHEEL:
             {
                 i16 delta = HIWORD(wParam);
-                WindowEvents::MouseScrolledEvent(this, 0.0f, delta / 120.0f);
+                Window::PublishEvent<MouseScrolledEvent>(this, 0.0f,
+                                                         delta / 120.0f);
                 break;
             }
             case WM_SIZE:
                 m_Data.VideoMode.Width  = LOWORD(lParam);
                 m_Data.VideoMode.Height = HIWORD(lParam);
-                WindowEvents::WindowResizedEvent(this, LOWORD(lParam),
-                                                 HIWORD(lParam));
-                WindowEvents::FramebufferResizedEvent(this, LOWORD(lParam),
-                                                      HIWORD(lParam));
+                Window::PublishEvent<WindowResizedEvent>(this, LOWORD(lParam),
+                                                         HIWORD(lParam));
+                Window::PublishEvent<FramebufferResizedEvent>(
+                    this, LOWORD(lParam), HIWORD(lParam));
 
                 if (wParam == SIZE_MINIMIZED)
-                    WindowEvents::WindowMinimizedEvent(this, true);
+                    Window::PublishEvent<WindowMinimizedEvent>(this, true);
                 break;
-            case WM_SETFOCUS: WindowEvents::WindowFocusedEvent(this); break;
-            case WM_KILLFOCUS: WindowEvents::WindowFocusLostEvent(this); break;
+            case WM_SETFOCUS:
+                Window::PublishEvent<WindowFocusedEvent>(this);
+                break;
+            case WM_KILLFOCUS:
+                Window::PublishEvent<WindowFocusLostEvent>(this);
+                break;
             case WM_SYSCOMMAND:
             {
                 switch (wParam)

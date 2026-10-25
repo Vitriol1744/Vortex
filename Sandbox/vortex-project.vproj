@@ -1,0 +1,25 @@
+{
+  "Project": {
+    "AssetDirectory": "assets",
+    "Metadata": {
+      "Metadata": {
+        "Author": "v1tr10l7",
+        "Description": "Vortex Project",
+        "Name": "Vortex Project",
+        "Version": "0.1.0"
+      }
+    },
+    "RendererSettings": {
+      "RendererSettings": {
+        "Resolution": {
+          "x": 1280,
+          "y": 720
+        },
+        "TargetFrameRate": 60,
+        "VSync": false
+      }
+    },
+    "ScriptModulePath": "assets/scripts/VortexScriptModule.so",
+    "StartScenePath": "assets/scenes/pink-cube.vscene"
+  }
+}

@@ -60,3 +60,6 @@
 [submodule "Vortex-Engine/vendor/openal-soft"]
 	path = Vortex-Engine/vendor/openal-soft
 	url = https://github.com/kcat/openal-soft.git
+[submodule "Vortex-Engine/vendor/Prism"]
+	path = Vortex-Engine/vendor/Prism
+	url = https://github.com/CryptixOS/Prism

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.v1tr10l7.vortex"
+    android:versionName="0.1">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <application android:label="Vortex-App"
+    android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+    android:icon="@mipmap/ic_launcher"
+    android:appCategory="game"
+    android:isGame="true"
+    android:hasCode="true">
+        <activity android:name="com.v1tr10l7.vortex.VortexActivity"
+            android:exported="true"
+            android:label="Vortex-Activity"
+            android:configChanges="orientation|keyboardHidden|screenSize">
+            <meta-data android:name="android.app.lib_name" android:value="${nativeLibName}" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

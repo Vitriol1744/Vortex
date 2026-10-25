@@ -16,12 +16,15 @@
     #define VT_IMPORT __attribute__((visibility("default")))
 #endif
 
-#ifndef VT_STATIC_LIBRARY
+#if !defined(VT_STATIC_LIBRARY) || defined(VT_SHARED_LIBRARY)
     #ifdef VT_BUILD_DLL
-        #define VT_API VT_EXPORT
+        #define VT_API      VT_EXPORT
+        #define VT_CORE_API VT_EXPORT
     #else
-        #define VT_API VT_IMPORT
+        #define VT_API      VT_IMPORT
+        #define VT_CORE_API VT_IMPORT
     #endif
 #else
     #define VT_API
+    #define VT_CORE_API
 #endif

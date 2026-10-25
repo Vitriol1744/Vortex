@@ -9,6 +9,7 @@
 #include <Prism/Core/UUID.hpp>
 #include <Prism/Memory/RefCounted.hpp>
 #include <Prism/Utility/Path.hpp>
+#include <Vortex/Asset/Export.hpp>
 
 namespace Vortex
 {
@@ -35,13 +36,15 @@ namespace Vortex
 
     struct AssetMetadata
     {
-        AssetHandle Handle;
-        AssetType   Type;
-        Path        FilePath;
-        bool        IsLoaded;
+        AssetHandle         Handle;
+        AssetType           Type;
+        Path                FilePath;
+        Path                SourcePath;
+        Vector<AssetHandle> Dependencies;
+        bool                IsLoaded;
     };
 
-    class Asset : public RefCounted
+    class VT_ASSET_API Asset : public RefCounted<Asset>
     {
       public:
         virtual ~Asset() {}

@@ -6,26 +6,18 @@
  */
 #include <Vortex/Asset/AssetManager.hpp>
 
+#include <mutex>
+
 namespace Vortex
 {
-    namespace AssetManager
+    AssetManager::~AssetManager()
     {
-        namespace
-        {
-            AssetRegistry       s_Registry;
-            class ShaderLibrary s_ShaderLibrary;
-        }; // namespace
+        m_Registry->Clear();
+    }
 
-        void Initialize() {}
-        void Shutdown()
-        {
-            s_Registry.Clear();
-            s_ShaderLibrary.Clear();
-        }
-
-        PM_NODISCARD
-        AssetRegistry& Registry() { return s_Registry; }
-        PM_NODISCARD
-        class ShaderLibrary& ShaderLibrary() { return s_ShaderLibrary; }
-    }; // namespace AssetManager
+    void AssetManager::UnloadAsset(const AssetHandle& handle)
+    {
+        std::unique_lock lock(m_Mutex);
+        m_AssetCache.Erase(handle);
+    }
 }; // namespace Vortex

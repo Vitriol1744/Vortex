@@ -43,7 +43,7 @@
 #pragma warning(push)
 #pragma warning(disable : 26498)
 #pragma warning(pop)
-#include <magic_enum.hpp>
+// #include <magic_enum.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>

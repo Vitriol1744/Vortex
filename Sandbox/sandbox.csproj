@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Output directory for compiled user scripts -->
+    <OutputPath>..\bin\$(Configuration)\DotNet\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Link to the Vortex C# Engine API -->
+    <ProjectReference Include="..\Vortex-ScriptCore\Vortex-ScriptCore.csproj">
+      <!-- Prevents copying Vortex-ScriptCore.dll into the output folder twice -->
+      <Private>false</Private>
+    </ProjectReference>
+
+    <Reference Include="Coral.Managed">
+      <HintPath>..\bin\$(Configuration)\DotNet\Coral.Managed.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -2,3 +2,6 @@ bin/
 build/
 .cache/
 .vs/
+Vortex-Android/.gradle/
+Vortex-Android/.idea/
+Vortex-Android/app/.cxx

@@ -21,7 +21,7 @@ namespace Vortex
             return PAGE_NOACCESS;
         }
 
-        Span<u8> ReserveVirtualRange(usize size) noexcept
+        Span<u8> VT_CORE_API ReserveVirtualRange(usize size) noexcept
         {
             void* ptr
                 = ::VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_NOACCESS);
@@ -29,19 +29,19 @@ namespace Vortex
             return {static_cast<u8*>(ptr), size};
         }
 
-        bool CommitVirtualRange(u8* address, usize size,
-                                MemoryProtection protection) noexcept
+        bool VT_CORE_API CommitVirtualRange(
+            u8* address, usize size, MemoryProtection protection) noexcept
         {
             void* ptr = ::VirtualAlloc(address, size, MEM_COMMIT,
                                        MapProtection(protection));
             return ptr != nullptr;
         }
 
-        void DecommitVirtualRange(u8* address, usize size) noexcept
+        void VT_CORE_API DecommitVirtualRange(u8* address, usize size) noexcept
         {
             ::VirtualFree(address, size, MEM_DECOMMIT);
         }
-        void ReleaseVirtualRange(Span<u8> range) noexcept
+        void VT_CORE_API ReleaseVirtualRange(Span<u8> range) noexcept
         {
             if (range.Empty()) return;
             ::VirtualFree(range.Raw(), 0, MEM_RELEASE);

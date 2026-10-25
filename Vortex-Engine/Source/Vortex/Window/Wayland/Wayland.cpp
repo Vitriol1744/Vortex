@@ -376,7 +376,7 @@ namespace Vortex::Wayland
         }
     }; // namespace
 
-    void Initialize()
+    void VT_WINDOW_API Initialize()
     {
         if (s_Display) return;
 
@@ -442,15 +442,15 @@ namespace Vortex::Wayland
         s_Display = nullptr;
     }
 
-    wl_display*           Display() { return s_Display; }
-    wl_registry*          Registry() { return s_Registry; }
-    wl_compositor*        Compositor() { return s_Compositor; }
-    wl_subcompositor*     Subcompositor() { return s_Subcompositor; }
-    wl_shm*               Shm() { return s_Shm; }
+    wl_display* VT_WINDOW_API Display() { return s_Display; }
+    wl_registry*              Registry() { return s_Registry; }
+    wl_compositor*            Compositor() { return s_Compositor; }
+    wl_subcompositor*         Subcompositor() { return s_Subcompositor; }
+    wl_shm*                   Shm() { return s_Shm; }
 
-    wl_seat*              Seat() { return s_Seat; }
-    const struct XkbData& XkbData() { return s_XkbData; }
-    xkb_keysym_t          ComposeSymbol(xkb_keysym_t symbol)
+    wl_seat*                  Seat() { return s_Seat; }
+    const struct XkbData&     XkbData() { return s_XkbData; }
+    xkb_keysym_t              ComposeSymbol(xkb_keysym_t symbol)
     {
         if (symbol == XKB_KEY_NoSymbol || !s_XkbData.ComposeState)
             return symbol;

@@ -9,12 +9,16 @@
 #include <Prism/Core/NonCopyable.hpp>
 #include <Prism/Core/Version.hpp>
 #include <Prism/Debug/SourceLocation.hpp>
+#include <Prism/Memory/Scope.hpp>
 
 #include <Vortex/Core/Assertions.hpp>
 #include <Vortex/Core/Export.hpp>
 #include <Vortex/Core/Log/Log.hpp>
 #include <Vortex/Core/Platform.hpp>
 #include <Vortex/Core/Types.hpp>
+
+#include <cstdlib>
+#include <memory>
 
 #define VtUnused(x) ((void)(x))
 #define VtTodo()                                                               \
@@ -29,16 +33,18 @@
         VtCoreWarn(__VA_ARGS__);                                               \
     }
 
+#if defined(VT_COMPILER_CLANG) || defined(VT_COMPILER_GCC)
+    #include <cxxabi.h>
+#endif
 namespace Vortex
 {
 #if defined(VT_COMPILER_CLANG) || defined(VT_COMPILER_GCC)
-    #include <cxxabi.h>
-    inline std::string Demangle(const char* type)
+    inline String Demangle(const char* type)
     {
-        i32                                    status = -4;
+        i32                                      status = -4;
 
-        std::unique_ptr<char, void (*)(void*)> typeName(
-            abi::__cxa_demangle(type, nullptr, nullptr, &status), std::free);
+        ::std::unique_ptr<char, void (*)(void*)> typeName(
+            abi::__cxa_demangle(type, nullptr, nullptr, &status), ::std::free);
 
         return status == 0 ? typeName.get() : type;
     }

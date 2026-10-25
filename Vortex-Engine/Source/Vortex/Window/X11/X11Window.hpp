@@ -17,7 +17,7 @@
 
 namespace Vortex
 {
-    class VT_API X11Window : public Window
+    class VT_WINDOW_API X11Window : public Window
     {
       public:
         X11Window(const WindowSpecification& specification);
@@ -33,27 +33,27 @@ namespace Vortex
         {
             return m_Data.IsOpen;
         }
-        virtual bool                 IsFocused() const noexcept override;
-        virtual bool                 IsMinimized() const noexcept override;
-        virtual bool                 IsHovered() const noexcept override;
-        virtual String               Title() const noexcept override;
-        virtual Math::Vec2i          Position() const noexcept override;
-        virtual Math::Vec2i          Size() const noexcept override;
-        virtual Math::Vec2i          FramebufferSize() const noexcept override;
-        virtual Math::Vec2f          ContentScale() const noexcept override;
-        virtual f32                  Opacity() const noexcept override;
-        virtual Math::Vec2d          CursorPosition() const noexcept override;
+        virtual bool        IsFocused() const noexcept override;
+        virtual bool        IsMinimized() const noexcept override;
+        virtual bool        IsHovered() const noexcept override;
+        virtual String      Title() const noexcept override;
+        virtual Math::Vec2i Position() const noexcept override;
+        virtual Math::Vec2i Size() const noexcept override;
+        virtual Math::Vec2i FramebufferSize() const noexcept override;
+        virtual Math::Vec2f ContentScale() const noexcept override;
+        virtual f32         Opacity() const noexcept override;
+        virtual Math::Vec2d CursorPosition() const noexcept override;
 
-        virtual void Close() noexcept override;
-        virtual void RequestFocus() noexcept override;
-        virtual void RequestUserAttention() const noexcept override;
-        virtual void Maximize() noexcept override;
-        virtual void Minimize() noexcept override;
-        virtual void Restore() noexcept override;
+        virtual void        Close() noexcept override;
+        virtual void        RequestFocus() noexcept override;
+        virtual void        RequestUserAttention() const noexcept override;
+        virtual void        Maximize() noexcept override;
+        virtual void        Minimize() noexcept override;
+        virtual void        Restore() noexcept override;
 
-        virtual void SetTitle(StringView title) override;
-        virtual void SetIcon(const Icon* icons, usize count) override;
-        virtual void SetPosition(i32 x, i32 y) override;
+        virtual void        SetTitle(StringView title) override;
+        virtual void        SetIcon(const Icon* icons, usize count) override;
+        virtual void        SetPosition(i32 x, i32 y) override;
         virtual void SetAspectRatio(i32 numerator, i32 denominator) override;
         virtual void SetSize(const Math::Vec2i& size) noexcept override;
 
@@ -72,16 +72,16 @@ namespace Vortex
         virtual void SetAlwaysOnTop(bool alwaysOnTop) override;
 
       private:
-        xcb_window_t         m_WindowHandle;
-        XIC                  m_InputContext = nullptr;
-        xcb_window_t         m_Parent;
-        bool                 m_MouseHovered  = false;
-        Math::Vec2i          m_LastCursorPos = {0, 0};
-        Math::Vec2i          m_WarpCursorPos = {0, 0};
+        xcb_window_t m_WindowHandle;
+        XIC          m_InputContext = nullptr;
+        xcb_window_t m_Parent;
+        bool         m_MouseHovered  = false;
+        Math::Vec2i  m_LastCursorPos = {0, 0};
+        Math::Vec2i  m_WarpCursorPos = {0, 0};
 
-        static usize         s_WindowsCount;
+        static usize s_WindowsCount;
 
-        static auto&         WindowMap()
+        static auto& WindowMap()
         {
             static UnorderedMap<::Window, X11Window*> windowMap = {};
 

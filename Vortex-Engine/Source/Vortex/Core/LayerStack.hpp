@@ -11,7 +11,7 @@
 
 namespace Vortex
 {
-    class LayerStack final
+    class VT_CORE_API LayerStack final
     {
       public:
         LayerStack()  = default;

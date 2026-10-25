@@ -1,0 +1,9 @@
+# asan.supp (or rename it to lsan.supp for clarity)
+leak:libcoreclr.so
+leak:libSystem.Globalization.Native.so
+leak:*CrossLoaderAllocatorHash*
+leak:*JITInlineTrackingMap*
+leak:*ucol_open*
+leak:Coral::Type::GetFullName
+leak:Coral::AssemblyLoadContext::LoadAssembly
+leak:Coral::TypeCache::CacheType

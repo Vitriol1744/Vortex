@@ -524,7 +524,7 @@ namespace Vortex
             "Wayland: The platform does not support making a window floating");
     }
 
-    void WaylandWindow::SetupEvents() { using namespace WindowEvents; }
+    void WaylandWindow::SetupEvents() {}
 
     void WaylandWindow::Initialize()
     {
@@ -562,7 +562,7 @@ namespace Vortex
         s_PointerEnterSerial  = serial;
         s_FocusedWindow       = window;
 
-        WindowEvents::MouseEnteredEvent(window);
+        Window::PublishEvent<MouseEnteredEvent>(window);
     }
     void WaylandWindow::PointerHandleLeave(void* userData, wl_pointer* pointer,
                                            u32 serial, wl_surface* surface)
@@ -576,7 +576,7 @@ namespace Vortex
         s_Serial               = serial;
         window->m_Data.Focused = false;
         s_FocusedWindow        = nullptr;
-        WindowEvents::MouseLeftEvent(window);
+        Window::PublishEvent<MouseLeftEvent>(window);
     }
     void WaylandWindow::PointerHandleMotion(void* userData, wl_pointer* pointer,
                                             u32 time, wl_fixed_t xOffset,
@@ -591,7 +591,7 @@ namespace Vortex
 
         WaylandWindow* window = s_FocusedWindow;
         if (window) window->m_Data.MousePosition = Math::Vec2d(xpos, ypos);
-        WindowEvents::MouseMovedEvent(window, xpos, ypos);
+        Window::PublishEvent<MouseMovedEvent>(window, xpos, ypos);
     }
     void WaylandWindow::PointerHandleButton(void* userData, wl_pointer* pointer,
                                             u32 serial, u32 time, u32 button,
@@ -607,9 +607,9 @@ namespace Vortex
         WaylandWindow* window    = s_FocusedWindow;
         MouseCode      mouseCode = static_cast<MouseCode>(button - BTN_LEFT);
         if (state == WL_POINTER_BUTTON_STATE_PRESSED)
-            WindowEvents::MouseButtonPressedEvent(window, mouseCode);
+            Window::PublishEvent<MouseButtonPressedEvent>(window, mouseCode);
         else if (state == WL_POINTER_BUTTON_STATE_RELEASED)
-            WindowEvents::MouseButtonReleasedEvent(window, mouseCode);
+            Window::PublishEvent<MouseButtonReleasedEvent>(window, mouseCode);
     }
     void WaylandWindow::PointerHandleAxis(void* userData, wl_pointer* pointer,
                                           u32 time, u32 axis, wl_fixed_t value)
@@ -626,9 +626,9 @@ namespace Vortex
         f64 delta = -wl_fixed_to_double(value) / 10.0;
 
         if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL)
-            WindowEvents::MouseScrolledEvent(window, delta, 0.0);
+            Window::PublishEvent<MouseScrolledEvent>(window, delta, 0.0);
         else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
-            WindowEvents::MouseScrolledEvent(window, 0.0, delta);
+            Window::PublishEvent<MouseScrolledEvent>(window, 0.0, delta);
     }
     void WaylandWindow::PointerHandleFrame(void* userData, wl_pointer* pointer)
     {

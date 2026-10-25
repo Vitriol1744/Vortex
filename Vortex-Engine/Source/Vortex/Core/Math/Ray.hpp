@@ -6,7 +6,9 @@
  */
 #pragma once
 
+#include <Prism/Utility/Math.hpp>
 #include <Vortex/Core/Math/AABB.hpp>
+#include <Vortex/Core/Math/Matrix.hpp>
 
 namespace Vortex::Math
 {
@@ -29,59 +31,63 @@ namespace Vortex::Math
 
         bool IntersectsAABB(const AABB& aabb, f32& t) const
         {
-            Vec3 dirfrac;
-            // r.dir is unit direction vector of ray
-            dirfrac.x        = 1.0f / Direction.x;
-            dirfrac.y        = 1.0f / Direction.y;
-            dirfrac.z        = 1.0f / Direction.z;
-            // lb is the corner of AABB with minimal coordinates - left bottom,
-            // rt is maximal corner r.org is origin of ray
-            const Vec3& lb   = aabb.Min;
-            const Vec3& rt   = aabb.Max;
-            f32         t1   = (lb.x - Origin.x) * dirfrac.x;
-            f32         t2   = (rt.x - Origin.x) * dirfrac.x;
-            f32         t3   = (lb.y - Origin.y) * dirfrac.y;
-            f32         t4   = (rt.y - Origin.y) * dirfrac.y;
-            f32         t5   = (lb.z - Origin.z) * dirfrac.z;
-            f32         t6   = (rt.z - Origin.z) * dirfrac.z;
+            f32 tmin = -std::numeric_limits<f32>::infinity();
+            f32 tmax = std::numeric_limits<f32>::infinity();
 
-            f32         tmin = Max(Max(Min(t1, t2), Min(t3, t4)), Min(t5, t6));
-            f32         tmax = Min(Min(Max(t1, t2), Max(t3, t4)), Max(t5, t6));
-
-            // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB
-            // is behind us
-            if (tmax < 0)
+            for (int i = 0; i < 3; ++i)
             {
-                t = tmax;
-                return false;
+                if (Prism::Math::Absolute(Direction[i]) < 1e-8f)
+                {
+                    // Ray is parallel to slab; fail immediately if origin is
+                    // outside bounds
+                    if (Origin[i] < aabb.Min[i] || Origin[i] > aabb.Max[i])
+                        return false;
+                }
+                else {
+                    f32 invDir = 1.0f / Direction[i];
+                    f32 t1     = (aabb.Min[i] - Origin[i]) * invDir;
+                    f32 t2     = (aabb.Max[i] - Origin[i]) * invDir;
+
+                    if (t1 > t2) Swap(t1, t2);
+
+                    tmin = Max(tmin, t1);
+                    tmax = Min(tmax, t2);
+
+                    if (tmin > tmax) return false;
+                }
             }
 
-            // if tmin > tmax, ray doesn't intersect AABB
-            if (tmin > tmax)
-            {
-                t = tmax;
-                return false;
-            }
+            if (tmax < 0.0f) return false;
 
-            t = tmin;
+            t = (tmin < 0.0f) ? 0.0f : tmin;
             return true;
         }
 
         bool IntersectsTriangle(const Vec3& A, const Vec3& B, const Vec3& C,
-                                f32& t)
+                                f32& t, bool cullBackfaces = true) const
         {
-            Vec3 E1     = B - A;
-            Vec3 E2     = C - A;
-            Vec3 N      = glm::cross(E1, E2);
-            f32  det    = -glm::dot(Direction, N);
-            f32  invdet = 1.0 / det;
+            Vec3 E1  = B - A;
+            Vec3 E2  = C - A;
+            Vec3 N   = glm::cross(E1, E2);
+            f32  det = -glm::dot(Direction, N);
+
+            if (cullBackfaces && det < 1e-6f) return false;
+
+            if (!cullBackfaces && Prism::Math::Absolute(det) < 1e-6f)
+                return false;
+
+            f32  invdet = 1.0f / det;
             Vec3 AO     = Origin - A;
             Vec3 DAO    = glm::cross(AO, Direction);
+
             f32  u      = glm::dot(E2, DAO) * invdet;
-            f32  v      = -glm::dot(E1, DAO) * invdet;
-            t           = glm::dot(AO, N) * invdet;
-            return (det >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0
-                    && (u + v) <= 1.0);
+            if (u < 0.0f || u > 1.0f) return false;
+
+            f32 v = -glm::dot(E1, DAO) * invdet;
+            if (v < 0.0f || (u + v) > 1.0f) return false;
+
+            t = glm::dot(AO, N) * invdet;
+            return t >= 0.0f;
         }
     };
 }; // namespace Vortex::Math

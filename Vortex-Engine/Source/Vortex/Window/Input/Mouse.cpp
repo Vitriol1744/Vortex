@@ -17,35 +17,27 @@ namespace Vortex
         static Array<bool, ToUnderlying(MouseCode::eButtonCount)> s_Buttons{};
         static Math::Vec2d s_MousePosition{};
 
-        void               Initialize()
+        void VT_WINDOW_API Initialize(EventBus* eventBus)
         {
             Memory::Fill(s_Buttons.Raw(), false, s_Buttons.Size());
-            WindowEvents::MouseButtonPressedEvent +=
-                [](Window*, MouseCode button) -> bool
-            {
-                s_Buttons[ToUnderlying(button)] = true;
-                return false;
-            };
 
-            WindowEvents::MouseButtonReleasedEvent +=
-                [](Window*, MouseCode button) -> bool
-            {
-                s_Buttons[ToUnderlying(button)] = false;
-                return false;
-            };
+            eventBus->Subscribe<MouseButtonPressedEvent>(
+                [](const MouseButtonPressedEvent& e)
+                { s_Buttons[ToUnderlying(e.Button)] = true; });
 
-            WindowEvents::MouseMovedEvent +=
-                [](Window*, f64 xOffset, f64 yOffset) -> bool
-            {
-                s_MousePosition = Math::Vec2d(xOffset, yOffset);
-                return false;
-            };
+            eventBus->Subscribe<MouseButtonReleasedEvent>(
+                [](const MouseButtonReleasedEvent& e)
+                { s_Buttons[ToUnderlying(e.Button)] = false; });
+
+            eventBus->Subscribe<MouseMovedEvent>(
+                [](const MouseMovedEvent& e)
+                { s_MousePosition = Math::Vec2d(e.X, e.Y); });
         };
 
-        bool IsButtonPressed(MouseCode mouseCode)
+        bool VT_WINDOW_API IsButtonPressed(MouseCode mouseCode)
         {
             return s_Buttons[ToUnderlying(mouseCode)];
         }
-        Math::Vec2d Position() { return s_MousePosition; }
+        Math::Vec2d VT_WINDOW_API Position() { return s_MousePosition; }
     }; // namespace Mouse
 }; // namespace Vortex

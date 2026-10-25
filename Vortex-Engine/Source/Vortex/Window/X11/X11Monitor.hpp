@@ -11,7 +11,7 @@
 
 namespace Vortex
 {
-    class VT_API X11Monitor : public Monitor
+    class VT_WINDOW_API X11Monitor : public Monitor
     {
       public:
         X11Monitor();

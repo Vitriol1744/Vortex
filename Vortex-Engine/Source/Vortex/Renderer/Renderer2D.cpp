@@ -6,15 +6,15 @@
  */
 #include <Vortex/Core/Math/Math.hpp>
 
-#include <Vortex/Engine/Application.hpp>
-#include <Vortex/Renderer/API/GraphicsPipeline.hpp>
-#include <Vortex/Renderer/API/IndexBuffer.hpp>
-#include <Vortex/Renderer/API/Shader.hpp>
-#include <Vortex/Renderer/API/Texture2D.hpp>
-#include <Vortex/Renderer/API/UniformBuffer.hpp>
-#include <Vortex/Renderer/API/VertexBuffer.hpp>
+#include <Vortex/Renderer/RHI/GraphicsPipeline.hpp>
+#include <Vortex/Renderer/RHI/IndexBuffer.hpp>
+#include <Vortex/Renderer/RHI/Shader.hpp>
+#include <Vortex/Renderer/RHI/Texture2D.hpp>
+#include <Vortex/Renderer/RHI/UniformBuffer.hpp>
+#include <Vortex/Renderer/RHI/VertexBuffer.hpp>
 #include <Vortex/Renderer/Renderer.hpp>
 #include <Vortex/Renderer/Renderer2D.hpp>
+#include <Vortex/Renderer/TextureAsset.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -48,7 +48,7 @@ namespace Vortex::Renderer2D
         Vertex*                   s_QuadVerticesPointer = nullptr;
         Ref<IndexBuffer>          s_QuadIndexBuffer     = nullptr;
         Ref<Shader>               s_TextureShader       = nullptr;
-        Ref<Texture2D>            s_WhiteTexture        = nullptr;
+        Ref<TextureAsset>         s_WhiteTexture        = nullptr;
         u32                       s_IndexCount          = 0;
         static Ref<UniformBuffer> s_UniformBuffer       = nullptr;
         static bool               s_Initialized         = false;
@@ -56,7 +56,7 @@ namespace Vortex::Renderer2D
 
     static void Flush();
 
-    void        Initialize()
+    void        Initialize(::Ref<class Framebuffer> framebuffer)
     {
         if (s_Initialized) return;
         InitializerList<VertexBufferElement> elements
@@ -66,16 +66,15 @@ namespace Vortex::Renderer2D
         s_TextureShader = Shader::Create("assets/shaders/texture.glsl");
         VertexBufferLayout            layout(elements);
         GraphicsPipelineSpecification specification{};
-        specification.Framebuffer
-            = Application::Get()->Window().SwapChain()->Framebuffer().Promote();
-        specification.Shader  = s_TextureShader;
-        specification.Layout  = layout;
+        specification.Framebuffer = framebuffer;
+        specification.Shader      = s_TextureShader;
+        specification.Layout      = layout;
 
-        s_QuadPipeline        = GraphicsPipeline::Create(specification);
-        s_QuadVerticesBase    = new Vertex[MAX_VERTICES];
-        s_QuadVerticesPointer = s_QuadVerticesBase;
+        s_QuadPipeline            = GraphicsPipeline::Create(specification);
+        s_QuadVerticesBase        = new Vertex[MAX_VERTICES];
+        s_QuadVerticesPointer     = s_QuadVerticesBase;
 
-        u32* quadIndices      = new u32[MAX_INDICES];
+        u32* quadIndices          = new u32[MAX_INDICES];
 
         for (u32 i = 0, offset = 0; i < MAX_INDICES; i += 6, offset += 4)
         {
@@ -92,11 +91,11 @@ namespace Vortex::Renderer2D
             = IndexBuffer::Create(quadIndices, MAX_INDICES * sizeof(u32));
         delete[] quadIndices;
 
-        s_WhiteTexture  = Texture2D::Create("assets/textures/texture.png");
+        s_WhiteTexture = CreateRef<TextureAsset>("assets/textures/texture.png");
         s_UniformBuffer = UniformBuffer::Create(sizeof(UniformBufferObject));
 
         s_TextureShader->SetUniform("UniformBufferObject", s_UniformBuffer);
-        s_TextureShader->SetUniform("texSampler", s_WhiteTexture);
+        s_TextureShader->SetUniform("texSampler", s_WhiteTexture->Texture());
         s_Initialized = true;
     }
     void Shutdown()
@@ -118,12 +117,12 @@ namespace Vortex::Renderer2D
         s_Initialized = false;
     }
 
-    void BeginScene(Camera& camera)
+    void BeginScene(const Mat4& viewProjection)
     {
-        s_ViewProjection = camera.ViewProjection();
+        s_ViewProjection = viewProjection;
 
         UniformBufferObject ubo{};
-        ubo.Model          = glm::mat4(1.0f);
+        ubo.Model          = Mat4(1.0f);
         ubo.ViewProjection = s_ViewProjection;
         s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
     }

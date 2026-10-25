@@ -1,0 +1,13 @@
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.GeneratedMSBuildEditorConfig.editorconfig
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.AssemblyInfoInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.AssemblyInfo.cs
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.csproj.CoreCompileInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.sourcelink.json
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.csproj.AssemblyReference.cache
+/home/v1tr10l7/dev/vortex-v2/bin/Release/DotNet/sandbox.deps.json
+/home/v1tr10l7/dev/vortex-v2/bin/Release/DotNet/sandbox.dll
+/home/v1tr10l7/dev/vortex-v2/bin/Release/DotNet/sandbox.pdb
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.dll
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/refint/sandbox.dll
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/sandbox.pdb
+/home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Release/ref/sandbox.dll

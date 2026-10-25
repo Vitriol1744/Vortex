@@ -8,6 +8,7 @@
 
 #include <Prism/Utility/Path.hpp>
 #include <Vortex/Core/Core.hpp>
+#include <Vortex/Window/ImageView.hpp>
 
 #include <stb_image.h>
 
@@ -21,6 +22,12 @@ namespace Vortex
         Image() = default;
         Image(PathView path);
         ~Image();
+
+        inline constexpr operator ImageView() const
+        {
+            return ImageView(m_Pixels, m_Width, m_Height, m_Pitch, m_Channels,
+                             m_BitsPerPixel);
+        }
 
         inline Pixel* Pixels() const { return m_Pixels; }
         inline isize  Size() const { return m_Width * m_Height * 4; }

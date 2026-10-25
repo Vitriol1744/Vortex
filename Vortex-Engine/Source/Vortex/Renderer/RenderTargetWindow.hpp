@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Vortex/Renderer/API/SwapChain.hpp>
+#include <Vortex/Renderer/RHI/SwapChain.hpp>
 #include <Vortex/Window/Window.hpp>
 
 namespace Vortex

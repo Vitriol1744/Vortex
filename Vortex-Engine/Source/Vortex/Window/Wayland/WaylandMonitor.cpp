@@ -7,6 +7,7 @@
 #include <Prism/Algorithm/Find.hpp>
 #include <Prism/Utility/Math.hpp>
 #include <Vortex/Window/Wayland/WaylandMonitor.hpp>
+#include <Vortex/Window/Window.hpp>
 
 namespace Vortex
 {
@@ -99,7 +100,7 @@ namespace Vortex
 
                          if (wlMonitor && wlMonitor->m_OutputName == name)
                          {
-                             MonitorEvents::MonitorStateChangedEvent(
+                             Window::PublishEvent<MonitorStateChangedEvent>(
                                  monitor.Raw(), MonitorState::eDisconnected);
                              return true;
                          }
@@ -158,8 +159,8 @@ namespace Vortex
                 = static_cast<i32>(currentMode.Height * 25.4f / 96.0f);
         }
 
-        MonitorEvents::MonitorStateChangedEvent(monitor,
-                                                MonitorState::eConnected);
+        Window::PublishEvent<MonitorStateChangedEvent>(
+            monitor, MonitorState::eConnected);
     }
     void WaylandMonitor::OnOutputScale(void* userData, wl_output* output,
                                        i32 factor)

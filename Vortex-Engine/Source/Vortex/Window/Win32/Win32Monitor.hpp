@@ -12,7 +12,7 @@
 
 namespace Vortex
 {
-    class VT_API Win32Monitor : public Monitor
+    class VT_WINDOW_API Win32Monitor : public Monitor
     {
       public:
         Win32Monitor(GLFWmonitor* handle);

@@ -12,7 +12,7 @@ namespace Vortex
 {
     namespace Time
     {
-        Timestep CurrentTime()
+        Timestep VT_CORE_API CurrentTime()
         {
             timespec currentTime{};
             clock_gettime(CLOCK_MONOTONIC, &currentTime);
@@ -23,6 +23,9 @@ namespace Vortex
             return static_cast<f64>(time / 1000'000.0);
         }
 
-        void Sleep(Timestep timestep) { usleep(timestep.Microseconds()); }
+        void VT_CORE_API Sleep(Timestep timestep)
+        {
+            usleep(timestep.Microseconds());
+        }
     }; // namespace Time
 }; // namespace Vortex

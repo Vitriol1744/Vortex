@@ -13,10 +13,11 @@
 #include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 #include <Vortex/Core/Types.hpp>
+#include <Vortex/Window/Export.hpp>
 #include <Vortex/Window/Input/KeyCode.hpp>
 #include <Vortex/Window/Input/MouseCode.hpp>
 
-#include <Vortex/Renderer/Image.hpp>
+#include <Vortex/Window/ImageView.hpp>
 #include <Vortex/Window/Monitor.hpp>
 
 namespace Vortex
@@ -32,8 +33,17 @@ namespace Vortex
         eUIKit,
     };
 
-    using Icon   = Image;
-    using Cursor = Image;
+    struct ImageDescriptor
+    {
+        Span<u8> Pixels;
+        isize    Width;
+        isize    Height;
+        isize    Pitch;
+        isize    ChannelCount;
+        isize    BitsPerPixel;
+    };
+    using Icon   = ImageView;
+    using Cursor = ImageView;
 
     struct WindowSpecification
     {
@@ -63,7 +73,7 @@ namespace Vortex
         bool               VSync        = false;
     };
 
-    class VT_API Window : public NonCopyable<Window>
+    class VT_WINDOW_API Window : public NonCopyable<Window>
     {
       public:
         Window(const WindowSpecification& specs);
@@ -131,8 +141,28 @@ namespace Vortex
         virtual void SetVisible(bool visible) const                   = 0;
         virtual void SetAlwaysOnTop(bool alwaysOnTop)                 = 0;
 
-        static Path  OpenFileDialog(PathView initialFolder = ""_sv);
-        static Path  SaveFileDialog();
+        struct FileFilter
+        {
+            StringView Description;
+            StringView Extensions;
+        };
+
+        static Optional<Path> OpenFile(Span<const FileFilter> filters = {},
+                                       PathView      initialPath      = ""_pv,
+                                       const Window* parentWindow     = nullptr,
+                                       StringView    dialogTitle      = ""_sv);
+        static Vector<Path>
+        OpenMultipleFiles(Span<const FileFilter> filters      = {},
+                          PathView               initialPath  = ""_pv,
+                          const Window*          parentWindow = nullptr,
+                          StringView             dialogTitle  = ""_sv);
+        static Optional<Path> OpenFolder(PathView      initialPath  = ""_pv,
+                                         const Window* parentWindow = nullptr,
+                                         StringView    dialogTitle  = ""_sv);
+        static Optional<Path> SaveFile(Span<const FileFilter> filters = {},
+                                       PathView      initialPath      = ""_pv,
+                                       const Window* parentWindow     = nullptr,
+                                       StringView    dialogTitle      = ""_sv);
 
         static Scope<Window>
         Create(const WindowSpecification& windowSpecification);
@@ -218,7 +248,7 @@ namespace Vortex
         static constexpr EventCategory Category = EventCategory::eInput;
 
         class Window*                  Window;
-        u32                            CodePoint;
+        u64                            CodePoint;
     };
     struct UnicodeKeyTypedEvent
     {
@@ -348,41 +378,4 @@ namespace Vortex
         class Window*                  Window;
         class Path                     Path;
     };
-
-    namespace WindowEvents
-    {
-        // Window Events
-
-        // Vortex::Input::MouseCode mouseCode
-        extern Event<Window*, Input::MouseCode> MouseButtonPressedEvent;
-        // Vortex::Input::MouseCode mouseCode
-        extern Event<Window*, Input::MouseCode> MouseButtonReleasedEvent;
-        // Vortex::Math::Vec2 wheel
-        extern Event<Window*, f64, f64>         MouseScrolledEvent;
-        // Vortex::Math::Vec2 mousePosition
-        extern Event<Window*, f64, f64>         MouseMovedEvent;
-        //
-        extern Event<Window*>                   MouseEnteredEvent;
-        //
-        extern Event<Window*>                   MouseLeftEvent;
-        //
-        extern Event<Window*, i32, i32>         WindowMovedEvent;
-        //
-        extern Event<Window*>                   WindowFocusedEvent;
-        //
-        extern Event<Window*>                   WindowFocusLostEvent;
-        // bool maximized - if true window was maximized, else it was restored
-        extern Event<Window*, bool>             WindowMaximizedEvent;
-        // bool minimized - if true window was iconified, else it was restored
-        extern Event<Window*, bool>             WindowMinimizedEvent;
-        //
-        extern Event<Window*>                   WindowClosedEvent;
-        extern Event<Window*, i32, i32>         FramebufferResizedEvent;
-        //
-        extern Event<Window*, String>           FileDroppedEvent;
-        // TODO(v1tr10l7) should it be moved somewhere else?
-        extern Event<i32>                       GamepadConnectedEvent;
-        //
-        extern Event<i32>                       GamepadDisconnectedEvent;
-    } // namespace WindowEvents
 }; // namespace Vortex

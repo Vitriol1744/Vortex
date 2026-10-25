@@ -9,8 +9,8 @@
 #include <Prism/Utility/Path.hpp>
 #include <Vortex/Core/Math/AABB.hpp>
 
-#include <Vortex/Renderer/API/IndexBuffer.hpp>
-#include <Vortex/Renderer/API/VertexBuffer.hpp>
+#include <Vortex/Renderer/RHI/IndexBuffer.hpp>
+#include <Vortex/Renderer/RHI/VertexBuffer.hpp>
 
 #include <assimp/scene.h>
 
@@ -32,7 +32,7 @@ namespace Vortex
         String     MeshName;
     };
 
-    class VT_API Mesh : public RefCounted
+    class VT_API Mesh : public RefCounted<Mesh>
     {
       public:
         explicit Mesh(PathView path);
@@ -44,6 +44,7 @@ namespace Vortex
             return m_VertexBuffer;
         }
         inline ::Ref<IndexBuffer> IndexBuffer() const { return m_IndexBuffer; }
+        inline const Math::AABB&  AABB() const { return m_AABB; }
 
       private:
         struct Vertex
@@ -60,8 +61,10 @@ namespace Vortex
         Vector<Submesh>           m_Submeshes;
         ::Ref<class VertexBuffer> m_VertexBuffer = nullptr;
         ::Ref<class IndexBuffer>  m_IndexBuffer  = nullptr;
+        Math::AABB                m_AABB;
 
-        void ProcessNode(aiNode* node, const aiScene* scene);
-        void ProcessMesh(aiMesh* mesh);
+        void ProcessNode(aiNode* node, const aiScene* scene,
+                         const glm::mat4& parentTransform);
+        void ProcessMesh(aiMesh* mesh, Submesh& submesh);
     };
 }; // namespace Vortex

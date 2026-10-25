@@ -17,10 +17,10 @@
 #include "Vortex/Core/Profiler.hpp"
 #include "Vortex/Core/Time.hpp"
 #include "Vortex/Engine/Application.hpp"
-#include "Vortex/Renderer/API/Shader.hpp"
-#include "Vortex/Renderer/API/Texture2D.hpp"
-#include "Vortex/Renderer/API/UniformBuffer.hpp"
-#include "Vortex/Renderer/API/Vulkan/VulkanSwapChain.hpp"
+#include <Vortex/Renderer/RHI/Shader.hpp>
+#include <Vortex/Renderer/RHI/Texture2D.hpp>
+#include <Vortex/Renderer/RHI/UniformBuffer.hpp>
+#include <Vortex/Renderer/RHI/Vulkan/VulkanSwapChain.hpp>
 #include "Vortex/Renderer/Renderer.hpp"
 #include "Vortex/Renderer/Renderer2D.hpp"
 #include "Vortex/Window/Input/Keyboard.hpp"
@@ -140,7 +140,7 @@ void SandboxLayer2D::OnAttach()
     // s_Texture2D       = Texture2D::Create("assets/textures/viking_room.png");
 
     // vk::Device device = VulkanContext::Device();
-    VtInfo("Frames in flight: {}", Renderer::Configuration().MaxFramesInFlight);
+    VtInfo("Frames in flight: {}", RHI::Configuration().MaxFramesInFlight);
 
     // s_Shader->SetUniform("UniformBufferObject", s_UniformBuffer);
     // s_Shader->SetUniform("texSampler", s_Texture2D);

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Vortex/Core/Core.hpp>
+#include <Vortex/Window/Export.hpp>
 
 #include <X11/Xlib-xcb.h>
 #include <X11/Xresource.h>
@@ -14,14 +15,14 @@
 
 namespace Vortex::X11
 {
-    void              Initialize();
-    void              Shutdown();
+    void                            Initialize();
+    void                            Shutdown();
 
-    Display*          Display();
-    xcb_connection_t* Connection();
-    i32               Screen();
-    ::Window          GetRootWindow();
-    XContext          GetXContext();
-    XIM               InputMethod();
-    Atom              Atom(StringView name, bool onlyIfExists = false);
+    Display* VT_WINDOW_API          Display();
+    xcb_connection_t* VT_WINDOW_API Connection();
+    i32 VT_WINDOW_API               Screen();
+    ::Window                        GetRootWindow();
+    XContext                        GetXContext();
+    XIM                             InputMethod();
+    Atom Atom(StringView name, bool onlyIfExists = false);
 }; // namespace Vortex::X11

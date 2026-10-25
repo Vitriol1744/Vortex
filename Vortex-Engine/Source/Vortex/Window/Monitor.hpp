@@ -12,6 +12,7 @@
 #include <Vortex/Core/Events/Event.hpp>
 #include <Vortex/Core/Math/Rectangle.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
+#include <Vortex/Window/Export.hpp>
 
 #include <any>
 
@@ -60,7 +61,8 @@ namespace Vortex
         eScreenSaver,
     };
 
-    class VT_API Monitor : public NonCopyable<Monitor>, public RefCounted
+    class VT_WINDOW_API Monitor : public NonCopyable<Monitor>,
+                                  public RefCounted<Monitor>
     {
       public:
         virtual ~Monitor()                                  = default;
@@ -124,9 +126,11 @@ namespace Vortex
         static void Initialize();
     };
 
-    namespace MonitorEvents
+    struct MonitorStateChangedEvent
     {
-        // monitor, monitorState
-        extern Event<Monitor*, MonitorState> MonitorStateChangedEvent;
-    }; // namespace MonitorEvents
+        static constexpr EventCategory Category = EventCategory::eWindow;
+
+        Monitor*                       Monitor;
+        MonitorState                   State;
+    };
 }; // namespace Vortex

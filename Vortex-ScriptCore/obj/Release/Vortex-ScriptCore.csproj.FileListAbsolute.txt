@@ -1,0 +1,13 @@
+/home/v1tr10l7/dev/vortex-v2/DotNet/Vortex-ScriptCore.deps.json
+/home/v1tr10l7/dev/vortex-v2/DotNet/Vortex-ScriptCore.dll
+/home/v1tr10l7/dev/vortex-v2/DotNet/Vortex-ScriptCore.pdb
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.csproj.AssemblyReference.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.GeneratedMSBuildEditorConfig.editorconfig
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.AssemblyInfoInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.AssemblyInfo.cs
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.csproj.CoreCompileInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.sourcelink.json
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.dll
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/refint/Vortex-ScriptCore.dll
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/Vortex-ScriptCore.pdb
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Release/ref/Vortex-ScriptCore.dll

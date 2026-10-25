@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Asset/AssetManager.hpp>
-#include <Vortex/Engine/Application.hpp>
+#include <Vortex/Renderer/Renderer.hpp>
 #include <Vortex/Renderer/SceneRenderer.hpp>
 
 namespace Vortex
@@ -18,10 +18,10 @@ namespace Vortex
             Ref<class Framebuffer> s_Framebuffer;
         } // namespace
 
-        void Initialize()
+        void Initialize(::Ref<class Framebuffer> framebuffer)
         {
             auto shader = Shader::Create("assets/shaders/texture.glsl");
-            AssetManager::ShaderLibrary().Add("TextureShader", shader);
+            Renderer::ShaderLibrary().Add("TextureShader", shader);
 
             InitializerList<VertexBufferElement> elements
                 = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
@@ -30,11 +30,7 @@ namespace Vortex
 
             PipelineSpecification pipelineSpecs{};
             pipelineSpecs.Shader      = shader;
-            pipelineSpecs.Framebuffer = Application::Get()
-                                            ->Window()
-                                            .SwapChain()
-                                            ->Framebuffer()
-                                            .Promote();
+            pipelineSpecs.Framebuffer = framebuffer;
             pipelineSpecs.Layout = layout;
             s_Pipeline           = Pipeline::Create(pipelineSpecs);
 
@@ -56,7 +52,7 @@ namespace Vortex
         Ref<Pipeline>     GraphicsPipeline() { return s_Pipeline; }
         Ref<class Shader> Shader()
         {
-            return AssetManager::ShaderLibrary().Get("TextureShader");
+            return Renderer::ShaderLibrary().Get("TextureShader");
         }
         Ref<class Framebuffer> Framebuffer() { return s_Framebuffer; }
     }; // namespace SceneRenderer

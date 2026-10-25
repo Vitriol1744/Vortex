@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Vortex/Renderer/API/Framebuffer.hpp>
-#include <Vortex/Renderer/API/GraphicsPipeline.hpp>
-#include <Vortex/Renderer/API/Shader.hpp>
+#include <Vortex/Renderer/RHI/Framebuffer.hpp>
+#include <Vortex/Renderer/RHI/GraphicsPipeline.hpp>
+#include <Vortex/Renderer/RHI/Shader.hpp>
 
 namespace Vortex
 {
@@ -17,7 +17,7 @@ namespace Vortex
         using PipelineSpecification = GraphicsPipelineSpecification;
         using Pipeline              = GraphicsPipeline;
 
-        void             Initialize();
+        void             Initialize(::Ref<class Framebuffer> framebuffer);
         void             Shutdown();
 
         void             BeginScene();

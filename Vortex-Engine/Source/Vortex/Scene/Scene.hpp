@@ -12,15 +12,18 @@
 #include <Vortex/Core/Math/Quaternion.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 #include <Vortex/Core/Time.hpp>
-#include <Vortex/Renderer/API/GraphicsPipeline.hpp>
-#include <Vortex/Renderer/Camera.hpp>
+
+#include <Vortex/Renderer/RHI/GraphicsPipeline.hpp>
+#include <Vortex/Scene/Camera.hpp>
+#include <Vortex/Scene/Export.hpp>
+#include <Vortex/Serialization/Archive.hpp>
 
 #include <entt/entt.hpp>
 #include <nlohmann/json.hpp>
 
 namespace Vortex
 {
-    class VT_API Scene
+    class VT_SCENE_API Scene : public RefCounted<Scene>
     {
       public:
         explicit inline Scene(StringView name = "Unnamed"_sv)
@@ -31,8 +34,10 @@ namespace Vortex
         inline StringView Name() const { return m_Name; }
         inline void       SetName(StringView name) { m_Name = name; }
 
-        class Entity      AddEntity();
-        void              RemoveEntity(Entity entity);
+        class Actor       AddActor();
+        void              RemoveActor(Actor actor);
+
+        void              OnRuntimeStart();
 
         void              Update(Timestep ts);
         void              Render();
@@ -40,18 +45,20 @@ namespace Vortex
         inline Camera&    MainCamera() { return *m_MainCamera; }
         inline void SetMainCamera(Camera& camera) { m_MainCamera = &camera; }
 
-        inline entt::registry& Registry() { return m_Registry; }
+        inline entt::registry&       Registry() { return m_Registry; }
+        inline const entt::registry& Registry() const { return m_Registry; }
 
-        void                   Serialize(PathView path);
-        void                   Deserialize(PathView path);
+        void                         Serialize(ArchiveWriter& writer) const;
+        bool                         Deserialize(ArchiveReader& reader);
+
+        inline static ::Ref<Scene>   Active() { return s_Active; }
+        inline static void SwitchTo(::Ref<Scene> scene) { s_Active = scene; }
 
       private:
-        String         m_Name       = "Unnamed";
-        Camera*        m_MainCamera = nullptr;
-        entt::registry m_Registry;
+        String                     m_Name       = "Unnamed";
+        Camera*                    m_MainCamera = nullptr;
+        entt::registry             m_Registry;
 
-        void DeserializeEntities(const nlohmann::ordered_json& entities);
-        void DeserializeComponents(const nlohmann::ordered_json& components,
-                                   Entity&                       entity);
+        inline static ::Ref<Scene> s_Active = nullptr;
     };
 }; // namespace Vortex

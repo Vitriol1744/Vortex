@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\DotNet\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <Compile Include="Source/Core/FormatUtils.cs" />
+      <Compile Include="Source/Core/Input.cs" />
+      <Compile Include="Source/Core/InternalCalls.cs" />
+      <Compile Include="Source/Core/KeyCode.cs" />
+      <Compile Include="Source/Core/MouseCode.cs" />
+      <Compile Include="Source/Core/Log.cs" />
+      <Compile Include="Source/Math/Interpolate.cs" />
+      <Compile Include="Source/Math/Mathf.cs" />
+      <Compile Include="Source/Math/Matrix.cs" />
+      <Compile Include="Source/Math/Quaternion.cs" />
+      <Compile Include="Source/Math/Transform.cs" />
+      <Compile Include="Source/Math/Vector2.cs" />
+      <Compile Include="Source/Math/Vector3.cs" />
+      <Compile Include="Source/Math/Vector4.cs" />
+      <Compile Include="Source/Scene/Actor.cs" />
+      <Compile Include="Source/Scene/Components.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Coral.Managed">
+        <HintPath>..\DotNet\Coral.Managed.dll</HintPath>
+      <Private>false</Private> 
+    </Reference>
+  </ItemGroup>
+
+</Project>

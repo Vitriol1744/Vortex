@@ -20,6 +20,41 @@ if(POLICY CMP0141)
   )
 endif()
 
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
+
+
+# ------------------------------------------------------------------------------
+# Global Platform Detection
+# ------------------------------------------------------------------------------
+if(WIN32)
+    set(VT_PLATFORM_DEFINE VT_PLATFORM_WINDOWS)
+elseif(ANDROID)
+    set(VT_PLATFORM_DEFINE VT_PLATFORM_ANDROID)
+elseif(APPLE)
+    set(VT_PLATFORM_DEFINE VT_PLATFORM_MACOS)
+elseif(UNIX)
+    set(VT_PLATFORM_DEFINE VT_PLATFORM_LINUX)
+endif()
+
+# Global Interface Target for Engine-Wide Configuration
+add_library(Vortex-Config INTERFACE)
+target_compile_definitions(Vortex-Config INTERFACE
+    ${VT_PLATFORM_DEFINE}
+    $<$<CONFIG:Debug>:VT_DEBUG>
+    $<$<CONFIG:RelWithDebInfo>:VT_RELEASE>
+    $<$<CONFIG:Release,MinSizeRel>:VT_DIST>
+    $<$<CONFIG:Debug,RelWithDebInfo>:VT_ENABLE_ASSERTIONS>
+    PRISM_USE_NAMESPACE=1
+    GLM_FORCE_RADIANS
+    GLM_FORCE_DEPTH_ZERO_TO_ONE
+    GLM_ENABLE_EXPERIMENTAL
+)
+
 add_subdirectory(Vortex-Engine)
-add_subdirectory(Vortex-Editor)
-add_subdirectory(Sandbox)
+if (NOT ANDROID)
+  add_subdirectory(Nexus)
+  # add_subdirectory(Sandbox)
+endif ()

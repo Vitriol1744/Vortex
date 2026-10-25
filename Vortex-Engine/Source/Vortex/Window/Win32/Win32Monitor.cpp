@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Window/Win32/Win32Monitor.hpp>
+#include <Vortex/Window/Window.hpp>
 
 namespace Vortex
 {
@@ -118,7 +119,7 @@ namespace Vortex
                 MonitorState state = MonitorState::eDisconnected;
                 if (event == GLFW_CONNECTED) state = MonitorState::eConnected;
 
-                MonitorEvents::MonitorStateChangedEvent(monitor, state);
+                Window::PublishEvent<MonitorStateChangedEvent>(monitor, state);
             });
 
         return true;

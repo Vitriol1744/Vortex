@@ -9,27 +9,24 @@
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Core/Math/Math.hpp>
 
-#include <Vortex/Renderer/Camera.hpp>
-
 namespace Vortex
 {
     namespace Renderer2D
     {
-        void        Initialize();
+        void        Initialize(::Ref<class Framebuffer> framebuffer);
         void        Shutdown();
 
-        void        BeginScene(Camera& camera);
+        void        BeginScene(const Mat4& viewProjection);
         void        EndScene();
 
         void        DrawQuad(const Mat4& transform, const Math::Vec4& color);
         inline void DrawQuad(const Math::Vec2& pos, const Math::Vec2& scale,
                              const Math::Vec4& color)
         {
-            glm::mat4 transform
-                = glm::translate(glm::mat4(1.0f), glm::vec3(pos, 0.0f))
-                * glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
+            Mat4 transform = glm::translate(Mat4(1.0f), Math::Vec3(pos, 0.0f))
+                           * glm::scale(Mat4(1.0f), Math::Vec3(scale, 1.0f));
 
             DrawQuad(transform, color);
         }
     }; // namespace Renderer2D
-};     // namespace Vortex
+}; // namespace Vortex

@@ -13,7 +13,7 @@
 
 namespace Vortex
 {
-    class VT_API Layer : public RefCounted
+    class VT_CORE_API Layer : public RefCounted<Layer>
     {
       public:
         Layer(StringView name = "Layer")

@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <Prism/Containers/UnorderedMap.hpp>
 #include <Prism/Memory/Scope.hpp>
 #include <Prism/Utility/Delegate.hpp>
 #include <Vortex/Core/Events/EventQueue.hpp>
@@ -15,8 +16,9 @@ namespace Vortex
     class IEventWrapper
     {
       public:
-        virtual ~IEventWrapper()          = default;
-        virtual void Dispatch(void* data) = 0;
+        virtual ~IEventWrapper()            = default;
+        virtual usize ListenerCount() const = 0;
+        virtual void  Dispatch(void* data)  = 0;
     };
 
     template <typename T>
@@ -25,9 +27,10 @@ namespace Vortex
       public:
         using Callback = Delegate<void(const T&)>;
 
-        void AddListener(Callback cb) { m_Callbacks.PushBack(cb); }
+        usize ListenerCount() const override { return m_Callbacks.Size(); }
+        void  AddListener(Callback cb) { m_Callbacks.PushBack(cb); }
 
-        void Dispatch(void* data) override
+        void  Dispatch(void* data) override
         {
             T* eventData = static_cast<T*>(data);
             for (auto& cb : m_Callbacks) cb(*eventData);
@@ -52,10 +55,10 @@ namespace Vortex
         template <IsEvent T>
         void Subscribe(typename EventWrapper<T>::Callback cb)
         {
-            EventID id = EventMetadata<T>::ID;
-            if (m_Wrappers.Size() <= id) m_Wrappers.Resize(id + 1);
-            if (!m_Wrappers[id])
-                m_Wrappers[id] = CreateScope<EventWrapper<T>>();
+            EventID id      = EventMetadata<T>::ID();
+
+            auto&   wrapper = m_Wrappers[id];
+            if (!wrapper) wrapper = CreateScope<EventWrapper<T>>();
 
             static_cast<EventWrapper<T>*>(m_Wrappers[id].Raw())
                 ->AddListener(cb);
@@ -75,37 +78,36 @@ namespace Vortex
             {
                 EventHeader* header
                     = reinterpret_cast<EventHeader*>(data + readOffset);
-                readOffset += sizeof(EventHeader);
-
-                void* eventData = data + readOffset;
+                void* eventData = data + readOffset + sizeof(EventHeader);
                 if (header->ID < m_Wrappers.Size() && m_Wrappers[header->ID])
                     m_Wrappers[header->ID]->Dispatch(eventData);
 
-                readOffset += header->Size;
+                readOffset += header->TotalStride;
             }
             queueToProcess->Clear();
         }
 
       private:
-        EventQueue                   m_QueueA;
-        EventQueue                   m_QueueB;
-        EventQueue*                  m_ActiveQueue = &m_QueueA;
-        Vector<Scope<IEventWrapper>> m_Wrappers;
+        EventQueue                                  m_QueueA;
+        EventQueue                                  m_QueueB;
+        EventQueue*                                 m_ActiveQueue = &m_QueueA;
+        UnorderedMap<EventID, Scope<IEventWrapper>> m_Wrappers;
 
         template <IsEvent T, typename... Args>
         void PublishImmediate(Args&&... args)
         {
-            EventID id = EventMetadata<T>::ID;
-
+            EventID id = EventMetadata<T>::ID();
             T       eventInstance(Forward<Args>(args)...);
 
-            if (id < m_Wrappers.Size() && m_Wrappers[id])
+            auto    it = m_Wrappers.Find(id);
+            if (it != m_Wrappers.end() && it->Value)
                 m_Wrappers[id]->Dispatch(&eventInstance);
         }
 
         template <IsEvent T, typename... Args>
         void PublishDelayed(Args&&... args)
         {
+            return PublishImmediate<T>(Forward<Args>(args)...);
             static_assert(EventMetadata<T>::Category != EventCategory::eSystem,
                           "Critical System Events should generally not be "
                           "deferred to minimize lag.");

@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Vortex/Core/Assertions.hpp>
-#include <Vortex/Engine/Application.hpp>
 #include <Vortex/Window/X11/X11Window.hpp>
 
 #include <X11/Xresource.h>
@@ -332,28 +331,28 @@ namespace Vortex
                 switch (event.xbutton.button)
                 {
                     case Button1:
-                        WindowEvents::MouseButtonPressedEvent(window,
-                                                              MouseCode::eLeft);
+                        Window::PublishEvent<MouseButtonPressedEvent>(
+                            window, MouseCode::eLeft);
                         break;
                     case Button2:
-                        WindowEvents::MouseButtonPressedEvent(
+                        Window::PublishEvent<MouseButtonPressedEvent>(
                             window, MouseCode::eMiddle);
                         break;
                     case Button3:
-                        WindowEvents::MouseButtonPressedEvent(
+                        Window::PublishEvent<MouseButtonPressedEvent>(
                             window, MouseCode::eRight);
                         break;
                     case Button4:
-                        WindowEvents::MouseScrolledEvent(window, 1, 0);
+                        Window::PublishEvent<MouseScrolledEvent>(window, 1, 0);
                         break;
                     case Button5:
-                        WindowEvents::MouseScrolledEvent(window, -1, 0);
+                        Window::PublishEvent<MouseScrolledEvent>(window, -1, 0);
                         break;
                     case Button5 + 1:
-                        WindowEvents::MouseScrolledEvent(window, 0, 1);
+                        Window::PublishEvent<MouseScrolledEvent>(window, 0, 1);
                         break;
                     case Button5 + 2:
-                        WindowEvents::MouseScrolledEvent(window, 0, -1);
+                        Window::PublishEvent<MouseScrolledEvent>(window, 0, -1);
                         break;
                         // TODO(v1tr10l7): handle extra mouse buttons
                 }
@@ -371,7 +370,7 @@ namespace Vortex
                     case Button3: button = MouseCode::eRight; break;
                 }
 
-                WindowEvents::MouseButtonReleasedEvent(window, button);
+                Window::PublishEvent<MouseButtonReleasedEvent>(window, button);
                 break;
             }
             case ClientMessage:
@@ -390,7 +389,7 @@ namespace Vortex
                                == static_cast<long>(wmDeleteWindow))
                     {
                         window->m_Data.IsOpen = false;
-                        WindowEvents::WindowClosedEvent(window);
+                        Window::PublishEvent<WindowClosedEvent>(window);
                     }
                 }
 
@@ -409,8 +408,8 @@ namespace Vortex
                     window->m_Data.VideoMode.Width  = width;
                     window->m_Data.VideoMode.Height = height;
 
-                    WindowEvents::FramebufferResizedEvent(window, width,
-                                                          height);
+                    Window::PublishEvent<FramebufferResizedEvent>(window, width,
+                                                                  height);
                     Window::PublishEvent<WindowResizedEvent>(window, width,
                                                              height);
                 }
@@ -430,7 +429,7 @@ namespace Vortex
                 {
                     window->m_Data.Position.x = xpos;
                     window->m_Data.Position.y = ypos;
-                    WindowEvents::WindowMovedEvent(window, xpos, ypos);
+                    Window::PublishEvent<WindowMovedEvent>(window, xpos, ypos);
                 }
                 break;
             }
@@ -442,8 +441,8 @@ namespace Vortex
                 const i32 y            = event.xcrossing.y;
 
                 window->m_MouseHovered = true;
-                WindowEvents::MouseEnteredEvent(window);
-                WindowEvents::MouseMovedEvent(window, x, y);
+                Window::PublishEvent<MouseEnteredEvent>(window);
+                Window::PublishEvent<MouseMovedEvent>(window, x, y);
                 window->m_LastCursorPos.x = window->m_Data.MousePosition.x = x;
                 window->m_LastCursorPos.y = window->m_Data.MousePosition.y = y;
                 break;
@@ -453,7 +452,7 @@ namespace Vortex
                 auto window = WindowMap()[event.xfocus.window];
                 if (!window) return;
                 window->m_Data.Focused = true;
-                WindowEvents::WindowFocusedEvent(window);
+                Window::PublishEvent<WindowFocusedEvent>(window);
                 break;
             }
             case FocusOut:
@@ -461,7 +460,7 @@ namespace Vortex
                 auto window = WindowMap()[event.xfocus.window];
                 if (!window) return;
                 window->m_Data.Focused = false;
-                WindowEvents::WindowFocusLostEvent(window);
+                Window::PublishEvent<WindowFocusLostEvent>(window);
                 break;
             }
             case LeaveNotify:
@@ -469,7 +468,7 @@ namespace Vortex
                 auto window = WindowMap()[event.xcrossing.window];
                 if (!window) return;
                 window->m_MouseHovered = false;
-                WindowEvents::MouseLeftEvent(window);
+                Window::PublishEvent<MouseLeftEvent>(window);
                 break;
             }
             case MotionNotify:
@@ -481,10 +480,8 @@ namespace Vortex
                 const i32 y = event.xmotion.y;
                 if (x != window->m_WarpCursorPos.x
                     && y != window->m_WarpCursorPos.y)
-                {
-                    WindowEvents::MouseMovedEvent(window, event.xmotion.x,
-                                                  event.xmotion.y);
-                }
+                    Window::PublishEvent<MouseMovedEvent>(
+                        window, event.xmotion.x, event.xmotion.y);
                 window->m_Data.MousePosition.x = window->m_LastCursorPos.x = x;
                 window->m_Data.MousePosition.y = window->m_LastCursorPos.y = y;
                 break;

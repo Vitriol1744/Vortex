@@ -7,14 +7,15 @@
 #pragma once
 
 // #include <Prism/Utility/Time.hpp>
-#include <Vortex/Core/Types.hpp>
+#include <Vortex/Core/Export.hpp>
 #include <Vortex/Core/Timestep.hpp>
+#include <Vortex/Core/Types.hpp>
 
 namespace Vortex
 {
     namespace Time
     {
-        Timestep CurrentTime();
-        void     Sleep(Timestep timestep);
+        Timestep VT_CORE_API CurrentTime();
+        void VT_CORE_API     Sleep(Timestep timestep);
     }; // namespace Time
 }; // namespace Vortex

@@ -20,20 +20,19 @@ namespace Vortex
             return frequency;
         }
 
-        Timestep CurrentTime()
+        Timestep VT_CORE_API CurrentTime()
         {
             LARGE_INTEGER        performanceCounter{};
-            static LARGE_INTEGER performanceFrequency
-                = PerformanceFrequency();
+            static LARGE_INTEGER performanceFrequency = PerformanceFrequency();
 
             QueryPerformanceCounter(&performanceCounter);
             return static_cast<f64>(performanceCounter.QuadPart)
                  / static_cast<f64>(performanceFrequency.QuadPart);
         }
 
-        void Sleep(Timestep timestep)
+        void VT_CORE_API Sleep(Timestep timestep)
         {
             ::Sleep(static_cast<u64>(timestep.Milliseconds()));
         }
     } // namespace Time
-};    // namespace Vortex
+}; // namespace Vortex

@@ -6,41 +6,51 @@
  */
 #pragma once
 
-#include <Vortex/Renderer/API/Framebuffer.hpp>
-#include <Vortex/Renderer/API/GraphicsPipeline.hpp>
-#include <Vortex/Renderer/API/IndexBuffer.hpp>
-#include <Vortex/Renderer/API/Material.hpp>
-#include <Vortex/Renderer/API/SwapChain.hpp>
-#include <Vortex/Renderer/API/VertexBuffer.hpp>
+#include <Vortex/Renderer/RHI/RHI.hpp>
+#include <Vortex/Renderer/ShaderLibrary.hpp>
 
 namespace Vortex
 {
     namespace Renderer
     {
-        struct Configuration
-        {
-            u32 MaxFramesInFlight = 2;
-        };
+        void Initialize(const RHI::Specification& specification);
+        void Shutdown();
 
-        void                 Initialize();
-        void                 Shutdown();
+        class ShaderLibrary& ShaderLibrary();
 
-        const Configuration& Configuration();
-        u32                  CurrentFrameIndex();
+        // FIXME(v1tr10l7): those resource creation functions should be
+        // somewhere else
+        ::Ref<Framebuffer>
+        CreateFramebuffer(const FramebufferSpecification& spec);
+        ::Ref<GraphicsPipeline>
+        CreateGraphicsPipeline(const GraphicsPipelineSpecification& spec);
+        ::Ref<VertexBuffer>  CreateVertexBuffer(void* data, usize size);
+        ::Ref<IndexBuffer>   CreateIndexBuffer(u32* data, usize size);
+        ::Ref<UniformBuffer> CreateUniformBuffer(usize size);
+        ::Ref<SwapChain>     CreateSwapChain(class Window* window,
+                                             bool          vsync = false);
+        ::Ref<Shader>        CreateShader(PathView path);
+        ::Ref<Shader> CreateShader(PathView vertexPath, PathView fragmentPath);
+        ::Ref<Material>  CreateMaterial(const ::Ref<Shader> shader);
+        ::Ref<Texture2D> CreateTexture2D(ImageView image);
 
-        void                 BeginFrame(Ref<SwapChain> swapChain);
-        void                 EndFrame();
-        void                 BeginRenderPass(Ref<Framebuffer> target);
-        void                 EndRenderPass();
+        u32              CurrentFrameIndex();
 
-        void                 Draw(Ref<GraphicsPipeline> pipeline,
-                                  Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
-                                  u32 indexCount, Ref<Material> material = nullptr);
+        void             BeginFrame(Ref<SwapChain> swapChain);
+        void             EndFrame();
+        void             BeginRenderPass(Ref<Framebuffer> target);
+        void             EndRenderPass();
 
-        inline void          Draw(Ref<GraphicsPipeline> pipeline,
-                                  Ref<VertexBuffer>     vertexBuffer,
-                                  Ref<IndexBuffer>      indexBuffer,
-                                  Ref<Material>         material = nullptr)
+        void             WaitIdle();
+
+        void             Draw(Ref<GraphicsPipeline> pipeline,
+                              Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
+                              u32 indexCount, Ref<Material> material = nullptr);
+
+        inline void      Draw(Ref<GraphicsPipeline> pipeline,
+                              Ref<VertexBuffer>     vertexBuffer,
+                              Ref<IndexBuffer>      indexBuffer,
+                              Ref<Material>         material = nullptr)
         {
             Draw(pipeline, vertexBuffer, indexBuffer, indexBuffer->Count(),
                  material);

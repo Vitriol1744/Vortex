@@ -1,0 +1,16 @@
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.GeneratedMSBuildEditorConfig.editorconfig
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.AssemblyInfoInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.AssemblyInfo.cs
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.csproj.CoreCompileInputs.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.sourcelink.json
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/DotNet/HelloWorld.deps.json
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/DotNet/HelloWorld.dll
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/DotNet/HelloWorld.pdb
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.csproj.AssemblyReference.cache
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.dll
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/refint/HelloWorld.dll
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/HelloWorld.pdb
+/home/v1tr10l7/dev/vortex-v2/Vortex-ScriptCore/obj/Debug/ref/HelloWorld.dll
+/home/v1tr10l7/dev/vortex-v2/DotNet/HelloWorld.deps.json
+/home/v1tr10l7/dev/vortex-v2/DotNet/HelloWorld.dll
+/home/v1tr10l7/dev/vortex-v2/DotNet/HelloWorld.pdb

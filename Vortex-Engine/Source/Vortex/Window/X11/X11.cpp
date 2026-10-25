@@ -53,14 +53,14 @@ namespace Vortex::X11
         // XFreeThreads();
     }
 
-    ::Display*        Display() { return s_Display; }
-    xcb_connection_t* Connection() { return s_Connection; }
-    i32               Screen() { return s_Screen; }
-    ::Window          GetRootWindow() { return s_RootWindow; }
-    XContext          GetXContext() { return s_Context; }
-    XIM               InputMethod() { return s_InputMethod; }
+    ::Display* VT_WINDOW_API        Display() { return s_Display; }
+    xcb_connection_t* VT_WINDOW_API Connection() { return s_Connection; }
+    i32 VT_WINDOW_API               Screen() { return s_Screen; }
+    ::Window                        GetRootWindow() { return s_RootWindow; }
+    XContext                        GetXContext() { return s_Context; }
+    XIM                             InputMethod() { return s_InputMethod; }
 
-    ::Atom            Atom(StringView name, bool onlyIfExists)
+    ::Atom                          Atom(StringView name, bool onlyIfExists)
     {
         auto it = s_AtomMap.Find(name);
         if (it != s_AtomMap.end()) return it->Value;
