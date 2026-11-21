@@ -4,12 +4,11 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include <Vortex/Core/Profiler.hpp>
 #include <Vortex/Filesystem/Filesystem.hpp>
-#include <Vortex/Renderer/Renderer.hpp>
-#include <Vortex/Renderer/Renderer2D.hpp>
-#include <Vortex/Renderer/SceneRenderer.hpp>
 #include <Vortex/Scene/Actor.hpp>
 #include <Vortex/Scene/Components.hpp>
+#include <Vortex/Scene/FirstPerson.hpp>
 #include <Vortex/Scene/Scene.hpp>
 #include <Vortex/Script/ScriptEngine.hpp>
 #include <Vortex/Serialization/JsonArchive.hpp>
@@ -20,11 +19,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-struct UniformBufferObject
-{
-    alignas(16) glm::mat4 Model;
-    alignas(16) glm::mat4 ViewProjection;
-};
+import Vortex.Physics;
+
 
 namespace Vortex
 {
@@ -37,8 +33,41 @@ namespace Vortex
 
     void Scene::RemoveActor(Actor actor) { m_Registry.destroy(actor); }
 
+    Scene::~Scene()
+    {
+        if (m_ScriptsRunning) ScriptEngine::ClearScriptInstances();
+        StopPhysics();
+    }
+
+    void Scene::StartPhysics()
+    {
+        StopPhysics();
+        if (!PhysicsEngine::IsInitialized()) return;
+        m_Physics = new PhysicsScene(*this);
+    }
+
+    void Scene::StopPhysics()
+    {
+        delete m_Physics;
+        m_Physics = nullptr;
+    }
+
+    void Scene::OnSimulationStart() { StartPhysics(); }
+
+    void Scene::OnRuntimeStop()
+    {
+        FirstPerson::Stop(*this);
+        if (m_ScriptsRunning) ScriptEngine::ClearScriptInstances();
+        m_ScriptsRunning = false;
+        StopPhysics();
+    }
+
     void Scene::OnRuntimeStart()
     {
+        // Bodies exist before scripts' OnCreate, so they can push them.
+        StartPhysics();
+        m_ScriptsRunning = true;
+
         auto view = m_Registry.view<ScriptComponent>();
 
         VtCoreTrace("OnRuntimeStart");
@@ -50,78 +79,63 @@ namespace Vortex
             if (!sc.ClassName.Empty())
             {
                 VtCoreTrace("Creating instance of script `{}`", sc.ClassName);
-                ScriptEngine::OnCreateEntity((u64)entityID, sc.ClassName);
+                ScriptEngine::OnCreateEntity((u64)entityID, sc);
             }
         }
     }
 
-    void Scene::Update(Timestep ts) 
-    { 
-        ScriptEngine::OnUpdateRuntime(ts);
-        return;
-
-        auto view = Registry().view<ScriptComponent>();
-        for (const auto entity : view)
-        {
-            Actor actor{entity, *this};
-            auto& sc = actor.GetComponent<ScriptComponent>();
-
-            if (!sc.ClassName.Empty())
-                ScriptEngine::OnUpdateEntity((u64)entity, ts);
-        }
-        IgnoreUnused(ts); 
-    }
-    void Scene::Render()
+    void Scene::UpdateAnimations(Timestep ts)
     {
-        auto view = Registry().view<entt::entity>();
-        for (const auto entity : view)
+        VtProfileFunction();
+        auto view = m_Registry.view<AnimationComponent, MeshComponent>();
+        for (auto entity : view)
         {
-            Actor actor(entity, *this);
-            if (!actor.HasComponent<MeshComponent>()) continue;
-
-            auto meshComponent = actor.GetComponent<MeshComponent>();
-
-            auto mesh          = meshComponent.Mesh;
-            auto material      = meshComponent.Material;
-            if (!mesh || !material) continue;
-
-            UniformBufferObject ubo{};
-            ubo.Model = glm::mat4(1.0f);
-            if (actor.HasComponent<TransformComponent>())
+            auto& animation = view.get<AnimationComponent>(entity);
+            auto& mesh      = view.get<MeshComponent>(entity).Mesh;
+            if (!mesh || !mesh->IsSkinned())
             {
-                auto&     tc = actor.GetComponent<TransformComponent>();
-                glm::mat4 translationMat
-                    = glm::translate(glm::mat4(1.0f), tc.Translation);
-                glm::mat4 rotationMat = glm::toMat4(glm::quat(tc.Rotation));
-                glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), tc.Scale);
-
-                // Combined TRS order (Evaluates Right-to-Left: Scale -> Rotate
-                // -> Translate)
-                ubo.Model             = translationMat * rotationMat * scaleMat;
+                animation.Pose.Clear();
+                continue;
             }
-            ubo.ViewProjection = MainCamera().ViewProjection();
 
-            auto ub            = meshComponent.UniformBuffer;
-            if (ub) ub->SetData(&ubo, sizeof(ubo), 0);
-
-            Renderer::Draw(SceneRenderer::GraphicsPipeline(),
-                           mesh->VertexBuffer(), mesh->IndexBuffer(), material);
+            const auto& clips = mesh->Animations();
+            if (clips.Empty() || animation.Clip >= clips.Size())
+            {
+                Animation::BindPose(mesh->Skeleton(), animation.Pose);
+                continue;
+            }
+            const auto& clip = clips[animation.Clip];
+            if (animation.Playing)
+            {
+                animation.Time += static_cast<f32>(ts.Seconds()) * animation.Speed;
+                f32 duration = clip.DurationSeconds();
+                if (duration > 0.0f && animation.Time > duration)
+                    animation.Time -= duration * static_cast<i32>(animation.Time / duration);
+            }
+            Animation::Evaluate(mesh->Skeleton(), clip, animation.Time, animation.Pose);
         }
-
-        Renderer2D::BeginScene(MainCamera().ViewProjection());
-        auto group
-            = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
-        for (auto entity : group)
-        {
-            const auto& [transform, sprite]
-                = group.get<TransformComponent, SpriteComponent>(entity);
-
-            Renderer2D::DrawQuad(transform, sprite.Color);
-        }
-
-        Renderer2D::EndScene();
     }
 
+    void Scene::Update(Timestep ts) { UpdateAnimations(ts); }
+
+    void Scene::UpdateRuntime(Timestep ts)
+    {
+        VtProfileFunction();
+        f32 deltaTime = static_cast<f32>(ts.Seconds());
+        if (m_ScriptsRunning) ScriptEngine::OnUpdateRuntime(ts);
+        FirstPerson::Update(*this, deltaTime);
+        if (m_Physics) m_Physics->Simulate(deltaTime);
+        // After physics, so the camera and gun follow where the body ended.
+        FirstPerson::LateUpdate(*this, deltaTime);
+        UpdateAnimations(ts);
+    }
+
+    void Scene::UpdateSimulation(Timestep ts)
+    {
+        VtProfileFunction();
+        if (m_Physics) m_Physics->Simulate(static_cast<f32>(ts.Seconds()));
+        UpdateAnimations(ts);
+    }
     void Scene::Serialize(ArchiveWriter& archive) const
     {
         archive.Write("sceneName", m_Name.View());
@@ -147,6 +161,27 @@ namespace Vortex
             if (actor.HasComponent<MeshComponent>())
                 SerializeValue(archive, "meshComponent",
                                actor.GetComponent<MeshComponent>());
+            if (actor.HasComponent<AnimationComponent>())
+                SerializeValue(archive, "animationComponent",
+                               actor.GetComponent<AnimationComponent>());
+            if (actor.HasComponent<ScriptComponent>())
+                SerializeValue(archive, "scriptComponent",
+                               actor.GetComponent<ScriptComponent>());
+            if (actor.HasComponent<RigidBodyComponent>())
+                SerializeValue(archive, "rigidBodyComponent",
+                               actor.GetComponent<RigidBodyComponent>());
+            if (actor.HasComponent<BoxColliderComponent>())
+                SerializeValue(archive, "boxColliderComponent",
+                               actor.GetComponent<BoxColliderComponent>());
+            if (actor.HasComponent<SphereColliderComponent>())
+                SerializeValue(archive, "sphereColliderComponent",
+                               actor.GetComponent<SphereColliderComponent>());
+            if (actor.HasComponent<CapsuleColliderComponent>())
+                SerializeValue(archive, "capsuleColliderComponent",
+                               actor.GetComponent<CapsuleColliderComponent>());
+            if (actor.HasComponent<MeshColliderComponent>())
+                SerializeValue(archive, "meshColliderComponent",
+                               actor.GetComponent<MeshColliderComponent>());
 
             archive.EndObject();
             archive.EndObject();
@@ -194,6 +229,34 @@ namespace Vortex
                 MeshComponent mesh;
                 if (DeserializeValue(reader, "meshComponent", mesh))
                     actor.AddComponent<MeshComponent>(mesh);
+
+                AnimationComponent animation;
+                if (DeserializeValue(reader, "animationComponent", animation))
+                    actor.AddComponent<AnimationComponent>(animation);
+
+                ScriptComponent script;
+                if (DeserializeValue(reader, "scriptComponent", script))
+                    actor.AddComponent<ScriptComponent>(script);
+
+                RigidBodyComponent rigidBody;
+                if (DeserializeValue(reader, "rigidBodyComponent", rigidBody))
+                    actor.AddComponent<RigidBodyComponent>(rigidBody);
+
+                BoxColliderComponent box;
+                if (DeserializeValue(reader, "boxColliderComponent", box))
+                    actor.AddComponent<BoxColliderComponent>(box);
+
+                SphereColliderComponent sphere;
+                if (DeserializeValue(reader, "sphereColliderComponent", sphere))
+                    actor.AddComponent<SphereColliderComponent>(sphere);
+
+                CapsuleColliderComponent capsule;
+                if (DeserializeValue(reader, "capsuleColliderComponent", capsule))
+                    actor.AddComponent<CapsuleColliderComponent>(capsule);
+
+                MeshColliderComponent meshCollider;
+                if (DeserializeValue(reader, "meshColliderComponent", meshCollider))
+                    actor.AddComponent<MeshColliderComponent>(meshCollider);
 
                 reader.EndObject(); // "components"
             }

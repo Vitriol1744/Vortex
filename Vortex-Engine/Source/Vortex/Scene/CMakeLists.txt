@@ -10,7 +10,9 @@ set (MODULE_TYPE STATIC)
 set (SOURCES
   Actor.cpp
   Camera.cpp
+  FirstPerson.cpp
   Scene.cpp
+  SceneRenderer.cpp
 )
 
 vt_add_module(${MODULE_NAME}
@@ -19,6 +21,7 @@ vt_add_module(${MODULE_NAME}
     PUBLIC_LIBS
       Vortex-Modules
       Vortex-Filesystem
+      Vortex-Physics
       Vortex-Renderer
       Vortex-Script
       nlohmann_json::nlohmann_json

@@ -6,14 +6,13 @@
  */
 #pragma once
 
-#include <Prism/Utility/Path.hpp>
+import Prism.Utility.Path;
 #include <Vortex/Core/Export.hpp>
 #include <Vortex/Core/Math/Matrix.hpp>
 #include <Vortex/Core/Math/Quaternion.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 #include <Vortex/Core/Time.hpp>
 
-#include <Vortex/Renderer/RHI/GraphicsPipeline.hpp>
 #include <Vortex/Scene/Camera.hpp>
 #include <Vortex/Scene/Export.hpp>
 #include <Vortex/Serialization/Archive.hpp>
@@ -23,6 +22,8 @@
 
 namespace Vortex
 {
+    class PhysicsScene;
+
     class VT_SCENE_API Scene : public RefCounted<Scene>
     {
       public:
@@ -30,6 +31,10 @@ namespace Vortex
             : m_Name(name)
         {
         }
+        ~Scene();
+
+        Scene(const Scene&)            = delete;
+        Scene& operator=(const Scene&) = delete;
 
         inline StringView Name() const { return m_Name; }
         inline void       SetName(StringView name) { m_Name = name; }
@@ -37,10 +42,24 @@ namespace Vortex
         class Actor       AddActor();
         void              RemoveActor(Actor actor);
 
+        /// Play: creates the physics world and the script instances.
         void              OnRuntimeStart();
+        /// Simulate: physics only, no scripts.
+        void              OnSimulationStart();
+        /// Ends Play or Simulate: destroys script instances and physics.
+        void              OnRuntimeStop();
 
+        /// Edit time: animations only.
         void              Update(Timestep ts);
-        void              Render();
+        /// Play: scripts, then physics, then animations.
+        void              UpdateRuntime(Timestep ts);
+        /// Simulate: physics, then animations.
+        void              UpdateSimulation(Timestep ts);
+        /// Advances every AnimationComponent and computes its pose.
+        void              UpdateAnimations(Timestep ts);
+
+        /// The physics world while the scene runs, null otherwise.
+        inline PhysicsScene* Physics() const { return m_Physics; }
 
         inline Camera&    MainCamera() { return *m_MainCamera; }
         inline void SetMainCamera(Camera& camera) { m_MainCamera = &camera; }
@@ -58,6 +77,11 @@ namespace Vortex
         String                     m_Name       = "Unnamed";
         Camera*                    m_MainCamera = nullptr;
         entt::registry             m_Registry;
+        PhysicsScene*              m_Physics    = nullptr;
+        bool                       m_ScriptsRunning = false;
+
+        void                       StartPhysics();
+        void                       StopPhysics();
 
         inline static ::Ref<Scene> s_Active = nullptr;
     };
