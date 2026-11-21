@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Utility/Delegate.hpp>
+import Prism.Utility.Delegate;
 
 namespace Coral
 {

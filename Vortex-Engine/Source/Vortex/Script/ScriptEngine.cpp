@@ -4,9 +4,10 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/UnorderedMap.hpp>
-#include <Prism/String/StringUtils.hpp>
-#include <Prism/Utility/PathView.hpp>
+import Prism.Algorithm.Sort;
+import Prism.Containers.UnorderedMap;
+import Prism.String.StringUtils;
+import Prism.Utility.PathView;
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Scene/Actor.hpp>
 #include <Vortex/Scene/Components.hpp>
@@ -24,6 +25,8 @@
 #include <Coral/HostInstance.hpp>
 #include <Coral/String.hpp>
 #include <Coral/TypeCache.hpp>
+
+import Vortex.Physics;
 
 #ifdef VT_PLATFORM_DIST
     #define VtICallValidateParam(param)
@@ -76,6 +79,133 @@ namespace Vortex
                 s_HasComponentFuncs;
             UnorderedMap<Coral::TypeId, std::function<void(Actor&)>>
                  s_RemoveComponentFuncs;
+
+            // Reflection (built lazily after each load).
+            u64                     s_Generation    = 0;
+            bool                    s_ClassesBuilt  = false;
+            Vector<ScriptClassInfo> s_Classes;
+
+            /// Copies a string the managed side handed over, and frees it.
+            String TakeString(Coral::String managed)
+            {
+                std::string text = managed;
+                Coral::String::Free(managed);
+                return String(text.c_str());
+            }
+
+            ScriptFieldType FieldTypeOf(StringView typeName)
+            {
+                struct Mapping
+                {
+                    const char*     Name;
+                    ScriptFieldType Type;
+                };
+                constexpr Mapping kTypes[] = {
+                    {"System.Boolean", ScriptFieldType::eBool},
+                    {"System.Int32", ScriptFieldType::eInt32},
+                    {"System.UInt32", ScriptFieldType::eUInt32},
+                    {"System.Int64", ScriptFieldType::eInt64},
+                    {"System.Single", ScriptFieldType::eFloat},
+                    {"System.Double", ScriptFieldType::eDouble},
+                    {"System.String", ScriptFieldType::eString},
+                    {"Vortex.Vector2", ScriptFieldType::eVector2},
+                    {"Vortex.Vector3", ScriptFieldType::eVector3},
+                    {"Vortex.Vector4", ScriptFieldType::eVector4},
+                };
+                for (const auto& mapping : kTypes)
+                    if (typeName == StringView(mapping.Name)) return mapping.Type;
+                return ScriptFieldType::eNone;
+            }
+
+            bool ReadField(const Coral::ManagedObject& object, const ScriptFieldInfo& field,
+                           void* value, String* text)
+            {
+                if (!object.IsValid() || field.Type == ScriptFieldType::eNone) return false;
+                std::string_view name(field.Name.Raw(), field.Name.Size());
+                if (field.Type == ScriptFieldType::eString)
+                {
+                    Coral::String managed{};
+                    object.GetFieldValueRaw(name, &managed);
+                    String copy = TakeString(managed);
+                    if (text) *text = Move(copy);
+                    return true;
+                }
+                alignas(8) u8 buffer[16]{};
+                object.GetFieldValueRaw(name, buffer);
+                std::memcpy(value, buffer, ScriptFieldSize(field.Type));
+                return true;
+            }
+            bool WriteField(const Coral::ManagedObject& object, StringView name,
+                            ScriptFieldType type, const void* value, StringView text)
+            {
+                if (!object.IsValid() || type == ScriptFieldType::eNone) return false;
+                std::string_view fieldName(name.Raw(), name.Size());
+                if (type == ScriptFieldType::eString)
+                {
+                    Coral::String managed
+                        = Coral::String::New(std::string_view(text.Raw(), text.Size()));
+                    object.SetFieldValueRaw(fieldName, &managed);
+                    Coral::String::Free(managed);
+                    return true;
+                }
+                alignas(8) u8 buffer[16]{};
+                std::memcpy(buffer, value, ScriptFieldSize(type));
+                object.SetFieldValueRaw(fieldName, buffer);
+                return true;
+            }
+
+            void BuildClasses()
+            {
+                s_Classes.Clear();
+                s_ClassesBuilt = true;
+                if (!s_Initialized || !s_AppAssembly || !s_CoreAssembly) return;
+
+                auto& actorType = s_CoreAssembly->GetLocalType("Vortex.Actor");
+                if (!actorType) return;
+                // Fields every actor has (its ID) aren't the script's own.
+                Vector<String> actorFields;
+                for (auto& field : actorType.GetFields())
+                    actorFields.PushBack(TakeString(field.GetName()));
+
+                for (Coral::Type* type : s_AppAssembly->GetTypes())
+                {
+                    if (!type || !*type || !type->IsSubclassOf(actorType)) continue;
+
+                    ScriptClassInfo info;
+                    info.FullName = TakeString(type->GetFullName());
+                    StringView full = info.FullName.View();
+                    usize      dot  = full.Size();
+                    while (dot > 0 && full[dot - 1] != '.') --dot;
+                    info.Namespace = dot > 0 ? String(full.Substr(0, dot - 1)) : String{};
+                    info.Name      = String(full.Substr(dot));
+                    if (auto& base = type->GetBaseType(); base)
+                        info.BaseName = TakeString(base.GetFullName());
+
+                    // One throwaway instance tells the field initializers'
+                    // values (OnCreate isn't called).
+                    Coral::ManagedObject probe = type->CreateInstance();
+                    for (auto& field : type->GetFields())
+                    {
+                        if (field.GetAccessibility() != Coral::TypeAccessibility::Public)
+                            continue;
+                        ScriptFieldInfo entry;
+                        entry.Name = TakeString(field.GetName());
+                        bool inherited = false;
+                        for (const auto& name : actorFields)
+                            inherited = inherited || name == entry.Name;
+                        if (inherited) continue;
+                        entry.TypeName = TakeString(field.GetType().GetFullName());
+                        entry.Type     = FieldTypeOf(entry.TypeName);
+                        ReadField(probe, entry, entry.Default, &entry.DefaultText);
+                        info.Fields.PushBack(Move(entry));
+                    }
+                    if (probe.IsValid()) probe.Destroy();
+                    s_Classes.PushBack(Move(info));
+                }
+                Prism::Sort(s_Classes.begin(), s_Classes.end(),
+                            [](const ScriptClassInfo& a, const ScriptClassInfo& b)
+                            { return a.FullName.Compare(b.FullName) < 0; });
+            }
 
             void MessageCallback(stdstr_view message, Coral::MessageLevel level)
             {
@@ -145,7 +275,7 @@ namespace Vortex
 
                 if (auto it = s_CreateComponentFuncs.Find(type.GetTypeId());
                     it != s_CreateComponentFuncs.end())
-                    return;
+                    it->Value(actor);
             }
 
             bool Actor_HasComponent(Entity                entityID,
@@ -357,6 +487,121 @@ namespace Vortex
                 actor.GetComponent<TransformComponent>().Scale = *inScale;
             }
 
+            // Physics -------------------------------------------------------
+
+            /// Mirrors Vortex.ForceMode.
+            enum class ForceMode : i32
+            {
+                eForce   = 0,
+                eImpulse = 1,
+            };
+
+            /// Mirrors Vortex.RaycastHit (Pack = 4).
+#pragma pack(push, 4)
+            struct ManagedRaycastHit
+            {
+                u64       ActorID;
+                glm::vec3 Position;
+                glm::vec3 Normal;
+                f32       Distance;
+            };
+#pragma pack(pop)
+            static_assert(sizeof(ManagedRaycastHit) == 36);
+
+            RigidBodyComponent* GetRigidBody(Entity entityID)
+            {
+                auto actor = GetActor(entityID);
+                if (!actor || !actor.HasComponent<RigidBodyComponent>())
+                {
+                    VtCoreError("Actor {} has no RigidBodyComponent",
+                                entt::to_integral(entityID));
+                    return nullptr;
+                }
+                return &actor.GetComponent<RigidBodyComponent>();
+            }
+
+            void RigidBodyComponent_GetLinearVelocity(Entity     entityID,
+                                                      glm::vec3* outVelocity)
+            {
+                auto* rb     = GetRigidBody(entityID);
+                *outVelocity = rb ? rb->LinearVelocity : glm::vec3(0.0f);
+            }
+
+            void RigidBodyComponent_SetLinearVelocity(Entity     entityID,
+                                                      glm::vec3* inVelocity)
+            {
+                if (auto* rb = GetRigidBody(entityID); rb && inVelocity)
+                    rb->SetLinearVelocity(*inVelocity);
+            }
+
+            void RigidBodyComponent_AddForce(Entity entityID, glm::vec3* inForce,
+                                             ForceMode mode)
+            {
+                auto* rb = GetRigidBody(entityID);
+                if (!rb || !inForce) return;
+                if (mode == ForceMode::eImpulse) rb->AddImpulse(*inForce);
+                else rb->AddForce(*inForce);
+            }
+
+            void Physics_Raycast(glm::vec3* inOrigin, glm::vec3* inDirection,
+                                 f32 maxDistance, u64 ignoredActor,
+                                 ManagedRaycastHit* outHit, bool* outResult)
+            {
+                *outResult = false;
+                auto scene = Scene::Active();
+                if (!scene || !scene->Physics() || !inOrigin || !inDirection)
+                    return;
+
+                RaycastHit hit{};
+                f32 origin[3]    = {inOrigin->x, inOrigin->y, inOrigin->z};
+                f32 direction[3] = {inDirection->x, inDirection->y, inDirection->z};
+                if (!scene->Physics()->Raycast(origin, direction, maxDistance, hit,
+                                               static_cast<u32>(ignoredActor)))
+                    return;
+
+                *outResult = true;
+                if (!outHit) return;
+                outHit->ActorID  = hit.Entity;
+                outHit->Position = {hit.Position[0], hit.Position[1], hit.Position[2]};
+                outHit->Normal   = {hit.Normal[0], hit.Normal[1], hit.Normal[2]};
+                outHit->Distance = hit.Distance;
+            }
+
+            /// Lets Actor.Has/Create/RemoveComponent<T>() reach component T
+            /// through its managed type.
+            template <typename T>
+            void RegisterComponent(StringView managedName)
+            {
+                auto& type = s_CoreAssembly->GetLocalType(managedName.Raw());
+                if (!type)
+                {
+                    VtCoreWarn("ScriptEngine: no managed component type '{}'",
+                               managedName);
+                    return;
+                }
+                auto id                    = type.GetTypeId();
+                s_HasComponentFuncs[id]    = [](Actor& actor)
+                { return actor.HasComponent<T>(); };
+                s_CreateComponentFuncs[id] = [](Actor& actor)
+                {
+                    if (!actor.HasComponent<T>()) actor.AddComponent<T>();
+                };
+                s_RemoveComponentFuncs[id] = [](Actor& actor)
+                { actor.RemoveComponent<T>(); };
+            }
+
+            void RegisterComponents()
+            {
+                s_HasComponentFuncs.Clear();
+                s_CreateComponentFuncs.Clear();
+                s_RemoveComponentFuncs.Clear();
+                RegisterComponent<TagComponent>("Vortex.TagComponent");
+                RegisterComponent<TransformComponent>("Vortex.TransformComponent");
+                RegisterComponent<RigidBodyComponent>("Vortex.RigidBodyComponent");
+                RegisterComponent<BoxColliderComponent>("Vortex.BoxColliderComponent");
+                RegisterComponent<SphereColliderComponent>(
+                    "Vortex.SphereColliderComponent");
+            }
         } // namespace
         void VT_SCRIPT_API Initialize()
         {
@@ -434,9 +679,23 @@ namespace Vortex
             s_CoreAssembly->AddInternalCall(
                 "Vortex.InternalCalls", "TransformComponent_SetRotationQuat",
                 reinterpret_cast<void*>(&TransformComponent_SetRotationQuat));
+            s_CoreAssembly->AddInternalCall(
+                "Vortex.InternalCalls", "RigidBodyComponent_GetLinearVelocity",
+                reinterpret_cast<void*>(&RigidBodyComponent_GetLinearVelocity));
+            s_CoreAssembly->AddInternalCall(
+                "Vortex.InternalCalls", "RigidBodyComponent_SetLinearVelocity",
+                reinterpret_cast<void*>(&RigidBodyComponent_SetLinearVelocity));
+            s_CoreAssembly->AddInternalCall(
+                "Vortex.InternalCalls", "RigidBodyComponent_AddForce",
+                reinterpret_cast<void*>(&RigidBodyComponent_AddForce));
+            s_CoreAssembly->AddInternalCall(
+                "Vortex.InternalCalls", "Physics_Raycast",
+                reinterpret_cast<void*>(&Physics_Raycast));
             s_CoreAssembly->UploadInternalCalls();
-
-            s_Initialized = true;
+            RegisterComponents();
+            s_Initialized  = true;
+            s_ClassesBuilt = false;
+            ++s_Generation;
         }
 
         void VT_SCRIPT_API Shutdown()
@@ -450,8 +709,12 @@ namespace Vortex
 
             s_LoadContext = {};
             s_HostInstance.Shutdown();
-
-            s_Initialized = false;
+            s_Initialized  = false;
+            s_CoreAssembly = nullptr;
+            s_AppAssembly  = nullptr;
+            s_Classes.Clear();
+            s_ClassesBuilt = false;
+            ++s_Generation;
         }
 
         bool VT_SCRIPT_API ReloadAssembly()
@@ -497,6 +760,36 @@ namespace Vortex
 
             instance->InvokeOnCreate();
         }
+        void VT_SCRIPT_API OnCreateEntity(u64 entityID, const ScriptComponent& script)
+        {
+            if (!s_Initialized || !s_AppAssembly || !s_CoreAssembly) return;
+            auto& scriptType = s_AppAssembly->GetLocalType(script.ClassName.Raw());
+            auto& actorType  = s_CoreAssembly->GetLocalType("Vortex.Actor");
+            if (!scriptType || !scriptType.IsSubclassOf(actorType))
+            {
+                VtCoreError("Class {} does not derive from Vortex.Actor",
+                            script.ClassName);
+                return;
+            }
+
+            auto instance = CreateRef<ScriptInstance>(scriptType, entityID);
+            s_EntityInstances[entityID] = instance;
+            // Edited fields, if the class still has them with the same type.
+            if (const auto* info = FindClass(script.ClassName))
+            {
+                for (const auto& value : script.Fields)
+                {
+                    for (const auto& field : info->Fields)
+                    {
+                        if (field.Name != value.Name || field.Type != value.Type) continue;
+                        WriteField(instance->ManagedObject(), field.Name, field.Type,
+                                   value.Data, value.Text);
+                    }
+                }
+            }
+            instance->InvokeOnCreate();
+        }
+
         void VT_SCRIPT_API OnUpdateEntity(u64 entityID, Timestep ts)
         {
             auto it = s_EntityInstances.Find(entityID);
@@ -539,6 +832,49 @@ namespace Vortex
                 }
             }
             s_EntityInstances.Clear();
+        }
+
+        bool VT_SCRIPT_API IsLoaded()
+        {
+            return s_Initialized && s_AppAssembly != nullptr;
+        }
+        StringView VT_SCRIPT_API AppAssemblyPath()
+        {
+            return StringView(s_AppAssemblyPath.Raw(), s_AppAssemblyPath.Size());
+        }
+        u64 VT_SCRIPT_API Generation() { return s_Generation; }
+
+        const Vector<ScriptClassInfo>& VT_SCRIPT_API Classes()
+        {
+            if (!s_ClassesBuilt) BuildClasses();
+            return s_Classes;
+        }
+        const ScriptClassInfo* VT_SCRIPT_API FindClass(StringView fullName)
+        {
+            for (const auto& info : Classes())
+                if (info.FullName == fullName) return &info;
+            return nullptr;
+        }
+
+        bool VT_SCRIPT_API HasInstance(u64 entityID)
+        {
+            auto it = s_EntityInstances.Find(entityID);
+            return it != s_EntityInstances.end() && it->Value;
+        }
+        bool VT_SCRIPT_API GetInstanceField(u64 entityID, const ScriptFieldInfo& field,
+                                            void* value, String* text)
+        {
+            auto it = s_EntityInstances.Find(entityID);
+            if (it == s_EntityInstances.end() || !it->Value) return false;
+            return ReadField(it->Value->ManagedObject(), field, value, text);
+        }
+        bool VT_SCRIPT_API SetInstanceField(u64 entityID, const ScriptFieldInfo& field,
+                                            const void* value, StringView text)
+        {
+            auto it = s_EntityInstances.Find(entityID);
+            if (it == s_EntityInstances.end() || !it->Value) return false;
+            return WriteField(it->Value->ManagedObject(), field.Name, field.Type, value,
+                              text);
         }
     }; // namespace ScriptEngine
 }; // namespace Vortex

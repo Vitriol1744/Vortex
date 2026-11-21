@@ -15,5 +15,5 @@ set (SOURCES
 vt_add_module(${MODULE_NAME}
     SOURCES ${SOURCES}
     TYPE ${MODULE_TYPE}
-    PUBLIC_LIBS Vortex-Modules Vortex-Core Coral.Native Vortex-RHI Vortex-Scene
+    PUBLIC_LIBS Vortex-Modules Vortex-Core Coral.Native Vortex-RHI Vortex-Renderer Vortex-Scene Vortex-Physics
 )

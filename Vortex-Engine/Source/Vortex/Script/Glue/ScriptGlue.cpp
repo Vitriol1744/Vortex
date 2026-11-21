@@ -25,7 +25,9 @@ namespace Vortex
         using Log::LogLevel;
         void Log_LogMessage(LogLevel level, Coral::String message)
         {
-            std::string_view msgView = message.Data();
+            // Prism::Format has no formatter for std::string_view.
+            const char* data    = message.Data();
+            StringView  msgView = data ? StringView(data) : StringView();
 
             switch (level)
             {
