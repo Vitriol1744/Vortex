@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/Array.hpp>
+import Prism.Containers.Array;
 #include <Vortex/Filesystem/Filesystem.hpp>
 #include <Vortex/Project/Project.hpp>
 #include <Vortex/Serialization/JsonArchive.hpp>

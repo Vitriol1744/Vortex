@@ -21,6 +21,11 @@ namespace Vortex
 
         ::Ref<TextureAsset>        LoadTexture2D(PathView path);
 
+        /// Loaded on a worker thread; callbacks (Then) run in Update().
+        /// Missing or unreadable files fail the load instead of asserting.
+        AsyncAsset<class Mesh>     LoadMeshAsync(PathView path);
+        AsyncAsset<TextureAsset>   LoadTexture2DAsync(PathView path);
+
       private:
     };
 }; // namespace Vortex

@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Utility/Path.hpp>
+import Prism.Utility.Path;
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
 #include <Vortex/Project/Export.hpp>
