@@ -1,0 +1,8 @@
+{
+  "name": "Blank",
+  "description": "An empty scene. Start from nothing.",
+  "category": "Any",
+  "icon": "file",
+  "order": 0,
+  "startScene": "Assets/Scenes/Main.vscene"
+}

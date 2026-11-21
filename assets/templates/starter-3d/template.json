@@ -1,0 +1,8 @@
+{
+  "name": "3D Starter",
+  "description": "A small lit scene with a few shapes to move around.",
+  "category": "3D",
+  "icon": "cube",
+  "order": 10,
+  "startScene": "Assets/Scenes/Main.vscene"
+}

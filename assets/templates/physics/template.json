@@ -1,0 +1,9 @@
+{
+  "name": "Physics Playground",
+  "description": "Ground, ramp, a crate pyramid, bouncing balls and a scripted player. Press Play and push things around.",
+  "category": "3D",
+  "icon": "bolt",
+  "order": 20,
+  "startScene": "Assets/Scenes/Main.vscene",
+  "generator": "physics"
+}
