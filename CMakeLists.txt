@@ -4,13 +4,18 @@
 #
 # SPDX-License-Identifier: GPL-3
 #
-cmake_minimum_required(VERSION 3.25)
+# 3.28: C++20 named modules without the experimental gate.
+cmake_minimum_required(VERSION 3.28)
 project(Vortex)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Executables go to the source tree's bin/, which Nexus and Horizon run from
+# (assets/ is next to it). Debug keeps bin/; other configurations get
+# bin/<Config>/ so a release build doesn't overwrite the debug one.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}/bin$<$<NOT:$<CONFIG:Debug>>:/$<CONFIG>>")
 
 # Enable Hot Reload for MSVC compilers if supported.
 if(POLICY CMP0141)
@@ -27,6 +32,19 @@ endif()
 
 
 # ------------------------------------------------------------------------------
+# Options
+# ------------------------------------------------------------------------------
+# Debug and RelWithDebInfo builds are sanitized unless this is turned off.
+option(VT_ENABLE_ASAN "Build Debug/RelWithDebInfo with AddressSanitizer" ON)
+# Tracy profiling; off by default for Release and MinSizeRel.
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    set(VT_PROFILING_DEFAULT OFF)
+else()
+    set(VT_PROFILING_DEFAULT ON)
+endif()
+option(VT_ENABLE_PROFILING "Build with the Tracy profiler client" ${VT_PROFILING_DEFAULT})
+
+# ------------------------------------------------------------------------------
 # Global Platform Detection
 # ------------------------------------------------------------------------------
 if(WIN32)
@@ -39,15 +57,18 @@ elseif(UNIX)
     set(VT_PLATFORM_DEFINE VT_PLATFORM_LINUX)
 endif()
 
-# Global Interface Target for Engine-Wide Configuration
+# Global Interface Target for Engine-Wide Configuration. Every Vortex target
+# (and Nexus/Horizon, through them) gets these; PRISM_USE_NAMESPACE comes from
+# the prism target itself.
 add_library(Vortex-Config INTERFACE)
 target_compile_definitions(Vortex-Config INTERFACE
     ${VT_PLATFORM_DEFINE}
     $<$<CONFIG:Debug>:VT_DEBUG>
     $<$<CONFIG:RelWithDebInfo>:VT_RELEASE>
     $<$<CONFIG:Release,MinSizeRel>:VT_DIST>
-    $<$<CONFIG:Debug,RelWithDebInfo>:VT_ENABLE_ASSERTIONS>
-    PRISM_USE_NAMESPACE=1
+    # TODO(v1tr10l7): Vortex doesn't build with assertions disabled yet, so
+    # they're on in every configuration for now.
+    VT_ENABLE_ASSERTIONS
     GLM_FORCE_RADIANS
     GLM_FORCE_DEPTH_ZERO_TO_ONE
     GLM_ENABLE_EXPERIMENTAL
@@ -56,5 +77,6 @@ target_compile_definitions(Vortex-Config INTERFACE
 add_subdirectory(Vortex-Engine)
 if (NOT ANDROID)
   add_subdirectory(Nexus)
+  add_subdirectory(Horizon)
   # add_subdirectory(Sandbox)
 endif ()

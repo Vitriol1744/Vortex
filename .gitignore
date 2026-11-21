@@ -5,3 +5,6 @@ build/
 Vortex-Android/.gradle/
 Vortex-Android/.idea/
 Vortex-Android/app/.cxx
+
+# Horizon test server: generated manifest and release archives.
+Horizon/Server/www/

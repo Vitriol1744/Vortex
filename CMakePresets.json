@@ -1,0 +1,52 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug (ASan, Tracy)",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "debug-noasan",
+      "displayName": "Debug without AddressSanitizer",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build-debug-noasan",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "VT_ENABLE_ASAN": "OFF" }
+    },
+    {
+      "name": "relwithdebinfo",
+      "displayName": "RelWithDebInfo (ASan, Tracy)",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build-relwithdebinfo",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug", "configurePreset": "debug", "jobs": 2 },
+    { "name": "debug-noasan", "configurePreset": "debug-noasan", "jobs": 2 },
+    { "name": "relwithdebinfo", "configurePreset": "relwithdebinfo", "jobs": 2 },
+    { "name": "release", "configurePreset": "release", "jobs": 2 }
+  ]
+}
