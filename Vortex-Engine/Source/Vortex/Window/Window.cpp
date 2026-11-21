@@ -4,8 +4,11 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/String/StringUtils.hpp>
+#include <cstring>
+
 #include <Vortex/Core/Platform.hpp>
+
+import Prism.String.StringUtils;
 #include <Vortex/Window/Window.hpp>
 
 #ifdef VT_PLATFORM_LINUX
@@ -313,14 +316,22 @@ namespace Vortex
         return s_CreateWindow(specs);
     }
 
+    bool Window::HasGlobalPositions()
+    {
+        return WindowSubsystem() != ::Vortex::WindowSubsystem::eWayland;
+    }
+
     WindowSubsystem Window::WindowSubsystem()
     {
         static enum WindowSubsystem subsystem = []() -> enum WindowSubsystem
         {
             enum WindowSubsystem subsystem = ChooseSubsystem();
 
-            VtCoreInfo("Window: Using {}...",
-                       StringUtils::ToString(subsystem).Raw() + 1);
+            // Enumerator names aren't null-terminated: format the view,
+            // without the 'e' prefix.
+            StringView name = StringUtils::ToString(subsystem);
+            if (!name.Empty()) name.RemovePrefix(1);
+            VtCoreInfo("Window: Using {}...", name);
             return subsystem;
         }
         ();

@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/Array.hpp>
+import Prism.Containers.Array;
 
 #include <Vortex/Window/Input/Mouse.hpp>
 #include <Vortex/Window/Window.hpp>
@@ -16,6 +16,9 @@ namespace Vortex
         using Input::MouseCode;
         static Array<bool, ToUnderlying(MouseCode::eButtonCount)> s_Buttons{};
         static Math::Vec2d s_MousePosition{};
+        static Math::Vec2d s_Delta{};
+        /// Raw motion arrives: position differences would count it twice.
+        static bool        s_HaveRawMotion = false;
 
         void VT_WINDOW_API Initialize(EventBus* eventBus)
         {
@@ -31,7 +34,11 @@ namespace Vortex
 
             eventBus->Subscribe<MouseMovedEvent>(
                 [](const MouseMovedEvent& e)
-                { s_MousePosition = Math::Vec2d(e.X, e.Y); });
+                {
+                    Math::Vec2d position(e.X, e.Y);
+                    if (!s_HaveRawMotion) s_Delta += position - s_MousePosition;
+                    s_MousePosition = position;
+                });
         };
 
         bool VT_WINDOW_API IsButtonPressed(MouseCode mouseCode)
@@ -39,5 +46,17 @@ namespace Vortex
             return s_Buttons[ToUnderlying(mouseCode)];
         }
         Math::Vec2d VT_WINDOW_API Position() { return s_MousePosition; }
+
+        Math::Vec2d VT_WINDOW_API ConsumeDelta()
+        {
+            Math::Vec2d delta = s_Delta;
+            s_Delta           = Math::Vec2d(0.0);
+            return delta;
+        }
+        void VT_WINDOW_API AddRawDelta(f64 dx, f64 dy)
+        {
+            s_HaveRawMotion = true;
+            s_Delta += Math::Vec2d(dx, dy);
+        }
     }; // namespace Mouse
 }; // namespace Vortex

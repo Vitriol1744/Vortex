@@ -4,8 +4,12 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+#include <algorithm>
+
 #include <Vortex/Window/Wayland/Wayland.hpp>
 #include <Vortex/Window/Wayland/WaylandMonitor.hpp>
+
+#include <wayland-cursor.h>
 
 #include <sys/mman.h>
 #include <unistd.h>
@@ -33,6 +37,10 @@ namespace Vortex::Wayland
         xdg_toplevel_icon_manager_v1*  s_IconManager         = nullptr;
         wp_alpha_modifier_v1*          s_AlphaModifier       = nullptr;
         zwlr_gamma_control_manager_v1* s_GammaControlManager = nullptr;
+        zwp_relative_pointer_manager_v1* s_RelativePointerManager = nullptr;
+        zwp_pointer_constraints_v1*      s_PointerConstraints     = nullptr;
+        wl_cursor_theme*                 s_CursorTheme            = nullptr;
+        wl_surface*                      s_CursorSurface          = nullptr;
 
         wl_pointer_listener*           s_PointerListener     = nullptr;
         wl_keyboard_listener*          s_KeyboardListener    = nullptr;
@@ -87,7 +95,8 @@ namespace Vortex::Wayland
             else if (interface == xdg_wm_base_interface.name)
             {
                 s_WmBase = reinterpret_cast<xdg_wm_base*>(wl_registry_bind(
-                    registry, name, &xdg_wm_base_interface, 2));
+                    registry, name, &xdg_wm_base_interface,
+                    std::min<u32>(version, 6)));
 
                 auto onWmBasePing = [](void*, xdg_wm_base* wmBase, u32 serial)
                 { xdg_wm_base_pong(wmBase, serial); };
@@ -104,6 +113,14 @@ namespace Vortex::Wayland
                 s_AlphaModifier
                     = reinterpret_cast<wp_alpha_modifier_v1*>(wl_registry_bind(
                         registry, name, &wp_alpha_modifier_v1_interface, 1));
+            else if (interface == zwp_relative_pointer_manager_v1_interface.name)
+                s_RelativePointerManager
+                    = reinterpret_cast<zwp_relative_pointer_manager_v1*>(wl_registry_bind(
+                        registry, name, &zwp_relative_pointer_manager_v1_interface, 1));
+            else if (interface == zwp_pointer_constraints_v1_interface.name)
+                s_PointerConstraints
+                    = reinterpret_cast<zwp_pointer_constraints_v1*>(wl_registry_bind(
+                        registry, name, &zwp_pointer_constraints_v1_interface, 1));
             else if (interface == zwlr_gamma_control_manager_v1_interface.name)
                 s_GammaControlManager
                     = reinterpret_cast<zwlr_gamma_control_manager_v1*>(
@@ -424,6 +441,15 @@ namespace Vortex::Wayland
         WaylandMonitor::Shutdown();
         xkb_context_unref(s_XkbData.Context);
 
+        if (s_CursorSurface) wl_surface_destroy(s_CursorSurface);
+        s_CursorSurface = nullptr;
+        if (s_CursorTheme) wl_cursor_theme_destroy(s_CursorTheme);
+        s_CursorTheme = nullptr;
+        if (s_PointerConstraints) zwp_pointer_constraints_v1_destroy(s_PointerConstraints);
+        s_PointerConstraints = nullptr;
+        if (s_RelativePointerManager)
+            zwp_relative_pointer_manager_v1_destroy(s_RelativePointerManager);
+        s_RelativePointerManager = nullptr;
         if (s_GammaControlManager)
             zwlr_gamma_control_manager_v1_destroy(s_GammaControlManager);
         if (s_AlphaModifier) wp_alpha_modifier_v1_destroy(s_AlphaModifier);
@@ -475,6 +501,40 @@ namespace Vortex::Wayland
     zwlr_gamma_control_manager_v1* GammaControlManager()
     {
         return s_GammaControlManager;
+    }
+
+    wl_pointer*                      Pointer() { return s_Pointer; }
+    zwp_relative_pointer_manager_v1* RelativePointerManager()
+    {
+        return s_RelativePointerManager;
+    }
+    zwp_pointer_constraints_v1* PointerConstraints() { return s_PointerConstraints; }
+
+    void SetCursorVisible(bool visible, u32 serial)
+    {
+        if (!s_Pointer) return;
+        if (!visible)
+        {
+            wl_pointer_set_cursor(s_Pointer, serial, nullptr, 0, 0);
+            return;
+        }
+        if (!s_CursorTheme && s_Shm) s_CursorTheme = wl_cursor_theme_load(nullptr, 24, s_Shm);
+        wl_cursor* cursor
+            = s_CursorTheme ? wl_cursor_theme_get_cursor(s_CursorTheme, "left_ptr") : nullptr;
+        if (!cursor && s_CursorTheme)
+            cursor = wl_cursor_theme_get_cursor(s_CursorTheme, "default");
+        if (!cursor || cursor->image_count == 0) return;
+        wl_cursor_image* image  = cursor->images[0];
+        wl_buffer*       buffer = wl_cursor_image_get_buffer(image);
+        if (!buffer) return;
+        if (!s_CursorSurface) s_CursorSurface = wl_compositor_create_surface(s_Compositor);
+        wl_pointer_set_cursor(s_Pointer, serial, s_CursorSurface,
+                              static_cast<i32>(image->hotspot_x),
+                              static_cast<i32>(image->hotspot_y));
+        wl_surface_attach(s_CursorSurface, buffer, 0, 0);
+        wl_surface_damage(s_CursorSurface, 0, 0, static_cast<i32>(image->width),
+                          static_cast<i32>(image->height));
+        wl_surface_commit(s_CursorSurface);
     }
 
     void SetPointerListener(wl_pointer_listener* listener)

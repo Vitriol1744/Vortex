@@ -4,8 +4,9 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Algorithm/Find.hpp>
-#include <Prism/Utility/Math.hpp>
+import Prism.Algorithm.Find;
+import Prism.Utility.Math;
+import Prism.String.Formatter;
 #include <Vortex/Window/Wayland/WaylandMonitor.hpp>
 #include <Vortex/Window/Window.hpp>
 
@@ -123,7 +124,7 @@ namespace Vortex
         monitor->m_Position       = Math::Vec2i(x, y);
         monitor->m_PhysicalWidth  = physicalWidth;
         monitor->m_PhysicalHeight = physicalHeight;
-        monitor->m_Name           = fmt::format("{} {}", make, model).data();
+        monitor->m_Name           = Prism::Format("{} {}", make, model);
     }
     void WaylandMonitor::OnOutputMode(void* userData, wl_output* output,
                                       u32 flags, i32 width, i32 height,

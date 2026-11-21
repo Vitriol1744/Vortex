@@ -14,6 +14,8 @@
 #include <wayland-wlr-gamma-control-unstable-v1-client-protocol.h>
 #include <wayland-xdg-shell-client-protocol.h>
 #include <wayland-xdg-toplevel-icon-v1-client-protocol.h>
+#include <wayland-relative-pointer-unstable-v1-client-protocol.h>
+#include <wayland-pointer-constraints-unstable-v1-client-protocol.h>
 
 #include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
@@ -55,6 +57,13 @@ namespace Vortex
         xdg_toplevel_icon_manager_v1*  IconManager();
         wp_alpha_modifier_v1*          AlphaModifier();
         zwlr_gamma_control_manager_v1* GammaControlManager();
+
+        wl_pointer*                       Pointer();
+        zwp_relative_pointer_manager_v1*  RelativePointerManager();
+        zwp_pointer_constraints_v1*       PointerConstraints();
+        /// The default arrow, or none, for the pointer (`serial` of its last
+        /// enter event).
+        void                              SetCursorVisible(bool visible, u32 serial);
 
         void SetPointerListener(wl_pointer_listener* listener);
         void SetKeyboardListener(wl_keyboard_listener* listener);

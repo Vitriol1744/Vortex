@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/Array.hpp>
+import Prism.Containers.Array;
 #include <Vortex/Window/Input/Keyboard.hpp>
 #include <Vortex/Window/Window.hpp>
 

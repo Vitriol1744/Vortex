@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Prism/Containers/Array.hpp>
-#include <Prism/Memory/Scope.hpp>
-#include <Prism/Utility/Path.hpp>
+import Prism.Containers.Array;
+import Prism.Memory.Scope;
+import Prism.Utility.Path;
 
 #include <Vortex/Core/Events/EventBus.hpp>
 #include <Vortex/Core/Math/Vector.hpp>
@@ -45,6 +45,16 @@ namespace Vortex
     using Icon   = ImageView;
     using Cursor = ImageView;
 
+    /// Role of a window towards the window system.
+    enum class WindowKind
+    {
+        /// Regular, independent window.
+        eToplevel,
+        /// Child window placed relative to its Parent and moved with it, e.g.
+        /// menus, tooltips and ImGui viewports on Wayland (xdg_popup).
+        ePopup,
+    };
+
     struct WindowSpecification
     {
         WindowSpecification() = default;
@@ -58,6 +68,9 @@ namespace Vortex
         String             Title        = "Vortex Application";
         Math::Vec2i        Position     = {0, 0};
         Ref<class Monitor> Monitor      = nullptr;
+        WindowKind         Kind         = WindowKind::eToplevel;
+        /// Required for WindowKind::ePopup.
+        class Window*      Parent       = nullptr;
 
         bool               Fullscreen   = false;
         bool               Resizable    = true;
@@ -99,6 +112,9 @@ namespace Vortex
         virtual Math::Vec2f ContentScale() const noexcept         = 0;
         virtual f32         Opacity() const noexcept              = 0;
         virtual Math::Vec2d CursorPosition() const noexcept       = 0;
+        /// False while the window system won't accept content yet (Wayland:
+        /// before the first configure); renderers skip the window until then.
+        virtual bool IsReadyForRendering() const noexcept { return true; }
 
         virtual void        Close() noexcept                      = 0;
         virtual void        RequestFocus() noexcept               = 0;
@@ -135,6 +151,11 @@ namespace Vortex
         virtual void SetAutoIconify(bool autoIconify) const noexcept  = 0;
         virtual void SetCursorPosition(Math::Vec2d position) noexcept = 0;
         virtual void ShowCursor() const noexcept                      = 0;
+        /// Captures the mouse: the cursor hides and stays put, and motion is
+        /// reported as deltas (Mouse::ConsumeDelta), for first-person look.
+        /// Backends without pointer lock only track the flag.
+        virtual void SetCursorLocked(bool locked) { m_CursorLocked = locked; }
+        inline bool  IsCursorLocked() const noexcept { return m_CursorLocked; }
         virtual void HideCursor() const noexcept                      = 0;
         virtual void SetFullscreen(bool fullscreen)                   = 0;
         virtual void SetResizable(bool resizable) noexcept            = 0;
@@ -181,6 +202,13 @@ namespace Vortex
         static void    DeleteImGui(Window* window) { delete window; }
 
         static WindowSubsystem WindowSubsystem();
+        /**
+         * Whether Position()/SetPosition() are desktop coordinates. Wayland
+         * hides them: toplevels report (0, 0) and popups report positions
+         * relative to that origin (a virtual space spanning the app's
+         * windows), so positions stay consistent among the app's windows.
+         */
+        static bool            HasGlobalPositions();
 
         template <IsEvent T, typename... Args>
         static void PublishEvent(Args&&... args)
@@ -195,6 +223,7 @@ namespace Vortex
 
       protected:
         static EventBus* s_EventBus;
+        bool             m_CursorLocked = false;
         friend class RenderTargetWindow;
 
         struct WindowData

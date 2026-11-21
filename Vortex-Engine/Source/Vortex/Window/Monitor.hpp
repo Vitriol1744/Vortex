@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <Prism/Core/NonCopyable.hpp>
-#include <Prism/String/String.hpp>
+import Prism.Core.NonCopyable;
+import Prism.String.String;
 
 #include <Vortex/Core/Events/Event.hpp>
 #include <Vortex/Core/Math/Rectangle.hpp>

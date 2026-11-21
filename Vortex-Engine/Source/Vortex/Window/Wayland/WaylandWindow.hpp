@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Containers/UnorderedMap.hpp>
+import Prism.Containers.UnorderedMap;
 
 #include <Vortex/Window/Wayland/Wayland.hpp>
 #include <Vortex/Window/Window.hpp>
@@ -44,6 +44,10 @@ namespace Vortex
         {
             return m_Data.MousePosition;
         }
+        virtual bool IsReadyForRendering() const noexcept override
+        {
+            return m_Configured;
+        }
 
         virtual void Close() noexcept override;
         virtual void RequestFocus() noexcept override;
@@ -67,6 +71,7 @@ namespace Vortex
         virtual void SetCursorPosition(Math::Vec2d position) noexcept override;
         virtual void ShowCursor() const noexcept override;
         virtual void HideCursor() const noexcept override;
+        virtual void SetCursorLocked(bool locked) override;
         virtual void SetFullscreen(bool fullscreen) override;
         virtual void SetResizable(bool resizable) noexcept override;
         virtual void SetVisible(bool visible) const override;
@@ -83,9 +88,21 @@ namespace Vortex
         wl_surface*                   m_WindowHandle         = nullptr;
         xdg_surface*                  m_WmSurface            = nullptr;
         xdg_toplevel*                 m_TopLevel             = nullptr;
+        /// Popup role (WindowKind::ePopup) instead of m_TopLevel.
+        xdg_popup*                    m_Popup                = nullptr;
+        WaylandWindow*                m_Parent               = nullptr;
+        /// Last position asked for (virtual space); m_Data.Position is the
+        /// one the compositor confirmed, which pointer coordinates use.
+        Math::Vec2i                   m_RequestedPosition    = {0, 0};
+        u32                           m_RepositionToken      = 0;
+        /// Got its first xdg_surface.configure (may take buffers).
+        bool                          m_Configured           = false;
+        /// Steady-clock time (ns) the popup role was last created.
+        i64                           m_RoleCreatedAt        = 0;
         xdg_toplevel_icon_v1*         m_Icon                 = nullptr;
         wl_shm_pool*                  m_IconPool             = nullptr;
         wp_alpha_modifier_surface_v1* m_AlphaModifierSurface = nullptr;
+        zwp_locked_pointer_v1*        m_LockedPointer        = nullptr;
 
         bool                          m_Maximized            = false;
         bool                          m_Minimized            = false;
@@ -93,6 +110,16 @@ namespace Vortex
         static usize                  s_WindowsCount;
 
         void                          SetupEvents();
+        void                          CreateToplevel();
+        void                          CreatePopup();
+        void                          CreateXdgSurface();
+        /// Compositors ignore popups of a parent that isn't mapped yet (the
+        /// main window before its first frame): recreate the role of popups
+        /// still unconfigured after a while.
+        static void                   RetryUnconfiguredPopups();
+        xdg_positioner*               CreatePositioner(Math::Vec2i position,
+                                                       Math::Vec2i size) const;
+        void                          Reposition();
 
         static void                   Initialize();
         static void                   Shutdown();

@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Containers/UnorderedMap.hpp>
+import Prism.Containers.UnorderedMap;
 
 #include <Vortex/Window/Window.hpp>
 #include <Vortex/Window/X11/X11.hpp>

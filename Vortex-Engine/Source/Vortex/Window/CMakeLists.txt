@@ -27,7 +27,7 @@ if(UNIX)
       X11/X11Window.cpp
       X11/XkbUnicode.cpp
     )
-    set(LIBS ${LIBS} xcb X11 X11-xcb xkbcommon wayland-client)
+    set(LIBS ${LIBS} xcb X11 X11-xcb xkbcommon wayland-client wayland-cursor)
   else ()
     set (LIBS ${LIBS} android log nativewindow)
   endif ()
@@ -86,6 +86,9 @@ if(VT_BUILD_WAYLAND AND NOT ANDROID)
     generate_wayland_protocol("alpha-modifier-v1.xml")
     generate_wayland_protocol("wlr-gamma-control-unstable-v1.xml")
     generate_wayland_protocol("xdg-toplevel-icon-v1.xml")
+    # Pointer lock and raw mouse motion (first-person mouse look).
+    generate_wayland_protocol("relative-pointer-unstable-v1.xml")
+    generate_wayland_protocol("pointer-constraints-unstable-v1.xml")
 
     message(STATUS "Generated Wayland protocol files: ${WAYLAND_GENERATED_FILES}")
 endif()

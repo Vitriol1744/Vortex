@@ -4,14 +4,20 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Vortex/Core/Assertions.hpp>
-#include <Vortex/Window/Wayland/WaylandWindow.hpp>
-
+// System headers first: they must precede any `import` in this TU.
+#include <algorithm>
+#include <chrono>
 #include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
 #include <linux/input-event-codes.h>
 #include <poll.h>
 #include <sys/mman.h>
+#include <unistd.h>
+
+#include <Vortex/Core/Assertions.hpp>
+#include <Vortex/Window/Input/Mouse.hpp>
+#include <Vortex/Window/Wayland/WaylandWindow.hpp>
 
 namespace Vortex
 {
@@ -254,66 +260,24 @@ namespace Vortex
         m_Data.AutoIconify = specs.AutoIconify;
         m_Data.FocusOnShow = specs.FocusOnShow;
 
-        static constexpr xdg_surface_listener wm_surface_listener{
-            .configure = [](void*, xdg_surface* surface, u32 serial) noexcept
-            { xdg_surface_ack_configure(surface, serial); }};
-
-        static constexpr xdg_toplevel_listener toplevel_listener{
-            .configure =
-                [](void* data, xdg_toplevel*, i32 width, i32 height,
-                   wl_array* states) noexcept
-            {
-                auto self      = reinterpret_cast<WaylandWindow*>(data);
-
-                bool minimized = false;
-
-                xdg_toplevel_state* current
-                    = reinterpret_cast<xdg_toplevel_state*>(states->data);
-                while (reinterpret_cast<uintptr_t>(current)
-                       < (reinterpret_cast<uintptr_t>(states->data)
-                          + states->size))
-                {
-                    if (*current == XDG_TOPLEVEL_STATE_SUSPENDED)
-                        minimized = true;
-                    ++current;
-                }
-
-                self->m_Minimized = minimized;
-
-                if (self->m_Data.VideoMode.Width != width
-                    && self->m_Data.VideoMode.Height != height)
-                {
-                    self->m_Data.VideoMode.Width  = width;
-                    self->m_Data.VideoMode.Height = height;
-                    Window::PublishEvent<WindowResizedEvent>(self, width, height);
-                }
-            },
-            .close =
-                [](void* data, xdg_toplevel*) noexcept
-            {
-                auto self           = reinterpret_cast<WaylandWindow*>(data);
-
-                self->m_Data.IsOpen = false;
-            },
-            .configure_bounds =
-                [](void*, xdg_toplevel*, i32, i32) noexcept {
-
-                },
-            .wm_capabilities =
-                [](void*, xdg_toplevel*, wl_array*) noexcept {
-
-                }};
+        m_Data.VideoMode    = specs.VideoMode;
+        m_RequestedPosition = specs.Position;
 
         auto surface = wl_compositor_create_surface(Wayland::Compositor());
         VtCoreSlowAssert(surface);
-
         wl_surface_set_user_data(surface, this);
-        m_WmSurface = xdg_wm_base_get_xdg_surface(Wayland::WmBase(), surface);
-        xdg_surface_add_listener(m_WmSurface, &wm_surface_listener, this);
-        m_TopLevel = xdg_surface_get_toplevel(m_WmSurface);
-        xdg_toplevel_add_listener(m_TopLevel, &toplevel_listener, this);
-        wl_surface_commit(surface);
         m_WindowHandle = surface;
+
+        CreateXdgSurface();
+
+        if (specs.Kind == WindowKind::ePopup)
+        {
+            VtCoreAssertMsg(specs.Parent,
+                            "Wayland: A popup window needs a parent");
+            m_Parent = static_cast<WaylandWindow*>(specs.Parent);
+            CreatePopup();
+        }
+        else CreateToplevel();
 
         if (Wayland::AlphaModifier())
             m_AlphaModifierSurface = wp_alpha_modifier_v1_get_surface(
@@ -328,18 +292,206 @@ namespace Vortex
             width, height, title);
 
         ++s_WindowsCount;
-        SetTitle(specs.Title);
-        SetVisible(specs.Visible);
-        SetFullscreen(specs.Fullscreen);
+        if (m_TopLevel)
+        {
+            SetTitle(specs.Title);
+            SetFullscreen(specs.Fullscreen);
+        }
+        else m_Data.Title = specs.Title;
         m_Data.IsOpen = true;
 
         SetupEvents();
+
+        // A surface can't take buffers (the swapchain's) before its first
+        // configure: wait for it.
+        wl_display_roundtrip(Wayland::Display());
+    }
+
+    void WaylandWindow::CreateXdgSurface()
+    {
+        static constexpr xdg_surface_listener wmSurfaceListener{
+            .configure =
+                [](void* data, xdg_surface* surface, u32 serial) noexcept
+            {
+                xdg_surface_ack_configure(surface, serial);
+                reinterpret_cast<WaylandWindow*>(data)->m_Configured = true;
+            }};
+        m_WmSurface
+            = xdg_wm_base_get_xdg_surface(Wayland::WmBase(), m_WindowHandle);
+        xdg_surface_add_listener(m_WmSurface, &wmSurfaceListener, this);
+    }
+
+    void WaylandWindow::RetryUnconfiguredPopups()
+    {
+        constexpr i64 kRetryInterval = 100'000'000; // 100 ms
+        i64           now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
+
+        for (auto& [surface, window] : WindowMap())
+        {
+            if (!window->m_Popup || window->m_Configured
+                || now - window->m_RoleCreatedAt < kRetryInterval)
+                continue;
+            // No buffer was ever attached (renderers wait for
+            // IsReadyForRendering()), so the role can be rebuilt.
+            xdg_popup_destroy(window->m_Popup);
+            xdg_surface_destroy(window->m_WmSurface);
+            window->m_Popup = nullptr;
+            window->CreateXdgSurface();
+            window->CreatePopup();
+        }
+    }
+
+    void WaylandWindow::CreateToplevel()
+    {
+        static constexpr xdg_toplevel_listener toplevelListener{
+            .configure =
+                [](void* data, xdg_toplevel*, i32 width, i32 height,
+                   wl_array* states) noexcept
+            {
+                auto self      = reinterpret_cast<WaylandWindow*>(data);
+
+                bool minimized = false;
+                auto state     = reinterpret_cast<const u32*>(states->data);
+                auto end       = reinterpret_cast<const u32*>(
+                    reinterpret_cast<const u8*>(states->data) + states->size);
+                for (; state < end; ++state)
+                    if (*state == XDG_TOPLEVEL_STATE_SUSPENDED) minimized = true;
+                self->m_Minimized = minimized;
+
+                // 0x0: the client picks its size.
+                if (width <= 0 || height <= 0) return;
+                if (static_cast<i32>(self->m_Data.VideoMode.Width) != width
+                    || static_cast<i32>(self->m_Data.VideoMode.Height) != height)
+                {
+                    self->m_Data.VideoMode.Width  = width;
+                    self->m_Data.VideoMode.Height = height;
+                    Window::PublishEvent<WindowResizedEvent>(self, width, height);
+                }
+            },
+            .close =
+                [](void* data, xdg_toplevel*) noexcept
+            {
+                auto self           = reinterpret_cast<WaylandWindow*>(data);
+                self->m_Data.IsOpen = false;
+                Window::PublishEvent<WindowClosedEvent>(self);
+            },
+            .configure_bounds = [](void*, xdg_toplevel*, i32, i32) noexcept {},
+            .wm_capabilities  = [](void*, xdg_toplevel*, wl_array*) noexcept {}};
+
+        // Toplevels are the origin of the virtual space popups live in.
+        m_Data.Position = {0, 0};
+        m_TopLevel      = xdg_surface_get_toplevel(m_WmSurface);
+        xdg_toplevel_add_listener(m_TopLevel, &toplevelListener, this);
+        wl_surface_commit(m_WindowHandle);
+    }
+
+    xdg_positioner* WaylandWindow::CreatePositioner(Math::Vec2i position,
+                                                    Math::Vec2i size) const
+    {
+        // Relative to the parent; the anchor rect is kept inside the parent
+        // (compositors may reject one outside it) and the rest goes into the
+        // offset.
+        Math::Vec2i relative = position - m_Parent->Position();
+        Math::Vec2i parent   = m_Parent->Size();
+        Math::Vec2i anchor{
+            std::clamp(relative.x, 0, std::max(parent.x - 1, 0)),
+            std::clamp(relative.y, 0, std::max(parent.y - 1, 0))};
+
+        xdg_positioner* positioner
+            = xdg_wm_base_create_positioner(Wayland::WmBase());
+        xdg_positioner_set_size(positioner, std::max(size.x, 1),
+                                std::max(size.y, 1));
+        xdg_positioner_set_anchor_rect(positioner, anchor.x, anchor.y, 1, 1);
+        xdg_positioner_set_anchor(positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
+        xdg_positioner_set_gravity(positioner,
+                                   XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
+        xdg_positioner_set_offset(positioner, relative.x - anchor.x,
+                                  relative.y - anchor.y);
+        // Exactly where asked, even partially off-screen: ImGui owns the
+        // layout, and any adjustment would desync its coordinates.
+        xdg_positioner_set_constraint_adjustment(
+            positioner, XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE);
+        return positioner;
+    }
+
+    void WaylandWindow::CreatePopup()
+    {
+        static constexpr xdg_popup_listener popupListener{
+            .configure =
+                [](void* data, xdg_popup*, i32 x, i32 y, i32 width,
+                   i32 height) noexcept
+            {
+                auto self = reinterpret_cast<WaylandWindow*>(data);
+
+                Math::Vec2i position
+                    = self->m_Parent->Position() + Math::Vec2i(x, y);
+                if (position != self->m_Data.Position)
+                {
+                    self->m_Data.Position = position;
+                    Window::PublishEvent<WindowMovedEvent>(self, position.x,
+                                                           position.y);
+                }
+                if (width > 0 && height > 0
+                    && (static_cast<i32>(self->m_Data.VideoMode.Width) != width
+                        || static_cast<i32>(self->m_Data.VideoMode.Height)
+                               != height))
+                {
+                    self->m_Data.VideoMode.Width  = width;
+                    self->m_Data.VideoMode.Height = height;
+                    Window::PublishEvent<WindowResizedEvent>(self, width,
+                                                             height);
+                }
+            },
+            .popup_done =
+                [](void* data, xdg_popup*) noexcept
+            {
+                auto self           = reinterpret_cast<WaylandWindow*>(data);
+                self->m_Data.IsOpen = false;
+                Window::PublishEvent<WindowClosedEvent>(self);
+            },
+            .repositioned = [](void*, xdg_popup*, u32) noexcept {}};
+
+        m_RoleCreatedAt = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              std::chrono::steady_clock::now().time_since_epoch())
+                              .count();
+        m_Data.Position = m_RequestedPosition;
+        xdg_positioner* positioner
+            = CreatePositioner(m_RequestedPosition, Size());
+        m_Popup = xdg_surface_get_popup(m_WmSurface, m_Parent->m_WmSurface,
+                                        positioner);
+        xdg_positioner_destroy(positioner);
+        xdg_popup_add_listener(m_Popup, &popupListener, this);
+        wl_surface_commit(m_WindowHandle);
+    }
+
+    void WaylandWindow::Reposition()
+    {
+        if (!m_Popup) return;
+        if (xdg_popup_get_version(m_Popup) < XDG_POPUP_REPOSITION_SINCE_VERSION)
+        {
+            VtCoreWarnOnce("Wayland: xdg_popup.reposition is unavailable: "
+                           "popups can't move");
+            return;
+        }
+        // Takes effect with the next configure (and commit).
+        xdg_positioner* positioner
+            = CreatePositioner(m_RequestedPosition, Size());
+        xdg_popup_reposition(m_Popup, positioner, ++m_RepositionToken);
+        xdg_positioner_destroy(positioner);
     }
     WaylandWindow::~WaylandWindow()
     {
         VtCoreTrace("Wayland: Destroying window...");
-        wp_alpha_modifier_surface_v1_destroy(m_AlphaModifierSurface);
-        xdg_toplevel_destroy(m_TopLevel);
+        WindowMap().Erase(m_WindowHandle);
+        if (s_FocusedWindow == this) s_FocusedWindow = nullptr;
+        if (s_KeyboardFocus == this) s_KeyboardFocus = nullptr;
+        if (m_AlphaModifierSurface)
+            wp_alpha_modifier_surface_v1_destroy(m_AlphaModifierSurface);
+        if (m_Icon) xdg_toplevel_icon_v1_destroy(m_Icon);
+        if (m_Popup) xdg_popup_destroy(m_Popup);
+        if (m_TopLevel) xdg_toplevel_destroy(m_TopLevel);
         xdg_surface_destroy(m_WmSurface);
         wl_surface_destroy(m_WindowHandle);
         --s_WindowsCount;
@@ -369,11 +521,21 @@ namespace Vortex
         }
         else wl_display_cancel_read(display);
 
+        RetryUnconfiguredPopups();
+
         VtCoreAssert(wl_display_get_error(display) == 0);
     }
 
-    bool WaylandWindow::IsFocused() const noexcept { return m_Data.Focused; }
-    bool WaylandWindow::IsMinimized() const noexcept { return m_Minimized; }
+    bool WaylandWindow::IsFocused() const noexcept
+    {
+        // Popups never get keyboard focus of their own: their input goes
+        // through the parent.
+        return m_Parent ? m_Parent->IsFocused() : m_Data.Focused;
+    }
+    bool WaylandWindow::IsMinimized() const noexcept
+    {
+        return m_Parent ? m_Parent->IsMinimized() : m_Minimized;
+    }
     bool WaylandWindow::IsHovered() const noexcept
     {
         return s_FocusedWindow == this;
@@ -381,9 +543,8 @@ namespace Vortex
     String      WaylandWindow::Title() const noexcept { return m_Data.Title; }
     Math::Vec2i WaylandWindow::Position() const noexcept
     {
-        // NOTE(v1tr10l7): wayland doesn't provide a way to retrieve window
-        // position
-        return {0, 0};
+        // Virtual space: see Window::HasGlobalPositions().
+        return m_Data.Position;
     }
     inline Math::Vec2i WaylandWindow::Size() const noexcept
     {
@@ -400,20 +561,24 @@ namespace Vortex
     f32  WaylandWindow::Opacity() const noexcept { return 1.0f; }
 
     void WaylandWindow::Close() noexcept { m_Data.IsOpen = false; }
-    void WaylandWindow::RequestFocus() noexcept { VtTodo(); }
+    // Focus can only be handed over with xdg_activation (and a token the
+    // compositor grants on input), which isn't wired up.
+    void WaylandWindow::RequestFocus() noexcept {}
     void WaylandWindow::RequestUserAttention() const noexcept { VtTodo(); }
     void WaylandWindow::Maximize() noexcept
     {
+        if (!m_TopLevel) return;
         xdg_toplevel_set_maximized(m_TopLevel);
         m_Maximized = true;
     }
     void WaylandWindow::Minimize() noexcept
     {
+        if (!m_TopLevel) return;
         xdg_toplevel_set_minimized(m_TopLevel);
     }
     void WaylandWindow::Restore() noexcept
     {
-        if (m_Data.Fullscreen) return;
+        if (m_Data.Fullscreen || !m_TopLevel) return;
 
         if (m_Maximized)
         {
@@ -424,11 +589,12 @@ namespace Vortex
     void WaylandWindow::SetTitle(StringView title)
     {
         m_Data.Title = title;
-        xdg_toplevel_set_title(m_TopLevel, title.Raw());
+        if (m_TopLevel) xdg_toplevel_set_title(m_TopLevel, m_Data.Title.Raw());
     }
     void WaylandWindow::SetIcon(const Icon* icons, usize count)
     {
         auto iconManager = Wayland::IconManager();
+        if (!m_TopLevel) return;
         if (iconManager)
         {
             m_Icon = xdg_toplevel_icon_manager_v1_create_icon(iconManager);
@@ -446,11 +612,14 @@ namespace Vortex
     }
     void WaylandWindow::SetPosition(i32 x, i32 y)
     {
-        VtUnused(x);
-        VtUnused(y);
-        VtCoreWarnOnce(
-            "Wayland: The platform does not support setting the window "
-            "position");
+        if (!m_Popup)
+        {
+            VtCoreWarnOnce("Wayland: Toplevel windows can't be positioned");
+            return;
+        }
+        if (m_RequestedPosition == Math::Vec2i(x, y)) return;
+        m_RequestedPosition = {x, y};
+        Reposition();
     }
     void WaylandWindow::SetAspectRatio(i32 numerator, i32 denominator)
     {
@@ -460,8 +629,18 @@ namespace Vortex
     }
     void WaylandWindow::SetSize(const Math::Vec2i& size) noexcept
     {
-        (void)size;
-        VtTodo();
+        if (size.x <= 0 || size.y <= 0 || size == Size()) return;
+        if (!m_Popup)
+        {
+            // Toplevels are sized by the compositor (configure).
+            VtCoreWarnOnce("Wayland: Toplevel windows can't be resized");
+            return;
+        }
+        // Popups get exactly the size asked for: take it now so a swapchain
+        // recreated before the configure already uses it.
+        m_Data.VideoMode.Width  = size.x;
+        m_Data.VideoMode.Height = size.y;
+        Reposition();
     }
     void WaylandWindow::SetOpacity(f32 opacity)
     {
@@ -484,6 +663,7 @@ namespace Vortex
         m_Data.MaxWidth  = maxWidth;
         m_Data.MaxHeight = maxHeight;
 
+        if (!m_TopLevel) return;
         xdg_toplevel_set_min_size(m_TopLevel, minWidth, minHeight);
         xdg_toplevel_set_max_size(m_TopLevel, maxWidth, maxHeight);
     }
@@ -499,11 +679,68 @@ namespace Vortex
         VtCoreWarn(
             "Wayland: The platform does not support setting cursor position");
     }
-    void WaylandWindow::ShowCursor() const noexcept { VtTodo(); }
-    void WaylandWindow::HideCursor() const noexcept { VtTodo(); }
+    void WaylandWindow::ShowCursor() const noexcept
+    {
+        Wayland::SetCursorVisible(true, s_PointerEnterSerial);
+    }
+    void WaylandWindow::HideCursor() const noexcept
+    {
+        Wayland::SetCursorVisible(false, s_PointerEnterSerial);
+    }
+
+    namespace
+    {
+        zwp_relative_pointer_v1* s_RelativePointer = nullptr;
+
+        void RelativeMotion(void*, zwp_relative_pointer_v1*, u32, u32, wl_fixed_t,
+                            wl_fixed_t, wl_fixed_t dxUnaccelerated,
+                            wl_fixed_t dyUnaccelerated)
+        {
+            Mouse::AddRawDelta(wl_fixed_to_double(dxUnaccelerated),
+                               wl_fixed_to_double(dyUnaccelerated));
+        }
+        const zwp_relative_pointer_v1_listener s_RelativeListener = {
+            .relative_motion = RelativeMotion,
+        };
+    } // namespace
+
+    void WaylandWindow::SetCursorLocked(bool locked)
+    {
+        if (locked == m_CursorLocked) return;
+        m_CursorLocked     = locked;
+        wl_pointer* pointer = Wayland::Pointer();
+        if (!pointer) return;
+
+        // Raw motion from now on (it also keeps coming while unlocked, which
+        // is harmless: deltas are only read while looking around).
+        if (locked && !s_RelativePointer && Wayland::RelativePointerManager())
+        {
+            s_RelativePointer = zwp_relative_pointer_manager_v1_get_relative_pointer(
+                Wayland::RelativePointerManager(), pointer);
+            zwp_relative_pointer_v1_add_listener(s_RelativePointer, &s_RelativeListener,
+                                                 nullptr);
+        }
+
+        if (locked)
+        {
+            if (!m_LockedPointer && Wayland::PointerConstraints())
+                m_LockedPointer = zwp_pointer_constraints_v1_lock_pointer(
+                    Wayland::PointerConstraints(), m_WindowHandle, pointer, nullptr,
+                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+            HideCursor();
+        }
+        else
+        {
+            if (m_LockedPointer) zwp_locked_pointer_v1_destroy(m_LockedPointer);
+            m_LockedPointer = nullptr;
+            ShowCursor();
+        }
+        wl_display_flush(Wayland::Display());
+    }
     void WaylandWindow::SetFullscreen(bool fullscreen)
     {
         m_Data.Fullscreen = fullscreen;
+        if (!m_TopLevel) return;
         if (fullscreen) xdg_toplevel_set_fullscreen(m_TopLevel, nullptr);
         else xdg_toplevel_unset_fullscreen(m_TopLevel);
     }
@@ -512,11 +749,8 @@ namespace Vortex
         m_Data.Resizable = resizable;
         VtTodo();
     }
-    void WaylandWindow::SetVisible(bool visible) const
-    {
-        VtTodo();
-        (void)visible;
-    }
+    // Wayland surfaces are mapped by their first buffer: nothing to show.
+    void WaylandWindow::SetVisible(bool visible) const { VtUnused(visible); }
     void WaylandWindow::SetAlwaysOnTop(bool alwaysOnTop)
     {
         VtUnused(alwaysOnTop);
@@ -557,12 +791,18 @@ namespace Vortex
 
         if (!surface) return;
 
-        WaylandWindow* window = WaylandWindow::WindowMap()[surface];
+        auto it = WaylandWindow::WindowMap().Find(surface);
+        if (it == WaylandWindow::WindowMap().end()) return;
+        WaylandWindow* window = it->Value;
         s_Serial              = serial;
         s_PointerEnterSerial  = serial;
         s_FocusedWindow       = window;
 
+        f64 x                 = wl_fixed_to_double(xOffset);
+        f64 y                 = wl_fixed_to_double(yOffset);
+        window->m_Data.MousePosition = Math::Vec2d(x, y);
         Window::PublishEvent<MouseEnteredEvent>(window);
+        Window::PublishEvent<MouseMovedEvent>(window, x, y);
     }
     void WaylandWindow::PointerHandleLeave(void* userData, wl_pointer* pointer,
                                            u32 serial, wl_surface* surface)
@@ -572,11 +812,11 @@ namespace Vortex
 
         if (!surface) return;
 
-        WaylandWindow* window  = WaylandWindow::WindowMap()[surface];
-        s_Serial               = serial;
-        window->m_Data.Focused = false;
-        s_FocusedWindow        = nullptr;
-        Window::PublishEvent<MouseLeftEvent>(window);
+        auto it         = WaylandWindow::WindowMap().Find(surface);
+        s_Serial        = serial;
+        s_FocusedWindow = nullptr;
+        if (it == WaylandWindow::WindowMap().end()) return;
+        Window::PublishEvent<MouseLeftEvent>(it->Value);
     }
     void WaylandWindow::PointerHandleMotion(void* userData, wl_pointer* pointer,
                                             u32 time, wl_fixed_t xOffset,
@@ -590,7 +830,8 @@ namespace Vortex
         f64            ypos   = wl_fixed_to_double(yOffset);
 
         WaylandWindow* window = s_FocusedWindow;
-        if (window) window->m_Data.MousePosition = Math::Vec2d(xpos, ypos);
+        if (!window) return;
+        window->m_Data.MousePosition = Math::Vec2d(xpos, ypos);
         Window::PublishEvent<MouseMovedEvent>(window, xpos, ypos);
     }
     void WaylandWindow::PointerHandleButton(void* userData, wl_pointer* pointer,
@@ -605,6 +846,8 @@ namespace Vortex
         VtUnused(state);
 
         WaylandWindow* window    = s_FocusedWindow;
+        if (!window) return;
+        s_Serial                 = serial;
         MouseCode      mouseCode = static_cast<MouseCode>(button - BTN_LEFT);
         if (state == WL_POINTER_BUTTON_STATE_PRESSED)
             Window::PublishEvent<MouseButtonPressedEvent>(window, mouseCode);
@@ -702,8 +945,12 @@ namespace Vortex
         VtUnused(surface);
         VtUnused(keys);
 
-        WaylandWindow* window = WaylandWindow::WindowMap()[surface];
-        s_KeyboardFocus       = window;
+        auto it = WaylandWindow::WindowMap().Find(surface);
+        if (it == WaylandWindow::WindowMap().end()) return;
+        WaylandWindow* window  = it->Value;
+        s_KeyboardFocus        = window;
+        window->m_Data.Focused = true;
+        Window::PublishEvent<WindowFocusedEvent>(window);
     }
     void WaylandWindow::KeyboardHandleLeave(void*        userData,
                                             wl_keyboard* keyboard, u32 serial,
@@ -713,6 +960,11 @@ namespace Vortex
         VtUnused(keyboard);
         VtUnused(serial);
         VtUnused(surface);
+        if (s_KeyboardFocus)
+        {
+            s_KeyboardFocus->m_Data.Focused = false;
+            Window::PublishEvent<WindowFocusLostEvent>(s_KeyboardFocus);
+        }
         s_KeyboardFocus = nullptr;
     }
     void WaylandWindow::KeyboardHandleKey(void* userData, wl_keyboard* keyboard,

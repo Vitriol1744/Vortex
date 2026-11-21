@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/UnorderedMap.hpp>
+import Prism.Containers.UnorderedMap;
 
 #include <Vortex/Window/X11/X11.hpp>
 
