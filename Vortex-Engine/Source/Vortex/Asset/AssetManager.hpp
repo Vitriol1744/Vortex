@@ -6,7 +6,11 @@
  */
 #pragma once
 
+#include <Vortex/Core/Types.hpp>
+
 #include <Vortex/Asset/AssetRegistry.hpp>
+
+import Vortex.Asset.AsyncLoader;
 
 namespace Vortex
 {
@@ -22,7 +26,14 @@ namespace Vortex
         PM_NODISCARD
         inline class AssetRegistry& Registry() { return *m_Registry; }
 
+        /// Background loads (see Vortex.Asset.AsyncLoader).
+        inline AsyncAssetLoader&    Loader() { return m_Loader; }
+
+        /// Main thread, once a frame: completion callbacks of async loads.
+        void                        Update();
+
       protected:
+        AsyncAssetLoader                              m_Loader;
         ::Ref<AssetRegistry>                          m_Registry;
         UnorderedMap<AssetHandle, ::Ref<class Asset>> m_AssetCache;
         mutable std::shared_mutex                     m_Mutex;

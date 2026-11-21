@@ -15,6 +15,8 @@ namespace Vortex
         m_Registry->Clear();
     }
 
+    void AssetManager::Update() { m_Loader.Update(); }
+
     void AssetManager::UnloadAsset(const AssetHandle& handle)
     {
         std::unique_lock lock(m_Mutex);

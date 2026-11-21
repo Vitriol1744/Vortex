@@ -6,8 +6,10 @@
  */
 #pragma once
 
-#include <Prism/Containers/UnorderedMap.hpp>
-#include <Prism/Memory/Ref.hpp>
+#include <Vortex/Core/Types.hpp>
+
+import Prism.Containers.UnorderedMap;
+import Prism.Memory.Ref;
 #include <Vortex/Asset/Asset.hpp>
 
 #include <shared_mutex>

@@ -10,6 +10,7 @@ set (MODULE_TYPE SHARED)
 set (SOURCES
     AssetManager.cpp
     AssetRegistry.cpp
+    AsyncAssetLoader.cpp
 )
 
 vt_add_module(${MODULE_NAME}
@@ -17,3 +18,9 @@ vt_add_module(${MODULE_NAME}
     TYPE ${MODULE_TYPE}
     PUBLIC_LIBS Vortex-Modules Vortex-Core 
 )
+target_sources(${MODULE_NAME} PUBLIC FILE_SET CXX_MODULES FILES
+    AsyncAssetLoader.ixx
+)
+if(TARGET Tracy::TracyClient)
+  target_link_libraries(${MODULE_NAME} PUBLIC Tracy::TracyClient)
+endif()

@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Prism/Core/UUID.hpp>
-#include <Prism/Memory/RefCounted.hpp>
-#include <Prism/Utility/Path.hpp>
+import Prism.Core.UUID;
+import Prism.Memory.RefCounted;
+import Prism.Utility.Path;
 #include <Vortex/Asset/Export.hpp>
 
 namespace Vortex
