@@ -6,7 +6,12 @@
  */
 #pragma once
 
-#include <Prism/Debug/Logger.hpp>
+#include <Vortex/Core/Types.hpp>
+
+import Prism.Debug.Logger;
+// Formatters for std::string(_view) and floating point, which Prism lacks.
+import Vortex.Core.Formatters;
+import Prism.String.StringView;
 #include <Vortex/Core/Export.hpp>
 
 #include <mutex>
@@ -15,6 +20,7 @@ namespace Vortex::Log
 {
     using Prism::Logger;
     using Prism::LogLevel;
+    using Prism::LoggerFormatString;
 
     struct MutexPolicy
     {
@@ -31,94 +37,94 @@ namespace Vortex::Log
     Logger<MutexPolicy>& VT_CORE_API ClientLogger();
 
     template <typename... Args>
-    inline void Debug(fmt::format_string<Args...> format, Args&&... args);
+    inline void Debug(LoggerFormatString<Args...> format, Args&&... args);
     template <typename... Args>
-    inline void Trace(fmt::format_string<Args...> format, Args&&... args);
+    inline void Trace(LoggerFormatString<Args...> format, Args&&... args);
     template <typename... Args>
-    inline void Info(fmt::format_string<Args...> format, Args&&... args);
+    inline void Info(LoggerFormatString<Args...> format, Args&&... args);
     template <typename... Args>
-    inline void Warn(fmt::format_string<Args...> format, Args&&... args);
+    inline void Warn(LoggerFormatString<Args...> format, Args&&... args);
     template <typename... Args>
-    inline void Error(fmt::format_string<Args...> format, Args&&... args);
+    inline void Error(LoggerFormatString<Args...> format, Args&&... args);
     template <typename... Args>
-    inline void Fatal(fmt::format_string<Args...> format, Args&&... args);
+    inline void Fatal(LoggerFormatString<Args...> format, Args&&... args);
 
     template <typename... Args>
-    inline void DebugTag(StringView tag, fmt::format_string<Args...> format,
+    inline void DebugTag(StringView tag, LoggerFormatString<Args...> format,
                          Args&&... args);
     template <typename... Args>
-    inline void InfoTag(StringView tag, fmt::format_string<Args...> format,
+    inline void InfoTag(StringView tag, LoggerFormatString<Args...> format,
                         Args&&... args);
     template <typename... Args>
-    inline void WarnTag(StringView tag, fmt::format_string<Args...> format,
+    inline void WarnTag(StringView tag, LoggerFormatString<Args...> format,
                         Args&&... args);
     template <typename... Args>
-    inline void ErrorTag(StringView tag, fmt::format_string<Args...> format,
+    inline void ErrorTag(StringView tag, LoggerFormatString<Args...> format,
                          Args&&... args);
 
     template <typename... Args>
-    void Debug(fmt::format_string<Args...> format, Args&&... args)
+    void Debug(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Debug(format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void Trace(fmt::format_string<Args...> format, Args&&... args)
+    void Trace(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Trace(format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void Info(fmt::format_string<Args...> format, Args&&... args)
+    void Info(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Info(format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void Warn(fmt::format_string<Args...> format, Args&&... args)
+    void Warn(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Warn(format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void Error(fmt::format_string<Args...> format, Args&&... args)
+    void Error(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Error(format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void Fatal(fmt::format_string<Args...> format, Args&&... args)
+    void Fatal(LoggerFormatString<Args...> format, Args&&... args)
     {
         ClientLogger().Fatal(format, Forward<Args>(args)...);
     }
 
     template <typename... Args>
-    void DebugTag(StringView tag, fmt::format_string<Args...> format,
+    void DebugTag(StringView tag, LoggerFormatString<Args...> format,
                   Args&&... args)
     {
         ClientLogger().DebugTag(tag, format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void TraceTag(StringView tag, fmt::format_string<Args...> format,
+    void TraceTag(StringView tag, LoggerFormatString<Args...> format,
                   Args&&... args)
     {
         ClientLogger().TraceTag(tag, format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void InfoTag(StringView tag, fmt::format_string<Args...> format,
+    void InfoTag(StringView tag, LoggerFormatString<Args...> format,
                  Args&&... args)
     {
         ClientLogger().InfoTag(tag, format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void WarnTag(StringView tag, fmt::format_string<Args...> format,
+    void WarnTag(StringView tag, LoggerFormatString<Args...> format,
                  Args&&... args)
     {
         ClientLogger().WarnTag(tag, format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void ErrorTag(StringView tag, fmt::format_string<Args...> format,
+    void ErrorTag(StringView tag, LoggerFormatString<Args...> format,
                   Args&&... args)
     {
         ClientLogger().ErrorTag(tag, format, Forward<Args>(args)...);
     }
     template <typename... Args>
-    void FatalTag(StringView tag, fmt::format_string<Args...> format,
+    void FatalTag(StringView tag, LoggerFormatString<Args...> format,
                   Args&&... args)
     {
         ClientLogger().FatalTag(tag, format, Forward<Args>(args)...);

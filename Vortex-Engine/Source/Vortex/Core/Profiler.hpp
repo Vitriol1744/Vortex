@@ -15,9 +15,15 @@
         ZoneScoped;                                                            \
         ZoneName(NAME, strlen(NAME))
     #define VtProfilerSetThreadName(name) tracy::SetThreadName(name);
+    /// End of a frame (Tracy's frame timeline).
+    #define VtProfileFrameMark            FrameMark
+    /// End of a frame of a secondary timeline (e.g. the render thread's).
+    #define VtProfileFrameMarkNamed(name) FrameMarkNamed(name)
 #else
     #define VtProfileFunction(...)
     #define VtProfileScope(...)
     #define VtProfileScopeDynamic(NAME)
     #define VtProfilerSetThreadName(name)
+    #define VtProfileFrameMark
+    #define VtProfileFrameMarkNamed(name)
 #endif

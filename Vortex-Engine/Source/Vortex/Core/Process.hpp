@@ -6,11 +6,12 @@
  */
 #pragma once
 
-#include <Prism/Containers/Vector.hpp>
-#include <Prism/Memory/Scope.hpp>
-#include <Prism/String/String.hpp>
+import Prism.Containers.Vector;
+import Prism.Memory.Scope;
+import Prism.String.String;
 
 #include <Vortex/Core/Export.hpp>
+#include <Vortex/Core/Types.hpp>
 
 namespace Vortex
 {

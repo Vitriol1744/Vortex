@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <Prism/Containers/Span.hpp>
-#include <Prism/Memory/Pointer.hpp>
+import Prism.Containers.Span;
+import Prism.Memory.Pointer;
 
 namespace Vortex
 {

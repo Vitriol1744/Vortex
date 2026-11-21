@@ -26,7 +26,11 @@ elseif (WIN32)
       Win32/Win32Time.cpp)
 endif ()
 
-set (LIBS $<LINK_LIBRARY:WHOLE_ARCHIVE,prism>)
+# Prism is a shared library on the host (cmake/Dependencies.cmake), so every
+# library and executable linking Vortex-Core shares one copy of it. Never
+# whole-archive a static Prism into more than one image: each would get its
+# own Prism globals and type info.
+set (LIBS prism)
 
 if (ANDROID)
     set (LIBS Prism log)
@@ -38,4 +42,9 @@ vt_add_module (${MODULE_NAME}
     DEFINITIONS_PUBLIC VT_CORE_SHARED_LIBRARY=1
     DEFINITIONS_PRIVATE VT_CORE_BUILD_DLL=1
     PUBLIC_LIBS Vortex-Modules ${LIBS} glm
+)
+
+# C++20 module interface units of Vortex-Core.
+target_sources (${MODULE_NAME} PUBLIC FILE_SET CXX_MODULES FILES
+    Formatters.ixx
 )

@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Algorithm/Find.hpp>
+import Prism.Algorithm.Find;
 
 #include <Vortex/Core/LayerStack.hpp>
 

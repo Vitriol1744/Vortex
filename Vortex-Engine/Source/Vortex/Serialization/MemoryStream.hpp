@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Utility/Path.hpp>
+import Prism.Utility.Path;
 #include <Vortex/Serialization/Stream.hpp>
 
 namespace Vortex

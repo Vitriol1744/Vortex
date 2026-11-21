@@ -6,14 +6,14 @@
  */
 #pragma once
 
-#include <Prism/Containers/Array.hpp>
-#include <Prism/Containers/Span.hpp>
-#include <Prism/Containers/Vector.hpp>
+import Prism.Containers.Array;
+import Prism.Containers.Span;
+import Prism.Containers.Vector;
 #include <Prism/Core/Types.hpp>
 
-#include <Prism/Memory/BitStream.hpp>
-#include <Prism/Memory/Endian.hpp>
-#include <Prism/Memory/Pointer.hpp>
+import Prism.Memory.BitStream;
+import Prism.Memory.Endian;
+import Prism.Memory.Pointer;
 
 namespace Vortex::ZLib
 {

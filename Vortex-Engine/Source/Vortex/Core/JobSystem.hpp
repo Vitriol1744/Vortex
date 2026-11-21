@@ -6,11 +6,11 @@
  */
 #pragma once
 
-#include <Prism/Containers/Deque.hpp>
-#include <Prism/Containers/Vector.hpp>
-#include <Prism/Memory/Scope.hpp>
-#include <Prism/Utility/Atomic.hpp>
-#include <Prism/Utility/Delegate.hpp>
+import Prism.Containers.Deque;
+import Prism.Containers.Vector;
+import Prism.Memory.Scope;
+import Prism.Utility.Atomic;
+import Prism.Utility.Delegate;
 
 #include <condition_variable>
 #include <mutex>

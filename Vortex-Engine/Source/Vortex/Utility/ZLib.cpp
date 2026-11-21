@@ -4,8 +4,8 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Memory/ByteStream.hpp>
-#include <Prism/Utility/Checksum.hpp>
+import Prism.Memory.ByteStream;
+import Prism.Utility.Checksum;
 
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Utility/ZLib.hpp>

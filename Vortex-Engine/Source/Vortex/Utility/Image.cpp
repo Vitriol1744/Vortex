@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: GPL-3
  */
 
-#include <Prism/Containers/Vector.hpp>
-#include <Prism/Memory/ByteStream.hpp>
-#include <Prism/String/StringUtils.hpp>
+import Prism.Containers.Vector;
+import Prism.Memory.ByteStream;
+import Prism.String.StringUtils;
 
-#include <Prism/Utility/Checksum.hpp>
-#include <Prism/Utility/Math.hpp>
+import Prism.Utility.Checksum;
+import Prism.Utility.Math;
 
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Utility/Image.hpp>

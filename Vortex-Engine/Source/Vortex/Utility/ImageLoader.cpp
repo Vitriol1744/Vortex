@@ -4,6 +4,7 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+import Prism.String.Formatter;
 #include <Vortex/Utility/ImageLoader.hpp>
 
 #include <fstream>
@@ -35,20 +36,18 @@ namespace Vortex::ImageLoader
     };
 #pragma pack(pop)
 
-    Expected<Scope<Pixel>, String> LoadBMP(Path path, i32& width, i32& height)
+    Expected<Scope<Pixel[]>, String> LoadBMP(Path path, i32& width, i32& height)
     {
         ::std::ifstream ifs(path.Raw(), ::std::ios::binary);
         if (!ifs.is_open())
             return Unexpected(
-                fmt::format("Failed to open file, path: '{}'", path.Raw())
-                    .data());
+                Prism::Format("Failed to open file, path: '{}'", path.Raw()));
 
         BmpHeader bmpHeader;
         ifs.read(reinterpret_cast<char*>(&bmpHeader), sizeof(BmpHeader));
         if (bmpHeader.Signature != 0x4d42)
             return Unexpected(
-                fmt::format("Invalid BMP signature, path: '{}'", path.Raw())
-                    .data());
+                Prism::Format("Invalid BMP signature, path: '{}'", path.Raw()));
 
         DibHeader dibHeader;
         ifs.read(reinterpret_cast<char*>(&dibHeader), sizeof(DibHeader));
@@ -57,8 +56,7 @@ namespace Vortex::ImageLoader
         if (dibSize != 12 && dibSize != 40 && dibSize != 56 && dibSize != 108
             && dibSize != 124)
             return Unexpected(
-                fmt::format("Invalid DIB header size, path: '{}'", path.Raw())
-                    .data());
+                Prism::Format("Invalid DIB header size, path: '{}'", path.Raw()));
 
         Scope<Pixel[]> pixels = CreateScope<Pixel[]>(dibHeader.ImageSize);
         ifs.seekg(bmpHeader.PixelDataOffset);

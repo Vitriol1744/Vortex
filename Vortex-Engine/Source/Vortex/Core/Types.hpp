@@ -6,5 +6,12 @@
  */
 #pragma once
 
+// Prism's macros (PM_*, IgnoreUnused, Bit, PrismCheck...) and fundamental types
+// live in textual headers: named modules can't export macros, and Prism.*
+// modules don't re-export these types. Everything else comes from imports.
+#include <Prism/Core/Compiler.hpp>
 #include <Prism/Core/Types.hpp>
-#include <Prism/Memory/Ref.hpp>
+
+import Prism.Memory.Ref;
+import Prism.String.String;
+import Prism.String.StringView;

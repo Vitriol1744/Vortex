@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/String/String.hpp>
+import Prism.String.String;
 
 namespace Vortex
 {

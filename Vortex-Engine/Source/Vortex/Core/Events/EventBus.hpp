@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Prism/Containers/UnorderedMap.hpp>
-#include <Prism/Memory/Scope.hpp>
-#include <Prism/Utility/Delegate.hpp>
+import Prism.Containers.UnorderedMap;
+import Prism.Memory.Scope;
+import Prism.Utility.Delegate;
 #include <Vortex/Core/Events/EventQueue.hpp>
 
 namespace Vortex

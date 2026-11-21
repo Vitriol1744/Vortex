@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Prism/Algorithm/Find.hpp>
-#include <Prism/Containers/Queue.hpp>
-#include <Prism/Containers/Vector.hpp>
+import Prism.Algorithm.Find;
+import Prism.Containers.Queue;
+import Prism.Containers.Vector;
 
 #include <Vortex/Core/Assertions.hpp>
 

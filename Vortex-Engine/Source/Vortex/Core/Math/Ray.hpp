@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Utility/Math.hpp>
+import Prism.Utility.Math;
 #include <Vortex/Core/Math/AABB.hpp>
 #include <Vortex/Core/Math/Matrix.hpp>
 

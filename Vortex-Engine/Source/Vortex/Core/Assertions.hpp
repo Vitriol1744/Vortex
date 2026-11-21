@@ -9,6 +9,10 @@
 #include <Vortex/Core/Log/Log.hpp>
 #include <Vortex/Core/Platform.hpp>
 
+import Prism.Debug.SourceLocation;
+import Prism.String.Formatter;
+#include <Vortex/Core/Platform.hpp>
+
 #ifdef VT_PLATFORM_WINDOWS
     #include <Windows.h>
     #define VtDebugBreak DebugBreak()
@@ -49,7 +53,7 @@
     #define VtCoreAssertFormat(expr, ...)                                      \
         if (expr) {}                                                           \
         else {                                                                 \
-            String formatted = fmt::format(__VA_ARGS__).data();                \
+            String formatted = Prism::Format(__VA_ARGS__);                   \
             VtPrintCoreAssertMessage(expr, formatted);                         \
             VtDebugBreak;                                                      \
         }
@@ -72,7 +76,7 @@
     #define VtAssertFormat(expr, ...)                                          \
         if (expr) {}                                                           \
         else {                                                                 \
-            auto formatted = fmt::format(__VA_ARGS__);                         \
+            auto formatted = Prism::Format(__VA_ARGS__);                       \
             VtPrintAssertMessage(expr, formatted);                             \
             VtDebugBreak;                                                      \
         }

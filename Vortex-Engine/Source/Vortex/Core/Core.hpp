@@ -6,10 +6,10 @@
  */
 #pragma once
 
-#include <Prism/Core/NonCopyable.hpp>
-#include <Prism/Core/Version.hpp>
-#include <Prism/Debug/SourceLocation.hpp>
-#include <Prism/Memory/Scope.hpp>
+import Prism.Core.NonCopyable;
+import Prism.Core.Version;
+import Prism.Debug.SourceLocation;
+import Prism.Memory.Scope;
 
 #include <Vortex/Core/Assertions.hpp>
 #include <Vortex/Core/Export.hpp>

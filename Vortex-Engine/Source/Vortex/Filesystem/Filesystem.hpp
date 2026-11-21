@@ -6,11 +6,14 @@
  */
 #pragma once
 
+#include <Vortex/Core/Types.hpp>
+
 #include <Vortex/Filesystem/Export.hpp>
 
-#include <Prism/Containers/UnorderedMap.hpp>
+import Prism.Containers.UnorderedMap;
 #include <Prism/Core/Error.hpp>
-#include <Prism/Utility/Path.hpp>
+import Prism.Core.Error;
+import Prism.Utility.Path;
 
 namespace Vortex
 {

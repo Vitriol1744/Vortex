@@ -6,7 +6,7 @@
  */
 #pragma once
 
-// #include <Prism/Utility/Time.hpp>
+// import Prism.Utility.Time;
 #include <Vortex/Core/Export.hpp>
 #include <Vortex/Core/Timestep.hpp>
 #include <Vortex/Core/Types.hpp>

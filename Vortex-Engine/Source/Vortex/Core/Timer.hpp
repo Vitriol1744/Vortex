@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <Prism/Utility/Time.hpp>
+import Prism.Utility.Time;
 #include <Vortex/Core/Time.hpp>
 
 namespace Vortex

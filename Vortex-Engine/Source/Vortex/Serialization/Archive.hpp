@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include <Prism/Core/Version.hpp>
-#include <Prism/String/String.hpp>
-#include <Prism/Utility/Path.hpp>
+import Prism.Core.Version;
+import Prism.String.String;
+import Prism.Utility.Path;
 
 namespace Vortex
 {

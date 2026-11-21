@@ -4,10 +4,11 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Vortex/Core/Memory/MemoryManager.hpp>
-
+// System headers first: they must precede any `import` in this TU.
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include <Vortex/Core/Memory/MemoryManager.hpp>
 
 namespace Vortex
 {

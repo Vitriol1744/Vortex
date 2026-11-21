@@ -6,13 +6,15 @@
  */
 #pragma once
 
-#include <Prism/Containers/Array.hpp>
-#include <Vortex/Core/Process.hpp>
-
+// System headers first: they must precede any `import` in this TU.
 #include <fcntl.h>
 #include <spawn.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#include <Vortex/Core/Process.hpp>
+
+import Prism.Containers.Array;
 
 namespace Vortex
 {

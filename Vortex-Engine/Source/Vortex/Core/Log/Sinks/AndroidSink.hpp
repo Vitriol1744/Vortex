@@ -7,7 +7,7 @@
 #pragma once
 #pragma once
 
-#include <Prism/Debug/LogSink.hpp>
+import Prism.Debug.LogSink;
 
 #ifdef VT_PLATFORM_ANDROID
     #include <android/log.h>

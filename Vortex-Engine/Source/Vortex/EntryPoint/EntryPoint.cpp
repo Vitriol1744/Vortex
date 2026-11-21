@@ -4,66 +4,44 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/Array.hpp>
 #include <Vortex/Core/Core.hpp>
 #include <Vortex/Engine/Application.hpp>
 
-#define VT_TEST_ANDROID_BUILD 0
+#include <cstdlib>
+
 namespace Vortex
 {
-    void PrintBranding();
-
-    int  Main(int argc, char** argv)
+    /**
+     * The process's main(): asks the program for its application and runs
+     * it, again for as long as it asks to restart (e.g. Nexus after a GPU
+     * change). CreateApplication may instead return an exit code, for
+     * commands that finish without a window.
+     */
+    int Main(int argc, char** argv)
     {
-        PrintBranding();
-        (void)argc;
-        (void)argv;
-        CommandLineArguments args;
+        CommandLineArguments args(argc, argv);
         Log::Initialize();
 
-        VtCoreTrace("Launching the {}...", Vortex::g_EngineName);
-        bool shouldRestart = false;
-        do
+        int exitCode = EXIT_SUCCESS;
+        for (;;)
         {
-            Application* app = CreateApplication(args);
-
-            shouldRestart    = app->Run();
-
-            delete app;
-        } while (shouldRestart);
+            ApplicationLaunch launch = CreateApplication(args);
+            if (!launch.App)
+            {
+                exitCode = launch.ExitCode;
+                break;
+            }
+            bool restart = launch.App->Run();
+            // Destroyed before a restart creates the next one: only one
+            // Application may exist at a time.
+            launch.App.Reset();
+            if (!restart) break;
+        }
 
         Log::Shutdown();
-        return EXIT_SUCCESS;
+        return exitCode;
     }
-
-    void PrintBranding()
-    {
-        printf(
-            " __      __        _              ______             _            "
-            "\n");
-        printf(
-            " \\ \\    / /       | |            |  ____|           (_)         "
-            "  \n");
-        printf(
-            "  \\ \\  / /__  _ __| |_ _____  __ | |__   _ __   __ _ _ _ __   "
-            "___ \n");
-        printf(
-            "   \\ \\/ / _ \\| '__| __/ _ \\ \\/ / |  __| | '_ \\ / _` | | '_ "
-            "\\ / _ \\\n");
-        printf(
-            "    \\  / (_) | |  | ||  __/>  <  | |____| | | | (_| | | | | |  "
-            "__/\n");
-        printf(
-            "     \\/ \\___/|_|   \\__\\___/_/\\_\\ |______|_| |_|\\__, |_|_| "
-            "|_|\\___|\n");
-        printf(
-            "                                                __/ |             "
-            "\n");
-        printf(
-            "                                               |___/              "
-            "\n");
-    }
-}; // namespace Vortex
+} // namespace Vortex
 
 int main(int argc, char** argv) { return Vortex::Main(argc, argv); }
 
@@ -100,6 +78,8 @@ JNIEXPORT void JNICALL Java_com_v1tr10l7_vortex_Activity_nativeSetPlatformInfo(
     VtCoreInfo("nativeSetPlatformInfo");
 }
 
+// TODO(v1tr10l7): on Android libVortex-Engine is the whole app, so this
+// placeholder stands in for the game; android_main doesn't run it yet.
 using namespace Vortex;
 class Game : public Application
 {
@@ -110,10 +90,10 @@ class Game : public Application
     }
 };
 
-Application* Vortex::CreateApplication(const CommandLineArguments&)
+ApplicationLaunch Vortex::CreateApplication(const CommandLineArguments&)
 {
     ApplicationSpecification spec{};
-    return new Game(spec);
+    return CreateScope<Game>(spec);
 }
 
 void android_main(android_app* app)
@@ -132,3 +112,19 @@ void android_main(android_app* app)
     pthread_setname_np(pthread_self(), "Main");
 }
 #endif
+
+/// Read by LeakSanitizer when the build is sanitized (unused otherwise).
+/// Third-party leaks LeakSanitizer can't be told about otherwise:
+/// - Coral converts the managed-allocated Coral::String returned by
+///   Type::GetFullName() into std::string keys (TypeCache, LoadAssembly)
+///   without freeing it; one allocation per type, once at startup.
+/// - The .NET runtime keeps its own allocations until process exit.
+extern "C" __attribute__((visibility("default"), used)) const char*
+__lsan_default_suppressions()
+{
+    return "leak:libcoreclr.so\n"
+           "leak:libclrjit.so\n"
+           "leak:libhostfxr.so\n"
+           "leak:libhostpolicy.so\n"
+           "leak:Coral::\n";
+}

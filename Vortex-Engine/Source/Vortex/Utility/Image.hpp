@@ -7,13 +7,13 @@
 #pragma once
 
 #include <Prism/Core/Types.hpp>
-#include <Prism/Memory/Endian.hpp>
+import Prism.Memory.Endian;
 
-#include <Prism/Memory/Buffer.hpp>
-#include <Prism/Memory/ByteStream.hpp>
-#include <Prism/Memory/Pointer.hpp>
+import Prism.Memory.Buffer;
+import Prism.Memory.ByteStream;
+import Prism.Memory.Pointer;
 
-#include <Prism/Utility/Math.hpp>
+import Prism.Utility.Math;
 
 namespace Vortex::PNG
 {

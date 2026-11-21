@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <Prism/Memory/RefCounted.hpp>
-#include <Prism/String/String.hpp>
+import Prism.Memory.RefCounted;
+import Prism.String.String;
 #include <Vortex/Core/Export.hpp>
 #include <Vortex/Core/Timestep.hpp>
 

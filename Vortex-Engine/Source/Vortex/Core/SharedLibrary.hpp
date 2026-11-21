@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: GPL-3
  */
 #pragma once
-#pragma once
 
-#include <Prism/Utility/Path.hpp>
+#include <Vortex/Core/Types.hpp>
+
+import Prism.Utility.Path;
+import Prism.Utility.PathView;
 
 namespace Vortex
 {
