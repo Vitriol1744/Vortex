@@ -1,10 +1,65 @@
 {
-  "StartupProject": "Untitled",
+  "StartupProject": "New Project",
   "RecentProjects": [
+    {
+      "Name": "New Project",
+      "Path": "/home/v1tr10l7/VortexProjects/New Project/new-project.vproj",
+      "LastOpened": 1795290377
+    },
+    {
+      "Name": "T physics",
+      "Path": "/tmp/claude-1000/-home-v1tr10l7-dev-vortex-v2/5002caad-14fe-4737-8b33-2d2d675df925/scratchpad/tpl/physics/t-physics.vproj",
+      "LastOpened": 1795290003
+    },
+    {
+      "Name": "T starter-3d",
+      "Path": "/tmp/claude-1000/-home-v1tr10l7-dev-vortex-v2/5002caad-14fe-4737-8b33-2d2d675df925/scratchpad/tpl/starter-3d/t-starter-3d.vproj",
+      "LastOpened": 1795289861
+    },
+    {
+      "Name": "T blank",
+      "Path": "/tmp/claude-1000/-home-v1tr10l7-dev-vortex-v2/5002caad-14fe-4737-8b33-2d2d675df925/scratchpad/tpl/blank/t-blank.vproj",
+      "LastOpened": 1795289812
+    },
     {
       "Name": "Untitled",
       "Path": "/home/v1tr10l7/dev/vortex-v2/Sandbox/vortex-project.vproj",
-      "LastOpened": 0
+      "LastOpened": 1795287272
     }
-  ]
+  ],
+  "Editor": {
+    "OpenLastProject": true,
+    "AutoSave": false,
+    "AutoSaveMinutes": 5.0,
+    "AutoCompileScripts": true,
+    "Theme": 0,
+    "UIScale": 1.0
+  },
+  "Graphics": {
+    "RendererAPI": "Vulkan",
+    "PreferredGpu": "",
+    "VSync": false
+  },
+  "Viewport": {
+    "FieldOfView": 75.0,
+    "Near": 0.10000000149011612,
+    "Far": 100.0,
+    "ShowGrid": true
+  },
+  "Camera": {
+    "Forward": 568,
+    "Backward": 564,
+    "Left": 546,
+    "Right": 549,
+    "Up": 524,
+    "Down": 527,
+    "Fast": 528,
+    "TurnLeft": 513,
+    "TurnRight": 514,
+    "MoveSpeed": 1.0,
+    "FastMultiplier": 10.0,
+    "LookSensitivity": 10.0,
+    "InvertY": false
+  },
+  "Shortcuts": []
 }
