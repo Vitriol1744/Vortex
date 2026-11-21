@@ -1,62 +1,52 @@
-#pragma shader_stage(vertex)
+#pragma vertex VSMain
+#pragma fragment PSMain
 
-// HLSL structures representing the constant data layout
-struct UniformBufferObject {
-    matrix model;
-    matrix viewproj;
+// Renderer2D's textured, vertex-colored quads.
+
+#include "include/Common.hlsli"
+
+// Set 0: per-view data, bound by the renderer.
+struct CameraData
+{
+    float4x4 ViewProjection;
+};
+[[vk::binding(0, 0)]] ConstantBuffer<CameraData> Camera;
+
+// Per draw: the object's transform.
+struct ObjectData
+{
+    float4x4 Model;
+};
+[[vk::push_constant]] ConstantBuffer<ObjectData> Object;
+
+// Set 1: the material.
+[[vk::binding(0, 1)]] Texture2D texSampler;
+
+struct VSInput
+{
+    [[vk::location(0)]] float3 Position : POSITION;
+    [[vk::location(1)]] float3 Color : COLOR0;
+    [[vk::location(2)]] float2 TexCoord : TEXCOORD0;
 };
 
-// Bind to descriptor set 0, binding 0 (b0)
-// NOTE: shaderc requires layout(row_major) or explicit transpose 
-// if your C++ math library (like GLM) sends data in column-major format.
-ConstantBuffer<UniformBufferObject> ubo : register(b0);
-
-// Vertex Input Attributes
-struct VSInput {
-    float3 inPosition : POSITION; // semantic maps to layout(location = 0)
-    float3 inColor    : COLOR;    // semantic maps to layout(location = 1)
-    float2 inTexCoord : TEXCOORD; // semantic maps to layout(location = 2)
+struct VSOutput
+{
+    float4                     Position : SV_Position;
+    [[vk::location(0)]] float3 Color : COLOR0;
+    [[vk::location(1)]] float2 TexCoord : TEXCOORD0;
 };
 
-// Vertex Output / Fragment Input Stage Interface
-struct VSOutput {
-    float4 gl_Position : SV_Position; // System Value for clip-space coordinates
-    float3 fragColor    : COLOR0;      // User-defined interpolator
-    float2 fragTexCoord : TEXCOORD0;   // User-defined interpolator
-};
-
-VSOutput main(VSInput input) {
+VSOutput VSMain(VSInput input)
+{
     VSOutput output;
-    
-    // GLSL matrix multiplication is: viewproj * model * position
-    // HLSL defaults to row-major math, but since shaderc converts HLSL 
-    // down to GLSL AST rules, keep the multiplication order matching your C++ matrix setup.
-    output.gl_Position = mul(ubo.viewproj, mul(ubo.model, float4(input.inPosition, 1.0)));
-    
-    output.fragColor = input.inColor;
-    output.fragTexCoord = input.inTexCoord;
-    
+    output.Position = mul(Camera.ViewProjection, mul(Object.Model, float4(input.Position, 1.0)));
+    output.Color    = input.Color;
+    output.TexCoord = input.TexCoord;
     return output;
 }
 
-#pragma shader_stage(fragment)
-
-// In Vulkan-flavored HLSL, combined image samplers are split into 
-// a Texture2D object and a SamplerState companion object.
-// shaderc maps register(t1) to binding 1.
-Texture2D texSampler     : register(t1);
-SamplerState samState    : register(s1);
-
-struct FSInput {
-    float4 gl_Position : SV_Position;
-    float3 fragColor    : COLOR0;
-    float2 fragTexCoord : TEXCOORD0;
-};
-
-// Fragment shader output targets layout(location = 0) via SV_Target0
-float4 main(FSInput input) : SV_Target0 {
-    // texture() is replaced by Sample()
-    float3 sampledColor = texSampler.Sample(samState, input.fragTexCoord).rgb;
-    
-    return float4(input.fragColor * sampledColor, 1.0);
+float4 PSMain(VSOutput input) : SV_Target0
+{
+    float3 sampled = texSampler.Sample(LinearSampler, input.TexCoord).rgb;
+    return float4(input.Color * sampled, 1.0);
 }

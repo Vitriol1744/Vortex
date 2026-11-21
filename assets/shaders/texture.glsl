@@ -1,10 +1,15 @@
 #version 450
 #pragma shader_stage(vertex)
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
+// Set 0: per-view data, bound by the scene renderer.
+layout(set = 0, binding = 0) uniform Camera {
     mat4 viewproj;
-} ubo;
+} camera;
+
+// Per draw: the object's transform.
+layout(push_constant) uniform Object {
+    mat4 model;
+} object;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
@@ -14,7 +19,7 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
 void main() {
-    gl_Position = ubo.viewproj * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = camera.viewproj * object.model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
 }
@@ -22,7 +27,8 @@ void main() {
 #version 450
 #pragma shader_stage(fragment)
 
-layout(binding = 1) uniform sampler2D texSampler;
+// Set 1: the material.
+layout(set = 1, binding = 0) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
