@@ -4,11 +4,15 @@
 #
 # SPDX-License-Identifier: GPL-3
 #
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 project(Vortex-Engine VERSION 0.1)
 
 include(cmake/Dependencies.cmake)
 include(cmake/Module.cmake)
+
+# Vortex imports Prism's named modules. Set after the vendored dependencies
+# are added so only Vortex's own targets get dependency-scanned.
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 option(VORTEX_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 option(VT_BUILD_WAYLAND "Build vortex with wayland support" ON)
@@ -102,6 +106,7 @@ set(PUBLIC_LIBS
     Vortex-Core
     Vortex-EntryPoint
     Vortex-Filesystem
+    Vortex-Physics
     Vortex-Project
     Vortex-Renderer
     Vortex-Scene
@@ -112,18 +117,17 @@ set(PUBLIC_LIBS
     Vulkan::Headers
 )
 
+# Prism (a shared library on the host) comes through Vortex-Core.
 if(ANDROID)
   list(APPEND PUBLIC_LIBS vulkan Prism log)
   target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS} $<LINK_LIBRARY:WHOLE_ARCHIVE,Prism>)
 else()
   list(APPEND PUBLIC_LIBS GPUOpen::VulkanMemoryAllocator fmt)
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS} $<LINK_LIBRARY:WHOLE_ARCHIVE,prism>)
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_LIBS})
 endif()
 
-if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-  target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
-  message(STATUS "Profiler: Tracy profiling integration active")
-endif()
+target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
+message(STATUS "Profiler: Tracy ${VT_ENABLE_PROFILING}")
 
 # ------------------------------------------------------------------------------
 # Compiler Options & Precompiled Headers
@@ -159,11 +163,13 @@ if(NOT ANDROID AND (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_
   target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libstdc++>)
 endif()
 
-# Sanitizers
-if(NOT ANDROID AND (CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo))
-  target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
-  target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=address)
-  message(STATUS "Sanitizers: AddressSanitizer (ASan) enabled")
+# Sanitizers: Debug and RelWithDebInfo, unless VT_ENABLE_ASAN is off. A
+# generator expression, so multi-config generators get it per configuration.
+if(NOT ANDROID AND VT_ENABLE_ASAN)
+  set(VT_ASAN $<$<CONFIG:Debug,RelWithDebInfo>:-fsanitize=address>)
+  target_compile_options(${PROJECT_NAME} PUBLIC ${VT_ASAN})
+  target_link_options(${PROJECT_NAME} PUBLIC ${VT_ASAN})
+  message(STATUS "Sanitizers: AddressSanitizer for Debug and RelWithDebInfo")
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${PUBLIC_DEFINES})
