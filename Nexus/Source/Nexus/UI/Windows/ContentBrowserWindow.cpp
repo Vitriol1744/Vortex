@@ -6,18 +6,16 @@
  */
 #include <Nexus/EditorProject.hpp>
 #include <Nexus/EditorResources.hpp>
-#include <Nexus/UI/Panels/ContentBrowserPanel.hpp>
+#include <Nexus/UI/Windows/ContentBrowserWindow.hpp>
 
-#include <Prism/Utility/Delegate.hpp>
 #include <Vortex/Engine/Application.hpp>
 #include <Vortex/Filesystem/Filesystem.hpp>
 #include <Vortex/Renderer/ImGui/ImGui.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/imgui_impl_vulkan.h>
 
 namespace Vortex::Editor
 {
-    ContentBrowserPanel::ContentBrowserPanel()
-        : Panel("Project")
+    ContentBrowserWindow::ContentBrowserWindow()
+        : EditorWindow("Project")
         , m_CurrentDirectory("assets")
         , m_ActiveRootPath("assets")
     {
@@ -27,17 +25,10 @@ namespace Vortex::Editor
             "assets/icons/content-browser/file-icon.png");
         m_CsIcon = CreateRef<TextureAsset>(
             "assets/icons/content-browser/cs-file-icon.png");
-
-        auto&                                      app = *Application::Get();
-        Delegate<void(const ProjectChangedEvent&)> projectChanged;
-        projectChanged.Bind<&ContentBrowserPanel::OnProjectChanged>(this);
-        app.SubscribeEvent<ProjectChangedEvent>(projectChanged);
     }
 
-    void ContentBrowserPanel::OnImGuiRender(bool& isOpen)
+    void ContentBrowserWindow::OnDraw(EditorContext&)
     {
-        ImGui::Begin("Project");
-
         ImVec2     availableRegion = ImGui::GetContentRegionAvail();
         static f32 leftTreeWidth   = 220.0f; // Left panel size
 
@@ -81,7 +72,7 @@ namespace Vortex::Editor
                                  + (ImGui::GetTextLineHeight() - treeIconSize)
                                        * 0.5f);
             ImGui::Image(
-                (ImTextureID)UI::GetTexture(m_DirectoryIcon->Texture()),
+                UI::TextureID(m_DirectoryIcon->Texture()),
                 ImVec2(treeIconSize, treeIconSize), ImVec2(0, 1), ImVec2(1, 0));
 
             // Print text
@@ -168,14 +159,14 @@ namespace Vortex::Editor
             Path        filenameString = path.filename().c_str();
 
             ImGui::PushID(filenameString.Raw());
-            ::Ref<Texture2D> icon = directoryEntry.is_directory()
+            ::Ref<RHI::Texture> icon = directoryEntry.is_directory()
                                       ? m_DirectoryIcon->Texture()
                                       : m_FileIcon->Texture();
             if (filenameString.Extension() == "cs") icon = m_CsIcon->Texture();
 
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
             ImGui::ImageButton(filenameString.Raw(),
-                               (ImTextureID)UI::GetTexture(icon),
+                               UI::TextureID(icon),
                                {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
 
             if (ImGui::BeginDragDropSource())
@@ -204,17 +195,15 @@ namespace Vortex::Editor
 
         ImGui::Columns(1);
         ImGui::EndChild();
-
-        ImGui::End();
     }
-    void ContentBrowserPanel::RenderDirectoryTreeNode(
+    void ContentBrowserWindow::RenderDirectoryTreeNode(
         const std::filesystem::path& physicalPath,
         const std::filesystem::path& rootPath)
     {
         if (!std::filesystem::exists(physicalPath))
         {
             VtCoreWarn(
-                "ContentBrowserPanel: mountpoint's physical path does not "
+                "ContentBrowserWindow: mountpoint's physical path does not "
                 "exist: `{}`",
                 physicalPath.string().data());
             return;
@@ -281,7 +270,7 @@ namespace Vortex::Editor
                              + (ImGui::GetTextLineHeight() - treeIconSize)
                                    * 0.5f);
 
-        ImGui::Image((ImTextureID)UI::GetTexture(m_DirectoryIcon->Texture()),
+        ImGui::Image(UI::TextureID(m_DirectoryIcon->Texture()),
                      ImVec2(treeIconSize, treeIconSize), ImVec2(0, 1),
                      ImVec2(1, 0));
 
@@ -305,9 +294,10 @@ namespace Vortex::Editor
         }
     }
 
-    void ContentBrowserPanel::OnProjectChanged(const ProjectChangedEvent& e)
+    void ContentBrowserWindow::OnProjectChanged(EditorContext&,
+                                                EditorProject& project)
     {
-        m_CurrentDirectory = e.Project->Path().Raw();
-        m_ActiveRootPath   = e.Project->Path().Raw();
+        m_CurrentDirectory = project.Path().Raw();
+        m_ActiveRootPath   = project.Path().Raw();
     }
 }; // namespace Vortex::Editor

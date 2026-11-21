@@ -6,40 +6,29 @@
  */
 #pragma once
 
-#include <Vortex/Core/Log/Log.hpp>
-
-#include <Vortex/Scene/Actor.hpp>
-#include <Vortex/Scene/Scene.hpp>
-
-#include <Nexus/UI/Panel.hpp>
+#include <Nexus/EditorContext.hpp>
 
 namespace Vortex::Editor
 {
-    class SceneHierarchyPanel final : public Panel
+    /// The actors of the active scene; selects, adds and removes them.
+    class SceneHierarchyWindow final : public EditorWindow
     {
       public:
-        SceneHierarchyPanel(Scene& scene)
-            : Panel("Scene Hierarchy")
-            , m_Scene(&scene)
+        SceneHierarchyWindow()
+            : EditorWindow("Scene Hierarchy")
         {
         }
+        void OnDraw(EditorContext& context) override;
+    };
 
-        void SetScene(Scene& scene)
+    /// Components of the selected actor.
+    class InspectorWindow final : public EditorWindow
+    {
+      public:
+        InspectorWindow()
+            : EditorWindow("Inspector")
         {
-            m_Scene         = &scene;
-            m_SelectedActor = entt::null;
         }
-
-        inline void  SetSelectedActor(Actor actor) { m_SelectedActor = actor; }
-        inline Actor SelectedActor() const { return m_SelectedActor; }
-
-      protected:
-        virtual void OnImGuiRender(bool& isOpen) override;
-
-      private:
-        Scene* m_Scene;
-        Actor  m_SelectedActor;
-
-        void   DrawContextMenu();
+        void OnDraw(EditorContext& context) override;
     };
 }; // namespace Vortex::Editor

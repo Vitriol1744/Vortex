@@ -25,7 +25,7 @@ namespace Vortex
         SetPerspective(glm::radians(75.0f), aspectRatio, 0.1f, 100.0f);
     }
 
-    void EditorCamera::Update()
+    void EditorCamera::Update(const EditorCameraControls& controls)
     {
         Quat qPitch
             = glm::angleAxis(glm::radians(-m_Pitch), Math::Vec3(1, 0, 0));
@@ -35,48 +35,44 @@ namespace Vortex
         Quat inverseOrientation = glm::inverse(orientation);
         Math::Vec3 forward
             = glm::rotate(inverseOrientation, Math::Vec3(0.0f, 0.0f, -1.0f));
-        Math::Vec3 right = glm::rotate(glm::inverse(orientation),
-                                       Math::Vec3(1.0f, 0.0f, 0.0f));
-        Math::Vec3 up    = Math::Vec3(0.0, 1.0, 0.0);
+        Math::Vec3 right
+            = glm::rotate(inverseOrientation, Math::Vec3(1.0f, 0.0f, 0.0f));
+        Math::Vec3 up = Math::Vec3(0.0, 1.0, 0.0);
 
         SetRotation(qPitch * qYaw);
         Math::Vec2 currentMousePos = Mouse::Position();
-
-        auto       cameraPos       = Position();
         f32        deltaTime       = Application::Get()->DeltaTime();
+        auto down = [](i32 key) { return key && ImGui::IsKeyDown(static_cast<ImGuiKey>(key)); };
 
-        using Input::KeyCode;
         using Input::MouseCode;
+        f32 sensitivity = controls.LookSensitivity;
         if (Mouse::IsButtonPressed(MouseCode::eRight))
         {
-            f32 xOffset = currentMousePos.x - m_LastMousePos.x;
-            f32 yOffset = currentMousePos.y - m_LastMousePos.y;
-            xOffset *= m_MouseSensitivity;
-            yOffset *= m_MouseSensitivity;
+            f32 xOffset = (currentMousePos.x - m_LastMousePos.x) * sensitivity;
+            f32 yOffset = (currentMousePos.y - m_LastMousePos.y) * sensitivity;
+            if (controls.InvertY) yOffset = -yOffset;
 
             m_Yaw -= xOffset * deltaTime;
             m_Pitch += yOffset * deltaTime;
         }
-        if (Keyboard::IsKeyPressed(KeyCode::eLeft))
-            m_Yaw -= m_MouseSensitivity * deltaTime;
-        else if (Keyboard::IsKeyPressed(KeyCode::eRight))
-            m_Yaw += m_MouseSensitivity * deltaTime;
+        if (down(controls.TurnLeft)) m_Yaw -= sensitivity * deltaTime;
+        if (down(controls.TurnRight)) m_Yaw += sensitivity * deltaTime;
         m_LastMousePos = currentMousePos;
 
-        f32 velocity   = m_Velocity;
-        if (Keyboard::IsKeyPressed(KeyCode::eLShift)) velocity *= 10;
-        if (Keyboard::IsKeyPressed(KeyCode::eA))
-            SetPosition(cameraPos - right * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eD))
-            SetPosition(cameraPos + right * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eW))
-            SetPosition(cameraPos + forward * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eS))
-            SetPosition(cameraPos - forward * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eSpace))
-            SetPosition(cameraPos - up * deltaTime * velocity);
-        else if (Keyboard::IsKeyPressed(KeyCode::eLCtrl))
-            SetPosition(cameraPos + up * deltaTime * velocity);
+        // Each key adds its direction, so diagonals work.
+        Math::Vec3 move{0.0f};
+        if (down(controls.Forward)) move += forward;
+        if (down(controls.Backward)) move -= forward;
+        if (down(controls.Right)) move += right;
+        if (down(controls.Left)) move -= right;
+        // The engine's camera space has Y down: "up" moves along -Y.
+        if (down(controls.Up)) move -= up;
+        if (down(controls.Down)) move += up;
+
+        f32 velocity = controls.MoveSpeed;
+        if (down(controls.Fast)) velocity *= controls.FastMultiplier;
+        if (move != Math::Vec3(0.0f))
+            SetPosition(Position() + move * deltaTime * velocity);
 
         if (m_Pitch > 89.0f) m_Pitch = 89.0f;
         if (m_Pitch < -89.0f) m_Pitch = -89.0f;

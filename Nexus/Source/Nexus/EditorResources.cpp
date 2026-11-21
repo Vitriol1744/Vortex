@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: GPL-3
  */
 #include <Nexus/EditorResources.hpp>
-#include <Prism/Containers/UnorderedMap.hpp>
+import Prism.Containers.UnorderedMap;
 
 namespace Vortex::Editor::Resources
 {
@@ -21,4 +21,6 @@ namespace Vortex::Editor::Resources
 
         return texture;
     }
+
+    void Clear() { s_TextureCache.Clear(); }
 }; // namespace Vortex::Editor::Resources

@@ -1,5 +1,6 @@
 #include <Nexus/UI/Modals/NewProjectModal.hpp>
 #include <Vortex/Renderer/ImGui/ImGui.hpp>
+#include <Vortex/Filesystem/Filesystem.hpp>
 #include <Vortex/Window/Window.hpp>
 
 namespace Vortex::Editor
@@ -10,6 +11,15 @@ namespace Vortex::Editor
         // Provide sane defaults for template selection
         m_Config.Metadata.Name  = "New Project";
         m_Config.StartScenePath = "Assets/Scenes/Main.vscene";
+
+        m_Templates             = ListProjectTemplates();
+        for (usize i = 0; i < m_Templates.Size(); ++i)
+            if (m_Templates[i].Id == kDefaultTemplate) m_SelectedTemplateIndex = i;
+    }
+
+    Path NewProjectModal::TargetPath() const
+    {
+        return m_ProjectPath / Path(m_Config.Metadata.Name);
     }
 
     bool NewProjectModal::OnImGuiRender()
@@ -98,29 +108,47 @@ namespace Vortex::Editor
         }
 
         // Preview full creation path
-        String fullPath
-            = m_ProjectPath.Empty() ? "<Select Location>" : m_ProjectPath.Raw();
-        ImGui::TextDisabled("Full Target Path: %s/%s", fullPath.Raw(),
-                            m_Config.Metadata.Name.Raw());
+        if (m_ProjectPath.Empty()) ImGui::TextDisabled("Full Target Path: <Select Location>");
+        else ImGui::TextDisabled("Full Target Path: %s", TargetPath().Raw());
     }
 
     void NewProjectModal::DrawTemplateSelector()
     {
         ImGui::TextUnformatted("Project Template");
 
-        if (m_Templates.Empty()) return;
-
-        if (ImGui::BeginCombo("##template_combo",
-                              m_Templates[m_SelectedTemplateIndex].Raw()))
+        if (m_Templates.Empty())
         {
-            for (usize i = 0; i < m_Templates.Size(); ++i)
+            ImGui::TextDisabled("No templates in %s; the project starts with the default scene.",
+                                kTemplateDirectory);
+            return;
+        }
+
+        // One selectable card per template: name and category, then the
+        // description underneath.
+        const f32 cardHeight = ImGui::GetTextLineHeightWithSpacing() * 2.0f + 12.0f;
+        for (usize i = 0; i < m_Templates.Size(); ++i)
+        {
+            const auto& entry    = m_Templates[i];
+            const bool  selected = m_SelectedTemplateIndex == i;
+            ImGui::PushID(static_cast<int>(i));
+            ImVec2 start = ImGui::GetCursorScreenPos();
+            if (ImGui::Selectable("##template", selected, ImGuiSelectableFlags_AllowOverlap,
+                                  {0.0f, cardHeight}))
+                m_SelectedTemplateIndex = i;
+            ImVec2 end = ImGui::GetCursorScreenPos();
+
+            ImGui::SetCursorScreenPos({start.x + 10.0f, start.y + 6.0f});
+            ImGui::TextUnformatted(entry.Name.Raw());
+            if (!entry.Category.Empty())
             {
-                const bool isSelected = (m_SelectedTemplateIndex == i);
-                if (ImGui::Selectable(m_Templates[i].Raw(), isSelected))
-                    m_SelectedTemplateIndex = i;
-                if (isSelected) ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", entry.Category.Raw());
             }
-            ImGui::EndCombo();
+            ImGui::SetCursorScreenPos(
+                {start.x + 10.0f, start.y + 6.0f + ImGui::GetTextLineHeightWithSpacing()});
+            ImGui::TextDisabled("%s", entry.Description.Raw());
+            ImGui::SetCursorScreenPos(end);
+            ImGui::PopID();
         }
     }
 
@@ -134,6 +162,9 @@ namespace Vortex::Editor
             m_ValidationError = "Project name cannot be empty.";
         else if (m_ProjectPath.Empty())
             m_ValidationError = "Project location path cannot be empty.";
+        else if (Path target = TargetPath();
+                 Filesystem::Exists(target) && !Filesystem::IsEmpty(target))
+            m_ValidationError = "That folder already exists and isn't empty.";
 
         if (!m_ValidationError.Empty())
         {
@@ -163,9 +194,13 @@ namespace Vortex::Editor
         if (ImGui::Button("Create Project", ImVec2(buttonWidth, 0.0f)))
         {
             if (m_OnCreateCallback)
-                // Pass both config and target path back to listener!
-                m_OnCreateCallback(m_Config, m_ProjectPath,
+            {
+                StringView templateId = m_Templates.Empty()
+                                          ? StringView()
+                                          : m_Templates[m_SelectedTemplateIndex].Id.View();
+                m_OnCreateCallback(m_Config, TargetPath(), templateId,
                                    m_GenerateGitIgnore);
+            }
             closeRequested = true;
         }
 

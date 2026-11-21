@@ -4,11 +4,14 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Nexus/UI/Panels/SceneHierarchyPanel.hpp>
+#include <Nexus/UI/Windows/SceneHierarchyWindow.hpp>
 #include <Vortex/Scene/Components.hpp>
 #include <Vortex/Window/Window.hpp>
+#include <Nexus/EditorContext.hpp>
 
 #include <imgui_internal.h>
+
+import Nexus.Inspector;
 
 namespace Vortex::Editor
 {
@@ -81,13 +84,13 @@ namespace Vortex::Editor
         }
 
         template <typename T>
-        void DrawComponent(Actor& entity)
+        void DrawComponent(Actor& entity, EditorContext& context)
         {
             static_assert(false);
         }
 
         template <>
-        void DrawComponent<TagComponent>(Actor& entity)
+        void DrawComponent<TagComponent>(Actor& entity, EditorContext& context)
         {
             auto& tagComponent = entity.GetComponent<TagComponent>();
 
@@ -100,7 +103,7 @@ namespace Vortex::Editor
         }
 
         template <>
-        void DrawComponent<TransformComponent>(Actor& entity)
+        void DrawComponent<TransformComponent>(Actor& entity, EditorContext& context)
         {
             auto& transformComponent
                 = entity.GetComponent<TransformComponent>();
@@ -114,7 +117,7 @@ namespace Vortex::Editor
         }
 
         template <>
-        void DrawComponent<CameraComponent>(Actor& entity)
+        void DrawComponent<CameraComponent>(Actor& entity, EditorContext& context)
         {
             auto&       cc = entity.GetComponent<CameraComponent>();
 
@@ -145,79 +148,113 @@ namespace Vortex::Editor
         }
 
         template <>
-        void DrawComponent<SpriteComponent>(Actor& entity)
+        void DrawComponent<SpriteComponent>(Actor& entity, EditorContext& context)
         {
             auto& spriteComponent = entity.GetComponent<SpriteComponent>();
             ImGui::ColorEdit4("Color", glm::value_ptr(spriteComponent.Color));
         }
         template <>
-        void DrawComponent<MeshComponent>(Actor& entity)
+        void DrawComponent<MeshComponent>(Actor& entity, EditorContext& context)
         {
-            auto& mc = entity.GetComponent<MeshComponent>();
+            Inspector::MeshComponentPanel(entity, entity.GetComponent<MeshComponent>(),
+                                          context);
+        }
 
-            if (ImGui::BeginTable("MeshComponentProperties", 3,
-                                  ImGuiTableFlags_SizingFixedFit))
+        template <>
+        void DrawComponent<AnimationComponent>(Actor& entity, EditorContext& context)
+        {
+            auto& animation = entity.GetComponent<AnimationComponent>();
+            const Vector<AnimationClip>* clips = nullptr;
+            if (entity.HasComponent<MeshComponent>()
+                && entity.GetComponent<MeshComponent>().Mesh)
+                clips = &entity.GetComponent<MeshComponent>().Mesh->Animations();
+
+            if (!clips || clips->Empty())
             {
-                ImGui::TableSetupColumn(
-                    "Label", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-                ImGui::TableSetupColumn("Value",
-                                        ImGuiTableColumnFlags_WidthStretch);
-
-                ImGui::TableSetupColumn(
-                    "Button", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-
-                ImGui::TableNextRow();
-                ImGui::TableNextColumn();
-                ImGui::TextUnformatted("Mesh Source");
-
-                ImGui::TableNextColumn();
-                ImGui::PushItemWidth(-1);
-                std::string meshPath = mc.Mesh ? mc.Mesh->FilePath().Raw()
-                                               : "Null (No Mesh Loaded)";
-                // FIX: Stop using InputText with const_cast for read-only
-                // visualization. Use TextProtected/ReadOnly styling.
-                ImGui::InputText("##meshpath", meshPath.data(), meshPath.size(),
-                                 ImGuiInputTextFlags_ReadOnly);
-                ImGui::PopItemWidth();
-
-                ImGui::TableNextColumn();
-                if (ImGui::Button("...##openmesh", ImVec2(40, 0)))
-                {
-                    auto result = Window::OpenFile();
-                    Path path   = result ? *result : ""_p;
-
-                    if (!path.Empty()) mc.Mesh = CreateRef<Mesh>(path);
-                }
-
-                ImGui::TableNextRow();
-                ImGui::TableNextColumn();
-                ImGui::TextUnformatted("Texture");
-
-                ImGui::TableNextColumn();
-                ImGui::PushItemWidth(-1);
-                String texPath = mc.Texture ? mc.Texture->FilePath().Raw()
-                                            : "Default White Texture";
-                ImGui::InputText("##texpath", texPath.Raw(), texPath.Size(),
-                                 ImGuiInputTextFlags_ReadOnly);
-                ImGui::PopItemWidth();
-
-                ImGui::TableNextColumn();
-                if (ImGui::Button("...##opentex", ImVec2(40, 0)))
-                {
-                    auto result = Window::OpenFile();
-                    Path path   = result ? *result : ""_p;
-
-                    if (!path.Empty())
-                        mc.Texture = CreateRef<TextureAsset>(path);
-                    mc.Material->Set("texSampler", mc.Texture->Texture());
-                }
-
-                ImGui::EndTable();
+                ImGui::TextDisabled("The mesh has no animations");
+                return;
             }
+            if (animation.Clip >= clips->Size()) animation.Clip = 0;
+
+            auto clipName = [&](u32 index)
+            {
+                const auto& name = (*clips)[index].Name;
+                return name.Empty() ? String("Unnamed clip") : name;
+            };
+            if (ImGui::BeginCombo("Clip", clipName(animation.Clip).Raw()))
+            {
+                for (u32 index = 0; index < clips->Size(); ++index)
+                {
+                    bool selected = index == animation.Clip;
+                    ImGui::PushID(static_cast<int>(index));
+                    if (ImGui::Selectable(clipName(index).Raw(), selected))
+                    {
+                        animation.Clip = index;
+                        animation.Time = 0.0f;
+                    }
+                    if (selected) ImGui::SetItemDefaultFocus();
+                    ImGui::PopID();
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::Checkbox("Playing", &animation.Playing);
+            ImGui::DragFloat("Speed", &animation.Speed, 0.01f, -4.0f, 4.0f);
+            f32 duration = (*clips)[animation.Clip].DurationSeconds();
+            ImGui::SliderFloat("Time", &animation.Time, 0.0f,
+                               duration > 0.0f ? duration : 1.0f, "%.2f s");
+        }
+
+        void DrawColliderMaterial(ColliderMaterial& material)
+        {
+            ImGui::DragFloat("Friction", &material.Friction, 0.01f, 0.0f, 2.0f);
+            ImGui::DragFloat("Restitution", &material.Restitution, 0.01f, 0.0f, 1.0f);
+        }
+
+        template <>
+        void DrawComponent<RigidBodyComponent>(Actor& entity, EditorContext& context)
+        {
+            using BodyType = RigidBodyComponent::BodyType;
+            auto&                 rb      = entity.GetComponent<RigidBodyComponent>();
+            constexpr const char* kTypes[] = {"Static", "Dynamic", "Kinematic"};
+            int                   type    = static_cast<int>(rb.Type);
+            if (ImGui::Combo("Type", &type, kTypes, IM_ARRAYSIZE(kTypes)))
+                rb.Type = static_cast<BodyType>(type);
+
+            if (rb.Type != BodyType::eDynamic) return;
+            ImGui::DragFloat("Mass", &rb.Mass, 0.05f, 0.001f, 10000.0f);
+            ImGui::DragFloat("Linear Damping", &rb.LinearDamping, 0.01f, 0.0f, 100.0f);
+            ImGui::DragFloat("Angular Damping", &rb.AngularDamping, 0.01f, 0.0f, 100.0f);
+            ImGui::Checkbox("Disable Gravity", &rb.DisableGravity);
+            ImGui::Checkbox("Lock Rotation", &rb.LockRotation);
+        }
+
+        template <>
+        void DrawComponent<BoxColliderComponent>(Actor& entity, EditorContext& context)
+        {
+            auto& box = entity.GetComponent<BoxColliderComponent>();
+            DrawVec3Control("Half Extents", box.HalfExtents, 0.5f);
+            DrawVec3Control("Offset", box.Offset);
+            DrawColliderMaterial(box.Material);
+        }
+
+        template <>
+        void DrawComponent<SphereColliderComponent>(Actor& entity, EditorContext& context)
+        {
+            auto& sphere = entity.GetComponent<SphereColliderComponent>();
+            ImGui::DragFloat("Radius", &sphere.Radius, 0.01f, 0.001f, 1000.0f);
+            DrawVec3Control("Offset", sphere.Offset);
+            DrawColliderMaterial(sphere.Material);
+        }
+
+        template <>
+        void DrawComponent<ScriptComponent>(Actor& entity, EditorContext& context)
+        {
+            Inspector::ScriptComponentPanel(entity, entity.GetComponent<ScriptComponent>(),
+                                            context);
         }
 
         template <typename T>
-        void DrawComponentNode(Actor& entity, StringView name)
+        void DrawComponentNode(Actor& entity, StringView name, EditorContext& context)
         {
             if (!entity.HasComponent<T>()) return;
 
@@ -235,8 +272,7 @@ namespace Vortex::Editor
 
             if (opened)
             {
-                auto& component = entity.GetComponent<T>();
-                DrawComponent<T>(entity);
+                DrawComponent<T>(entity, context);
                 ImGui::TreePop();
             }
 
@@ -244,101 +280,117 @@ namespace Vortex::Editor
         }
     }; // namespace
 
-    void SceneHierarchyPanel::OnImGuiRender(bool& isOpen)
+    void SceneHierarchyWindow::OnDraw(EditorContext& context)
     {
-        Vector<entt::entity> entitiesToRemove;
+        Scene&               scene    = context.ActiveScene();
+        entt::entity         selected = context.Selection();
+        Vector<entt::entity> removed;
 
-        auto                 view = m_Scene->Registry().view<entt::entity>();
-        for (const auto entityID : view)
+        // Only the visible rows are drawn: a played scene can have hundreds
+        // of actors (bullet holes, debris).
+        Vector<entt::entity> entities;
+        for (const auto entityID : scene.Registry().view<entt::entity>())
+            entities.PushBack(entityID);
+
+        ImGuiListClipper clipper;
+        clipper.Begin(static_cast<int>(entities.Size()));
+        while (clipper.Step())
         {
-            Actor entity(entityID, *m_Scene);
-
-            ImGui::PushID(reinterpret_cast<void*>(entityID));
-            const char* entityTag = "Untagged";
-            if (entity.HasComponent<TagComponent>())
-                entityTag = entity.GetComponent<TagComponent>();
-
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
-                                     | ImGuiTreeNodeFlags_SpanAvailWidth
-                                     | ImGuiTreeNodeFlags_AllowOverlap;
-            if (m_SelectedActor == entityID)
-                flags |= ImGuiTreeNodeFlags_Selected;
-
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
-            bool opened
-                = ImGui::TreeNodeEx((void*)entityID, flags, "%s", entityTag);
-
-            if (ImGui::IsItemClicked() && m_SelectedActor != entityID)
-                m_SelectedActor = Actor(entityID, *m_Scene);
-
-            ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
-            bool removeActor = ImGui::Button("-", ImVec2(20, 20));
-            ImGui::PopStyleVar();
-
-            if (opened) ImGui::TreePop();
-            if (removeActor)
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row)
             {
-                if (entityID == m_SelectedActor) m_SelectedActor = entt::null;
-                entitiesToRemove.PushBack(entityID);
-            }
-            ImGui::PopID();
-        }
-        for (const auto entityID : entitiesToRemove)
-            m_Scene->RemoveActor(Actor(entityID, *m_Scene));
+                const auto  entityID = entities[static_cast<usize>(row)];
+                Actor       entity(entityID, scene);
+                const char* tag = "Untagged";
+                if (entity.HasComponent<TagComponent>())
+                    tag = entity.GetComponent<TagComponent>();
 
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)
-            && ImGui::IsWindowHovered())
-            m_SelectedActor = entt::null;
+                ImGui::PushID(static_cast<int>(entt::to_integral(entityID)));
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+                                         | ImGuiTreeNodeFlags_SpanAvailWidth
+                                         | ImGuiTreeNodeFlags_AllowOverlap
+                                         | ImGuiTreeNodeFlags_Leaf;
+                if (selected == entityID) flags |= ImGuiTreeNodeFlags_Selected;
+
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+                bool opened = ImGui::TreeNodeEx("##actor", flags, "%s", tag);
+                if (ImGui::IsItemClicked()) context.Select(entityID);
+
+                ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+                bool remove = ImGui::Button("-", ImVec2(20, 20));
+                ImGui::PopStyleVar();
+
+                if (opened) ImGui::TreePop();
+                if (remove) removed.PushBack(entityID);
+                ImGui::PopID();
+            }
+        }
+        for (const auto entityID : removed)
+        {
+            if (entityID == context.Selection()) context.ClearSelection();
+            scene.RemoveActor(Actor(entityID, scene));
+        }
+
+        // Clicking empty space deselects.
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+            && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered())
+            context.ClearSelection();
 
         if (ImGui::BeginPopupContextWindow(nullptr,
-                                           ImGuiPopupFlags_MouseButtonRight))
+                                           ImGuiPopupFlags_MouseButtonRight
+                                               | ImGuiPopupFlags_NoOpenOverItems))
         {
-            if (ImGui::MenuItem("Add entity")) m_Scene->AddActor();
+            if (ImGui::MenuItem("Add Actor"))
+            {
+                Actor actor = scene.AddActor();
+                actor.AddComponent<TagComponent>("Actor");
+                actor.AddComponent<TransformComponent>();
+                context.Select(actor);
+            }
             ImGui::EndPopup();
         }
-
-        ImGui::Begin("Inspector");
-        Actor entity(m_SelectedActor, *m_Scene);
-
-        if (entity)
-        {
-            DrawContextMenu();
-            DrawComponentNode<TagComponent>(entity, "Tag");
-            DrawComponentNode<CameraComponent>(entity, "Camera");
-            DrawComponentNode<TransformComponent>(entity, "Transform");
-            DrawComponentNode<SpriteComponent>(entity, "Sprite");
-            DrawComponentNode<MeshComponent>(entity, "Mesh");
-        }
-        ImGui::End();
     }
 
-    void SceneHierarchyPanel::DrawContextMenu()
+    void InspectorWindow::OnDraw(EditorContext& context)
     {
-        const char* tag = "Untagged";
-        if (m_SelectedActor.HasComponent<TagComponent>())
-            tag = m_SelectedActor.GetComponent<TagComponent>();
-
-        if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
+        Actor entity = context.Selection();
+        if (!entity)
         {
-            if (ImGui::BeginMenu("Add Component"))
+            ImGui::TextDisabled("Select an actor to inspect it");
+            return;
+        }
+
+        DrawComponentNode<TagComponent>(entity, "Tag", context);
+        DrawComponentNode<TransformComponent>(entity, "Transform", context);
+        DrawComponentNode<CameraComponent>(entity, "Camera", context);
+        DrawComponentNode<SpriteComponent>(entity, "Sprite", context);
+        DrawComponentNode<MeshComponent>(entity, "Mesh", context);
+        DrawComponentNode<AnimationComponent>(entity, "Animation", context);
+        DrawComponentNode<ScriptComponent>(entity, "Script", context);
+        DrawComponentNode<RigidBodyComponent>(entity, "Rigid Body", context);
+        DrawComponentNode<BoxColliderComponent>(entity, "Box Collider", context);
+        DrawComponentNode<SphereColliderComponent>(entity, "Sphere Collider", context);
+
+        ImGui::Separator();
+        if (ImGui::Button("Add Component", ImVec2(-1.0f, 0.0f)))
+            ImGui::OpenPopup("AddComponent");
+        if (ImGui::BeginPopup("AddComponent"))
+        {
+            auto item = [&]<typename T>(const char* name)
             {
-                auto menuItem = [this]<typename T>(const char* name)
-                {
-                    if (m_SelectedActor.HasComponent<T>()
-                        || !ImGui::MenuItem(name))
-                        return;
-
-                    m_SelectedActor.AddComponent<T>();
-                    ImGui::CloseCurrentPopup();
-                };
-
-                menuItem.operator()<TagComponent>("Tag Component");
-                menuItem.operator()<TransformComponent>("Transform Component");
-                menuItem.operator()<SpriteComponent>("Sprite Component");
-                menuItem.operator()<MeshComponent>("Mesh Component");
-                menuItem.operator()<CameraComponent>("Camera Component");
-                ImGui::EndMenu();
-            }
+                if (entity.HasComponent<T>() || !ImGui::MenuItem(name)) return;
+                entity.AddComponent<T>();
+                ImGui::CloseCurrentPopup();
+            };
+            item.operator()<TagComponent>("Tag");
+            item.operator()<TransformComponent>("Transform");
+            item.operator()<SpriteComponent>("Sprite");
+            item.operator()<MeshComponent>("Mesh");
+            item.operator()<CameraComponent>("Camera");
+            item.operator()<AnimationComponent>("Animation");
+            item.operator()<ScriptComponent>("Script");
+            item.operator()<RigidBodyComponent>("Rigid Body");
+            item.operator()<BoxColliderComponent>("Box Collider");
+            item.operator()<SphereColliderComponent>("Sphere Collider");
             ImGui::EndPopup();
         }
     }

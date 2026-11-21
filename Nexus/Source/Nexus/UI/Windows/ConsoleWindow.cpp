@@ -4,25 +4,34 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Nexus/UI/Panels/ConsolePanel.hpp>
-#include <Prism/String/StringUtils.hpp>
+#include <Nexus/UI/Windows/ConsoleWindow.hpp>
+import Prism.String.StringUtils;
+
+#include <imgui.h>
 
 #include <fstream>
 #include <sstream>
 
 namespace Vortex::Editor
 {
-    extern Scope<ConsoleSink> g_ConsoleSink;
-
     using Prism::LogLevel;
-    ConsolePanel::ConsolePanel()
-        : Panel("Console")
+
+    ::Ref<ConsoleSink>& ConsoleSink::Instance()
     {
-        g_ConsoleSink->SetTargetPanel(RefFromThis().As<ConsolePanel>());
+        // RefCounted, so a Ref (a Scope would destroy it with a live count).
+        static ::Ref<ConsoleSink> s_Sink = nullptr;
+        return s_Sink;
+    }
+
+    void ConsoleWindow::OnAttach(EditorContext&)
+    {
+        // The manager holds a Ref to this window by now.
+        if (auto& sink = ConsoleSink::Instance())
+            sink->SetTarget(::Ref<ConsoleWindow>(this));
         PopulateSampleLogs();
     }
 
-    void ConsolePanel::AddLog(LogEntry entry)
+    void ConsoleWindow::AddLog(LogEntry entry)
     {
         if (m_CollapseLogs && !m_Logs.Empty())
         {
@@ -40,7 +49,7 @@ namespace Vortex::Editor
         m_Logs.PushBack(entry);
     }
 
-    void ConsolePanel::PopulateSampleLogs()
+    void ConsoleWindow::PopulateSampleLogs()
     {
         m_Logs.Clear();
         AddLog({"12:04:00", LogLevel::eDebug, "Core",
@@ -94,9 +103,9 @@ namespace Vortex::Editor
                 "VulkanMemory.cpp", 310, 1, LogSource::eEngine});
     }
 
-    void ConsolePanel::OnImGuiRender(bool& isOpen)
+    void ConsoleWindow::OnDraw(EditorContext&)
     {
-        if (g_ConsoleSink) g_ConsoleSink->Flush();
+        if (auto& sink = ConsoleSink::Instance()) sink->Flush();
 
         RenderToolbar();
         ImGui::Separator();
@@ -119,18 +128,22 @@ namespace Vortex::Editor
         RenderDetailInspector();
     }
 
-    void ConsolePanel::UpdateAvailableTags()
+    void ConsoleWindow::UpdateAvailableTags()
     {
-        for (usize i = 0; i < m_Logs.Size(); ++i)
+        // Only entries added since the last scan; tags are never forgotten
+        // until the log is cleared.
+        if (m_TagsScanned > m_Logs.Size()) m_TagsScanned = 0;
+        for (usize i = m_TagsScanned; i < m_Logs.Size(); ++i)
         {
             const auto& log    = m_Logs[i];
             String      tagKey = log.Tag.Empty() ? "Untagged" : log.Tag;
             if (m_TagFilters.Find(tagKey) == m_TagFilters.end())
                 m_TagFilters[tagKey] = true;
         }
+        m_TagsScanned = m_Logs.Size();
     }
 
-    void ConsolePanel::RenderCategoryFilter()
+    void ConsoleWindow::RenderCategoryFilter()
     {
         UpdateAvailableTags();
 
@@ -175,7 +188,7 @@ namespace Vortex::Editor
         }
     }
 
-    void ConsolePanel::RenderSourceFilter()
+    void ConsoleWindow::RenderSourceFilter()
     {
         usize activeCount = 0;
         if (m_ShowEngine) ++activeCount;
@@ -205,7 +218,7 @@ namespace Vortex::Editor
         }
     }
 
-    void ConsolePanel::RenderLogLevelFilter()
+    void ConsoleWindow::RenderLogLevelFilter()
     {
         usize activeCount = 0;
         if (m_ShowDebug) ++activeCount;
@@ -244,7 +257,7 @@ namespace Vortex::Editor
         }
     }
 
-    void ConsolePanel::RenderToolbar()
+    void ConsoleWindow::RenderToolbar()
     {
         if (ImGui::Button("Clear"))
         {
@@ -279,13 +292,16 @@ namespace Vortex::Editor
         ImGui::Checkbox("Auto-Scroll", &m_AutoScroll);
     }
 
-    void ConsolePanel::RenderLogList(float height)
+    void ConsoleWindow::RenderLogList(float height)
     {
         ImGui::BeginChild("LogListRegion", ImVec2(0, height), true,
                           ImGuiWindowFlags_HorizontalScrollbar);
 
         String filterStr = m_FilterBuffer;
 
+        // Filter first, then lay out only the rows in view: the log grows
+        // by thousands of lines in a long session.
+        m_Visible.Clear();
         for (usize i = 0; i < m_Logs.Size(); ++i)
         {
             const auto& entry = m_Logs[i];
@@ -311,70 +327,82 @@ namespace Vortex::Editor
                     && entry.Tag.Find(filterStr) == String::NPos)
                     continue;
             }
+            m_Visible.PushBack(static_cast<u32>(i));
+        }
 
-            ImGui::PushID(static_cast<int>(i));
-
-            // Color coding based on LogLevel
-            ImVec4 textColor = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-            if (entry.Level == LogLevel::eDebug)
-                textColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
-            else if (entry.Level == LogLevel::eWarn)
-                textColor = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
-            else if (entry.Level == LogLevel::eError)
-                textColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
-            else if (entry.Level == LogLevel::eFatal)
-                textColor = ImVec4(1.0f, 0.1f, 0.4f, 1.0f);
-
-            String sourceStr
-                = (entry.Source == LogSource::eEngine) ? "Engine" : "Client";
-            String label = "[" + entry.Timestamp + "] [" + sourceStr + "] ["
-                         + entry.Tag + "] " + entry.Payload;
-
-            ImGui::PushStyleColor(ImGuiCol_Text, textColor);
-
-            // If the item has multiple occurrences, render badge inline
-            if (m_CollapseLogs && entry.Count > 1)
+        ImGuiListClipper clipper;
+        clipper.Begin(static_cast<int>(m_Visible.Size()));
+        while (clipper.Step())
+        {
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row)
             {
-                String badgeStr = "x" + StringUtils::ToString(entry.Count);
+                const usize i     = m_Visible[static_cast<usize>(row)];
+                const auto& entry = m_Logs[i];
 
-                // Draw selectable item
-                if (ImGui::Selectable(label.Raw(),
-                                      m_SelectedIndex == static_cast<i32>(i)))
-                    m_SelectedIndex = static_cast<i32>(i);
+                ImGui::PushID(static_cast<int>(i));
 
-                // Right-align/append badge pill on same line
-                ImGui::SameLine();
-                ImGui::PushStyleColor(ImGuiCol_Button,
-                                      ImVec4(0.25f, 0.25f, 0.28f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_Text,
-                                      ImVec4(0.85f, 0.85f, 0.85f, 1.0f));
-                ImGui::SmallButton(badgeStr.Raw());
-                ImGui::PopStyleColor(2);
-            }
-            else {
-                if (ImGui::Selectable(label.Raw(),
-                                      m_SelectedIndex == static_cast<i32>(i)))
-                    m_SelectedIndex = static_cast<i32>(i);
-            }
+                // Color coding based on LogLevel
+                ImVec4 textColor = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
+                if (entry.Level == LogLevel::eDebug)
+                    textColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+                else if (entry.Level == LogLevel::eWarn)
+                    textColor = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
+                else if (entry.Level == LogLevel::eError)
+                    textColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+                else if (entry.Level == LogLevel::eFatal)
+                    textColor = ImVec4(1.0f, 0.1f, 0.4f, 1.0f);
 
-            ImGui::PopStyleColor();
+                String sourceStr
+                    = (entry.Source == LogSource::eEngine) ? "Engine" : "Client";
+                String label = "[" + entry.Timestamp + "] [" + sourceStr + "] ["
+                             + entry.Tag + "] " + entry.Payload;
 
-            if (ImGui::BeginPopupContextItem())
-            {
-                if (ImGui::MenuItem("Copy Log Line"))
+                ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+
+                // If the item has multiple occurrences, render badge inline
+                if (m_CollapseLogs && entry.Count > 1)
                 {
-                    String fullLine = label;
-                    if (entry.Count > 1)
-                        fullLine
-                            += " (x" + StringUtils::ToString(entry.Count) + ")";
-                    ImGui::SetClipboardText(fullLine.Raw());
-                }
-                if (ImGui::MenuItem("Copy Payload"))
-                    ImGui::SetClipboardText(entry.Payload.Raw());
-                ImGui::EndPopup();
-            }
+                    String badgeStr = "x" + StringUtils::ToString(entry.Count);
 
-            ImGui::PopID();
+                    // Draw selectable item
+                    if (ImGui::Selectable(label.Raw(),
+                                          m_SelectedIndex == static_cast<i32>(i)))
+                        m_SelectedIndex = static_cast<i32>(i);
+
+                    // Right-align/append badge pill on same line
+                    ImGui::SameLine();
+                    ImGui::PushStyleColor(ImGuiCol_Button,
+                                          ImVec4(0.25f, 0.25f, 0.28f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Text,
+                                          ImVec4(0.85f, 0.85f, 0.85f, 1.0f));
+                    ImGui::SmallButton(badgeStr.Raw());
+                    ImGui::PopStyleColor(2);
+                }
+                else {
+                    if (ImGui::Selectable(label.Raw(),
+                                          m_SelectedIndex == static_cast<i32>(i)))
+                        m_SelectedIndex = static_cast<i32>(i);
+                }
+
+                ImGui::PopStyleColor();
+
+                if (ImGui::BeginPopupContextItem())
+                {
+                    if (ImGui::MenuItem("Copy Log Line"))
+                    {
+                        String fullLine = label;
+                        if (entry.Count > 1)
+                            fullLine
+                                += " (x" + StringUtils::ToString(entry.Count) + ")";
+                        ImGui::SetClipboardText(fullLine.Raw());
+                    }
+                    if (ImGui::MenuItem("Copy Payload"))
+                        ImGui::SetClipboardText(entry.Payload.Raw());
+                    ImGui::EndPopup();
+                }
+
+                ImGui::PopID();
+            }
         }
 
         if (m_AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -383,7 +411,7 @@ namespace Vortex::Editor
         ImGui::EndChild();
     }
 
-    void ConsolePanel::RenderDetailInspector()
+    void ConsoleWindow::RenderDetailInspector()
     {
         ImGui::BeginChild("LogDetailRegion", ImVec2(0, 0), true);
 
@@ -431,7 +459,7 @@ namespace Vortex::Editor
         ImGui::EndChild();
     }
 
-    void ConsolePanel::CopyToClipboard()
+    void ConsoleWindow::CopyToClipboard()
     {
         std::ostringstream ss;
         String             filterStr = m_FilterBuffer;
@@ -488,7 +516,7 @@ namespace Vortex::Editor
         ImGui::SetClipboardText(ss.str().c_str());
     }
 
-    void ConsolePanel::ExportLogFile(const String& filePath)
+    void ConsoleWindow::ExportLogFile(const String& filePath)
     {
         std::ofstream outFile(filePath.Raw());
         if (!outFile.is_open()) return;
@@ -535,7 +563,7 @@ namespace Vortex::Editor
         }
     }
 
-    void ConsolePanel::OpenFileInIDE(IDEType ide, const String& filePath,
+    void ConsoleWindow::OpenFileInIDE(IDEType ide, const String& filePath,
                                      u32 line)
     {
         if (filePath.Empty()) return;

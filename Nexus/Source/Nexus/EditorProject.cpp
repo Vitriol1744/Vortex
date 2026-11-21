@@ -6,12 +6,16 @@
  */
 #include <Nexus/EditorProject.hpp>
 
-#include <Prism/Containers/Array.hpp>
-#include <Prism/String/StringBuilder.hpp>
+#include <ctime>
+#include <fstream>
+
+import Prism.Containers.Array;
+import Prism.String.StringBuilder;
+import Nexus.ProjectTemplates;
+import Nexus.TestScenes;
 
 #include <Vortex/Engine/Application.hpp>
 #include <Vortex/Filesystem/Filesystem.hpp>
-#include <Vortex/Renderer/RHI/Shader.hpp>
 #include <Vortex/Scene/Scene.hpp>
 #include <Vortex/Serialization/JsonArchive.hpp>
 
@@ -122,6 +126,20 @@ namespace Vortex::Editor
     {
     }
 
+    bool EditorProject::Flush()
+    {
+        if (!m_RuntimeProject || m_ProjectConfigPath.Empty()) return false;
+        if (!SerializeJsonToFile(m_ProjectConfigPath, m_RuntimeProject->Config()))
+        {
+            VtCoreErrorTag("Project", "Can't save the project to '{}'",
+                           m_ProjectConfigPath);
+            return false;
+        }
+        m_IsDirty = false;
+        VtCoreInfoTag("Project", "Saved the project to '{}'", m_ProjectConfigPath);
+        return true;
+    }
+
     void EditorProject::SwitchTo(::Ref<EditorProject> project)
     {
         VtCoreAssert(project);
@@ -129,15 +147,9 @@ namespace Vortex::Editor
 
         StringView  name   = config.Metadata.Name;
         ::Path      path   = project->Path();
-        VtCoreTraceTag("Project", "Switching current scene to '{}'", name);
+        VtCoreTraceTag("Project", "Switching to the project '{}'", name);
 
-        auto  scenePath = path / config.StartScenePath;
-
-        auto& scene     = *Scene::Active();
-        if (!DeserializeJsonFromFile(scenePath, scene))
-            VtCoreErrorTag("Project", "Failed to deserialize scene at {}",
-                           scenePath);
-
+        // Listeners (the editor) load the project's start scene.
         s_Active = project;
         Filesystem::UnmountAll();
 
@@ -157,7 +169,7 @@ namespace Vortex::Editor
         }
 
         auto& app = *Application::Get();
-        app.PublishEvent<ProjectChangedEvent>(project, 0);
+        app.PublishEvent<ProjectChangedEvent>(project, std::time(nullptr));
     }
     ::Ref<EditorProject> EditorProject::New(const ProjectConfig& config,
                                             PathView             projectPath,
@@ -217,7 +229,10 @@ namespace Vortex::Editor
         ::Path defaultSceneSource = "assets/scenes/cube.vscene";
         ::Path targetScenePath    = projectPath / config.StartScenePath;
 
-        if (Filesystem::Exists(defaultSceneSource))
+        // A template that brought its own start scene keeps it.
+        if (Filesystem::Exists(targetScenePath))
+            VtCoreTraceTag("Project", "The template provides '{}'", targetScenePath);
+        else if (Filesystem::Exists(defaultSceneSource))
         {
             if (auto parentPath = targetScenePath.ParentPath();
                 !parentPath.Empty())
@@ -261,6 +276,64 @@ namespace Vortex::Editor
 
         return CreateRef<EditorProject>(runtimeProject, configFilePath);
     }
+    namespace
+    {
+        /// The start scene of a template with a generator, built in code.
+        ::Ref<Scene> GenerateScene(StringView generator)
+        {
+            if (generator == "physics") return CreatePhysicsTestScene(/*preloadMeshes=*/true);
+            if (generator == "empty") return CreateRef<Scene>("Main");
+            VtCoreWarnTag("Project", "Unknown scene generator '{}'", generator);
+            return nullptr;
+        }
+
+        void WriteGitIgnore(PathView projectPath)
+        {
+            ::Path path = ::Path(projectPath) / ".gitignore";
+            if (Filesystem::Exists(path)) return; // the template's own
+            std::ofstream file(path.Raw());
+            file << "# Build output and caches Nexus regenerates.\n"
+                    "Binaries/\n"
+                    "Cache/\n";
+        }
+    } // namespace
+
+    ::Ref<EditorProject> EditorProject::NewFromTemplate(ProjectConfig config,
+                                                        PathView      projectPath,
+                                                        StringView    templateId,
+                                                        bool          generateGitIgnore)
+    {
+        StringView                wanted = templateId.Empty() ? StringView(kDefaultTemplate) : templateId;
+        Optional<ProjectTemplate> chosen = FindProjectTemplate(wanted);
+        if (!chosen)
+            VtCoreWarnTag("Project", "There's no project template '{}'; using the default scene",
+                          wanted);
+
+        ::Path content;
+        if (chosen)
+        {
+            VtCoreInfoTag("Project", "Creating '{}' from the '{}' template",
+                          config.Metadata.Name, chosen->Name);
+            config.StartScenePath = chosen->StartScene;
+            if (Filesystem::Exists(chosen->ContentDirectory())) content = chosen->ContentDirectory();
+        }
+
+        auto project = New(config, projectPath, content);
+        if (!project) return nullptr;
+
+        if (chosen && !chosen->Generator.Empty())
+        {
+            if (auto scene = GenerateScene(chosen->Generator))
+            {
+                ::Path scenePath = ::Path(projectPath) / config.StartScenePath;
+                if (!SerializeJsonToFile(scenePath, *scene))
+                    VtCoreErrorTag("Project", "Can't write the start scene '{}'", scenePath);
+            }
+        }
+        if (generateGitIgnore) WriteGitIgnore(projectPath);
+        return project;
+    }
+
     ::Ref<EditorProject> EditorProject::Load(PathView projectConfigPath)
     {
         auto projectPath = projectConfigPath.ParentPath();

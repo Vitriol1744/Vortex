@@ -6,36 +6,24 @@
  */
 #pragma once
 
-#include <Nexus/UI/Panel.hpp>
-#include <Prism/Utility/Path.hpp>
+#include <Nexus/EditorContext.hpp>
+
 #include <Vortex/Renderer/TextureAsset.hpp>
 
 #include <filesystem>
 
 namespace Vortex::Editor
 {
-    class ContentBrowserPanel final : public Panel
+    /// The project's mounted directories and their files.
+    class ContentBrowserWindow final : public EditorWindow
     {
       public:
-        ContentBrowserPanel();
-        explicit ContentBrowserPanel(StringView name)
-            : Panel(name)
-        {
-        }
+        ContentBrowserWindow();
 
-        inline void Draw()
-        {
-            if (!Enabled) return;
-            ImGui::Begin(m_Name.Raw(), &Enabled);
-            OnImGuiRender(Enabled);
-            ImGui::End();
-        }
-
-        inline StringView Name() const { return m_Name; }
-        bool              Enabled = true;
-
-      protected:
-        virtual void OnImGuiRender(bool& isOpen) override;
+        void OnDraw(EditorContext& context) override;
+        /// Browses the new project's directory.
+        void OnProjectChanged(EditorContext&  context,
+                              EditorProject& project) override;
 
       private:
         std::filesystem::path m_CurrentDirectory;
@@ -47,6 +35,5 @@ namespace Vortex::Editor
 
         void RenderDirectoryTreeNode(const std::filesystem::path& physicalPath,
                                      const std::filesystem::path& rootPath);
-        void OnProjectChanged(const ProjectChangedEvent& e) override;
     };
 }; // namespace Vortex::Editor

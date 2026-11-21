@@ -6,12 +6,12 @@
  */
 #pragma once
 
-#include <Nexus/UI/Panel.hpp>
-#include <Prism/Containers/UnorderedMap.hpp>
-#include <Prism/Debug/LogSink.hpp>
-#include <Prism/Memory/Scope.hpp>
-#include <Prism/Memory/WeakRef.hpp>
-#include <Prism/String/String.hpp>
+#include <Nexus/EditorContext.hpp>
+import Prism.Containers.UnorderedMap;
+import Prism.Debug.LogSink;
+import Prism.Memory.Scope;
+import Prism.Memory.WeakRef;
+import Prism.String.String;
 #include <Vortex/Core/Log/Log.hpp>
 
 #include <print>
@@ -42,16 +42,21 @@ namespace Vortex::Editor
     };
 
     class ConsoleSink;
-    class ConsolePanel : public Panel, public Weakable<ConsolePanel>
+    /// The engine's and the game's log, filterable, with a detail pane.
+    class ConsoleWindow final : public EditorWindow,
+                                public Weakable<ConsoleWindow>
     {
         friend class ConsoleSink;
 
       public:
-        ConsolePanel();
-        ~ConsolePanel() override = default;
+        ConsoleWindow()
+            : EditorWindow("Console")
+        {
+        }
 
-      protected:
-        void OnImGuiRender(bool& isOpen) override;
+        /// Starts receiving the log from the editor's sink.
+        void OnAttach(EditorContext& context) override;
+        void OnDraw(EditorContext& context) override;
 
       private:
         void        PopulateSampleLogs();
@@ -68,11 +73,17 @@ namespace Vortex::Editor
         void        CopyToClipboard();
         void        ExportLogFile(const String& filePath);
 
+      public:
+        /// Opens `filePath` at `line` in the IDE (in the background).
         static void OpenFileInIDE(IDEType ide, const String& filePath,
                                   u32 line);
 
       private:
         Vector<LogEntry>           m_Logs;
+        /// m_Logs[0, m_TagsScanned) have had their tags registered.
+        usize                      m_TagsScanned       = 0;
+        /// Indices of the entries passing the filters, rebuilt per frame.
+        Vector<u32>                m_Visible;
         i32                        m_SelectedIndex     = -1;
 
         // Filter States
@@ -100,17 +111,21 @@ namespace Vortex::Editor
     class ConsoleSink final : public LogSink<Log::MutexPolicy>
     {
       public:
-        explicit ConsoleSink(::Ref<ConsolePanel> panel = nullptr)
-            : m_TargetPanel(panel)
+        explicit ConsoleSink(::Ref<ConsoleWindow> window = nullptr)
+            : m_Target(window)
         {
         }
         virtual ~ConsoleSink() override = default;
 
-        inline void SetTargetPanel(::Ref<ConsolePanel> panel)
+        inline void SetTarget(::Ref<ConsoleWindow> window)
         {
             std::lock_guard<std::mutex> lock(m_BufferMutex);
-            m_TargetPanel = panel;
+            m_Target = window;
         }
+
+        /// The sink every console window reads; created at startup and
+        /// added to the engine's and the client's loggers.
+        static ::Ref<ConsoleSink>& Instance();
 
         virtual isize SinkIt(const LogMessage& message) override
         {
@@ -147,15 +162,15 @@ namespace Vortex::Editor
                 m_PendingLogs.Clear();
             }
 
-            if (auto panel = m_TargetPanel.Promote())
+            if (auto window = m_Target.Promote())
             {
                 for (usize i = 0; i < logsToProcess.Size(); ++i)
-                    panel->AddLog(logsToProcess[i]);
+                    window->AddLog(logsToProcess[i]);
             }
         }
 
       private:
-        ::WeakRef<ConsolePanel> m_TargetPanel = nullptr;
+        ::WeakRef<ConsoleWindow> m_Target = nullptr;
 
         std::mutex              m_BufferMutex;
         Vector<LogEntry>        m_PendingLogs;

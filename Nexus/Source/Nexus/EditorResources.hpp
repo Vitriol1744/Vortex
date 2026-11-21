@@ -10,5 +10,9 @@
 
 namespace Vortex::Editor::Resources
 {
+    /// Cached: every caller of the same path shares one texture.
     ::Ref<TextureAsset> LoadTexture(PathView path);
+    /// Drops the cache. Before the renderer shuts down, or the textures
+    /// would outlive the GPU device.
+    void                Clear();
 };

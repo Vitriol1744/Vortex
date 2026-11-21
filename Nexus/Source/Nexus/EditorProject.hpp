@@ -50,9 +50,22 @@ namespace Vortex::Editor
         inline static ::Ref<EditorProject> Active() { return s_Active; }
         static void                 SwitchTo(::Ref<EditorProject> project);
 
+        /// Lays out a project in `projectPath`, copying `templatePath`'s
+        /// files into it (a template's content/ directory) if given.
         static ::Ref<EditorProject> New(const ProjectConfig& config,
                                         PathView             projectPath,
                                         PathView templatePath = ""_pv);
+        /**
+         * A project from one of the engine's templates (assets/templates,
+         * see Nexus.ProjectTemplates); an empty id picks the default one.
+         * The template sets the start scene, and its generator (if any)
+         * builds it. `generateGitIgnore` writes a .gitignore for the
+         * project's build output.
+         */
+        static ::Ref<EditorProject> NewFromTemplate(ProjectConfig config,
+                                                    PathView      projectPath,
+                                                    StringView    templateId,
+                                                    bool generateGitIgnore = true);
         static ::Ref<EditorProject> Load(PathView projectPath);
 
       private:

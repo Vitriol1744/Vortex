@@ -9,14 +9,17 @@
 #include <Vortex/Project/Project.hpp>
 #include <Vortex/Renderer/ImGui/ModalManager.hpp>
 
+import Nexus.ProjectTemplates;
+
 namespace Vortex::Editor
 {
     class NewProjectModal : public UI::Modal
     {
       public:
+        /// `path` is the new project's own directory (location/name).
         using OnCreateCallback
             = Delegate<void(const ProjectConfig& config, PathView path,
-                            bool generateGitIgnore)>;
+                            StringView templateId, bool generateGitIgnore)>;
 
         explicit NewProjectModal(OnCreateCallback onCreateCallback);
 
@@ -38,9 +41,11 @@ namespace Vortex::Editor
         Path           m_ProjectPath;
         bool           m_GenerateGitIgnore     = true;
 
-        int            m_SelectedTemplateIndex = 0;
-        Vector<String> m_Templates
-            = {"Blank (2D/3D)", "2D Physics Starter", "3D Lit Sandbox"};
+        /// The engine's templates (assets/templates).
+        Vector<ProjectTemplate> m_Templates;
+        usize                   m_SelectedTemplateIndex = 0;
+
+        Path                    TargetPath() const;
 
         OnCreateCallback m_OnCreateCallback;
         String           m_ValidationError;

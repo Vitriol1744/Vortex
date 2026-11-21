@@ -6,259 +6,99 @@
  */
 #pragma once
 
-#include <Nexus/EditorProject.hpp>
-#include <Nexus/UI/Panel.hpp>
+#include <Vortex/Core/Types.hpp>
 
-#include <Prism/Containers/Array.hpp>
-#include <Vortex/Renderer/ImGui/ImGui.hpp>
-
-#include <imgui.h>
+import Prism.Containers.Array;
+import Prism.String.String;
 
 namespace Vortex::Editor
 {
-    enum class SettingsPage
-    {
-        eProjectSettings,
-        eEditorSettings,
-        eKeymaps
-    };
-    enum class SettingsCategory
-    {
-        eProject_Metadata,
-        eProject_Renderer,
-        eProject_Physics,
-        eEditor_General,
-        eEditor_Shortcuts
-    };
+    class EditorContext;
 
+    /**
+     * The settings window (Edit > Settings, Ctrl+,): project, editor,
+     * graphics (GPU choice and info) and input (shortcut and camera key
+     * mapping) pages. Editor preferences save when it closes; project
+     * settings save with "Save Project".
+     */
     class SettingsOverlay
     {
       public:
-        void Render(bool* pOpen)
-        {
-            if (!*pOpen) return;
-
-            // -------------------------------------------------------------------
-            // 1. COVER THE MAIN VIEWPORT
-            // -------------------------------------------------------------------
-            const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(mainViewport->WorkPos);
-            ImGui::SetNextWindowSize(mainViewport->WorkSize);
-            ImGui::SetNextWindowViewport(mainViewport->ID);
-
-            ImGuiWindowFlags windowFlags
-                = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove
-                | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings
-                | ImGuiWindowFlags_NoDocking;
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
-                                ImVec2(20.0f, 20.0f));
-
-            // Force focus to ensure it renders on top when opened
-            ImGui::SetNextWindowFocus();
-
-            if (ImGui::Begin("##SettingsOverlay", pOpen, windowFlags))
-            {
-                // Top Action Bar / Header
-                DrawOverlayHeader(pOpen);
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                // ---------------------------------------------------------------
-                // 2. MAIN SPLIT TABLE (SIDEBAR + PAGE VIEWPORT)
-                // ---------------------------------------------------------------
-                constexpr ImGuiTableFlags tableFlags
-                    = ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV;
-
-                if (ImGui::BeginTable(
-                        "SettingsOverlayTable", 2, tableFlags,
-                        ImVec2(0.0f, ImGui::GetContentRegionAvail().y)))
-                {
-                    ImGui::TableSetupColumn(
-                        "Sidebar", ImGuiTableColumnFlags_WidthFixed, 220.0f);
-                    ImGui::TableSetupColumn("PageContent",
-                                            ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableNextRow();
-
-                    // --- LEFT SIDEBAR: ROOT CATEGORIES ---
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::BeginChild("SettingsSidebar", ImVec2(0, 0),
-                                      ImGuiChildFlags_None);
-                    DrawSidebarNavigation();
-                    ImGui::EndChild();
-
-                    // --- RIGHT CONTENT PANE: ENTIRE PAGE DISPLAY ---
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::BeginChild("SettingsPageViewport", ImVec2(0, 0),
-                                      ImGuiChildFlags_None);
-
-                    ImGui::Indent(15.0f);
-                    DrawActivePage();
-                    ImGui::Unindent(15.0f);
-
-                    ImGui::EndChild();
-
-                    ImGui::EndTable();
-                }
-            }
-            ImGui::End();
-
-            ImGui::PopStyleVar(3);
-        }
+        /// Draws it while context.ShowSettings is set; clears it on close.
+        void Render(EditorContext& context);
 
       private:
-        SettingsPage m_ActivePage = SettingsPage::eProjectSettings;
-
-        void         DrawOverlayHeader(bool* pOpen)
+        enum class Page : u8
         {
-            ImGui::PushFont(
-                ImGui::GetIO()
-                    .Fonts->Fonts[0]); // Base font bold/large if configured
-            ImGui::TextUnformatted("Settings");
-            ImGui::PopFont();
-
-            ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
-            if (ImGui::Button("Close (ESC)", ImVec2(70, 25))
-                || ImGui::IsKeyPressed(ImGuiKey_Escape))
-                *pOpen = false;
-        }
-
-        void DrawSidebarNavigation()
+            eProjectGeneral,
+            eProjectRenderer,
+            eEditorGeneral,
+            eAppearance,
+            eViewport,
+            eGraphics,
+            eShortcuts,
+            eCameraControls,
+        };
+        /// What a pressed key is being captured for.
+        enum class Capture : u8
         {
-            ImGui::Spacing();
+            eNone,
+            /// A command's chord (modifiers + key).
+            eCommand,
+            /// A camera movement key (a single key; modifier keys allowed).
+            eCameraKey,
+        };
 
-            auto DrawCategoryButton
-                = [this](const char* label, SettingsPage page)
-            {
-                bool isSelected = (m_ActivePage == page);
-                if (isSelected)
-                    ImGui::PushStyleColor(
-                        ImGuiCol_Header,
-                        ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive));
+        static constexpr usize kFrameHistory = 160;
 
-                if (ImGui::Selectable(label, isSelected,
-                                      ImGuiSelectableFlags_DontClosePopups,
-                                      ImVec2(0, 30.0f)))
-                    m_ActivePage = page;
+        Page                   m_Page        = Page::eGraphics;
+        bool                   m_WasOpen     = false;
+        String                 m_ShortcutFilter;
 
-                if (isSelected) ImGui::PopStyleColor();
-            };
+        Capture                m_Capture        = Capture::eNone;
+        String                 m_CaptureCommand;
+        i32*                   m_CaptureKey     = nullptr;
+        /// Frame a capture ended: the key that ended it may also "click" the
+        /// focused button (Space/Enter) or close the window (Escape).
+        i32                    m_CaptureEndedOn = -1;
 
-            if (EditorProject::Active())
-                DrawCategoryButton("  Project Settings",
-                                   SettingsPage::eProjectSettings);
-            else if (m_ActivePage == SettingsPage::eProjectSettings)
-                m_ActivePage = SettingsPage::eEditorSettings;
-            DrawCategoryButton("  Editor Settings",
-                               SettingsPage::eEditorSettings);
-            DrawCategoryButton("  Keymaps & Controls", SettingsPage::eKeymaps);
-        }
+        String                 m_Status;
+        f64                    m_StatusTime = 0.0;
 
-        void DrawActivePage()
-        {
-            switch (m_ActivePage)
-            {
-                case SettingsPage::eProjectSettings:
-                    DrawProjectSettingsPage();
-                    break;
+        /// The GPU and API preferences the renderer started with, to tell
+        /// when a restart is needed.
+        String                 m_StartupGpu;
+        String                 m_StartupAPI;
+        bool                   m_HaveStartupGpu = false;
 
-                case SettingsPage::eEditorSettings:
-                    DrawEditorSettingsPage();
-                    break;
+        bool                   NeedsRestart(const EditorContext& context) const;
 
-                case SettingsPage::eKeymaps:
-                    ImGui::TextDisabled("Keybindings page...");
-                    break;
-            }
-        }
+        Array<f32, kFrameHistory> m_FrameTimes{};
+        usize                  m_FrameOffset = 0;
 
-        // -----------------------------------------------------------------------
-        // PAGE 1: PROJECT SETTINGS (STACKED HEADINGS & SEPARATORS)
-        // -----------------------------------------------------------------------
-        void DrawProjectSettingsPage()
-        {
-            // === SECTION 1: METADATA ===
-            DrawSectionHeader("PROJECT METADATA");
+        void                   OnOpen(EditorContext& context);
+        void                   OnClose(EditorContext& context);
 
-            auto& activeProject = *EditorProject::Active();
-            auto& config        = activeProject.RuntimeProject()->Config();
+        void                   DrawHeader(EditorContext& context);
+        void                   DrawSidebar(EditorContext& context);
+        void                   DrawPage(EditorContext& context);
+        void                   DrawFooter(EditorContext& context);
 
-            UI::InputText("Project Name", config.Metadata.Name);
-            // UI::InputText("Engine Version", &config.Metadata.Version);
-            UI::InputText("Asset Path", config.AssetDirectory);
-            UI::InputText("Default Scene", config.StartScenePath);
+        void                   DrawProjectGeneralPage(EditorContext& context);
+        void                   DrawProjectRendererPage(EditorContext& context);
+        void                   DrawEditorGeneralPage(EditorContext& context);
+        void                   DrawAppearancePage(EditorContext& context);
+        void                   DrawViewportPage(EditorContext& context);
+        void                   DrawGraphicsPage(EditorContext& context);
+        void                   DrawShortcutsPage(EditorContext& context);
+        void                   DrawCameraControlsPage(EditorContext& context);
 
-            ImGui::Spacing();
-            ImGui::Spacing();
-
-            // === SECTION 2: RENDERER ===
-            DrawSectionHeader("RENDERER");
-
-            auto& rendererSettings = config.RendererSettings;
-            ImGui::Checkbox("Enable V-Sync", &rendererSettings.VSync);
-
-            const char* msaaItems[]
-                = {"Off (1x)", "2x MSAA", "4x MSAA", "8x MSAA"};
-            i32 msaaIndex = (rendererSettings.AntiAliasingSamples == 8) ? 3
-                          : (rendererSettings.AntiAliasingSamples == 4) ? 2
-                          : (rendererSettings.AntiAliasingSamples == 2) ? 1
-                                                                        : 0;
-
-            if (ImGui::Combo("MSAA Quality", &msaaIndex, msaaItems,
-                             IM_ARRAYSIZE(msaaItems)))
-            {
-                i32 samples[]                        = {1, 2, 4, 8};
-                rendererSettings.AntiAliasingSamples = samples[msaaIndex];
-            }
-
-            // ImGui::SliderFloat("Gamma Correction",
-            //                    &rendererSettings.GammaCorrection, 1.0f, 3.0f,
-            // "%.2f");
-            // ImGui::ColorEdit4(
-            //     "Clear Color",
-            //     rendererSettings.ClearColor.data());
-
-            ImGui::Spacing();
-            ImGui::Spacing();
-
-            // === SECTION 3: PHYSICS ===
-            DrawSectionHeader("PHYSICS");
-        }
-
-        // -----------------------------------------------------------------------
-        // PAGE 2: EDITOR SETTINGS
-        // -----------------------------------------------------------------------
-        void DrawEditorSettingsPage()
-        {
-            DrawSectionHeader("GENERAL EDITOR");
-            static bool  autoSave         = true;
-            static float autoSaveInterval = 5.0f;
-            ImGui::Checkbox("Auto-save Scenes", &autoSave);
-            ImGui::SliderFloat("Save Interval (mins)", &autoSaveInterval, 1.0f,
-                               30.0f);
-
-            ImGui::Spacing();
-            ImGui::Spacing();
-
-            DrawSectionHeader("VIEWPORT & CAMERA");
-            static float cameraSens = 0.5f;
-            static float fov        = 60.0f;
-            ImGui::SliderFloat("Look Sensitivity", &cameraSens, 0.1f, 2.0f);
-            ImGui::SliderFloat("Default FOV", &fov, 30.0f, 110.0f);
-        }
-
-        // Helper to format consistent visual headings across pages
-        void DrawSectionHeader(const char* title)
-        {
-            ImGui::PushStyleColor(
-                ImGuiCol_Text,
-                ImVec4(0.4f, 0.7f, 1.0f, 1.0f)); // Subtle highlight color
-            ImGui::TextUnformatted(title);
-            ImGui::PopStyleColor();
-            ImGui::Separator();
-            ImGui::Spacing();
-        }
+        /// A button showing `chord`; click to rebind it.
+        bool                   DrawBindingButton(const char* id, i32 chord, bool capturing,
+                                                 f32 width);
+        void                   UpdateCapture(EditorContext& context);
+        void                   EndCapture();
+        void                   SetStatus(String status);
+        void                   RecordFrameTime();
     };
 } // namespace Vortex::Editor
