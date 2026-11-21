@@ -1,135 +1,98 @@
 /*
- * Created by v1tr10l7 on 19.07.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Created by v1tr10l7 on 18.07.2024.
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
 #pragma once
 
-#include <Vortex/Renderer/RHI/SwapChain.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanFramebuffer.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanImage.hpp>
+#include <Vortex/Renderer/RHI/Vulkan/VulkanCommon.hpp>
 #include <Vortex/Renderer/RHI/Vulkan/VulkanSurface.hpp>
 
-namespace Vortex
+#include <atomic>
+
+import Prism.Containers.Vector;
+import Prism.Memory.Ref;
+
+namespace Vortex::Vulkan
 {
-    class VT_RENDERER_RHI_VULKAN_API VulkanSwapChain
-        : public SwapChain,
-          NonCopyable<VulkanSwapChain>
+    class VulkanTexture;
+
+    class VulkanSwapChain final : public RHI::SwapChain
     {
       public:
-        struct PerFrameData
-        {
-            vk::CommandPool   CommandPool             = VK_NULL_HANDLE;
-            vk::CommandBuffer CommandBuffer           = VK_NULL_HANDLE;
-            vk::Semaphore     ImageAvailableSemaphore = VK_NULL_HANDLE;
-            vk::Semaphore     RenderFinishedSemaphore = VK_NULL_HANDLE;
-            vk::Fence         WaitFence               = VK_NULL_HANDLE;
-        };
+        explicit VulkanSwapChain(const RHI::SwapChainDesc& desc);
+        ~VulkanSwapChain() override;
 
-        inline VulkanSwapChain(class Window* window, bool vsync)
+        /// False if the surface couldn't be created; the swapchain is then
+        /// unusable and the device returns null instead.
+        inline bool                 Valid() const { return m_Valid; }
+
+        bool                        AcquireNextImage() override;
+        ::Ref<RHI::Texture>         CurrentImage() const override;
+        RHI::Format                 Format() const override { return m_Format; }
+        RHI::Extent2D               Extent() const override { return m_Extent; }
+        u32                         ImageCount() const override
         {
-            CreateSurface(window);
-            Create(vsync);
+            return m_Images.Size();
         }
-        virtual ~VulkanSwapChain()
+        void                        SetVSync(bool vsync) override;
+        bool                        VSync() const override { return m_VSync; }
+        void                        RequestResize() override
         {
-            Destroy();
-            DestroySurface();
-        }
-
-        void        CreateSurface(Window* windowHandle);
-        void        Create(bool vsync = false);
-
-        void        Destroy();
-        inline void DestroySurface() { m_Surface.Destroy(); }
-
-        virtual inline WeakRef<class Framebuffer> Framebuffer() override
-        {
-            return WeakRef<class Framebuffer>(m_Framebuffer.As<class Framebuffer>());
-        }
-        virtual inline void SetVSync(bool vsync) override
-        {
-            m_VSync        = vsync;
-            m_ShouldResize = true;
+            m_NeedsRecreate = true;
         }
 
-        void                           BeginFrame();
-        virtual void                   Present() override;
-        virtual void                   OnResize() override;
+        //--------------------------------------------------------------------
+        // Used by VulkanDevice::Submit --------------------------------------
+        //--------------------------------------------------------------------
 
-        inline const VulkanSurface&    Surface() const { return m_Surface; }
-        inline const vk::CommandBuffer CurrentCommandBuffer() const
+        /// Whether an image was acquired and not yet presented.
+        inline bool          HasAcquiredImage() const { return m_Acquired; }
+        /// Signaled by the acquire; the submit waits on it.
+        inline vk::Semaphore AcquireSemaphore() const
         {
-            return CurrentFrameData().CommandBuffer;
+            return m_AcquireSemaphores[m_AcquireIndex];
         }
-        inline const struct PerFrameData& CurrentFrameData() const
+        /// Signaled by the submit; presentation waits on it.
+        inline vk::Semaphore PresentSemaphore() const
         {
-            return m_Frames[m_CurrentFrameIndex];
+            return m_PresentSemaphores[m_ImageIndex];
         }
-        inline const Vector<struct PerFrameData>& PerFrameData() const
-        {
-            return m_Frames;
-        }
-        // inline const Vector<VulkanFramebuffer::Frame>& Frames() const
-        // {
-        //     return m_Framebuffer->Frames();
-        // }
-        inline usize ImageCount() const
-        {
-            return m_Framebuffer->m_Frames.Size();
-        }
-        inline vk::Sampler Sampler(u32 index) const
-        {
-            return m_Framebuffer->Frames()[index].Image->Sampler();
-        }
-        inline const vk::ImageView& ImageView(u32 index) const
-        {
-            return m_Framebuffer->Frames()[index].ImageView;
-        }
-        inline u32 CurrentFrameIndex() const { return m_CurrentFrameIndex; }
-        inline u32 CurrentImageIndex() { return m_CurrentImageIndex; }
-
-        inline     operator vk::SwapchainKHR() const { return m_SwapChain; }
-        inline const vk::Extent2D& Extent() const { return m_Extent; }
-        inline vk::Format          ImageFormat() const { return m_ImageFormat; }
-        inline vk::RenderPass      RenderPass() const
-        {
-            return m_Framebuffer->RenderPass();
-        }
+        inline vk::SwapchainKHR Handle() const { return m_SwapChain; }
+        inline u32              ImageIndex() const { return m_ImageIndex; }
+        /// Called after the presenting submit with the vkQueuePresentKHR
+        /// result.
+        void                    OnPresented(vk::Result result);
 
       private:
-        VulkanSurface               m_Surface;
-        Vector<struct PerFrameData> m_Frames;
-        u32                         m_CurrentFrameIndex = 0;
-        u32                         m_CurrentImageIndex = 0;
-        bool                        m_VSync             = false;
-        bool                        m_ShouldResize      = false;
+        VulkanSurface                m_Surface;
+        vk::SwapchainKHR             m_SwapChain = VK_NULL_HANDLE;
+        Vector<::Ref<VulkanTexture>> m_Images;
+        /// One per frame in flight: the acquire of frame N reuses the
+        /// semaphore of frame N - FramesInFlight, whose fence has passed.
+        Vector<vk::Semaphore>        m_AcquireSemaphores;
+        /// One per image: an image's semaphore is free again once the image
+        /// is re-acquired, which is the only reuse rule presentation allows.
+        Vector<vk::Semaphore>        m_PresentSemaphores;
 
-        vk::SwapchainKHR            m_SwapChain         = VK_NULL_HANDLE;
-        ::Ref<VulkanFramebuffer>    m_Framebuffer;
-        PM_UNUSED vk::PresentModeKHR m_PresentMode;
-        vk::Extent2D                 m_Extent;
-        vk::Format                   m_ImageFormat;
+        RHI::Format                  m_Format        = RHI::Format::eUndefined;
+        vk::ColorSpaceKHR            m_ColorSpace{};
+        RHI::Extent2D                m_Extent        = {};
+        u32                          m_ImageIndex    = 0;
+        u32                          m_AcquireIndex  = 0;
+        bool                         m_VSync         = true;
+        bool                         m_Acquired      = false;
+        /// Set from any thread (resize events), consumed by the render thread.
+        std::atomic<bool>            m_NeedsRecreate = false;
+        bool                         m_Valid         = false;
+        RHI::Format                  m_PreferredFormat;
 
-        u32                          AcquireNextImage();
-
-        void                         CreateCommandBuffers();
-        void                         CreateSyncObjects();
-
-        vk::PresentModeKHR           ChooseSwapPresentMode(
-                      const Vector<vk::PresentModeKHR>& availablePresentModes)
-        {
-            for (const auto& availablePresentMode : availablePresentModes)
-            {
-                if (availablePresentMode == vk::PresentModeKHR::eMailbox)
-                    return availablePresentMode;
-            }
-
-            return vk::PresentModeKHR::eFifo;
-        }
-
-        vk::Extent2D
-        ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
+        /// Creates (or recreates) the swapchain. Returns false if the window
+        /// has no area to present to.
+        bool                         Recreate();
+        void                         ChooseFormat();
+        vk::PresentModeKHR           ChoosePresentMode() const;
+        void                         DestroySemaphores(Vector<vk::Semaphore>& semaphores);
     };
-}; // namespace Vortex
+} // namespace Vortex::Vulkan

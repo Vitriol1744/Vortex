@@ -1,258 +1,199 @@
 /*
  * Created by v1tr10l7 on 18.07.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/Array.hpp>
-#include <Vortex/Core/Core.hpp>
 #include <Vortex/Renderer/RHI/Vulkan/VulkanInstance.hpp>
-#include <Vortex/Window/Window.hpp>
-#include <vulkan/vulkan_core.h>
 
-#ifdef VT_PLATFORM_WINDOWS
-    #include <Windows.h>
-    #include <vulkan/vulkan_win32.h>
-#elifdef VT_PLATFORM_LINUX
-    #include <X11/Xlib-xcb.h>
-    #include <vulkan/vulkan_wayland.h>
-    #include <vulkan/vulkan_xcb.h>
-#endif
+#include <Vortex/Core/Platform.hpp>
+#include <Vortex/Window/Window.hpp>
 
 #include <cstring>
 
-VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
+import Prism.Containers.Vector;
+import Prism.String.Formatter;
 
-#ifndef VT_DIST
-static constexpr const vk::Bool32 s_UseValidationLayers = VK_TRUE;
-#else
-static constexpr const vk::Bool32 s_UseValidationLayers = VK_FALSE;
-#endif
+// Storage of the default dynamic dispatcher (VULKAN_HPP_DISPATCH_LOADER_DYNAMIC);
+// one definition for the whole backend library.
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-static u32  s_MinimumVulkanVersionSupported = VK_API_VERSION_1_3;
-static auto s_ValidationLayers
-    = ToArray<const char*>({"VK_LAYER_KHRONOS_validation"});
-
-namespace Vortex
+namespace Vortex::Vulkan
 {
-    static VKAPI_ATTR VkBool32 VKAPI_CALL ErrorCallback(
-        vk::DebugUtilsMessageSeverityFlagBitsEXT        severity,
-        vk::Flags<vk::DebugUtilsMessageTypeFlagBitsEXT> type,
-        const vk::DebugUtilsMessengerCallbackDataEXT* data, void* userData)
+    namespace
     {
-        VtUnused(type);
-        VtUnused(userData);
-        PM_UNUSED
-        String str = fmt::format("Vulkan: {}\n", data->pMessage).data();
+        constexpr const char* kValidationLayer = "VK_LAYER_KHRONOS_validation";
 
-        switch (severity)
+        VKAPI_ATTR VkBool32 VKAPI_CALL
+        DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      severity,
+                      VkDebugUtilsMessageTypeFlagsEXT             type,
+                      const VkDebugUtilsMessengerCallbackDataEXT* data,
+                      void*                                       userData)
         {
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-                VtCoreTrace("{}", str);
-                break;
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-                VtCoreInfo("{}", str);
-                break;
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-                VtCoreWarn("{}", str);
-                break;
-            case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-                VtCoreError("{}", str);
-                break;
-
-            default: break;
+            (void)type;
+            (void)userData;
+            switch (severity)
+            {
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+                    VtCoreErrorTag("Vulkan", "{}", data->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                    VtCoreWarnTag("Vulkan", "{}", data->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+                    VtCoreInfoTag("Vulkan", "{}", data->pMessage);
+                    break;
+                default: VtCoreTraceTag("Vulkan", "{}", data->pMessage); break;
+            }
+            return VK_FALSE;
         }
 
-        return VK_FALSE;
-    }
+        vk::DebugUtilsMessengerCreateInfoEXT MessengerInfo()
+        {
+            vk::DebugUtilsMessengerCreateInfoEXT info{};
+            info.messageSeverity
+                = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+                | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+            info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                             | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+                             | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+            info.pfnUserCallback
+                = reinterpret_cast<vk::PFN_DebugUtilsMessengerCallbackEXT>(
+                    DebugCallback);
+            return info;
+        }
 
-    void VulkanInstance::Initialize(StringView     engineName,
-                                    const Version& engineVersion,
-                                    StringView     applicationName,
-                                    const Version& appVersion)
+        bool HasLayer(const char* name)
+        {
+            u32 count = 0;
+            VkCall(vk::enumerateInstanceLayerProperties(&count, nullptr));
+            Vector<vk::LayerProperties> layers(count);
+            VkCall(vk::enumerateInstanceLayerProperties(&count, layers.Raw()));
+            for (const auto& layer : layers)
+                if (std::strcmp(layer.layerName, name) == 0) return true;
+            return false;
+        }
+        bool HasExtension(const Vector<vk::ExtensionProperties>& available,
+                          const char*                            name)
+        {
+            for (const auto& extension : available)
+                if (std::strcmp(extension.extensionName, name) == 0)
+                    return true;
+            return false;
+        }
+
+        String CString(StringView view) { return String(view); }
+    } // namespace
+
+    Expected<void, String>
+    VulkanInstance::Initialize(StringView     applicationName,
+                               const Version& applicationVersion,
+                               StringView     engineName,
+                               const Version& engineVersion, bool validation)
     {
         VtCoreTrace("Vulkan: Creating instance...");
 
-        {
-            vk::detail::DynamicLoader dl;
-            PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr
-                = dl.getProcAddress<PFN_vkGetInstanceProcAddr>(
-                    "vkGetInstanceProcAddr");
-            VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
-        }
+        // Bootstrap the dynamic dispatcher with the loader's entry point.
+        static vk::detail::DynamicLoader loader;
+        auto                             getInstanceProcAddr
+            = loader.getProcAddress<PFN_vkGetInstanceProcAddr>(
+                "vkGetInstanceProcAddr");
+        if (!getInstanceProcAddr)
+            return Unexpected(String("Vulkan: Failed to load the Vulkan loader"));
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(getInstanceProcAddr);
 
-        u32 vulkanVersion      = VulkanVersion();
-        u32 vulkanVersionMajor = VK_VERSION_MAJOR(vulkanVersion);
-        u32 vulkanVersionMinor = VK_VERSION_MINOR(vulkanVersion);
-        u32 vulkanVersionPatch = VK_VERSION_PATCH(vulkanVersion);
-        VtUnused(vulkanVersion);
-        VtUnused(vulkanVersionMajor);
-        VtUnused(vulkanVersionMinor);
-        VtUnused(vulkanVersionPatch);
+        u32 version = VK_API_VERSION_1_0;
+        if (VULKAN_HPP_DEFAULT_DISPATCHER.vkEnumerateInstanceVersion)
+            VkCall(vk::enumerateInstanceVersion(&version));
+        VtCoreInfo("Vulkan: Loader API version {}.{}.{}",
+                   VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version),
+                   VK_API_VERSION_PATCH(version));
+        if (version < kRequiredApiVersion)
+            return Unexpected(String("Vulkan: Vulkan 1.3 is required"));
 
-        VtCoreAssert(vulkanVersion >= s_MinimumVulkanVersionSupported);
-        VtCoreInfo("Vulkan: API version: {}.{}.{}", vulkanVersionMajor,
-                   vulkanVersionMinor, vulkanVersionPatch);
+        u32 extensionCount = 0;
+        VkCall(vk::enumerateInstanceExtensionProperties(nullptr, &extensionCount,
+                                                        nullptr));
+        Vector<vk::ExtensionProperties> available(extensionCount);
+        VkCall(vk::enumerateInstanceExtensionProperties(nullptr, &extensionCount,
+                                                        available.Raw()));
 
-        vk::Bool32 validationLayersSupported = ValidationLayersSupported();
-        if (s_UseValidationLayers && !validationLayersSupported)
-            VtCoreError("Validation Layers Requested, but not available!");
-        auto                debugCreateInfo = DebugMessengerCreateInfo();
-
-        vk::ApplicationInfo appInfo{};
-        appInfo.sType              = vk::StructureType::eApplicationInfo;
-        appInfo.pNext              = VK_NULL_HANDLE;
-        appInfo.pApplicationName   = applicationName.Raw();
-        appInfo.applicationVersion = VK_MAKE_VERSION(
-            appVersion.Major, appVersion.Minor, appVersion.Patch);
-        appInfo.pEngineName   = engineName.Raw();
-        appInfo.engineVersion = VK_MAKE_VERSION(
-            engineVersion.Major, engineVersion.Minor, engineVersion.Patch);
-        appInfo.apiVersion = m_UsedApiVersion = s_MinimumVulkanVersionSupported;
-        VtCoreInfo(
-            "Vulkan: Application Info: {{ applicationName: '{}', "
-            "applicationVersion: {}, engineName: '{}', engineVersion: {} }}",
-            appInfo.pApplicationName, appVersion, appInfo.pEngineName,
-            engineVersion);
-
-        Vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME,
-                                          VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
-
-#ifdef VT_PLATFORM_LINUX
+        // Platform surface extensions by name: their macros live in the
+        // per-platform Vulkan headers, which drag in X11/Wayland/Win32.
+        Vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME};
+#if defined(VT_PLATFORM_ANDROID)
+        extensions.PushBack("VK_KHR_android_surface");
+#elif defined(VT_PLATFORM_LINUX)
         if (Window::WindowSubsystem() == WindowSubsystem::eWayland)
-            extensions.PushBack(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-        else if (Window::WindowSubsystem() == WindowSubsystem::eX11)
-            extensions.PushBack(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#elifdef VT_PLATFORM_WINDOWS
-        extensions.PushBack(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+            extensions.PushBack("VK_KHR_wayland_surface");
+        else extensions.PushBack("VK_KHR_xcb_surface");
+#elif defined(VT_PLATFORM_WINDOWS)
+        extensions.PushBack("VK_KHR_win32_surface");
 #endif
+        for (const char* required : extensions)
+            if (!HasExtension(available, required))
+                return Unexpected(Prism::Format(
+                    "Vulkan: Missing instance extension '{}'", required));
 
-        extensions.PushBack(
-            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        // Debug names and labels work without the validation layers (RenderDoc
+        // and other tools use them too), so enable the extension when present.
+        m_DebugUtils = HasExtension(available, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        if (m_DebugUtils) extensions.PushBack(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-        if (s_UseValidationLayers)
+        m_Validation = validation && m_DebugUtils && HasLayer(kValidationLayer);
+        if (validation && !m_Validation)
+            VtCoreWarn(
+                "Vulkan: Validation requested but the Khronos validation layer "
+                "or VK_EXT_debug_utils is unavailable");
+
+        String              appName    = CString(applicationName);
+        String              engineNameZ = CString(engineName);
+        vk::ApplicationInfo appInfo{};
+        appInfo.pApplicationName   = appName.Raw();
+        appInfo.applicationVersion = VK_MAKE_API_VERSION(
+            0, applicationVersion.Major, applicationVersion.Minor,
+            applicationVersion.Patch);
+        appInfo.pEngineName   = engineNameZ.Raw();
+        appInfo.engineVersion = VK_MAKE_API_VERSION(
+            0, engineVersion.Major, engineVersion.Minor, engineVersion.Patch);
+        appInfo.apiVersion = kRequiredApiVersion;
+
+        auto                   messengerInfo = MessengerInfo();
+        vk::InstanceCreateInfo instanceInfo{};
+        instanceInfo.pApplicationInfo        = &appInfo;
+        instanceInfo.enabledExtensionCount   = extensions.Size();
+        instanceInfo.ppEnabledExtensionNames = extensions.Raw();
+        if (m_Validation)
         {
-            extensions.PushBack(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-            extensions.PushBack(
-                VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+            instanceInfo.enabledLayerCount   = 1;
+            instanceInfo.ppEnabledLayerNames = &kValidationLayer;
+            // Also reports problems during vkCreateInstance itself.
+            instanceInfo.pNext = &messengerInfo;
         }
 
-        vk::InstanceCreateInfo instanceInfo{};
-        instanceInfo.sType = vk::StructureType::eInstanceCreateInfo;
-        instanceInfo.pNext
-            = s_UseValidationLayers
-                ? reinterpret_cast<vk::DebugUtilsMessengerCreateInfoEXT*>(
-                      &debugCreateInfo)
-                : VK_NULL_HANDLE;
-        instanceInfo.flags            = vk::InstanceCreateFlags();
-        instanceInfo.pApplicationInfo = &appInfo;
-        instanceInfo.enabledLayerCount
-            = s_UseValidationLayers
-                ? static_cast<u32>(s_ValidationLayers.Size())
-                : 0;
-        instanceInfo.ppEnabledLayerNames
-            = s_UseValidationLayers ? s_ValidationLayers.Raw() : VK_NULL_HANDLE;
-        instanceInfo.enabledExtensionCount
-            = static_cast<u32>(extensions.Size());
-        instanceInfo.ppEnabledExtensionNames = extensions.Raw();
-
-        VkCall(vk::createInstance(&instanceInfo, VK_NULL_HANDLE, &m_Instance));
+        vk::Result result
+            = vk::createInstance(&instanceInfo, nullptr, &m_Instance);
+        if (result != vk::Result::eSuccess)
+            return Unexpected(Prism::Format("Vulkan: vkCreateInstance failed: {}",
+                                            VkResultToString(result)));
         VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 
-        if (m_Instance) VtCoreTrace("Vulkan: Instance created successfully");
-        SetupDebugMessenger();
+        if (m_Validation)
+            VkCall(m_Instance.createDebugUtilsMessengerEXT(
+                &messengerInfo, nullptr, &m_DebugMessenger));
+
+        VtCoreTrace("Vulkan: Instance created (validation: {})", m_Validation);
+        return {};
     }
 
     void VulkanInstance::Destroy()
     {
+        if (!m_Instance) return;
         VtCoreTrace("Vulkan: Destroying instance...");
-        auto dldi = vk::detail::DispatchLoaderDynamic(m_Instance,
-                                                      vkGetInstanceProcAddr);
         if (m_DebugMessenger)
-            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger,
-                                                     VK_NULL_HANDLE, dldi);
-        if (m_Instance) m_Instance.destroy(VK_NULL_HANDLE, dldi);
-
+            m_Instance.destroyDebugUtilsMessengerEXT(m_DebugMessenger, nullptr);
+        m_Instance.destroy(nullptr);
         m_DebugMessenger = VK_NULL_HANDLE;
         m_Instance       = VK_NULL_HANDLE;
     }
-
-    const Span<const char*> VulkanInstance::ValidationLayers()
-    {
-        return s_ValidationLayers;
-    }
-    vk::Bool32 VulkanInstance::ShouldUseValidationLayers()
-    {
-        return s_UseValidationLayers;
-    }
-
-    u32 VulkanInstance::VulkanVersion()
-    {
-        u32 version = 0;
-        VkCall(vk::enumerateInstanceVersion(&version));
-
-        return version;
-    }
-
-    void VulkanInstance::SetupDebugMessenger()
-    {
-        auto dldi = vk::detail::DispatchLoaderDynamic(m_Instance,
-                                                      vkGetInstanceProcAddr);
-        vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo
-            = DebugMessengerCreateInfo();
-
-        VkCall(m_Instance.createDebugUtilsMessengerEXT(
-            &debugMessengerInfo, VK_NULL_HANDLE, &m_DebugMessenger, dldi));
-        if (m_DebugMessenger)
-            VtCoreTrace("Vulkan: Debug messenger created successfully");
-    }
-
-    vk::Bool32 VulkanInstance::ValidationLayersSupported()
-    {
-        u32 layerCount = 0;
-        VkCall(
-            vk::enumerateInstanceLayerProperties(&layerCount, VK_NULL_HANDLE));
-
-        Vector<vk::LayerProperties> availableLayers(layerCount);
-        VkCall(vk::enumerateInstanceLayerProperties(&layerCount,
-                                                    availableLayers.Raw()));
-        for (const char* layerName : s_ValidationLayers)
-        {
-            bool layerFound = false;
-            for (const auto& layerProperties : availableLayers)
-            {
-                if (!::std::strcmp(layerName, layerProperties.layerName))
-                {
-                    layerFound = true;
-                    break;
-                }
-            }
-            if (!layerFound)
-            {
-                VtCoreError("Vulkan: Failed to find '{}' layer", layerName);
-                return VK_FALSE;
-            }
-        }
-
-        return VK_TRUE;
-    }
-    vk::DebugUtilsMessengerCreateInfoEXT
-    VulkanInstance::DebugMessengerCreateInfo()
-    {
-        vk::DebugUtilsMessengerCreateInfoEXT debugMessengerInfo{};
-        debugMessengerInfo.sType
-            = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
-        debugMessengerInfo.pNext = VK_NULL_HANDLE;
-        debugMessengerInfo.flags = vk::DebugUtilsMessengerCreateFlagBitsEXT();
-        debugMessengerInfo.messageSeverity
-            = vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-            | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
-        debugMessengerInfo.messageType
-            = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-            | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-            | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
-
-        debugMessengerInfo.pfnUserCallback = ErrorCallback;
-        return debugMessengerInfo;
-    }
-}; // namespace Vortex
+} // namespace Vortex::Vulkan

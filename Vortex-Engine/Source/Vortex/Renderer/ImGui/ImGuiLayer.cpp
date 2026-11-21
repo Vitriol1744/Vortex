@@ -4,9 +4,11 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/String/StringUtils.hpp>
+#include <Vortex/Core/Profiler.hpp>
 #include <Vortex/Core/Time.hpp>
-#include <Vortex/Renderer/RHI/ImGuiLayer.hpp>
+#include <Vortex/Renderer/ImGui/ImGuiLayer.hpp>
+
+import Prism.String.StringUtils;
 
 #include <ImGuizmo.h>
 
@@ -377,11 +379,9 @@ namespace Vortex
         io.ConfigFlags
             |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-
-        if (Window::WindowSubsystem() != WindowSubsystem::eWayland)
-            io.ConfigFlags
-                |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport
-                                                     // / Platform Windows
+        // Platform windows. On Wayland they're popups of the main window
+        // (see CreateWindow), in a virtual coordinate space.
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGui::StyleColorsDark();
         f32 fontSize   = 16.8f;
@@ -416,17 +416,12 @@ namespace Vortex
                                                  // io.WantSetMousePos requests
                                                  // (optional, rarely used)
 
-        if (Window::WindowSubsystem() != WindowSubsystem::eWayland)
-            io.BackendFlags
-                |= ImGuiBackendFlags_PlatformHasViewports; // We can create
-                                                           // multi-viewports on
-                                                           // the Platform side
-                                                           // (optional)
-        io.BackendFlags
-            |= ImGuiBackendFlags_HasMouseHoveredViewport; // We can call
-                                                          // io.AddMouseViewportEvent()
-                                                          // with correct data
-                                                          // (optional)
+        io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+        // Wayland: pointer focus stays on the surface a drag started in
+        // (implicit grab), and NoInputs viewports aren't skipped, so ImGui
+        // finds the hovered viewport from positions instead.
+        if (Window::HasGlobalPositions())
+            io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
 
         bd->MainWindow         = &window;
         bd->Time               = 0.0;
@@ -448,9 +443,11 @@ namespace Vortex
         data->Window                   = &bd->MainWindow->Window();
         data->WindowOwned              = false;
         mainViewport->PlatformUserData = data;
-        mainViewport->PlatformHandle = reinterpret_cast<void*>(bd->MainWindow);
+        // A Window*, like every other viewport's (FindViewportByPlatformHandle
+        // and the cursor code rely on it).
+        mainViewport->PlatformHandle = data->Window;
 
-        OnInitializeRendererInterface();
+        m_Backend = CreateScope<VortexBackend>();
     }
     void ImGuiLayer::OnDetach()
     {
@@ -461,7 +458,6 @@ namespace Vortex
             mainViewport->PlatformUserData);
         mainViewport->PlatformUserData = nullptr;
         mainViewport->PlatformHandle   = nullptr;
-        OnShutdownRendererInterface();
 
         ImGui_ImplVortex_Data* bd = GetBackendData();
         VtCoreAssert(
@@ -474,6 +470,8 @@ namespace Vortex
             VtCoreTrace("ImGuiLayer: Destroying platform windows...");
             ImGui::DestroyPlatformWindows();
         }
+        // After the platform windows: their swapchains belong to the backend.
+        m_Backend.Reset();
         io.BackendPlatformName     = nullptr;
         io.BackendPlatformUserData = nullptr;
         io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors
@@ -487,7 +485,7 @@ namespace Vortex
 
     void ImGuiLayer::Begin()
     {
-        OnNewFrame();
+        VtProfileFunction();
 
         ImGuiIO& io              = ImGui::GetIO();
         auto     bd              = GetBackendData();
@@ -518,15 +516,9 @@ namespace Vortex
     }
     void ImGuiLayer::End()
     {
+        VtProfileFunction();
         ImGui::Render();
-        OnRenderDrawData();
-
-        ImGuiIO io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-        }
+        m_Backend->RenderViewports(m_MainWindow);
     }
 
     void ImGuiLayer::OnUpdate(Timestep deltaTime) {}
@@ -646,17 +638,54 @@ namespace Vortex
         ImGui_ImplVortex_Data* bd         = GetBackendData();
         ImGuiPlatformIO&       platformIO = ImGui::GetPlatformIO();
         bd->WantUpdateMonitors            = false;
-
-        i32 monitorCount                  = 1;
-        if (monitorCount == 0) return;
-
-        // TODO(v1tr10l7): Temporary
         platformIO.Monitors.resize(0);
-        ImGuiPlatformMonitor monitor{};
-        monitor.MainPos = monitor.WorkPos
-            = ImVec2(static_cast<f32>(0), static_cast<f32>(0));
-        monitor.MainSize = monitor.WorkSize = ImVec2(1600, 900);
-        platformIO.Monitors.push_back(monitor);
+
+        auto toImVec = [](auto x, auto y)
+        { return ImVec2(static_cast<f32>(x), static_cast<f32>(y)); };
+
+        if (!Window::HasGlobalPositions())
+        {
+            // No desktop coordinates: one monitor covering the main window,
+            // which keeps menus and tooltips inside it. Floating windows can
+            // still go anywhere.
+            auto                 size = bd->MainWindow->Size();
+            ImGuiPlatformMonitor monitor{};
+            monitor.MainPos = monitor.WorkPos = toImVec(0, 0);
+            monitor.MainSize = monitor.WorkSize = toImVec(size.x, size.y);
+            platformIO.Monitors.push_back(monitor);
+            return;
+        }
+
+        for (const auto& source : Monitor::Monitors())
+        {
+            if (!source) continue;
+            ImGuiPlatformMonitor monitor{};
+            auto                 position = source->Position();
+            const auto&          mode     = source->CurrentVideoMode();
+            monitor.MainPos  = toImVec(position.x, position.y);
+            monitor.MainSize = toImVec(mode.Width, mode.Height);
+            auto work        = source->WorkArea();
+            if (work.Width > 0 && work.Height > 0)
+            {
+                monitor.WorkPos  = toImVec(work.X, work.Y);
+                monitor.WorkSize = toImVec(work.Width, work.Height);
+            }
+            else
+            {
+                monitor.WorkPos  = monitor.MainPos;
+                monitor.WorkSize = monitor.MainSize;
+            }
+            auto scale = source->ContentScale();
+            monitor.DpiScale = scale.x > 0.0f ? scale.x : 1.0f;
+            platformIO.Monitors.push_back(monitor);
+        }
+        if (platformIO.Monitors.empty())
+        {
+            ImGuiPlatformMonitor monitor{};
+            monitor.MainPos = monitor.WorkPos = toImVec(0, 0);
+            monitor.MainSize = monitor.WorkSize = toImVec(1920, 1080);
+            platformIO.Monitors.push_back(monitor);
+        }
     }
 
     void ImGuiLayer::OnKeyPressed(const KeyPressedEvent& e)
@@ -812,6 +841,8 @@ namespace Vortex
     void ImGuiLayer::OnWindowResized(const WindowResizedEvent& event)
     {
         auto window = event.Window;
+        // The virtual monitor (Wayland) is the main window's rectangle.
+        if (!Window::HasGlobalPositions()) GetBackendData()->WantUpdateMonitors = true;
 
         if (ImGuiViewport* viewport
             = ImGui::FindViewportByPlatformHandle(window))
@@ -870,12 +901,25 @@ namespace Vortex
         specs.VideoMode.Width  = static_cast<i32>(viewport->Size.x);
         specs.VideoMode.Height = static_cast<i32>(viewport->Size.y);
         specs.Title            = "No Title Yet";
-        Window* window         = Window::CreateForImGui(specs);
+        specs.Position         = {static_cast<i32>(viewport->Pos.x),
+                                  static_cast<i32>(viewport->Pos.y)};
+        bool globalPositions   = Window::HasGlobalPositions();
+        if (!globalPositions)
+        {
+            // Wayland: placed relative to the main window. All popups hang
+            // off the main window (not the parent viewport): xdg forbids
+            // destroying a popup before its children, and ImGui destroys
+            // viewports in any order.
+            specs.Kind   = WindowKind::ePopup;
+            specs.Parent = &GetBackendData()->MainWindow->Window();
+        }
+        Window* window           = Window::CreateForImGui(specs);
 
-        data->Window           = window;
-        data->WindowOwned      = true;
+        data->Window             = window;
+        data->WindowOwned        = true;
         viewport->PlatformHandle = (void*)data->Window;
-        data->Window->SetPosition({viewport->Pos.x, viewport->Pos.y});
+        if (globalPositions)
+            data->Window->SetPosition(specs.Position);
     }
     void ImGuiLayer::DestroyWindow(ImGuiViewport* viewport)
     {
@@ -914,7 +958,8 @@ namespace Vortex
         auto data                       = GetViewportData(viewport);
         data->IgnoreWindowPosEventFrame = ImGui::GetFrameCount();
 
-        data->Window->SetPosition({position.x, position.y});
+        data->Window->SetPosition(
+            {static_cast<i32>(position.x), static_cast<i32>(position.y)});
     }
     ImVec2 ImGuiLayer::WindowSize(ImGuiViewport* viewport)
     {
@@ -927,7 +972,8 @@ namespace Vortex
         auto data                        = GetViewportData(viewport);
         data->IgnoreWindowSizeEventFrame = ImGui::GetFrameCount();
 
-        data->Window->SetSize(Math::Vec2(size.x, size.y));
+        data->Window->SetSize(
+            Math::Vec2i(static_cast<i32>(size.x), static_cast<i32>(size.y)));
     }
     void ImGuiLayer::SetWindowTitle(ImGuiViewport* viewport, const char* title)
     {

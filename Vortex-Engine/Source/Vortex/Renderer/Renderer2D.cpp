@@ -1,168 +1,205 @@
 /*
- * Created by v1tr10l7 on 24.08.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Created by v1tr10l7 on 24.05.2026.
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Vortex/Core/Math/Math.hpp>
-
-#include <Vortex/Renderer/RHI/GraphicsPipeline.hpp>
-#include <Vortex/Renderer/RHI/IndexBuffer.hpp>
-#include <Vortex/Renderer/RHI/Shader.hpp>
-#include <Vortex/Renderer/RHI/Texture2D.hpp>
-#include <Vortex/Renderer/RHI/UniformBuffer.hpp>
-#include <Vortex/Renderer/RHI/VertexBuffer.hpp>
-#include <Vortex/Renderer/Renderer.hpp>
+#include <Vortex/Core/Profiler.hpp>
 #include <Vortex/Renderer/Renderer2D.hpp>
-#include <Vortex/Renderer/TextureAsset.hpp>
+#include <Vortex/Renderer/ShaderLibrary.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
+import Prism.Containers.UnorderedMap;
+import Prism.Containers.Vector;
+import Vortex.Renderer;
+import Vortex.Renderer.Material;
 
 namespace Vortex::Renderer2D
 {
     namespace
     {
-        struct Vertex
+
+
+        constexpr u32 kMaxQuads    = 20000;
+        constexpr u32 kMaxVertices = kMaxQuads * 4;
+        constexpr u32 kMaxIndices  = kMaxQuads * 6;
+
+        /// Vertex memory of one frame slot; several flushes a frame append.
+        struct FrameBuffer
         {
-            Math::Vec3 Position;
-            Math::Vec3 Color;
-            Math::Vec2 TexCoords;
+            ::Ref<RHI::Buffer> Buffer;
+            u32                Used  = 0;
+            u64                Frame = 0;
         };
 
-        struct UniformBufferObject
+        constexpr StringView kShader = "Sprite";
+
+        /// Fixed-function state; the shader is the batch's (render thread).
+        RHI::GraphicsPipelineDesc s_Desc;
+        struct CameraGroup
         {
-            alignas(16) Mat4 Model;
-            alignas(16) Mat4 ViewProjection;
+            ::Ref<RHI::BindGroup> Group;
+            /// Shader whose set 0 layout the group was made with.
+            RHI::Shader*          Shader = nullptr;
         };
+        /// Camera bind groups, one per camera buffer seen (render thread).
+        UnorderedMap<upointer, CameraGroup> s_CameraGroups;
+        ::Ref<Material>      s_Material; // game thread
+        ::Ref<RHI::Buffer>   s_IndexBuffer;
+        Vector<FrameBuffer>  s_Frames;
+        Vector<Vertex>       s_Vertices; // game thread
+        bool                 s_Initialized = false;
+    } // namespace
 
-        inline constexpr u32      MAX_QUADS             = 20000;
-        inline constexpr u32      MAX_VERTICES          = MAX_QUADS * 4;
-        inline constexpr u32      MAX_INDICES           = MAX_QUADS * 6;
-
-        Mat4                      s_ViewProjection      = Mat4(1.0f);
-        Ref<GraphicsPipeline>     s_QuadPipeline        = nullptr;
-        Ref<VertexBuffer>         s_QuadVertexBuffer    = nullptr;
-        Vertex*                   s_QuadVerticesBase    = nullptr;
-        Vertex*                   s_QuadVerticesPointer = nullptr;
-        Ref<IndexBuffer>          s_QuadIndexBuffer     = nullptr;
-        Ref<Shader>               s_TextureShader       = nullptr;
-        Ref<TextureAsset>         s_WhiteTexture        = nullptr;
-        u32                       s_IndexCount          = 0;
-        static Ref<UniformBuffer> s_UniformBuffer       = nullptr;
-        static bool               s_Initialized         = false;
-    }; // namespace
-
-    static void Flush();
-
-    void        Initialize(::Ref<class Framebuffer> framebuffer)
+    bool Initialize(RHI::Format colorFormat, RHI::Format depthFormat)
     {
-        if (s_Initialized) return;
-        InitializerList<VertexBufferElement> elements
-            = {ShaderDataType::eFloat3, ShaderDataType::eFloat3,
-               ShaderDataType::eFloat2};
+        if (s_Initialized) return true;
+        auto& device  = Renderer::Device();
+        auto& library = Renderer::ShaderLibrary();
+        if (!library.Load(kShader, "assets/shaders/texture.hlsl")) return false;
 
-        s_TextureShader = Shader::Create("assets/shaders/texture.glsl");
-        VertexBufferLayout            layout(elements);
-        GraphicsPipelineSpecification specification{};
-        specification.Framebuffer = framebuffer;
-        specification.Shader      = s_TextureShader;
-        specification.Layout      = layout;
+        RHI::GraphicsPipelineDesc pipeline{};
+        pipeline.VertexBindings.PushBack(RHI::VertexBinding::Packed(
+            {RHI::Format::eRGB32Float, RHI::Format::eRGB32Float,
+             RHI::Format::eRG32Float}));
+        pipeline.Raster.Cull = RHI::CullMode::eNone;
+        // Sprites are transparent: test against the scene, don't write.
+        pipeline.DepthStencil.DepthWrite = false;
+        pipeline.Blend.PushBack(RHI::BlendAttachment::AlphaBlend());
+        pipeline.ColorFormats.PushBack(colorFormat);
+        pipeline.DepthFormat = depthFormat;
+        pipeline.DebugName   = "Renderer2D: quads";
+        s_Desc               = pipeline;
+        s_Material           = Material::Create(library.Get(kShader));
 
-        s_QuadPipeline            = GraphicsPipeline::Create(specification);
-        s_QuadVerticesBase        = new Vertex[MAX_VERTICES];
-        s_QuadVerticesPointer     = s_QuadVerticesBase;
+        // Compile the pipeline now rather than on the first sprite.
+        pipeline.Shader = s_Material->Shader();
+        (void)Renderer::Pipelines().Get(pipeline);
 
-        u32* quadIndices          = new u32[MAX_INDICES];
-
-        for (u32 i = 0, offset = 0; i < MAX_INDICES; i += 6, offset += 4)
+        Vector<u32> indices(kMaxIndices);
+        for (u32 i = 0, vertex = 0; i < kMaxIndices; i += 6, vertex += 4)
         {
-            quadIndices[i + 0] = offset + 0;
-            quadIndices[i + 1] = offset + 1;
-            quadIndices[i + 2] = offset + 2;
-
-            quadIndices[i + 3] = offset + 2;
-            quadIndices[i + 4] = offset + 3;
-            quadIndices[i + 5] = offset + 0;
+            indices[i + 0] = vertex + 0;
+            indices[i + 1] = vertex + 1;
+            indices[i + 2] = vertex + 2;
+            indices[i + 3] = vertex + 2;
+            indices[i + 4] = vertex + 3;
+            indices[i + 5] = vertex + 0;
         }
+        RHI::BufferDesc indexDesc{};
+        indexDesc.Size      = kMaxIndices * sizeof(u32);
+        indexDesc.Usage     = RHI::BufferUsage::eIndex;
+        indexDesc.DebugName = "Renderer2D: indices";
+        s_IndexBuffer       = device.CreateBuffer(indexDesc, indices.Raw());
 
-        s_QuadIndexBuffer
-            = IndexBuffer::Create(quadIndices, MAX_INDICES * sizeof(u32));
-        delete[] quadIndices;
-
-        s_WhiteTexture = CreateRef<TextureAsset>("assets/textures/texture.png");
-        s_UniformBuffer = UniformBuffer::Create(sizeof(UniformBufferObject));
-
-        s_TextureShader->SetUniform("UniformBufferObject", s_UniformBuffer);
-        s_TextureShader->SetUniform("texSampler", s_WhiteTexture->Texture());
+        s_Frames.Resize(device.FramesInFlight());
+        for (auto& frame : s_Frames)
+        {
+            RHI::BufferDesc desc{};
+            desc.Size      = kMaxVertices * sizeof(Vertex);
+            desc.Usage     = RHI::BufferUsage::eVertex;
+            desc.Memory    = RHI::MemoryUsage::eCpuToGpu;
+            desc.DebugName = "Renderer2D: vertices";
+            frame.Buffer   = device.CreateBuffer(desc);
+        }
+        s_Vertices.Reserve(1024);
         s_Initialized = true;
+        return true;
     }
+
     void Shutdown()
     {
         if (!s_Initialized) return;
-
-        s_ViewProjection = Mat4(1.0f);
-        s_QuadPipeline.Reset();
-        s_QuadVertexBuffer.Reset();
-        delete[] s_QuadVerticesBase;
-        s_QuadVerticesBase    = nullptr;
-        s_QuadVerticesPointer = nullptr;
-        s_QuadIndexBuffer.Reset();
-        s_TextureShader.Reset();
-        s_WhiteTexture.Reset();
-        s_IndexCount = 0;
-        s_UniformBuffer.Reset();
-
+        s_Frames.Clear();
+        s_Vertices.Clear();
+        s_CameraGroups.Clear();
+        s_IndexBuffer = nullptr;
+        s_Material    = nullptr;
+        s_Desc        = {};
         s_Initialized = false;
     }
 
-    void BeginScene(const Mat4& viewProjection)
-    {
-        s_ViewProjection = viewProjection;
-
-        UniformBufferObject ubo{};
-        ubo.Model          = Mat4(1.0f);
-        ubo.ViewProjection = s_ViewProjection;
-        s_UniformBuffer->SetData(&ubo, sizeof(ubo), 0);
-    }
-    void EndScene() { Flush(); }
+    void Begin() { s_Vertices.Clear(); }
 
     void DrawQuad(const Mat4& transform, const Math::Vec4& color)
     {
-        constexpr size_t    quadVertexCount = 4;
-        constexpr glm::vec2 textureCoords[]
+        constexpr Math::Vec2 texCoords[]
             = {{1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}};
-
-        if (s_IndexCount >= MAX_INDICES) Flush();
-
-        static Math::Vec4 quadVertexPositions[4];
-        quadVertexPositions[0] = {-0.5f, -0.5f, 0.0f, 1.0f};
-        quadVertexPositions[1] = {0.5f, -0.5f, 0.0f, 1.0f};
-        quadVertexPositions[2] = {0.5f, 0.5f, 0.0f, 1.0f};
-        quadVertexPositions[3] = {-0.5f, 0.5f, 0.0f, 1.0f};
-
-        for (usize i = 0; i < quadVertexCount; i++)
-        {
-            s_QuadVerticesPointer->Position
-                = transform * quadVertexPositions[i];
-            s_QuadVerticesPointer->Color     = color;
-            s_QuadVerticesPointer->TexCoords = textureCoords[i];
-            s_QuadVerticesPointer++;
-        }
-
-        s_IndexCount += 6;
+        constexpr Math::Vec4 positions[] = {{-0.5f, -0.5f, 0.0f, 1.0f},
+                                            {0.5f, -0.5f, 0.0f, 1.0f},
+                                            {0.5f, 0.5f, 0.0f, 1.0f},
+                                            {-0.5f, 0.5f, 0.0f, 1.0f}};
+        for (u32 i = 0; i < 4; ++i)
+            s_Vertices.PushBack({Math::Vec3(transform * positions[i]),
+                                 Math::Vec3(color), texCoords[i]});
     }
 
-    static void Flush()
+    Batch End()
     {
-        u32 dataSize
-            = u32((u8*)s_QuadVerticesPointer - (u8*)s_QuadVerticesBase);
-        s_QuadVertexBuffer = VertexBuffer::Create(s_QuadVerticesBase, dataSize);
+        Batch batch;
+        batch.Vertices = Move(s_Vertices);
+        s_Vertices     = {};
+        if (batch.Vertices.Empty()) return batch;
+        // Resolve first: it may switch to a reloaded shader.
+        batch.Material = s_Material->Resolve();
+        batch.Shader   = s_Material->Shader();
+        return batch;
+    }
 
-        Renderer::Draw(s_QuadPipeline, s_QuadVertexBuffer, s_QuadIndexBuffer,
-                       s_IndexCount);
-        s_QuadVerticesPointer = s_QuadVerticesBase;
-        s_IndexCount          = 0;
+    void Draw(RHI::CommandList& cmd, const Batch& batch,
+              const ::Ref<RHI::Buffer>& camera)
+    {
+        if (batch.Empty()) return;
+        VtProfileFunction();
+
+        auto&        device = Renderer::Device();
+        FrameBuffer& frame  = s_Frames[device.FrameIndex()];
+        if (frame.Frame != device.FrameNumber())
+        {
+            frame.Frame = device.FrameNumber();
+            frame.Used  = 0;
+        }
+
+        u32 count = batch.Vertices.Size();
+        if (frame.Used + count > kMaxVertices)
+        {
+            VtCoreWarn("Renderer2D: More than {} quads this frame; dropping {}",
+                       kMaxQuads, (frame.Used + count - kMaxVertices) / 4);
+            count = kMaxVertices - frame.Used;
+        }
+        if (count == 0) return;
+
+        usize offset = frame.Used * sizeof(Vertex);
+        frame.Buffer->Write(batch.Vertices.Raw(), count * sizeof(Vertex), offset);
+        frame.Used += count;
+
+        struct
+        {
+            Mat4 Model{1.0f};
+        } object;
+        auto& group = s_CameraGroups[reinterpret_cast<upointer>(camera.Raw())];
+        if (!group.Group || group.Shader != batch.Shader.Raw())
+        {
+            RHI::BindGroupDesc desc{};
+            desc.Layout = batch.Shader->SetLayout(0);
+            desc.Entries.PushBack(RHI::BindGroupEntry::Uniform(0, camera));
+            desc.DebugName = "Renderer2D: camera";
+            group.Group    = device.CreateBindGroup(desc);
+            group.Shader   = batch.Shader.Raw();
+        }
+
+        s_Desc.Shader = batch.Shader;
+        auto pipeline = Renderer::Pipelines().Get(s_Desc);
+        s_Desc.Shader = nullptr;
+
+        cmd.BindPipeline(*pipeline);
+        cmd.BindGroup(0, *group.Group);
+        Material::Bind(cmd, batch.Material);
+        cmd.PushConstants(RHI::ShaderStage::eVertex, object);
+        cmd.BindVertexBuffer(0, *frame.Buffer, offset);
+        cmd.BindIndexBuffer(*s_IndexBuffer, RHI::IndexType::eU32);
+        cmd.DrawIndexed(count / 4 * 6);
     }
 }; // namespace Vortex::Renderer2D

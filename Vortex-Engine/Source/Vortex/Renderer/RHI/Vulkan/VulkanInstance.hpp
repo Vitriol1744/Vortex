@@ -1,43 +1,48 @@
 /*
  * Created by v1tr10l7 on 18.07.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
 #pragma once
 
-#include <Prism/Containers/Span.hpp>
-#include <Prism/Core/Version.hpp>
 #include <Vortex/Renderer/RHI/Vulkan/VulkanCommon.hpp>
 
-namespace Vortex
+import Prism.Core.Version;
+import Prism.Utility.Expected;
+
+namespace Vortex::Vulkan
 {
+    /// The minimum Vulkan version the backend requires (dynamic rendering and
+    /// synchronization2 are core in 1.3).
+    inline constexpr u32 kRequiredApiVersion = VK_API_VERSION_1_3;
+
     class VulkanInstance final
     {
       public:
         VulkanInstance() = default;
+        VulkanInstance(const VulkanInstance&)            = delete;
+        VulkanInstance& operator=(const VulkanInstance&) = delete;
+        ~VulkanInstance() { Destroy(); }
 
-        void Initialize(StringView engineName, const Version& engineVersion,
-                        StringView applicationName, const Version& appVersion);
-        void Destroy();
+        /// Loads Vulkan, creates the instance and (with `validation`) the
+        /// validation layers' debug messenger.
+        Expected<void, String> Initialize(StringView     applicationName,
+                                          const Version& applicationVersion,
+                                          StringView     engineName,
+                                          const Version& engineVersion,
+                                          bool           validation);
+        void                   Destroy();
 
-        inline u32 UsedApiVersion() const { return m_UsedApiVersion; }
-
-        inline     operator vk::Instance() const { return m_Instance; }
-        inline     operator bool() const { return m_Instance; }
-
-        static const Span<const char*> ValidationLayers();
-        static vk::Bool32              ShouldUseValidationLayers();
+        inline                 operator vk::Instance() const { return m_Instance; }
+        inline vk::Instance    Handle() const { return m_Instance; }
+        inline bool            ValidationEnabled() const { return m_Validation; }
+        inline bool            DebugUtilsEnabled() const { return m_DebugUtils; }
 
       private:
-        vk::Instance                                m_Instance = VK_NULL_HANDLE;
-        vk::DebugUtilsMessengerEXT                  m_DebugMessenger;
-        u32                                         m_UsedApiVersion = 0;
-
-        void                                        SetupDebugMessenger();
-
-        static u32                                  VulkanVersion();
-        static vk::Bool32                           ValidationLayersSupported();
-        static vk::DebugUtilsMessengerCreateInfoEXT DebugMessengerCreateInfo();
+        vk::Instance               m_Instance       = VK_NULL_HANDLE;
+        vk::DebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
+        bool                       m_Validation     = false;
+        bool                       m_DebugUtils     = false;
     };
-}; // namespace Vortex
+} // namespace Vortex::Vulkan

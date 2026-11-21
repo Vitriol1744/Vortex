@@ -1,59 +1,54 @@
 #
-# Created by v1tr10l7 on 10.07.2026. Copyright (c) 2024-2026, Szymon Zemke
+# Created by v1tr10l7 on 18.06.2026. Copyright (c) 2024-2026, Szymon Zemke
 # <v1tr10l7@proton.me>
 #
 # SPDX-License-Identifier: GPL-3
 #
-set (MODULE_NAME Vortex-Vulkan)
-set (MODULE_TYPE SHARED)
 
-#TODO(v1tr10l7): Conditional compilation for imgui layer, maybe add a flag to enable/disable it in the future
-set (SOURCES
-    VulkanAllocator.cpp
-    VulkanCommon.cpp
-    VulkanDevice.cpp
-    VulkanFramebuffer.cpp
-    VulkanGraphicsPipeline.cpp
-    VulkanImGuiLayer.cpp
-    VulkanImage.cpp
-    VulkanIndexBuffer.cpp
-    VulkanInstance.cpp
-    VulkanMaterial.cpp
-    VulkanRenderer.cpp
-    VulkanShader.cpp
-    VulkanSurface.cpp
-    VulkanSwapChain.cpp
-    VulkanTexture2D.cpp
-    VulkanUniformBuffer.cpp
-    VulkanVertexBuffer.cpp
-    imgui_impl_vulkan.cpp
-)
-
-vt_add_module(${MODULE_NAME}
-    SOURCES ${SOURCES}
+# The Vulkan backend of the RHI. Its headers are private: the only public
+# interface is the Vortex.RHI.Vulkan module (RegisterBackend).
+vt_add_module(Vortex-Vulkan
+    SOURCES
+        VulkanCommandList.cpp
+        VulkanCommon.cpp
+        VulkanDevice.cpp
+        VulkanInstance.cpp
+        VulkanPipeline.cpp
+        VulkanResources.cpp
+        VulkanShader.cpp
+        VulkanSurface.cpp
+        VulkanSwapChain.cpp
     TYPE SHARED
-    DEFINITIONS_PUBLIC
-        SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS=1
     DEFINITIONS_PRIVATE
         VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
-    PUBLIC_INCLUDES
+    PRIVATE_INCLUDES
         ${VENDOR_DIR}/vulkan
         ${VENDOR_DIR}/VulkanMemoryAllocator/include
-        ${VENDOR_DIR}/imgui
     PUBLIC_LIBS
         Vortex-Modules
         Vortex-Core
         Vortex-RHI
+        Vortex-Window
+    PRIVATE_LIBS
         Vulkan::Vulkan
-        vulkan
         Vulkan::Headers
-        imgui
-        ImGuizmo
         shaderc
-        shaderc_util
-        spirv-cross-reflect
-        spirv-cross-glsl
-        spirv-cross-hlsl
-        spirv-cross-cpp
-        SPIRV-Tools-shared
+        glslang
+        SPIRV
+        glslang-default-resource-limits
+        spirv-cross-core
 )
+target_sources(Vortex-Vulkan PUBLIC FILE_SET CXX_MODULES FILES
+    VulkanBackend.ixx
+)
+
+# Desktop builds link VMA's prebuilt implementation; Android compiles it in
+# VulkanDevice.cpp (VMA_IMPLEMENTATION).
+if(NOT ANDROID)
+  target_link_libraries(Vortex-Vulkan PRIVATE GPUOpen::VulkanMemoryAllocator)
+endif()
+
+# GPU zones (Tracy's Vulkan timestamps) when profiling is built in.
+if(TARGET Tracy::TracyClient)
+  target_link_libraries(Vortex-Vulkan PRIVATE Tracy::TracyClient)
+endif()

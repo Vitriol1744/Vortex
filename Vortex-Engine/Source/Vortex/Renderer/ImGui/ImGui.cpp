@@ -4,12 +4,8 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
-#include <Prism/Containers/UnorderedMap.hpp>
-
 #include <Vortex/Renderer/ImGui/ImGui.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanSwapChain.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanTexture2D.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/imgui_impl_vulkan.h>
+#include <Vortex/Renderer/ImGui/ImGuiLayer.hpp>
 
 namespace Vortex
 {
@@ -17,7 +13,6 @@ namespace Vortex
     {
         namespace
         {
-            UnorderedMap<upointer, ImTextureID> s_TextureCache;
 
             struct InputTextCallback_UserData
             {
@@ -53,43 +48,24 @@ namespace Vortex
             }
         } // namespace
 
-        void* GetTexture(Ref<Texture2D> texture)
+        ImTextureID TextureID(const ::Ref<RHI::Texture>& texture)
         {
-            auto it = s_TextureCache.Find(upointer(texture.Raw()));
-            if (it != s_TextureCache.end())
-                return reinterpret_cast<void*>(it->Value);
-
-            auto vkTexture     = texture.As<VulkanTexture2D>();
-            auto imageView     = vkTexture->ImageView();
-            auto descriptorSet = ImGui_ImplVulkan_AddTexture(
-                imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            s_TextureCache[upointer(texture.Raw())]
-                = reinterpret_cast<ImTextureID>(descriptorSet);
-
-            return descriptorSet;
+            return ImGuiLayer::VortexBackend::Get().TextureID(texture);
         }
-        void* TextureFromFramebuffer(Ref<Framebuffer> framebuffer)
-        {
-            auto vkFramebuffer = framebuffer.As<VulkanFramebuffer>();
-            return ImGui_ImplVulkan_AddTexture(
-                vkFramebuffer->Sampler(), vkFramebuffer->ImageView(),
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        }
-
-        Vector<void*> GetTextures(Ref<SwapChain> swapChain)
-        {
-            auto          vkSwapChain = swapChain.As<VulkanSwapChain>();
-            Vector<void*> descriptorSets;
-
-            return {};
-        }
-
-        void RemoveTexture(void* texture)
+        void Image(const ::Ref<RHI::Texture>& texture, ImVec2 size, ImVec2 uv0,
+                   ImVec2 uv1)
         {
             if (!texture) return;
-
-            ImGui_ImplVulkan_RemoveTexture(
-                static_cast<VkDescriptorSet>(texture));
+            if (size.x <= 0.0f || size.y <= 0.0f)
+                size = ImVec2(static_cast<f32>(texture->Width()),
+                              static_cast<f32>(texture->Height()));
+            ImGui::Image(ImTextureRef(TextureID(texture)), size, uv0, uv1);
+        }
+        bool ImageButton(const char* id, const ::Ref<RHI::Texture>& texture,
+                         ImVec2 size, ImVec4 tint)
+        {
+            return ImGui::ImageButton(id, ImTextureRef(TextureID(texture)), size,
+                                      {0, 0}, {1, 1}, {0, 0, 0, 0}, tint);
         }
 
         bool InputText(const char* label, String& str,

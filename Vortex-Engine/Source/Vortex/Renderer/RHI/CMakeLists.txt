@@ -1,44 +1,33 @@
 #
-# Created by v1tr10l7 on 10.07.2026. Copyright (c) 2024-2026, Szymon Zemke
+# Created by v1tr10l7 on 18.06.2026. Copyright (c) 2024-2026, Szymon Zemke
 # <v1tr10l7@proton.me>
 #
 # SPDX-License-Identifier: GPL-3
 #
-set (MODULE_NAME Vortex-RHI)
-set (MODULE_TYPE STATIC)
 
-set (SOURCES
-    Framebuffer.cpp
-    GraphicsPipeline.cpp
-    ImGuiLayer.cpp
-    IndexBuffer.cpp
-    Material.cpp
-    RHI.cpp
-    Shader.cpp
-    SwapChain.cpp
-    Texture2D.cpp
-    UniformBuffer.cpp
-    VertexBuffer.cpp
-)
-
+# The backend-agnostic RHI: interface modules (umbrella: Vortex.RHI) and the
+# device registry. Shared, so the global device and the interfaces' vtables
+# exist once even though several shared libraries use them.
 vt_add_module(Vortex-RHI
-    SOURCES ${SOURCES}
-    TYPE STATIC
-    DEFINITIONS_PUBLIC
-        SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS=1
-    DEFINITIONS_PRIVATE
-        VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
-    PUBLIC_INCLUDES
-        ${VENDOR_DIR}/vulkan
-        ${VENDOR_DIR}/imgui
-        ${VENDOR_DIR}/VulkanMemoryAllocator/include
+    SOURCES
+        Device.cpp
+        PipelineCache.cpp
+    TYPE SHARED
     PUBLIC_LIBS
         Vortex-Modules
         Vortex-Core
-        Vortex-Window
-        Vulkan::Vulkan
-        Vulkan::Headers
-        imgui
-        ImGuizmo
 )
+target_sources(Vortex-RHI PUBLIC FILE_SET CXX_MODULES FILES
+    BindGroup.ixx
+    CommandList.ixx
+    Device.ixx
+    Pipeline.ixx
+    PipelineCache.ixx
+    Resources.ixx
+    RHI.ixx
+    Shader.ixx
+    SwapChain.ixx
+    Types.ixx
+)
+
 add_subdirectory(Vulkan)

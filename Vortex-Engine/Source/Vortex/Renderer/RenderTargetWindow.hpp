@@ -6,8 +6,9 @@
  */
 #pragma once
 
-#include <Vortex/Renderer/RHI/SwapChain.hpp>
 #include <Vortex/Window/Window.hpp>
+
+import Vortex.Renderer;
 
 namespace Vortex
 {
@@ -22,7 +23,12 @@ namespace Vortex
                 "Failed to create native platform window interface context.");
 
             if (!specs.NoAPI)
-                m_SwapChain = SwapChain::Create(m_Window.Raw(), specs.VSync);
+            {
+                RHI::SwapChainDesc desc{};
+                desc.Window = m_Window.Raw();
+                desc.VSync  = specs.VSync;
+                m_SwapChain = Renderer::Device().CreateSwapChain(desc);
+            }
             VtCoreAssertMsg(m_SwapChain,
                             "Native window implementation failed to create an "
                             "internal graphics SwapChain boundary context.");
@@ -34,10 +40,6 @@ namespace Vortex
 
         ~RenderTargetWindow() = default;
 
-        inline void Present()
-        {
-            if (m_SwapChain) m_SwapChain->Present();
-        }
 
         inline void       Close() noexcept { m_Window->Close(); }
 
@@ -47,7 +49,7 @@ namespace Vortex
         }
 
         inline class Window&        Window() noexcept { return *m_Window; }
-        inline Ref<class SwapChain> SwapChain() const noexcept
+        inline Ref<RHI::SwapChain> SwapChain() const noexcept
         {
             return m_SwapChain;
         }
@@ -155,12 +157,12 @@ namespace Vortex
 
       private:
         Scope<class Window>  m_Window;
-        Ref<class SwapChain> m_SwapChain;
+        Ref<RHI::SwapChain> m_SwapChain;
 
         void                 OnWindowResized(const WindowResizedEvent& e)
         {
             if (m_Window.Raw() != e.Window) return;
-            m_SwapChain->OnResize();
+            if (m_SwapChain) m_SwapChain->RequestResize();
         }
     };
 } // namespace Vortex

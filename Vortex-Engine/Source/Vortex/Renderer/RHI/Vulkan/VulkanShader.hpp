@@ -1,87 +1,62 @@
 /*
- * Created by v1tr10l7 on 28.07.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Created by v1tr10l7 on 18.07.2024.
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
 #pragma once
 
-#include <Prism/Containers/UnorderedMap.hpp>
-
-#include <Vortex/Renderer/RHI/Shader.hpp>
 #include <Vortex/Renderer/RHI/Vulkan/VulkanCommon.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanTexture2D.hpp>
-#include <Vortex/Renderer/RHI/Vulkan/VulkanUniformBuffer.hpp>
 
-namespace Vortex
+import Prism.Containers.Span;
+import Prism.Containers.Vector;
+import Prism.Memory.Ref;
+import Prism.Utility.Expected;
+
+namespace Vortex::Vulkan
 {
-    class VT_RENDERER_RHI_VULKAN_API VulkanShader final : public Shader
+    class VulkanBindGroupLayout final : public RHI::BindGroupLayout
     {
       public:
-        struct UniformDescriptor
-        {
-            String                  Name;
-            u32                     BindingPoint;
-            u32                     DescriptorCount;
-            u32                     Size;
-            vk::ShaderStageFlagBits ShaderStage;
-        };
-        struct ImageSampler
-        {
-            String                  Name;
-            u32                     BindingPoint    = 0;
-            u32                     DescriptorCount = 1;
-            vk::ShaderStageFlagBits ShaderStage;
-        };
+        explicit VulkanBindGroupLayout(const RHI::BindGroupLayoutDesc& desc);
+        ~VulkanBindGroupLayout() override;
 
-        struct DescriptorSet
-        {
-            UnorderedMap<u32, UniformDescriptor>         UniformDescriptors;
-            UnorderedMap<u32, ImageSampler>              ImageSamplers;
-
-            vk::DescriptorPool                           Pool = VK_NULL_HANDLE;
-            Vector<vk::DescriptorPoolSize>               PoolSizes;
-
-            Vector<vk::DescriptorSet>                    Sets;
-            UnorderedMap<String, vk::WriteDescriptorSet> WriteDescriptorSets;
-        };
-
-        VulkanShader(PathView path);
-        VulkanShader(PathView vertexPath, PathView fragmentPath);
-        virtual ~VulkanShader();
-
-        void SetUniform(const String&        name,
-                        ::Ref<UniformBuffer> buffer) override;
-        void SetUniform(const String& name, ::Ref<Texture2D> texture) override;
-
-        inline vk::ShaderModule VertexShader() const { return m_VertexShader; }
-        inline vk::ShaderModule FragmentShader() const
-        {
-            return m_FragmentShader;
-        }
-
-        inline const auto& DescriptorSetLayouts() const
-        {
-            return m_DescriptorSetLayouts;
-        }
-        inline auto& DescriptorSets() { return m_DescriptorSets; }
+        inline vk::DescriptorSetLayout Handle() const { return m_Layout; }
 
       private:
-        vk::ShaderModule                 m_VertexShader   = VK_NULL_HANDLE;
-        vk::ShaderModule                 m_FragmentShader = VK_NULL_HANDLE;
-
-        UnorderedMap<u32, DescriptorSet> m_DescriptorSets;
-        Vector<vk::DescriptorSetLayout>  m_DescriptorSetLayouts;
-
-        UnorderedMap<vk::ShaderStageFlagBits, String>
-                      Preprocess(StringView shaderCode);
-        void          Reflect(StringView path, vk::ShaderStageFlagBits stage,
-                              const Vector<u32>& shaderBinary);
-
-        static String ReadShaderCode(StringView path);
-
-        static void   CompileShaderCode(StringView source, StringView path,
-                                        vk::ShaderStageFlagBits stage,
-                                        Vector<u32>&            outputBinary);
+        vk::DescriptorSetLayout m_Layout = VK_NULL_HANDLE;
     };
-}; // namespace Vortex
+
+    class VulkanShader final : public RHI::Shader
+    {
+      public:
+        struct Module
+        {
+            RHI::ShaderStage Stage  = RHI::ShaderStage::eNone;
+            vk::ShaderModule Handle = VK_NULL_HANDLE;
+        };
+
+        /// Compiles, reflects and creates the modules.
+        static Expected<::Ref<VulkanShader>, String>
+        Create(const RHI::ShaderDesc& desc);
+
+        ~VulkanShader() override;
+
+        ::Ref<RHI::BindGroupLayout> SetLayout(u32 set) const override;
+
+        inline const Vector<Module>& Modules() const { return m_Modules; }
+        /// One layout per set index (empty sets use the device's empty
+        /// layout), as a pipeline layout wants them.
+        inline const Vector<vk::DescriptorSetLayout>& SetLayoutHandles() const
+        {
+            return m_SetLayoutHandles;
+        }
+
+        VulkanShader() = default;
+
+      private:
+        Vector<Module>                        m_Modules;
+        Vector<::Ref<VulkanBindGroupLayout>>  m_SetLayouts;
+        Vector<vk::DescriptorSetLayout>       m_SetLayoutHandles;
+    };
+} // namespace Vortex::Vulkan

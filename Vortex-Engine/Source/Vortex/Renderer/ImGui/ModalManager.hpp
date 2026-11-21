@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include <Prism/Memory/Ref.hpp>
-#include <Prism/Utility/Delegate.hpp>
+import Prism.Memory.Ref;
+import Prism.Utility.Delegate;
 #include <Vortex/Core/Core.hpp>
 
 #include <imgui.h>

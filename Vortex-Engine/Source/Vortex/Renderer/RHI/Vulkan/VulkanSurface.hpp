@@ -1,40 +1,47 @@
 /*
  * Created by v1tr10l7 on 19.07.2024.
- * Copyright (c) 2024-2024, Szymon Zemke <v1tr10l7@proton.me>
+ * Copyright (c) 2024-2026, Szymon Zemke <v1tr10l7@proton.me>
  *
  * SPDX-License-Identifier: GPL-3
  */
 #pragma once
 
-#include <Vortex/Window/Window.hpp>
+#include <Vortex/Renderer/RHI/Vulkan/VulkanCommon.hpp>
+
+import Prism.Containers.Vector;
 
 namespace Vortex
 {
+    class Window;
+}
+
+namespace Vortex::Vulkan
+{
+    /// The presentation surface of a window.
     class VulkanSurface final
     {
       public:
-        void   Create(Window* window, vk::PhysicalDevice physicalDevice);
-        void   Destroy();
+        VulkanSurface() = default;
+        VulkanSurface(const VulkanSurface&)            = delete;
+        VulkanSurface& operator=(const VulkanSurface&) = delete;
 
-        inline operator vk::SurfaceKHR() const { return m_Surface; }
-        inline const vk::SurfaceFormatKHR& Format() const
-        {
-            return m_SurfaceFormat;
-        }
-        const vk::SurfaceCapabilitiesKHR&        Capabilities();
-        inline const Vector<vk::PresentModeKHR>& PresentModes() const
-        {
-            return m_PresentModes;
-        }
+        /// Creates the platform surface. Fails if the device's graphics queue
+        /// can't present to it.
+        bool                       Create(class Window* window);
+        /// Hands the surface to the deferred deletion queue.
+        void                       Release();
+        /// Destroys it now (its swapchain must already be gone).
+        void                       Destroy();
 
-        inline class Window* Window() const { return m_WindowHandle; }
+        inline vk::SurfaceKHR      Handle() const { return m_Surface; }
+        inline class Window*       Window() const { return m_Window; }
+
+        vk::SurfaceCapabilitiesKHR Capabilities() const;
+        Vector<vk::SurfaceFormatKHR> Formats() const;
+        Vector<vk::PresentModeKHR> PresentModes() const;
 
       private:
-        class Window*                    m_WindowHandle;
-
-        vk::SurfaceKHR             m_Surface             = VK_NULL_HANDLE;
-        vk::SurfaceFormatKHR       m_SurfaceFormat       = {};
-        vk::SurfaceCapabilitiesKHR m_SurfaceCapabilities = {};
-        Vector<vk::PresentModeKHR> m_PresentModes;
+        class Window*  m_Window  = nullptr;
+        vk::SurfaceKHR m_Surface = VK_NULL_HANDLE;
     };
-} // namespace Vortex
+} // namespace Vortex::Vulkan
