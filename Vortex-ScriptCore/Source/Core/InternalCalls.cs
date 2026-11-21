@@ -71,6 +71,16 @@ namespace Vortex
 		#endregion
 
         internal static delegate* unmanaged<Transform*, Transform*, Transform*, void> TransformMultiply_Native;
+
+		#region RigidBodyComponent
+		internal static delegate* unmanaged<ulong, Vector3*, void> RigidBodyComponent_GetLinearVelocity;
+		internal static delegate* unmanaged<ulong, Vector3*, void> RigidBodyComponent_SetLinearVelocity;
+		internal static delegate* unmanaged<ulong, Vector3*, ForceMode, void> RigidBodyComponent_AddForce;
+		#endregion
+
+		#region Physics
+		internal static delegate* unmanaged<Vector3*, Vector3*, float, ulong, RaycastHit*, bool*, void> Physics_Raycast;
+		#endregion
 #pragma warning restore CS0649
     }
 }

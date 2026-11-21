@@ -6,8 +6,9 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <!-- Output directory for compiled user scripts -->
-    <OutputPath>..\bin\$(Configuration)\DotNet\</OutputPath>
+    <!-- The engine loads DotNet/Sandbox.dll (ScriptEngine.cpp) -->
+    <AssemblyName>Sandbox</AssemblyName>
+    <OutputPath>..\DotNet\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
@@ -19,7 +20,7 @@
     </ProjectReference>
 
     <Reference Include="Coral.Managed">
-      <HintPath>..\bin\$(Configuration)\DotNet\Coral.Managed.dll</HintPath>
+      <HintPath>..\DotNet\Coral.Managed.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

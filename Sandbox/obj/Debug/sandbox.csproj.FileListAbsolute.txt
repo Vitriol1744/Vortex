@@ -11,3 +11,6 @@
 /home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Debug/refint/sandbox.dll
 /home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Debug/sandbox.pdb
 /home/v1tr10l7/dev/vortex-v2/Sandbox/obj/Debug/ref/sandbox.dll
+/home/v1tr10l7/dev/vortex-v2/DotNet/Sandbox.deps.json
+/home/v1tr10l7/dev/vortex-v2/DotNet/Sandbox.dll
+/home/v1tr10l7/dev/vortex-v2/DotNet/Sandbox.pdb

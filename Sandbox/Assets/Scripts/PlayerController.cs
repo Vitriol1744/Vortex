@@ -4,45 +4,98 @@
  *
  * SPDX-License-Identifier: GPL-3
  */
+using Vortex;
+
 namespace Gameplay
 {
-    public class PlayerController : Vortex.Actor
+    /// <summary>
+    /// A physics-driven character: WASD/arrows move it on the XZ plane, Shift sprints and
+    /// Space jumps while it stands on something. Needs a RigidBodyComponent (dynamic, with
+    /// LockRotation so it stays upright) and a collider.
+    /// Falls back to moving the transform directly when the actor has no rigid body.
+    /// </summary>
+    public class PlayerController : Actor
     {
-        // Speed of the player movement in units per second
-        private float m_MoveSpeed = 5.0f;
+        public float MoveSpeed = 5.0f;
+        public float SprintMultiplier = 1.8f;
+        public float JumpSpeed = 6.0f;
+        /// <summary>How quickly the horizontal velocity reaches the target (1/s).</summary>
+        public float Acceleration = 12.0f;
+        /// <summary>Seconds between jumps, so one press doesn't fire on consecutive frames.</summary>
+        public float JumpCooldown = 0.25f;
+
+        private RigidBodyComponent? m_RigidBody;
+        private float m_JumpTimer;
+        private bool m_WasGrounded;
 
         protected override void OnCreate()
         {
-            Vortex.Log.Warn("Player created with ID: {0}", ID);
+            m_RigidBody = GetComponent<RigidBodyComponent>();
+            if (m_RigidBody == null)
+                Log.Warn("PlayerController on '{0}' has no RigidBodyComponent: moving its transform", Tag);
+            else
+                Log.Info("PlayerController ready on '{0}'", Tag);
         }
 
         protected override void OnUpdate(float deltaTime)
         {
-            if (Vortex.Input.IsKeyPressed(Vortex.KeyCode.Space))
-                Vortex.Log.Info("Space key pressed");
+            Vector3 input = ReadInput();
+            float speed = MoveSpeed * (Input.IsKeyPressed(KeyCode.LShift) ? SprintMultiplier : 1.0f);
 
-            var transformComponent = GetComponent<Vortex.TransformComponent>();
-            if (transformComponent != null)
+            if (m_RigidBody == null)
             {
-                var translation = transformComponent.Translation;
-                float moveStep = m_MoveSpeed * deltaTime;
-
-                if (Vortex.Input.IsKeyPressed(Vortex.KeyCode.W) || Vortex.Input.IsKeyPressed(Vortex.KeyCode.Up))
-                    translation.Y += moveStep;
-                if (Vortex.Input.IsKeyPressed(Vortex.KeyCode.S) || Vortex.Input.IsKeyPressed(Vortex.KeyCode.Down))
-                    translation.Y -= moveStep;
-                if (Vortex.Input.IsKeyPressed(Vortex.KeyCode.A) || Vortex.Input.IsKeyPressed(Vortex.KeyCode.Left))
-                    translation.X -= moveStep;
-                if (Vortex.Input.IsKeyPressed(Vortex.KeyCode.D) || Vortex.Input.IsKeyPressed(Vortex.KeyCode.Right))
-                    translation.X += moveStep;
-
-                transformComponent.Translation = translation;
+                Translation += input * speed * deltaTime;
+                return;
             }
+
+            m_JumpTimer -= deltaTime;
+            bool grounded = IsGrounded();
+            if (grounded && !m_WasGrounded)
+                Log.Trace("'{0}' landed", Tag);
+            m_WasGrounded = grounded;
+
+            Vector3 velocity = m_RigidBody.LinearVelocity;
+
+            // Steer the horizontal velocity towards the input; gravity keeps Y.
+            float blend = Mathf.Clamp(Acceleration * deltaTime, 0.0f, 1.0f);
+            velocity.X += (input.X * speed - velocity.X) * blend;
+            velocity.Z += (input.Z * speed - velocity.Z) * blend;
+
+            if (grounded && m_JumpTimer <= 0.0f && Input.IsKeyPressed(KeyCode.Space))
+            {
+                velocity.Y = JumpSpeed;
+                m_JumpTimer = JumpCooldown;
+            }
+
+            m_RigidBody.LinearVelocity = velocity;
         }
 
         protected override void OnDestroy()
         {
-            Vortex.Log.Info("Player destroyed");
+            Log.Info("PlayerController on '{0}' destroyed", Tag);
+        }
+
+        private static Vector3 ReadInput()
+        {
+            Vector3 input = Vector3.Zero;
+            if (Input.IsKeyPressed(KeyCode.W) || Input.IsKeyPressed(KeyCode.Up))
+                input.Z -= 1.0f;
+            if (Input.IsKeyPressed(KeyCode.S) || Input.IsKeyPressed(KeyCode.Down))
+                input.Z += 1.0f;
+            if (Input.IsKeyPressed(KeyCode.A) || Input.IsKeyPressed(KeyCode.Left))
+                input.X -= 1.0f;
+            if (Input.IsKeyPressed(KeyCode.D) || Input.IsKeyPressed(KeyCode.Right))
+                input.X += 1.0f;
+
+            float length = input.Length();
+            return length > 0.0f ? input / length : input;
+        }
+
+        /// <summary>A short ray down from the centre, just past the bottom of the collider.</summary>
+        private bool IsGrounded()
+        {
+            float halfHeight = Scale.Y * 0.5f;
+            return Physics.Raycast(Translation, Vector3.Down, halfHeight + 0.1f, this);
         }
     }
 }

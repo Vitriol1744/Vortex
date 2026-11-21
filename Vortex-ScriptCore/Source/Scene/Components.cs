@@ -134,3 +134,46 @@ namespace Vortex
 		}
 	}
 }
+
+namespace Vortex
+{
+	public enum ForceMode
+	{
+		/// <summary>Continuous force (mass * distance / time^2), applied over the next frame.</summary>
+		Force = 0,
+		/// <summary>Instant change in momentum (mass * distance / time).</summary>
+		Impulse = 1,
+	}
+
+	/// <summary>
+	/// The actor's physics body. Changes reach the simulation on its next step.
+	/// </summary>
+	public class RigidBodyComponent : Component
+	{
+		public Vector3 LinearVelocity
+		{
+			get
+			{
+				Vector3 result;
+				unsafe { InternalCalls.RigidBodyComponent_GetLinearVelocity(Actor.ID, &result); }
+				return result;
+			}
+
+			set
+			{
+				unsafe { InternalCalls.RigidBodyComponent_SetLinearVelocity(Actor.ID, &value); }
+			}
+		}
+
+		public void AddForce(Vector3 force, ForceMode mode = ForceMode.Force)
+		{
+			unsafe { InternalCalls.RigidBodyComponent_AddForce(Actor.ID, &force, mode); }
+		}
+
+		public void AddImpulse(Vector3 impulse) => AddForce(impulse, ForceMode.Impulse);
+	}
+
+	public class BoxColliderComponent : Component { }
+
+	public class SphereColliderComponent : Component { }
+}

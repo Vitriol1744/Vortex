@@ -20,8 +20,8 @@ class Game : public Application
     }
 };
 
-Application* Vortex::CreateApplication(const CommandLineArguments&)
+ApplicationLaunch Vortex::CreateApplication(const CommandLineArguments&)
 {
     ApplicationSpecification spec{};
-    return new Game(spec);
+    return CreateScope<Game>(spec);
 }

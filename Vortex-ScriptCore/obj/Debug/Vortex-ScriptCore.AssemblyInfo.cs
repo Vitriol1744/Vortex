@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Vortex-ScriptCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4265c747e4ef2af36287422248df87713e9cbae4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dcbccaedfa682d951bc5d2bc4deb5258171c0325")]
 [assembly: System.Reflection.AssemblyProductAttribute("Vortex-ScriptCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Vortex-ScriptCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

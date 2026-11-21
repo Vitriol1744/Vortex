@@ -30,6 +30,7 @@
       <Compile Include="Source/Math/Vector4.cs" />
       <Compile Include="Source/Scene/Actor.cs" />
       <Compile Include="Source/Scene/Components.cs" />
+      <Compile Include="Source/Physics/Physics.cs" />
   </ItemGroup>
 
   <ItemGroup>
